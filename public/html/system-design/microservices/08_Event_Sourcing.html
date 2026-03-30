@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Event Sourcing — Microservices Study Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0c10;--surface:#111318;--surface2:#181c24;--surface3:#1f2530;--border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.11);--accent:#6ea1ff;--accent2:#8b6cf6;--green:#34d399;--amber:#fbbf24;--red:#f87171;--teal:#2dd4bf;--coral:#fb923c;--text:#dfe5ef;--muted:#7e8a9e;--code-bg:#080a0e}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font-size:15px;line-height:1.78;-webkit-font-smoothing:antialiased}
+.page{max-width:900px;margin:0 auto;padding:0 28px 100px}
+.hero{padding:56px 28px 44px;max-width:900px;margin:0 auto;border-bottom:1px solid var(--border);position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-80px;right:-40px;width:360px;height:360px;background:radial-gradient(circle,rgba(139,92,246,0.08) 0%,transparent 70%);pointer-events:none}
+.hero-tag{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:10.5px;font-weight:500;color:var(--accent2);background:rgba(139,92,246,0.07);border:1px solid rgba(139,92,246,0.18);padding:4px 14px;border-radius:20px;letter-spacing:0.09em;margin-bottom:14px;text-transform:uppercase}
+.hero h1{font-size:clamp(26px,4.2vw,42px);font-weight:700;line-height:1.15;letter-spacing:-0.03em;margin-bottom:10px;background:linear-gradient(135deg,#dfe5ef 0%,#8b6cf6 50%,#6ea1ff 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero-sub{font-size:15px;color:var(--muted);line-height:1.65;max-width:620px}
+.section{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:30px;margin-top:30px}
+.section h2{font-size:20px;font-weight:700;color:#fff;margin-bottom:18px;display:flex;align-items:center;gap:10px}
+.section h2 .num{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--accent2);background:rgba(139,92,246,0.1);padding:3px 10px;border-radius:6px;font-weight:500}
+p{margin-bottom:12px}strong{color:#fff}
+pre{background:var(--code-bg);border:1px solid var(--border);border-radius:10px;padding:14px 18px;overflow-x:auto;margin:12px 0;font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.7;color:#c4cdd9}
+code{font-family:'JetBrains Mono',monospace;font-size:12.5px;color:var(--accent);background:rgba(110,161,255,0.07);padding:2px 6px;border-radius:4px}
+pre code{background:none;padding:0;color:inherit}
+table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13px}
+th{background:var(--surface2);color:var(--accent);font-weight:600;text-align:left;padding:9px 13px;border:1px solid var(--border)}
+td{padding:8px 13px;border:1px solid var(--border)}
+tr:nth-child(even) td{background:rgba(255,255,255,0.012)}
+.note{background:rgba(110,161,255,0.05);border:1px solid rgba(110,161,255,0.14);border-radius:10px;padding:13px 16px;margin:12px 0;font-size:13px;line-height:1.7}.note b{color:var(--accent)}
+.note-warn{background:rgba(251,191,36,0.05);border-color:rgba(251,191,36,0.14)}.note-warn b{color:var(--amber)}
+.note-red{background:rgba(248,113,113,0.05);border-color:rgba(248,113,113,0.14)}.note-red b{color:var(--red)}
+.note-green{background:rgba(52,211,153,0.05);border-color:rgba(52,211,153,0.14)}.note-green b{color:var(--green)}
+.qa{background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:14px 18px;margin:10px 0}
+.qa-q{font-weight:600;color:#fff;margin-bottom:5px;font-size:14px}
+.qa-a{color:var(--muted);font-size:13px;line-height:1.7}
+.tab-group{margin:16px 0}.tab-bar{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.tab-btn{padding:6px 14px;font-size:12px;font-weight:500;font-family:'Outfit',sans-serif;border:1px solid var(--border2);border-radius:6px;background:transparent;color:var(--muted);cursor:pointer;transition:all 0.15s}
+.tab-btn:hover{border-color:rgba(139,92,246,0.3);color:var(--text)}
+.tab-btn.active{background:rgba(139,92,246,0.1);color:var(--accent2);border-color:rgba(139,92,246,0.3)}
+.tab-panel{display:none}.tab-panel.active{display:block}
+.flow{display:flex;align-items:center;gap:8px;margin:10px 0;flex-wrap:wrap}
+.flow-step{background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:8px 14px;font-size:13px;color:var(--text);font-weight:500}
+.flow-arrow{color:var(--muted);font-size:16px}
+.toc{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px 24px;margin:30px 0}
+.toc h3{font-size:12px;font-weight:600;color:var(--accent2);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.06em}
+.toc a{font-size:13px;color:var(--muted);text-decoration:none;display:block;padding:4px 0;transition:color 0.15s}.toc a:hover{color:var(--accent2)}
+.footer{text-align:center;padding:36px 0 16px;font-size:11px;color:var(--muted);border-top:1px solid var(--border);margin-top:40px}
+@media(max-width:640px){.page{padding:0 16px 60px}.section{padding:20px 16px}.hero{padding:36px 16px 30px}}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-tag">Microservices · Topic 08 · Interview Prep</div>
+  <h1>Event Sourcing</h1>
+  <p class="hero-sub">Don't store what things ARE — store what HAPPENED. Append-only event store, the Apply pattern in C#, projections, snapshots, pairing with CQRS, event schema evolution, and the bridge from Topic 7.</p>
+</div>
+
+<div class="page">
+
+<div class="toc">
+  <h3>Contents</h3>
+  <a href="#s1">1. The problem — traditional databases lose history</a>
+  <a href="#s2">2. Traditional vs Event Sourcing — side by side</a>
+  <a href="#s3">3. The Git analogy</a>
+  <a href="#s4">4. Full C# — events as immutable records</a>
+  <a href="#s5">5. Full C# — Product aggregate with Apply pattern</a>
+  <a href="#s6">6. Full C# — EventStore + ProductService</a>
+  <a href="#s7">7. Projections — 3 views from the same events</a>
+  <a href="#s8">8. Snapshots — performance optimization</a>
+  <a href="#s9">9. Event Sourcing + CQRS — the full architecture</a>
+  <a href="#s10">10. Event schema evolution (PriceChangedV2)</a>
+  <a href="#s11">11. When to use / NOT use Event Sourcing</a>
+  <a href="#s12">12. Interview Q&amp;A</a>
+</div>
+
+<!-- ═══════════════════ SECTION 1 ═══════════════════ -->
+<div class="section" id="s1">
+<h2><span class="num">01</span> The Problem — History Lost</h2>
+<p>In a traditional database, your Products table stores <strong>current state only</strong>:</p>
+<pre><code>Products table:
+| Id       | Name         | Price  | UpdatedAt           |
+|----------|--------------|--------|---------------------|
+| prod-123 | Gaming Mouse | 29.99  | 2026-03-25 14:00:00 |</code></pre>
+<p>What was the price yesterday? Last month? Who changed it? Why? <strong>You don't know.</strong> The previous state was overwritten.</p>
+<p>This is like editing a Word document without Track Changes — you see the final version but have no idea what changed or when.</p>
+<div class="note-red note"><b>The bridge from Topic 7 (CQRS):</b> We asked "how do you rebuild the read model from scratch if it gets corrupted?" — without Event Sourcing the write DB only has current state. You can rebuild current views but <strong>lose all history</strong>. Event Sourcing solves this by keeping every event that ever happened.</div>
+</div>
+
+<!-- ═══════════════════ SECTION 2 ═══════════════════ -->
+<div class="section" id="s2">
+<h2><span class="num">02</span> Traditional vs Event Sourcing</h2>
+
+<div class="tab-group" id="cmp">
+<div class="tab-bar">
+<button class="tab-btn active" onclick="showTab('cmp',0)">Traditional (store state)</button>
+<button class="tab-btn" onclick="showTab('cmp',1)">Event Sourcing (store events)</button>
+<button class="tab-btn" onclick="showTab('cmp',2)">Rebuild from events</button>
+</div>
+<div class="tab-panel active">
+<pre><code>Create: $19.99  →  Update: $24.99  →  Update: $29.99
+                                          ↓
+                              ┌──────────────────────┐
+                              │ Database row          │
+                              │ Price = $29.99        │
+                              │ (only current state)  │
+                              └──────────────────────┘
+
+$19.99 and $24.99 are gone forever — history lost.</code></pre>
+</div>
+<div class="tab-panel">
+<pre><code>┌──────────────────┐  ┌──────────────────┐  ┌──────────────────┐
+│ Event 1          │  │ Event 2          │  │ Event 3          │
+│ ProductCreated   │  │ PriceChanged     │  │ PriceChanged     │
+│ price: $19.99    │  │ newPrice: $24.99 │  │ newPrice: $29.99 │
+└──────────────────┘  └──────────────────┘  └──────────────────┘
+                          ↓
+              ┌────────────────────────────────────────┐
+              │ Event store (append-only log)           │
+              │ All 3 events preserved — nothing        │
+              │ deleted, nothing overwritten.           │
+              │ Kafka, EventStoreDB, or append-only table│
+              └────────────────────────────────────────┘
+                          ↓
+              Current state = replay all events in order
+              $19.99 → $24.99 → $29.99 = current price $29.99</code></pre>
+</div>
+<div class="tab-panel">
+<pre><code>Event store                       Event handler
+┌────────────────────────┐        ┌────────────────────────┐
+│ 1. ProductCreated $19  │        │ Processes event 1      │
+│ 2. PriceChanged  $24  │─replay─→│ Processes event 2      │
+│ 3. PriceChanged  $29  │        │ Processes event 3      │
+└────────────────────────┘        └────────────────────────┘
+                                           ↓
+                                  ┌──────────────────┐
+                                  │ New read DB       │
+                                  │ Fully rebuilt     │
+                                  │ from history      │
+                                  └──────────────────┘
+
+Read DB corrupted? Delete it, replay events → fully restored.
+Need a new field? Replay events → populated with history.</code></pre>
+</div>
+</div>
+</div>
+
+<!-- ═══════════════════ SECTION 3 ═══════════════════ -->
+<div class="section" id="s3">
+<h2><span class="num">03</span> The Git Analogy</h2>
+<p>This is exactly how <strong>Git</strong> works — Git doesn't store "the current file." It stores every commit (event). The current file is the result of replaying all commits.</p>
+<pre><code>Git:                Event Sourcing:
+─────────────       ────────────────────────────────────────────────
+commit 1            Event 1: ProductCreated { price: $19.99 }
+commit 2            Event 2: PriceChanged  { price: $24.99, reason: "demand" }
+commit 3            Event 3: PriceChanged  { price: $29.99, reason: "new model" }
+commit 4            Event 4: ReviewPosted  { rating: 5, userId: "user-abc" }
+commit 5            Event 5: StockAdjusted { delta: -1, reason: "sold" }
+
+git log             → full history of every change
+git checkout v1     → see state at any point in time
+git diff v1 v3     → see exactly what changed</code></pre>
+<div class="note-green note"><b>Cross-topic connection:</b> You connected version vectors from Chapter 6 (Key-Value Store) to Git merge conflicts. Same concept — Git resolves conflicting commits just like version vectors resolve write conflicts in distributed KV stores. This kind of cross-chapter synthesis is gold in interviews.</div>
+</div>
+
+<!-- ═══════════════════ SECTION 4 ═══════════════════ -->
+<div class="section" id="s4">
+<h2><span class="num">04</span> Full C# — Events as Immutable Records</h2>
+<pre><code>// Events are immutable facts — something that happened in the past
+public record ProductCreated(
+    string ProductId, string Name, decimal Price, DateTime At);
+
+public record PriceChanged(
+    string ProductId, decimal OldPrice, decimal NewPrice,
+    string Reason, DateTime At);
+
+public record ReviewPosted(
+    string ProductId, string UserId, int Rating, DateTime At);
+
+public record ProductDeactivated(
+    string ProductId, string Reason, DateTime At);</code></pre>
+<div class="note"><b>Events are named in past tense</b> — ProductCreated, PriceChanged, not CreateProduct. They describe what already happened, not what should happen. They are immutable facts that can never be changed once stored.</div>
+</div>
+
+<!-- ═══════════════════ SECTION 5 ═══════════════════ -->
+<div class="section" id="s5">
+<h2><span class="num">05</span> Full C# — Product Aggregate with Apply Pattern</h2>
+
+<div class="tab-group" id="agg">
+<div class="tab-bar">
+<button class="tab-btn active" onclick="showTab('agg',0)">Full Product aggregate</button>
+<button class="tab-btn" onclick="showTab('agg',1)">The key insight</button>
+</div>
+<div class="tab-panel active">
+<pre><code>public class Product
+{
+    public string Id { get; private set; }
+    public string Name { get; private set; }
+    public decimal Price { get; private set; }
+    public bool IsActive { get; private set; }
+    public int ReviewCount { get; private set; }
+    public double AverageRating { get; private set; }
+
+    // Private — state only changes through events
+    private readonly List&lt;object&gt; _pendingEvents = new();
+
+    // === Rebuild from history ===
+    public Product(IEnumerable&lt;object&gt; eventHistory)
+    {
+        foreach (var evt in eventHistory)
+            Apply(evt);   // replay each event to rebuild state
+    }
+
+    // === Business operations produce events, NOT state changes ===
+    public void ChangePrice(decimal newPrice, string reason)
+    {
+        // Validation against current state
+        if (!IsActive)
+            throw new InvalidOperationException(
+                "Cannot change price of inactive product");
+        if (newPrice &lt;= 0)
+            throw new ValidationException("Price must be positive");
+        if (newPrice == Price)
+            return; // no-op
+
+        // Don't change state directly — emit an event
+        var evt = new PriceChanged(
+            Id, Price, newPrice, reason, DateTime.UtcNow);
+        Apply(evt);
+        _pendingEvents.Add(evt);
+    }
+
+    public void Deactivate(string reason)
+    {
+        if (!IsActive) return;
+        var evt = new ProductDeactivated(Id, reason, DateTime.UtcNow);
+        Apply(evt);
+        _pendingEvents.Add(evt);
+    }
+
+    // === Apply — the ONLY place state changes ===
+    private void Apply(object evt)
+    {
+        switch (evt)
+        {
+            case ProductCreated e:
+                Id = e.ProductId;
+                Name = e.Name;
+                Price = e.Price;
+                IsActive = true;
+                break;
+
+            case PriceChanged e:
+                Price = e.NewPrice;
+                break;
+
+            case ReviewPosted e:
+                ReviewCount++;
+                // Recalculate running average
+                AverageRating = ((AverageRating * (ReviewCount - 1))
+                                 + e.Rating) / ReviewCount;
+                break;
+
+            case ProductDeactivated e:
+                IsActive = false;
+                break;
+        }
+    }
+
+    public IReadOnlyList&lt;object&gt; GetPendingEvents() => _pendingEvents;
+}</code></pre>
+</div>
+<div class="tab-panel">
+<p><strong>Business methods never modify state directly.</strong> They validate against current state, then produce an event.</p>
+<p>The <code>Apply</code> method is the <strong>only place state changes</strong> — and it's used for two purposes:</p>
+<pre><code>// PURPOSE 1: Replaying history (loading from event store)
+var product = new Product(eventHistory);
+// Calls Apply() for each stored event → rebuilds state
+
+// PURPOSE 2: Applying new events (business operations)
+product.ChangePrice(29.99m, "demand");
+// Validates → creates PriceChanged → calls Apply() → adds to pending</code></pre>
+<p>Same <code>Apply</code> method, two entry points. This guarantees that the aggregate always reaches the same state whether you replay history or apply events one at a time.</p>
+</div>
+</div>
+</div>
+
+<!-- ═══════════════════ SECTION 6 ═══════════════════ -->
+<div class="section" id="s6">
+<h2><span class="num">06</span> Full C# — EventStore + ProductService</h2>
+
+<div class="tab-group" id="svc">
+<div class="tab-bar">
+<button class="tab-btn active" onclick="showTab('svc',0)">EventStore class</button>
+<button class="tab-btn" onclick="showTab('svc',1)">ProductService (full pipeline)</button>
+</div>
+<div class="tab-panel active">
+<pre><code>public class EventStore
+{
+    private readonly EventStoreDbContext _db;
+
+    public async Task SaveEventsAsync(
+        string streamId, IEnumerable&lt;object&gt; events)
+    {
+        foreach (var evt in events)
+        {
+            _db.Events.Add(new StoredEvent
+            {
+                StreamId  = streamId,           // e.g. "product-prod-123"
+                EventType = evt.GetType().Name,
+                Data      = JsonSerializer.Serialize(evt),
+                Timestamp = DateTime.UtcNow,
+                Version   = await GetNextVersion(streamId)
+            });
+        }
+        await _db.SaveChangesAsync();
+    }
+
+    public async Task&lt;List&lt;object&gt;&gt; GetEventsAsync(string streamId)
+    {
+        var stored = await _db.Events
+            .Where(e => e.StreamId == streamId)
+            .OrderBy(e => e.Version)
+            .ToListAsync();
+
+        return stored.Select(Deserialize).ToList();
+    }
+}</code></pre>
+</div>
+<div class="tab-panel">
+<pre><code>public class ProductService
+{
+    private readonly EventStore _store;
+    private readonly IEventBus _bus;
+
+    public async Task ChangePriceAsync(
+        string productId, decimal newPrice, string reason)
+    {
+        // 1. Load all events for this product
+        var events = await _store.GetEventsAsync(
+            $"product-{productId}");
+
+        // 2. Rebuild current state by replaying events
+        var product = new Product(events);
+
+        // 3. Execute business logic (produces new events)
+        product.ChangePrice(newPrice, reason);
+
+        // 4. Save new events to the store
+        await _store.SaveEventsAsync(
+            $"product-{productId}",
+            product.GetPendingEvents());
+
+        // 5. Publish events — CQRS read model handlers pick these up
+        foreach (var evt in product.GetPendingEvents())
+            await _bus.PublishAsync(evt);
+    }
+}</code></pre>
+<p>The 5-step pipeline: <strong>Load events → Rebuild state → Execute logic → Save events → Publish.</strong> Steps 4 and 5 connect directly to the CQRS read model from Topic 7.</p>
+</div>
+</div>
+</div>
+
+<!-- ═══════════════════ SECTION 7 ═══════════════════ -->
+<div class="section" id="s7">
+<h2><span class="num">07</span> Projections — 3 Views from the Same Events</h2>
+<p>This is where Event Sourcing gets really powerful. The <strong>same events</strong> feed <strong>multiple projections</strong>, each optimized for a different use case:</p>
+
+<div class="tab-group" id="proj">
+<div class="tab-bar">
+<button class="tab-btn active" onclick="showTab('proj',0)">ProductDetail (users)</button>
+<button class="tab-btn" onclick="showTab('proj',1)">PriceHistory (analytics)</button>
+<button class="tab-btn" onclick="showTab('proj',2)">RevenueForecast (finance)</button>
+</div>
+<div class="tab-panel active">
+<pre><code>// Projection 1: Product detail page (for users)
+public class ProductDetailProjection
+{
+    public async Task Handle(PriceChanged evt)
+    {
+        var view = await _readDb.ProductDetails
+            .FindAsync(evt.ProductId);
+        view.Price = evt.NewPrice;
+        await _readDb.SaveChangesAsync();
+    }
+}</code></pre>
+</div>
+<div class="tab-panel">
+<pre><code>// Projection 2: Price history chart (for analytics dashboard)
+public class PriceHistoryProjection
+{
+    public async Task Handle(PriceChanged evt)
+    {
+        _readDb.PriceHistory.Add(new PriceHistoryEntry
+        {
+            ProductId = evt.ProductId,
+            Price     = evt.NewPrice,
+            ChangedAt = evt.At,
+            Reason    = evt.Reason
+        });
+        await _readDb.SaveChangesAsync();
+    }
+}</code></pre>
+</div>
+<div class="tab-panel">
+<pre><code>// Projection 3: Revenue forecast (for finance team)
+public class RevenueForecastProjection
+{
+    public async Task Handle(PriceChanged evt)
+    {
+        // Update projected revenue based on new price × sales velocity
+        await RecalculateForecast(evt.ProductId, evt.NewPrice);
+    }
+}</code></pre>
+</div>
+</div>
+<div class="note-green note"><b>One PriceChanged event → three projections update independently.</b> Need a fourth projection six months later? Replay all events from the store → the new projection is fully populated with historical data. No data migration needed.</div>
+</div>
+
+<!-- ═══════════════════ SECTION 8 ═══════════════════ -->
+<div class="section" id="s8">
+<h2><span class="num">08</span> Snapshots — Performance Optimization</h2>
+<p>If a product has 10,000 events, replaying all of them every time is slow. The solution: <strong>snapshots</strong>.</p>
+<pre><code>public class ProductService
+{
+    public async Task&lt;Product&gt; LoadProductAsync(string productId)
+    {
+        var streamId = $"product-{productId}";
+
+        // Try to load latest snapshot first
+        var snapshot = await _store.GetSnapshotAsync(streamId);
+
+        if (snapshot != null)
+        {
+            // Load only events AFTER the snapshot
+            var newEvents = await _store.GetEventsAfterAsync(
+                streamId, snapshot.Version);
+            var product = new Product(snapshot.State);
+            product.ReplayEvents(newEvents);  // apply only new events
+            return product;
+        }
+
+        // No snapshot — replay everything
+        var allEvents = await _store.GetEventsAsync(streamId);
+        return new Product(allEvents);
+    }
+
+    // Save snapshot every N events
+    public async Task SaveIfNeeded(Product product, int currentVersion)
+    {
+        if (currentVersion % 100 == 0)  // snapshot every 100 events
+        {
+            await _store.SaveSnapshotAsync(
+                $"product-{product.Id}",
+                currentVersion,
+                product.GetState());
+        }
+    }
+}</code></pre>
+<p>Instead of replaying 10,000 events, load the snapshot at event 9,900 and replay only the last 100. The event store remains the <strong>source of truth</strong> — snapshots are purely a performance optimization.</p>
+</div>
+
+<!-- ═══════════════════ SECTION 9 ═══════════════════ -->
+<div class="section" id="s9">
+<h2><span class="num">09</span> Event Sourcing + CQRS — Full Architecture</h2>
+<div class="flow"><div class="flow-step">Admin</div><span class="flow-arrow">→</span><div class="flow-step" style="border-color:rgba(139,92,246,0.3);color:var(--accent2)">Command handler (validate + emit events)</div></div>
+<div class="flow"><span style="width:40px"></span><span class="flow-arrow">↓</span></div>
+<div class="flow"><div class="flow-step" style="border-color:rgba(139,92,246,0.3);color:var(--accent2)">Event store (append-only — source of truth)</div><span class="flow-arrow">→</span><div class="flow-step" style="border-color:rgba(251,191,36,0.3);color:var(--amber)">Event bus (Kafka / RabbitMQ)</div></div>
+<div class="flow"><span style="width:300px"></span><span class="flow-arrow">↓</span></div>
+<div class="flow"><div class="flow-step" style="border-color:rgba(52,211,153,0.3);color:var(--green)">Projection handlers (build denormalized views)</div><span class="flow-arrow">→</span><div class="flow-step" style="border-color:rgba(52,211,153,0.3);color:var(--green)">Read DB (Redis / Elasticsearch)</div></div>
+<div class="flow"><span style="width:340px"></span><span class="flow-arrow">↑ query</span></div>
+<div class="flow"><span style="width:340px"></span><div class="flow-step">User app</div></div>
+
+<div class="note"><b>Four key insights:</b><br>
+Event store = source of truth (never deleted)<br>
+Read DB = derived view (rebuildable from events at any time)<br>
+Add new projection? Replay all events → populated with history<br>
+Read DB corrupted? Replay all events → fully restored</div>
+
+<p><strong>The bridge from Topic 7:</strong> You intuited this during our CQRS session — when asked "how do you rebuild the read model?" you said "add Kafka to handle this." That's exactly Event Sourcing. Kafka's append-only log stores every event, and replaying them rebuilds any view.</p>
+</div>
+
+<!-- ═══════════════════ SECTION 10 ═══════════════════ -->
+<div class="section" id="s10">
+<h2><span class="num">10</span> Event Schema Evolution (PriceChangedV2)</h2>
+<p>Once an event is stored, you <strong>can't change its structure</strong> — it's an immutable fact. If you need to add a field to <code>PriceChanged</code>, create a new event type:</p>
+
+<div class="tab-group" id="schema">
+<div class="tab-bar">
+<button class="tab-btn active" onclick="showTab('schema',0)">The V1 → V2 problem</button>
+<button class="tab-btn" onclick="showTab('schema',1)">Handling both in Apply</button>
+</div>
+<div class="tab-panel active">
+<pre><code>// V1 — original event (already stored in production)
+public record PriceChanged(
+    string ProductId, decimal OldPrice, decimal NewPrice,
+    string Reason, DateTime At);
+
+// V2 — new version with additional field
+public record PriceChangedV2(
+    string ProductId, decimal OldPrice, decimal NewPrice,
+    string Reason, DateTime At,
+    string ChangedBy);  // NEW: who made the change</code></pre>
+<p>V1 events already exist in the store. You can't go back and add <code>ChangedBy</code> to them. So new code must handle <strong>both versions</strong>.</p>
+</div>
+<div class="tab-panel">
+<pre><code>// Apply must handle BOTH versions
+private void Apply(object evt)
+{
+    switch (evt)
+    {
+        case ProductCreated e:
+            Id = e.ProductId; Name = e.Name;
+            Price = e.Price; IsActive = true;
+            break;
+
+        case PriceChanged e:       // V1 — old events
+            Price = e.NewPrice;
+            break;
+
+        case PriceChangedV2 e:     // V2 — new events
+            Price = e.NewPrice;
+            // ChangedBy available for audit projections
+            break;
+
+        case ProductDeactivated e:
+            IsActive = false;
+            break;
+    }
+}</code></pre>
+<p>Both V1 and V2 produce the same core state change (<code>Price = e.NewPrice</code>). V2 carries additional data that new projections can use.</p>
+</div>
+</div>
+<div class="note-red note"><b>This is the hardest part of Event Sourcing.</b> Over time, managing multiple event versions across hundreds of event types adds real complexity. This is why event sourcing should only be used where its benefits clearly outweigh this cost.</div>
+</div>
+
+<!-- ═══════════════════ SECTION 11 ═══════════════════ -->
+<div class="section" id="s11">
+<h2><span class="num">11</span> When to Use / NOT Use Event Sourcing</h2>
+<table>
+<tr><th style="color:var(--green)">Use Event Sourcing when</th><th style="color:var(--red)">Don't use when</th></tr>
+<tr><td>Audit trail required (finance, healthcare, legal)</td><td>Simple CRUD — adds massive complexity</td></tr>
+<tr><td>You need "what was the state at time X?"</td><td>Team is small and doesn't need the power</td></tr>
+<tr><td>Multiple projections from the same data</td><td>Events would be trivial (just "FieldUpdated")</td></tr>
+<tr><td>Debugging requires replaying what happened</td><td>Event schema changes are hard to manage</td></tr>
+<tr><td>Pairing with CQRS for rebuild capability</td><td>Most microservices — this is an advanced pattern</td></tr>
+</table>
+<div class="note-warn note"><b>The honest truth:</b> Event Sourcing is powerful but complex. Most services should use a regular database with CQRS. Reserve event sourcing for domains where <strong>history is a business requirement</strong> — financial transactions, medical records, audit-heavy systems, or systems where you genuinely need to rebuild views from scratch.</div>
+</div>
+
+<!-- ═══════════════════ SECTION 12 ═══════════════════ -->
+<div class="section" id="s12">
+<h2><span class="num">12</span> Interview Q&amp;A</h2>
+
+<div class="qa"><div class="qa-q">Q: What is Event Sourcing?</div><div class="qa-a">Instead of storing current state, you store an append-only log of every event that changed the entity. Current state is derived by replaying those events in order. The event store is the single source of truth. This gives you a complete audit trail, the ability to rebuild any projection from history, and time-travel debugging.</div></div>
+<div class="qa"><div class="qa-q">Q: How does Event Sourcing relate to CQRS?</div><div class="qa-a">They're independent patterns but pair naturally. CQRS splits reads and writes into separate models. Event sourcing provides the write side — events are appended to the store. Those events feed projection handlers that build the read models. The key benefit of combining them: if you need a new read model or the existing one is corrupted, you replay all events from the store to rebuild it.</div></div>
+<div class="qa"><div class="qa-q">Q: What is a projection?</div><div class="qa-a">A read-optimized view built by processing events. The same events can feed multiple projections — one for a product detail page, another for an analytics dashboard, another for a search index. Each projection is independently rebuildable by replaying events from the event store.</div></div>
+<div class="qa"><div class="qa-q">Q: What is a snapshot and why do you need it?</div><div class="qa-a">When an entity has thousands of events, replaying all of them on every load is slow. A snapshot captures the entity's state at a specific event version. To load, you read the snapshot then replay only events after it. It's a performance optimization — the event store remains the source of truth.</div></div>
+<div class="qa"><div class="qa-q">Q: What's the hardest part of Event Sourcing?</div><div class="qa-a">Event schema evolution. Once an event is stored, you can't change its structure — it's an immutable fact. If you need to add a field to PriceChanged, you create PriceChangedV2 and handle both versions in your Apply method. Over time, managing multiple event versions adds complexity. This is why event sourcing should only be used where its benefits outweigh this cost.</div></div>
+</div>
+
+<div class="footer">Event Sourcing — Microservices Study Guide · Topic 08 · C# / .NET · Interview Prep · 2026</div>
+</div>
+
+<script>
+function showTab(g,i){var p=document.getElementById(g).querySelectorAll('.tab-panel'),b=document.getElementById(g).querySelectorAll('.tab-btn');p.forEach(function(x,j){x.classList.toggle('active',j===i)});b.forEach(function(x,j){x.classList.remove('active');if(j===i)x.classList.add('active')})}
+</script>
+</body>
+</html>

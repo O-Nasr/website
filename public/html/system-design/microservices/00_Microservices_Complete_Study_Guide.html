@@ -1,0 +1,1599 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Microservices Architecture — Complete Study Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0b0d11;--surface:#12151c;--surface2:#1a1e28;--surface3:#222736;--border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.12);--accent:#6c8cff;--accent2:#8b5cf6;--green:#34d399;--amber:#fbbf24;--red:#f87171;--teal:#2dd4bf;--coral:#fb923c;--pink:#f472b6;--text:#e2e8f0;--muted:#8892a4;--code-bg:#090b10;--radius:10px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font-size:15px;line-height:1.75;-webkit-font-smoothing:antialiased}
+.page{max-width:920px;margin:0 auto;padding:0 28px 100px}
+.hero{padding:64px 28px 48px;max-width:920px;margin:0 auto;border-bottom:1px solid var(--border);position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-100px;right:-60px;width:400px;height:400px;background:radial-gradient(circle,rgba(108,140,255,0.1) 0%,transparent 70%);pointer-events:none}
+.hero-tag{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:500;color:var(--accent);background:rgba(108,140,255,0.08);border:1px solid rgba(108,140,255,0.2);padding:4px 14px;border-radius:20px;letter-spacing:0.08em;margin-bottom:16px}
+.hero h1{font-size:clamp(28px,4.5vw,46px);font-weight:700;line-height:1.15;letter-spacing:-0.03em;margin-bottom:12px;background:linear-gradient(135deg,#e2e8f0 0%,#6c8cff 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero-sub{font-size:16px;color:var(--muted);line-height:1.6;max-width:620px}
+.toc{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px 28px;margin:36px 0}
+.toc h3{font-size:13px;font-weight:600;color:var(--accent);margin-bottom:14px;text-transform:uppercase;letter-spacing:0.06em}
+.toc-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px 24px}
+.toc a{font-size:13px;color:var(--muted);text-decoration:none;padding:5px 0;display:flex;align-items:center;gap:8px;transition:color 0.15s}
+.toc a:hover{color:var(--accent)}
+.toc-num{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent);background:rgba(108,140,255,0.08);padding:2px 7px;border-radius:4px;font-weight:500}
+.section{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:32px 32px;margin-top:32px}
+.section-num{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--accent);background:rgba(108,140,255,0.1);padding:3px 10px;border-radius:6px;font-weight:500;display:inline-block;margin-bottom:10px}
+.section-phase{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px}
+.section h2{font-size:22px;font-weight:700;color:#fff;margin-bottom:20px;letter-spacing:-0.02em}
+.section h3{font-size:16px;font-weight:600;color:var(--accent);margin:24px 0 12px;padding-top:16px;border-top:1px solid var(--border)}
+.section h3:first-of-type{border-top:none;padding-top:0}
+p{margin-bottom:14px;color:var(--text)}
+strong{color:#fff}
+.key{color:var(--green);font-weight:500}
+.warn{color:var(--amber);font-weight:500}
+.bad{color:var(--red);font-weight:500}
+pre{background:var(--code-bg);border:1px solid var(--border);border-radius:10px;padding:16px 20px;overflow-x:auto;margin:14px 0;font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.7;color:#c9d1d9}
+code{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent);background:rgba(108,140,255,0.08);padding:2px 6px;border-radius:4px}
+pre code{background:none;padding:0;color:inherit}
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13px}
+th{background:var(--surface2);color:var(--accent);font-weight:600;text-align:left;padding:10px 14px;border:1px solid var(--border)}
+td{padding:9px 14px;border:1px solid var(--border);color:var(--text)}
+tr:nth-child(even) td{background:rgba(255,255,255,0.015)}
+.note{background:rgba(108,140,255,0.06);border:1px solid rgba(108,140,255,0.15);border-radius:10px;padding:14px 18px;margin:14px 0;font-size:13px;line-height:1.7}
+.note-title{font-weight:600;color:var(--accent);margin-bottom:4px;font-size:13px}
+.note-warn{background:rgba(251,191,36,0.06);border-color:rgba(251,191,36,0.15)}
+.note-warn .note-title{color:var(--amber)}
+.note-red{background:rgba(248,113,113,0.06);border-color:rgba(248,113,113,0.15)}
+.note-red .note-title{color:var(--red)}
+.note-green{background:rgba(52,211,153,0.06);border-color:rgba(52,211,153,0.15)}
+.note-green .note-title{color:var(--green)}
+.qa{background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:16px 20px;margin:10px 0}
+.qa-q{font-weight:600;color:#fff;margin-bottom:6px;font-size:14px}
+.qa-a{color:var(--muted);font-size:13px;line-height:1.7}
+.diagram{margin:18px 0;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:20px;overflow-x:auto}
+.diagram svg{display:block;margin:0 auto}
+.diagram svg text{font-family:'Outfit',sans-serif}
+.diagram svg .th{font-size:14px;font-weight:500;fill:var(--text)}
+.diagram svg .ts{font-size:12px;fill:var(--muted)}
+.diagram svg .box rect{fill:var(--surface2);stroke:var(--border2)}
+.diagram svg .box text{fill:var(--text)}
+.flow{display:flex;align-items:center;gap:8px;margin:10px 0;flex-wrap:wrap}
+.flow-step{background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:8px 14px;font-size:13px;color:var(--text);font-weight:500}
+.flow-arrow{color:var(--muted);font-size:16px}
+.tag{display:inline-block;font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px;margin:2px 4px 2px 0}
+.tag-blue{background:rgba(108,140,255,0.1);color:var(--accent);border:1px solid rgba(108,140,255,0.2)}
+.tag-green{background:rgba(52,211,153,0.1);color:var(--green);border:1px solid rgba(52,211,153,0.2)}
+.tag-amber{background:rgba(251,191,36,0.1);color:var(--amber);border:1px solid rgba(251,191,36,0.2)}
+.cmp-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0}
+.cmp-card{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px}
+.cmp-card h4{font-size:14px;font-weight:600;margin-bottom:8px;color:var(--text)}
+.cmp-card p{font-size:13px;color:var(--muted);margin:0}
+ul{padding-left:20px;margin:8px 0 14px}
+li{margin:4px 0;font-size:14px;color:var(--text)}
+.footer{text-align:center;padding:40px 0 20px;font-size:12px;color:var(--muted);border-top:1px solid var(--border);margin-top:48px}
+@media(max-width:640px){.page{padding:0 16px 60px}.section{padding:20px 18px}.toc-grid{grid-template-columns:1fr}.cmp-grid{grid-template-columns:1fr}.hero{padding:40px 16px 32px}}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-tag">INTERVIEW PREP · SYSTEM DESIGN</div>
+  <h1>Microservices Architecture<br>Complete Study Guide</h1>
+  <p class="hero-sub">11 topics across 4 phases — from monolith decomposition to deployment strategies. Built for mid-to-senior software engineering interviews with C#/.NET examples. Complete conversation depth with all diagrams, code, and interview Q&amp;A.</p>
+</div>
+
+<div class="page">
+
+<div class="toc">
+  <h3>Table of Contents</h3>
+  <div class="toc-grid">
+    <a href="#t1"><span class="toc-num">01</span> Monolith vs Microservices</a>
+    <a href="#t7"><span class="toc-num">07</span> Database per Service + CQRS</a>
+    <a href="#t2"><span class="toc-num">02</span> Sync vs Async Communication</a>
+    <a href="#t8"><span class="toc-num">08</span> Event Sourcing</a>
+    <a href="#t3"><span class="toc-num">03</span> API Gateway + BFF</a>
+    <a href="#t9"><span class="toc-num">09</span> Observability</a>
+    <a href="#t4"><span class="toc-num">04</span> Circuit Breaker, Retry, Timeout</a>
+    <a href="#t10"><span class="toc-num">10</span> Security Across Services</a>
+    <a href="#t5"><span class="toc-num">05</span> Service Discovery</a>
+    <a href="#t11"><span class="toc-num">11</span> Deployment &amp; Containers</a>
+    <a href="#t6"><span class="toc-num">06</span> Saga Pattern</a>
+    <a href="#cheat"><span class="toc-num">★</span> Master Interview Cheat Sheet</a>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════ TOPIC 1 ════════════════════════════════════════════ -->
+<div class="section" id="t1">
+<div class="section-phase">Phase 1 — Foundation</div>
+<span class="section-num">TOPIC 01</span>
+<h2>Monolith vs Microservices</h2>
+
+<h3>The Core Tradeoff</h3>
+<p>Microservices are <strong>not better</strong> than monoliths. They're a tradeoff: you gain independence and scale, you pay with complexity and distributed systems problems. Every interview answer must reflect this balance.</p>
+
+<div class="cmp-grid">
+<div class="cmp-card"><h4>Monolith</h4><p>One deployable unit. All modules share the same process, memory, and database. Deploy everything together. Simple to develop, test, and debug. A single stack trace shows the full chain.</p></div>
+<div class="cmp-card"><h4>Microservices</h4><p>Many small, independent services. Each owns its data, deploys separately, communicates over a network. Complex but independently scalable. Stack traces end at HTTP boundaries.</p></div>
+</div>
+
+<div class="diagram">
+<svg width="100%" viewBox="0 0 680 260">
+<defs><marker id="a1" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+<text class="ts" x="155" y="22" text-anchor="middle">Monolith — one process</text>
+<text class="ts" x="500" y="22" text-anchor="middle">Microservices — separate processes</text>
+<line x1="320" y1="10" x2="320" y2="245" stroke="rgba(255,255,255,0.06)" stroke-width="0.5" stroke-dasharray="4 3"/>
+<rect x="40" y="40" width="250" height="190" rx="14" fill="rgba(139,92,246,0.06)" stroke="rgba(139,92,246,0.15)" stroke-width="0.5"/>
+<text class="th" x="165" y="66" text-anchor="middle">Single deployable</text>
+<rect x="60" y="82" width="100" height="36" rx="6" fill="var(--surface2)" stroke="var(--border2)" stroke-width="0.5"/>
+<text class="ts" x="110" y="104" text-anchor="middle">Users</text>
+<rect x="172" y="82" width="100" height="36" rx="6" fill="var(--surface2)" stroke="var(--border2)" stroke-width="0.5"/>
+<text class="ts" x="222" y="104" text-anchor="middle">Orders</text>
+<rect x="60" y="130" width="100" height="36" rx="6" fill="var(--surface2)" stroke="var(--border2)" stroke-width="0.5"/>
+<text class="ts" x="110" y="152" text-anchor="middle">Payments</text>
+<rect x="172" y="130" width="100" height="36" rx="6" fill="var(--surface2)" stroke="var(--border2)" stroke-width="0.5"/>
+<text class="ts" x="222" y="152" text-anchor="middle">Inventory</text>
+<rect x="100" y="180" width="130" height="36" rx="6" fill="rgba(251,191,36,0.08)" stroke="rgba(251,191,36,0.15)" stroke-width="0.5"/>
+<text class="ts" x="165" y="202" text-anchor="middle">One shared DB</text>
+<rect x="370" y="42" width="120" height="50" rx="8" fill="rgba(52,211,153,0.06)" stroke="rgba(52,211,153,0.15)" stroke-width="0.5"/>
+<text class="ts" x="430" y="62" text-anchor="middle">Users svc</text>
+<text class="ts" x="430" y="80" text-anchor="middle" style="font-size:10px;fill:var(--muted)">own DB</text>
+<rect x="520" y="42" width="120" height="50" rx="8" fill="rgba(52,211,153,0.06)" stroke="rgba(52,211,153,0.15)" stroke-width="0.5"/>
+<text class="ts" x="580" y="62" text-anchor="middle">Orders svc</text>
+<text class="ts" x="580" y="80" text-anchor="middle" style="font-size:10px;fill:var(--muted)">own DB</text>
+<rect x="370" y="112" width="120" height="50" rx="8" fill="rgba(52,211,153,0.06)" stroke="rgba(52,211,153,0.15)" stroke-width="0.5"/>
+<text class="ts" x="430" y="132" text-anchor="middle">Payments svc</text>
+<text class="ts" x="430" y="150" text-anchor="middle" style="font-size:10px;fill:var(--muted)">own DB</text>
+<rect x="520" y="112" width="120" height="50" rx="8" fill="rgba(52,211,153,0.06)" stroke="rgba(52,211,153,0.15)" stroke-width="0.5"/>
+<text class="ts" x="580" y="132" text-anchor="middle">Inventory svc</text>
+<text class="ts" x="580" y="150" text-anchor="middle" style="font-size:10px;fill:var(--muted)">own DB</text>
+<line x1="490" y1="67" x2="518" y2="67" stroke="rgba(255,255,255,0.12)" stroke-width="0.5" marker-end="url(#a1)"/>
+<line x1="430" y1="92" x2="430" y2="110" stroke="rgba(255,255,255,0.12)" stroke-width="0.5" marker-end="url(#a1)"/>
+<text class="ts" x="500" y="196" text-anchor="middle">Each deploys independently</text>
+<text class="ts" x="500" y="214" text-anchor="middle">Each picks its own DB tech</text>
+<text class="ts" x="500" y="232" text-anchor="middle">Communicate over network (HTTP/events)</text>
+</svg>
+</div>
+
+<h3>When to Break the Monolith</h3>
+<p>Don't break it preemptively. Break when you hit <strong>concrete pain</strong>:</p>
+<ul>
+<li><strong>Deployment bottleneck</strong> — one team's change blocks everyone else's release. 3 teams want to deploy but must coordinate because it's one binary.</li>
+<li><strong>Scaling mismatch</strong> — search gets 100× more traffic than admin, but you scale both together because they're the same process.</li>
+<li><strong>Technology divergence</strong> — ML team needs Python, core team uses C#, mobile backend needs Node. One monolith locks you to one stack.</li>
+<li><strong>Team ownership</strong> — at 200 engineers, nobody knows who owns what. Services give clear boundaries: the Orders team deploys the Orders service.</li>
+</ul>
+
+<div class="note note-green">
+<div class="note-title">Martin Fowler's MonolithFirst Pattern</div>
+Start with a well-structured monolith (modular monolith). Migrate to services when you hit concrete pain. A distributed monolith — services that must deploy together, share a database, or can't function independently — is the worst of both worlds.
+</div>
+
+<h3>Decomposition Strategy 1: By Business Domain (DDD)</h3>
+<p>The most important strategy. Split by <strong>business capability</strong>, not by technical layer.</p>
+
+<div class="diagram">
+<svg width="100%" viewBox="0 0 680 230">
+<text class="ts" x="155" y="18" text-anchor="middle">Technical split (wrong)</text>
+<text class="ts" x="500" y="18" text-anchor="middle">Business domain split (right)</text>
+<line x1="320" y1="10" x2="320" y2="220" stroke="rgba(255,255,255,0.06)" stroke-width="0.5" stroke-dasharray="4 3"/>
+<rect x="60" y="34" width="180" height="40" rx="8" fill="rgba(248,113,113,0.06)" stroke="rgba(248,113,113,0.15)" stroke-width="0.5"/>
+<text class="ts" x="150" y="58" text-anchor="middle">UI service (all screens)</text>
+<rect x="60" y="86" width="180" height="40" rx="8" fill="rgba(248,113,113,0.06)" stroke="rgba(248,113,113,0.15)" stroke-width="0.5"/>
+<text class="ts" x="150" y="110" text-anchor="middle">API service (all controllers)</text>
+<rect x="60" y="138" width="180" height="40" rx="8" fill="rgba(248,113,113,0.06)" stroke="rgba(248,113,113,0.15)" stroke-width="0.5"/>
+<text class="ts" x="150" y="162" text-anchor="middle">DB service (all tables)</text>
+<text class="ts" x="150" y="200" text-anchor="middle" style="fill:var(--red)">Every feature touches all 3</text>
+<rect x="370" y="34" width="130" height="40" rx="8" fill="rgba(52,211,153,0.06)" stroke="rgba(52,211,153,0.15)" stroke-width="0.5"/>
+<text class="ts" x="435" y="58" text-anchor="middle">Orders service</text>
+<rect x="520" y="34" width="130" height="40" rx="8" fill="rgba(52,211,153,0.06)" stroke="rgba(52,211,153,0.15)" stroke-width="0.5"/>
+<text class="ts" x="585" y="58" text-anchor="middle">Payments service</text>
+<rect x="370" y="86" width="130" height="40" rx="8" fill="rgba(52,211,153,0.06)" stroke="rgba(52,211,153,0.15)" stroke-width="0.5"/>
+<text class="ts" x="435" y="110" text-anchor="middle">Users service</text>
+<rect x="520" y="86" width="130" height="40" rx="8" fill="rgba(52,211,153,0.06)" stroke="rgba(52,211,153,0.15)" stroke-width="0.5"/>
+<text class="ts" x="585" y="110" text-anchor="middle">Inventory service</text>
+<text class="ts" x="500" y="156" text-anchor="middle" style="fill:var(--green)">Each owns UI + logic + data</text>
+<text class="ts" x="500" y="176" text-anchor="middle" style="fill:var(--green)">Feature change = one service</text>
+</svg>
+</div>
+
+<p>The technical split gives you a distributed monolith — every feature change still touches all 3 services. The business domain split means "add a discount to orders" lives entirely inside the Orders service.</p>
+
+<h3>What is DDD?</h3>
+<p><strong>Domain-Driven Design</strong> structures software around how the business actually works, not how the database is structured. Three key concepts:</p>
+<ul>
+<li><strong>Domain</strong> — the problem your business solves (e-commerce)</li>
+<li><strong>Subdomain</strong> — a distinct slice of that domain (Orders, Payments, Inventory, Shipping)</li>
+<li><strong>Bounded Context</strong> — the explicit boundary where a domain model applies</li>
+</ul>
+
+<h3>The Bounded Context — Core Concept</h3>
+<p>The word "Order" means something <strong>different</strong> in different parts of the business:</p>
+
+<div class="diagram">
+<svg width="100%" viewBox="0 0 680 200">
+<rect x="20" y="20" width="150" height="160" rx="10" fill="rgba(52,211,153,0.06)" stroke="rgba(52,211,153,0.15)" stroke-width="0.5"/>
+<text class="th" x="95" y="44" text-anchor="middle">Orders context</text>
+<text class="ts" x="95" y="70" text-anchor="middle">Order = items,</text>
+<text class="ts" x="95" y="88" text-anchor="middle">quantity, status,</text>
+<text class="ts" x="95" y="106" text-anchor="middle">customer info</text>
+<rect x="188" y="20" width="150" height="160" rx="10" fill="rgba(251,191,36,0.06)" stroke="rgba(251,191,36,0.15)" stroke-width="0.5"/>
+<text class="th" x="263" y="44" text-anchor="middle">Payments context</text>
+<text class="ts" x="263" y="70" text-anchor="middle">Order = amount,</text>
+<text class="ts" x="263" y="88" text-anchor="middle">payment method,</text>
+<text class="ts" x="263" y="106" text-anchor="middle">transaction ID</text>
+<rect x="356" y="20" width="150" height="160" rx="10" fill="rgba(139,92,246,0.06)" stroke="rgba(139,92,246,0.15)" stroke-width="0.5"/>
+<text class="th" x="431" y="44" text-anchor="middle">Shipping context</text>
+<text class="ts" x="431" y="70" text-anchor="middle">Order = weight,</text>
+<text class="ts" x="431" y="88" text-anchor="middle">dimensions,</text>
+<text class="ts" x="431" y="106" text-anchor="middle">address, carrier</text>
+<rect x="524" y="20" width="140" height="160" rx="10" fill="rgba(244,114,182,0.06)" stroke="rgba(244,114,182,0.15)" stroke-width="0.5"/>
+<text class="th" x="594" y="44" text-anchor="middle">Analytics context</text>
+<text class="ts" x="594" y="70" text-anchor="middle">Order = revenue,</text>
+<text class="ts" x="594" y="88" text-anchor="middle">conversion data,</text>
+<text class="ts" x="594" y="106" text-anchor="middle">funnel step</text>
+<text class="ts" x="340" y="156" text-anchor="middle">Same word, 4 different models — each context owns its definition</text>
+</svg>
+</div>
+
+<p>Each service owns its bounded context and doesn't share its internal model. Services communicate by translating at the boundary via events or API contracts — never by sharing internal domain objects or databases.</p>
+
+<h3>How to Decide Service Boundaries</h3>
+<p>Follow three signals:</p>
+<ul>
+<li><strong>Team ownership</strong> — who changes the code together?</li>
+<li><strong>Change frequency</strong> — what changes at the same rate?</li>
+<li><strong>Data affinity</strong> — what data is tightly coupled?</li>
+</ul>
+<p>If two modules are always deployed together, changed by the same team, and share all their tables — they're probably one service. If they change independently, scale differently, or need different tech — they're ready to split.</p>
+
+<h3>Entity-Based vs Capability-Based Cut</h3>
+<pre><code>❌  Entity-based cut               ✅  Capability-based cut
+─────────────────────              ──────────────────────────
+UserService                        Identity service
+  → manages User table             → auth, sessions, tokens
+
+ProductService                     Catalogue service
+  → manages Product table          → search, browse, pricing
+
+OrderService                       Ordering service
+  → manages Order table            → cart, checkout, order lifecycle</code></pre>
+<p>The entity-based cut sounds clean but is a trap. Every feature that crosses entities requires network calls between services. The capability-based cut keeps related operations together.</p>
+
+<h3>Decomposition Strategy 2: By Subdomain (Fine-Grained)</h3>
+<p>When a bounded context grows too large — 8 subdomains, 3 teams, 200K lines of code — it's time to split further. For example, the Orders context might split into:</p>
+<ul>
+<li><strong>Cart Service</strong> — add, remove, pricing (high read traffic)</li>
+<li><strong>Checkout Service</strong> — validate, confirm (transactional, complex)</li>
+<li><strong>Order Lifecycle Service</strong> — track, cancel, modify (long-running)</li>
+<li><strong>Returns Service</strong> — refund, restock (different team, different regulations)</li>
+</ul>
+
+<h3>The "Right Size" Question</h3>
+<p>A service should do <strong>one business capability</strong> end to end. Not one function, not one table — one capability.</p>
+<pre><code>Too big:   OrdersAndPaymentsAndInventoryService   ← just a monolith
+Just right: OrdersService (create, read, cancel, history)
+Too small: CreateOrderService + CancelOrderService  ← chatty, fragile</code></pre>
+
+<h3>Data Sharing Between Services</h3>
+<p>When two services need the same data, they each keep <strong>their own copy</strong>:</p>
+<ul>
+<li>Orders stores product name and price at time of order</li>
+<li>Inventory stores stock levels and warehouse location</li>
+<li>They sync via events — <code>ProductPriceUpdated</code> published by Catalogue, consumed by whoever cares</li>
+</ul>
+<p>Data duplication is intentional — it buys independence.</p>
+
+<div class="qa">
+<div class="qa-q">Q: "Would you start a new project with microservices?"</div>
+<div class="qa-a">No, usually not. Start with a well-structured modular monolith. Migrate when you hit concrete pain: scaling mismatch, deployment bottleneck, or team growth. This is Martin Fowler's MonolithFirst pattern.</div>
+</div>
+<div class="qa">
+<div class="qa-q">Q: "What is a bounded context?"</div>
+<div class="qa-a">A DDD term — the explicit boundary within which a domain model applies. Inside, terms are consistent. "Order" means one thing inside Orders service and something different inside Payments. Each service owns its bounded context and doesn't share its internal model.</div>
+</div>
+<div class="qa">
+<div class="qa-q">Q: "What's the biggest challenge in microservices?"</div>
+<div class="qa-a">Data consistency. In a monolith, one transaction wraps everything. In microservices, you handle partial failures, eventual consistency, and compensating transactions manually (Saga pattern).</div>
+</div>
+<div class="qa">
+<div class="qa-q">Q: "What's a distributed monolith?"</div>
+<div class="qa-a">A system that looks like microservices but behaves like a monolith — services must deploy together, share a database, or one can't function without the other. All the operational complexity, none of the independence benefits.</div>
+</div>
+<div class="qa">
+<div class="qa-q">Q: "What happens when two services need the same data?"</div>
+<div class="qa-a">They each keep their own copy. The Orders service stores what it needs about products (name, price at time of order). Sync via events — ProductPriceUpdated published by Catalogue, consumed by whoever cares. Duplication is intentional — it buys independence.</div>
+</div>
+</div>
+
+<!-- ════════════════════════════════════════════ TOPIC 2 ════════════════════════════════════════════ -->
+<div class="section" id="t2">
+<div class="section-phase">Phase 1 — Foundation</div>
+<span class="section-num">TOPIC 02</span>
+<h2>Inter-Service Communication — Sync vs Async</h2>
+
+<h3>The Core Problem</h3>
+<p>In a monolith, calling another module is just a function call — no network, no failure modes. In microservices, that same call crosses a network — it can be slow, fail, time out, or the other service might be down. You must make a conscious choice: how should these services talk?</p>
+
+<div class="diagram">
+<svg width="100%" viewBox="0 0 680 170">
+<text class="ts" x="170" y="18" text-anchor="middle">Synchronous</text>
+<text class="ts" x="510" y="18" text-anchor="middle">Asynchronous</text>
+<line x1="340" y1="10" x2="340" y2="160" stroke="rgba(255,255,255,0.06)" stroke-width="0.5" stroke-dasharray="4 3"/>
+<rect x="50" y="34" width="110" height="40" rx="8" fill="rgba(52,211,153,0.06)" stroke="rgba(52,211,153,0.15)" stroke-width="0.5"/>
+<text class="ts" x="105" y="58" text-anchor="middle">Orders</text>
+<rect x="200" y="34" width="110" height="40" rx="8" fill="rgba(139,92,246,0.06)" stroke="rgba(139,92,246,0.15)" stroke-width="0.5"/>
+<text class="ts" x="255" y="58" text-anchor="middle">Payments</text>
+<line x1="160" y1="48" x2="198" y2="48" stroke="rgba(52,211,153,0.3)" stroke-width="1" marker-end="url(#a1)"/>
+<text class="ts" x="180" y="42" text-anchor="middle" style="font-size:10px">request</text>
+<line x1="198" y1="62" x2="162" y2="62" stroke="rgba(139,92,246,0.3)" stroke-width="1" marker-end="url(#a1)"/>
+<text class="ts" x="180" y="78" text-anchor="middle" style="font-size:10px">response</text>
+<text class="ts" x="170" y="100" text-anchor="middle">Caller waits. Like a phone call.</text>
+<text class="ts" x="170" y="118" text-anchor="middle">Gets answer immediately.</text>
+<rect x="380" y="34" width="110" height="40" rx="8" fill="rgba(52,211,153,0.06)" stroke="rgba(52,211,153,0.15)" stroke-width="0.5"/>
+<text class="ts" x="435" y="58" text-anchor="middle">Orders</text>
+<rect x="530" y="34" width="110" height="40" rx="8" fill="rgba(251,191,36,0.06)" stroke="rgba(251,191,36,0.15)" stroke-width="0.5"/>
+<text class="ts" x="585" y="58" text-anchor="middle">Queue</text>
+<line x1="490" y1="54" x2="528" y2="54" stroke="rgba(251,191,36,0.3)" stroke-width="1" marker-end="url(#a1)"/>
+<text class="ts" x="509" y="46" text-anchor="middle" style="font-size:10px">event</text>
+<text class="ts" x="510" y="100" text-anchor="middle">Caller fires and forgets.</text>
+<text class="ts" x="510" y="118" text-anchor="middle">Like sending an email.</text>
+</svg>
+</div>
+
+<h3>Part 1 — Synchronous: REST vs gRPC</h3>
+
+<p><strong>REST</strong> uses HTTP verbs over plain HTTP/1.1. Human-readable JSON, universally supported, debuggable with curl or Postman.</p>
+
+<pre><code>// Orders service calling Payments via REST
+public class OrdersService
+{
+    private readonly HttpClient _http;
+
+    public async Task&lt;PaymentResult&gt; ChargeAsync(Order order)
+    {
+        var response = await _http.PostAsJsonAsync(
+            "http://payments-service/api/payments",
+            new { OrderId = order.Id, Amount = order.Total, Currency = "USD" }
+        );
+        response.EnsureSuccessStatusCode();
+        return await response.Content.ReadFromJsonAsync&lt;PaymentResult&gt;();
+    }
+}</code></pre>
+
+<p><strong>gRPC</strong> uses HTTP/2 and Protocol Buffers (binary). 5–10× faster, strict contract via <code>.proto</code> file, compiler catches contract mismatches.</p>
+
+<pre><code>// payments.proto — shared contract
+syntax = "proto3";
+service PaymentsService {
+  rpc ChargeOrder (ChargeRequest) returns (ChargeResponse);
+}
+message ChargeRequest {
+  string order_id  = 1;
+  double amount    = 2;
+  string currency  = 3;
+}</code></pre>
+
+<pre><code>// Orders service calling Payments via gRPC in C#
+public async Task&lt;ChargeResponse&gt; ChargeAsync(Order order)
+{
+    return await _client.ChargeOrderAsync(new ChargeRequest
+    {
+        OrderId  = order.Id,
+        Amount   = order.Total,
+        Currency = "USD"
+    });
+}</code></pre>
+
+<table>
+<tr><th>Aspect</th><th>REST</th><th>gRPC</th></tr>
+<tr><td>Protocol</td><td>HTTP/1.1 + JSON (text)</td><td>HTTP/2 + Protobuf (binary)</td></tr>
+<tr><td>Speed</td><td>Baseline</td><td>5–10× faster</td></tr>
+<tr><td>Contract</td><td>Loose (OpenAPI optional)</td><td>Strict (.proto, compiler-enforced)</td></tr>
+<tr><td>Browser support</td><td>Native</td><td>Needs grpc-web proxy</td></tr>
+<tr><td>Debuggability</td><td>Easy — curl, Postman</td><td>Hard — needs tooling</td></tr>
+<tr><td>Streaming</td><td>No</td><td>Yes — bidirectional</td></tr>
+<tr><td>Versioning</td><td>URL versioning (/v1/, /v2/)</td><td>Field numbers in .proto</td></tr>
+<tr><td>Best for</td><td>Public APIs, external clients</td><td>Internal service-to-service</td></tr>
+</table>
+
+<h3>Part 2 — Asynchronous: Message Queues</h3>
+<p>The caller publishes a message and moves on immediately. The consumer processes it in their own time. This is the backbone of truly independent microservices.</p>
+
+<h3>Kafka vs RabbitMQ</h3>
+<p><strong>RabbitMQ</strong> — message queue. Messages are pushed to consumers and deleted after acknowledged. Great for task distribution and work queues.</p>
+<p><strong>Kafka</strong> — event log. Events are written to an append-only log and consumers read at their own pace. Events are retained (days/weeks/forever). Multiple consumer groups can each read the full history independently.</p>
+
+<pre><code>RabbitMQ:  Orders → [Queue] → Payments reads it → message gone
+Kafka:     Orders → [Log]   → Payments reads it at offset 1042
+                             → Analytics reads it at offset 1042
+                             → Inventory reads it at offset 1042
+                             → All three independently, event preserved</code></pre>
+
+<h3>The Hybrid Pattern — Real-World Architecture</h3>
+<p>Real systems use both. The rule: <strong>sync when you need the answer NOW, async when you don't</strong>.</p>
+
+<pre><code>1. Client → API Gateway        [sync REST]     validate JWT
+2. Gateway → Orders service    [sync REST]     create order
+3. Orders → Inventory          [sync gRPC]     reserve stock (need confirmation NOW)
+4. Orders → Payments           [sync gRPC]     charge card (need success/fail NOW)
+5. Orders → Message Queue      [async event]   publish OrderPlaced
+6. Queue → Notifications       [async]         send email (don't need to wait)
+7. Queue → Analytics           [async]         log revenue event
+8. Queue → Loyalty service     [async]         award points</code></pre>
+
+<p>Steps 3-4 <strong>must</strong> be synchronous — you can't tell the customer "order placed" unless you've confirmed stock and payment. Steps 6-8 don't affect the customer's experience right now, so they go async.</p>
+
+<div class="note note-red">
+<div class="note-title">The Chaining Problem</div>
+If you chain 5 synchronous calls: total latency = sum of all hops. Availability compounds: 5 services at 99.9% each = 99.9%⁵ ≈ 99.5% overall. A downstream failure blocks everyone upstream.
+</div>
+
+<div class="qa">
+<div class="qa-q">Q: When would you use gRPC over REST?</div>
+<div class="qa-a">Internal high-frequency service-to-service calls where you control both ends. You get binary serialization, streaming, and strong typing from the .proto contract. REST is better for external APIs, public-facing endpoints, or anything a browser talks to directly.</div>
+</div>
+<div class="qa">
+<div class="qa-q">Q: What guarantees does a message queue give you?</div>
+<div class="qa-a">At-least-once delivery — a message will be delivered at least once, but may be duplicated on retries. Consumers must be idempotent — processing the same message twice produces the same result. Exactly-once is theoretically possible (Kafka) but expensive. Design for at-least-once.</div>
+</div>
+<div class="qa">
+<div class="qa-q">Q: What is eventual consistency?</div>
+<div class="qa-a">When you go async, different services will be temporarily out of sync. The email might be sent 200ms after the order is confirmed. The inventory count might lag. The system converges to the correct state, but not immediately. Acceptable for side effects — not for "has this payment been charged."</div>
+</div>
+</div>
+
+<!-- ════════════════════════════════════════════ TOPIC 3 ════════════════════════════════════════════ -->
+<div class="section" id="t3">
+<div class="section-phase">Phase 1 — Foundation</div>
+<span class="section-num">TOPIC 03</span>
+<h2>API Gateway + BFF Pattern</h2>
+
+<h3>The Problem Without a Gateway</h3>
+<p>Without a gateway, every client talks directly to every service. The mobile app needs to know 8 service URLs. Auth is implemented in every service. CORS is configured everywhere. With a gateway: one front door, one URL, routing + auth + rate limiting in one place.</p>
+
+<h3>Gateway Responsibilities</h3>
+<table>
+<tr><th>Responsibility</th><th>What It Does</th><th>Why at the Gateway</th></tr>
+<tr><td>Routing</td><td>Maps <code>/api/orders</code> → Orders service</td><td>Clients know one URL, not 20</td></tr>
+<tr><td>Authentication</td><td>Verifies JWT once before forwarding</td><td>Services don't re-verify tokens</td></tr>
+<tr><td>Rate Limiting</td><td>100 req/min per IP</td><td>Protects all services from abuse</td></tr>
+<tr><td>SSL Termination</td><td>HTTPS → HTTP internally</td><td>Services don't manage certificates</td></tr>
+<tr><td>Aggregation</td><td>Combine 3 service responses into 1</td><td>Mobile gets one call instead of three</td></tr>
+</table>
+
+<h3>YARP in .NET — Reverse Proxy</h3>
+<pre><code>// Program.cs
+builder.Services.AddReverseProxy()
+    .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
+app.MapReverseProxy();</code></pre>
+
+<pre><code>// appsettings.json — route table
+"Routes": {
+  "orders-route": {
+    "ClusterId": "orders-cluster",
+    "Match": { "Path": "/api/orders/{**catch-all}" }
+  }
+},
+"Clusters": {
+  "orders-cluster": {
+    "Destinations": {
+      "d1": { "Address": "http://orders-service:5001" }
+    }
+  }
+}</code></pre>
+
+<h3>Authentication at the Gateway</h3>
+<pre><code>// Gateway verifies JWT, stamps userId into header
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.Authority = "https://your-identity-server";
+        options.Audience  = "api-gateway";
+    });
+
+// YARP pipeline — inject X-User-Id header
+app.MapReverseProxy(proxyPipeline =>
+{
+    proxyPipeline.Use(async (context, next) =>
+    {
+        if (context.User.Identity?.IsAuthenticated == true)
+        {
+            var userId = context.User.FindFirst("sub")?.Value;
+            context.Request.Headers["X-User-Id"] = userId;
+        }
+        await next();
+    });
+});</code></pre>
+
+<pre><code>// Orders service — trusts the header, never touches a JWT
+[HttpPost]
+public async Task&lt;IActionResult&gt; PlaceOrder()
+{
+    var userId = Request.Headers["X-User-Id"].ToString();
+    // ... use userId directly
+}</code></pre>
+
+<h3>Rate Limiting</h3>
+<pre><code>builder.Services.AddRateLimiter(options =>
+{
+    options.AddFixedWindowLimiter("standard", opt =>
+    {
+        opt.PermitLimit = 100;
+        opt.Window = TimeSpan.FromMinutes(1);
+        opt.QueueLimit = 10;
+    });
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+});
+app.UseRateLimiter();</code></pre>
+
+<h3>Request Aggregation</h3>
+<p>A mobile app's home screen needs data from Users, Orders, and Inventory simultaneously. Without aggregation: 3 separate API calls. With aggregation at the gateway: 1 call, the gateway fans out internally and combines the responses.</p>
+
+<h3>The BFF Pattern (Backend for Frontend)</h3>
+<p>Different clients need different data shapes. Instead of one gateway serving all clients, create <strong>one dedicated gateway per client type</strong>:</p>
+<ul>
+<li><strong>Mobile BFF</strong> — compact payloads, fewer fields, optimized for bandwidth</li>
+<li><strong>Web BFF</strong> — rich aggregations, multiple data sources, detailed views</li>
+<li><strong>Partner API BFF</strong> — strict versioning, heavy throttling, webhooks</li>
+</ul>
+<p>Each BFF is typically owned by the frontend team that consumes it.</p>
+
+<h3>Two-Layer Architecture</h3>
+<p>In practice, most teams run a <strong>dedicated reverse proxy</strong> (YARP or Kong) as the pure infrastructure gateway, then an <strong>ASP.NET Core BFF</strong> behind it for aggregation logic. Two layers, two concerns.</p>
+
+<div class="qa">
+<div class="qa-q">Q: What's the difference between an API Gateway and a load balancer?</div>
+<div class="qa-a">A load balancer distributes traffic across instances of the same service — purely availability and throughput. A gateway operates at the application layer: understands routes, reads JWTs, applies business logic, transforms requests, aggregates across different services. You often have both — gateway does smart routing, LBs handle instance distribution behind it.</div>
+</div>
+<div class="qa">
+<div class="qa-q">Q: What are the risks of an API Gateway?</div>
+<div class="qa-a">Single point of failure — mitigate by running multiple instances behind a load balancer. Second risk: becoming a "God service" if too much business logic is added. A gateway should only do cross-cutting concerns — routing, auth, rate limiting. Never database calls or order processing logic.</div>
+</div>
+</div>
+
+<!-- ════════════════════════════════════════════ TOPIC 4 ════════════════════════════════════════════ -->
+<div class="section" id="t4">
+<div class="section-phase">Phase 2 — Resilience Patterns</div>
+<span class="section-num">TOPIC 04</span>
+<h2>Circuit Breaker, Retry &amp; Timeout</h2>
+
+<h3>The Cascading Failure Problem</h3>
+<p>Service A calls Service B. B is slow or dead. Without protection: threads in A pile up waiting → A runs out of resources → A dies → everything upstream dies too. One dead service takes down the whole system.</p>
+
+<div class="diagram">
+<svg width="100%" viewBox="0 0 680 180">
+<rect x="40" y="30" width="130" height="44" rx="8" fill="rgba(52,211,153,0.06)" stroke="rgba(52,211,153,0.15)" stroke-width="0.5"/>
+<text class="ts" x="105" y="56" text-anchor="middle">Orders (healthy)</text>
+<line x1="170" y1="52" x2="228" y2="52" stroke="rgba(255,255,255,0.15)" stroke-width="1" marker-end="url(#a1)"/>
+<rect x="230" y="30" width="130" height="44" rx="8" fill="rgba(52,211,153,0.06)" stroke="rgba(52,211,153,0.15)" stroke-width="0.5"/>
+<text class="ts" x="295" y="56" text-anchor="middle">Payments (healthy)</text>
+<line x1="360" y1="52" x2="418" y2="52" stroke="rgba(255,255,255,0.15)" stroke-width="1" marker-end="url(#a1)"/>
+<rect x="420" y="30" width="130" height="44" rx="8" fill="rgba(248,113,113,0.06)" stroke="rgba(248,113,113,0.15)" stroke-width="0.5"/>
+<text class="th" x="485" y="56" text-anchor="middle" style="fill:var(--red)">Stripe (down)</text>
+<text class="ts" x="340" y="108" text-anchor="middle">Payments waits for Stripe → threads pile up → Orders waits for Payments</text>
+<text class="ts" x="340" y="128" text-anchor="middle">→ Orders threads pile up → Gateway backs up → Users see 500 errors</text>
+<text class="ts" x="340" y="154" text-anchor="middle" style="fill:var(--red)">One external dependency took down the entire system</text>
+</svg>
+</div>
+
+<h3>The 3 States of a Circuit Breaker</h3>
+<pre><code>CLOSED ──(failure rate > 50% over 10 calls)──→ OPEN
+                                                  │
+                                          (wait 30 seconds)
+                                                  │
+CLOSED ←──(probe succeeds)── HALF-OPEN ──(probe fails)──→ OPEN</code></pre>
+
+<table>
+<tr><th>State</th><th>Behavior</th><th>Transition</th></tr>
+<tr><td><strong>Closed</strong></td><td>All calls go through. Failures counted in a sliding window.</td><td>→ Open when failure rate exceeds threshold (e.g., 50% of last 10 calls)</td></tr>
+<tr><td><strong>Open</strong></td><td>All calls fail immediately — no network call made. Returns fallback.</td><td>→ Half-Open after recovery timeout (e.g., 30 seconds)</td></tr>
+<tr><td><strong>Half-Open</strong></td><td>ONE probe request is allowed through to test.</td><td>→ Closed if probe succeeds. → Open if probe fails.</td></tr>
+</table>
+
+<h3>Timeout Pattern</h3>
+<p>Every outgoing call needs a timeout. Without it, a hung service means your thread waits forever.</p>
+<pre><code>// Bad — no timeout, thread hangs indefinitely
+var response = await _http.GetAsync("http://payments/api/charge");
+
+// Good — fail after 3 seconds
+var cts = new CancellationTokenSource(TimeSpan.FromSeconds(3));
+var response = await _http.GetAsync("http://payments/api/charge", cts.Token);</code></pre>
+
+<h3>Retry with Exponential Backoff + Jitter</h3>
+<p>Transient failures (network blip, temporary overload) often resolve themselves. Retry with increasing delays:</p>
+<pre><code>Attempt 1: immediate
+Attempt 2: wait 200ms + random(0-50ms)
+Attempt 3: wait 400ms + random(0-50ms)
+Attempt 4: wait 800ms + random(0-50ms)</code></pre>
+
+<p><strong>Why jitter?</strong> Without it, all instances retry at identical intervals — a synchronized storm that hits the recovering service at the same moment. Jitter spreads the load across time.</p>
+
+<div class="note note-red">
+<div class="note-title">What NOT to Retry</div>
+<code>400 Bad Request</code> — your payload is wrong, retrying won't fix it.<br>
+<code>401 Unauthorized</code> — your token is invalid.<br>
+<code>404 Not Found</code> — the resource doesn't exist.<br><br>
+<strong>Only retry:</strong> <code>503 Service Unavailable</code>, <code>429 Too Many Requests</code>, <code>504 Gateway Timeout</code>, network-level failures.
+</div>
+
+<h3>Polly — Full Implementation in .NET</h3>
+<pre><code>// Install: Microsoft.Extensions.Http.Resilience
+
+builder.Services
+    .AddHttpClient&lt;IPaymentsClient, PaymentsClient&gt;()
+    .AddResilienceHandler("payments-pipeline", builder =>
+    {
+        // Layer 1 — Timeout: fail any single call after 3 seconds
+        builder.AddTimeout(TimeSpan.FromSeconds(3));
+
+        // Layer 2 — Retry: up to 3 retries with exponential backoff + jitter
+        builder.AddRetry(new HttpRetryStrategyOptions
+        {
+            MaxRetryAttempts = 3,
+            Delay             = TimeSpan.FromMilliseconds(200),
+            BackoffType       = DelayBackoffType.Exponential,
+            UseJitter         = true,
+            ShouldHandle      = args => ValueTask.FromResult(
+                args.Outcome.Exception is HttpRequestException ||
+                args.Outcome.Result?.StatusCode
+                    is HttpStatusCode.ServiceUnavailable
+                    or HttpStatusCode.TooManyRequests
+            )
+        });
+
+        // Layer 3 — Circuit Breaker: open after 50% failure rate
+        builder.AddCircuitBreaker(new HttpCircuitBreakerStrategyOptions
+        {
+            FailureRatio          = 0.5,
+            SamplingDuration      = TimeSpan.FromSeconds(30),
+            MinimumThroughput     = 10,
+            BreakDuration         = TimeSpan.FromSeconds(30),
+            ShouldHandle          = args => ValueTask.FromResult(
+                args.Outcome.Exception is HttpRequestException ||
+                args.Outcome.Result?.StatusCode
+                    is HttpStatusCode.ServiceUnavailable
+                    or HttpStatusCode.InternalServerError
+            )
+        });
+    });</code></pre>
+
+<div class="note">
+<div class="note-title">Execution Order: Circuit Breaker → Retry → Timeout</div>
+Reading inside-out: the circuit breaker decides if a call is even attempted, the retry decides how many times, and the timeout limits each individual attempt.<br><br>
+<code>Circuit breaker open? → fail immediately, no network call</code><br>
+<code>Attempt 1 with 3s timeout → fails</code><br>
+<code>Retry: wait 200ms + jitter</code><br>
+<code>Attempt 2 with 3s timeout → fails</code><br>
+<code>Retry: wait 400ms + jitter</code><br>
+<code>Attempt 3 with 3s timeout → fails</code><br>
+<code>Failure recorded → circuit breaker checks failure rate</code>
+</div>
+
+<h3>Fallback — What to Return When Everything Fails</h3>
+<pre><code>public async Task&lt;PaymentResult&gt; ChargeAsync(PaymentRequest request)
+{
+    try
+    {
+        return await _paymentsClient.ChargeAsync(request);
+    }
+    catch (BrokenCircuitException)
+    {
+        // Circuit is open — Payments is known to be down
+        return PaymentResult.ServiceUnavailable(
+            "Payment processing is temporarily unavailable."
+        );
+    }
+    catch (TimeoutRejectedException)
+    {
+        return PaymentResult.TimedOut();
+    }
+}</code></pre>
+
+<h3>Bulkhead Pattern</h3>
+<p>Isolate thread pools per downstream dependency so one slow service can't consume all available threads. Named after ship bulkheads — watertight compartments that contain flooding. One compartment fills, the others survive.</p>
+
+<div class="qa">
+<div class="qa-q">Q: What is the difference between a circuit breaker and a timeout?</div>
+<div class="qa-a">A timeout limits how long you wait for a single call. A circuit breaker tracks the history of calls over time and stops making calls entirely when the service is clearly unhealthy — even before the timeout would trigger. They work together: timeouts generate the failures that the circuit breaker counts.</div>
+</div>
+<div class="qa">
+<div class="qa-q">Q: Why does retry need jitter?</div>
+<div class="qa-a">Without jitter, all service instances retry at identical intervals after a failure spike — a synchronized storm that hits the recovering service at the same moment. Jitter (random ±50ms) spreads the retry load across time, giving the service room to recover.</div>
+</div>
+</div>
+
+<!-- ════════════════════════════════════════════ TOPIC 5 ════════════════════════════════════════════ -->
+<div class="section" id="t5">
+<div class="section-phase">Phase 2 — Resilience Patterns</div>
+<span class="section-num">TOPIC 05</span>
+<h2>Service Discovery</h2>
+
+<h3>The Problem — Why Hardcoded URLs Break</h3>
+<p>In a monolith, you call another module in-process. In microservices, you need Service B's address. Hardcoding <code>http://192.168.1.45:5001</code> in config breaks in three ways:</p>
+<ul>
+<li><strong>Scaling</strong> — you spin up 3 Inventory instances, but config only knows one IP. Two instances sit idle.</li>
+<li><strong>Crashes</strong> — Inventory crashes, gets a new IP. Config still points to the dead address. All requests fail.</li>
+<li><strong>Deploys</strong> — new deployment gets a different IP. Nobody told the callers. Requests fail.</li>
+</ul>
+
+<h3>Two Discovery Models</h3>
+<table>
+<tr><th>Aspect</th><th>Client-Side Discovery</th><th>Server-Side Discovery</th></tr>
+<tr><td>Who picks the instance?</td><td>The caller queries registry, picks one</td><td>Load balancer / DNS picks for you</td></tr>
+<tr><td>How it works</td><td>Client gets full list of healthy IPs, applies round-robin</td><td>Client hits one stable DNS name, LB routes to healthy pod</td></tr>
+<tr><td>Examples</td><td>Netflix Ribbon + Eureka, gRPC built-in</td><td>Kubernetes Services, AWS ALB</td></tr>
+<tr><td>Pro</td><td>No extra network hop</td><td>Simple for developers — just use a DNS name</td></tr>
+<tr><td>Con</td><td>Every service needs discovery logic built in</td><td>Extra hop through load balancer</td></tr>
+</table>
+
+<h3>How Kubernetes Does It (Server-Side)</h3>
+<p>Your code just says <code>http://inventory-service:5001/api</code>. Kubernetes handles everything:</p>
+<ul>
+<li><strong>CoreDNS</strong> resolves "inventory-service" to a virtual ClusterIP (e.g., 10.96.0.15)</li>
+<li><strong>kube-proxy</strong> maintains iptables rules routing from ClusterIP to healthy pod IPs</li>
+<li><strong>Endpoints API</strong> auto-registers pods when they start</li>
+<li><strong>Readiness probes</strong> remove unhealthy pods from the routing pool</li>
+</ul>
+
+<pre><code>// In C# — nothing special! Just use the service name
+builder.Services.AddHttpClient("Inventory", client =>
+{
+    client.BaseAddress = new Uri("http://inventory-service:5001");
+});
+
+// Kubernetes DNS resolves "inventory-service" automatically</code></pre>
+
+<h3>Without Kubernetes — Consul</h3>
+<p>On bare metal, VMs, or Docker Compose, use a dedicated registry. The service discovers its <strong>own address dynamically</strong> at startup (not hardcoded):</p>
+
+<pre><code>public async Task StartAsync(CancellationToken ct)
+{
+    var address = Environment.GetEnvironmentVariable("HOST_IP")
+                  ?? GetLocalIPAddress();
+    var port = int.Parse(Environment.GetEnvironmentVariable("PORT") ?? "5001");
+
+    await _consul.Agent.ServiceRegister(new AgentServiceRegistration
+    {
+        ID = $"inventory-{Guid.NewGuid()}",
+        Name = "inventory-service",
+        Address = address,       // dynamic!
+        Port = port,             // from env!
+        Check = new AgentServiceCheck
+        {
+            HTTP = $"http://{address}:{port}/health",
+            Interval = TimeSpan.FromSeconds(10),
+            DeregisterCriticalServiceAfter = TimeSpan.FromSeconds(30)
+        }
+    });
+}</code></pre>
+
+<h3>Health Checks in ASP.NET Core</h3>
+<pre><code>builder.Services.AddHealthChecks()
+    .AddDbContextCheck&lt;AppDbContext&gt;()
+    .AddRedis("redis-connection-string")
+    .AddCheck("custom", () =>
+    {
+        var isReady = CheckSomething();
+        return isReady
+            ? HealthCheckResult.Healthy()
+            : HealthCheckResult.Unhealthy("Not ready");
+    });
+
+app.MapHealthChecks("/health");          // liveness probe
+app.MapHealthChecks("/health/ready",     // readiness probe
+    new HealthCheckOptions
+    {
+        Predicate = check => check.Tags.Contains("ready")
+    });</code></pre>
+
+<table>
+<tr><th>Probe</th><th>Question It Answers</th><th>On Failure</th></tr>
+<tr><td>Liveness <code>/health</code></td><td>Is the process alive?</td><td>K8s <strong>restarts</strong> the pod</td></tr>
+<tr><td>Readiness <code>/health/ready</code></td><td>Can it handle requests?</td><td>K8s <strong>stops routing</strong> traffic (doesn't kill it)</td></tr>
+</table>
+
+<p>A service starting up and loading cache? It's alive (liveness = healthy) but not ready (readiness = unhealthy). K8s keeps it running but doesn't send traffic until the cache is warm.</p>
+
+<div class="qa">
+<div class="qa-q">Q: How does Kubernetes service discovery work?</div>
+<div class="qa-a">When you create a K8s Service, it gets a stable DNS name and virtual IP. CoreDNS resolves the service name to that IP. kube-proxy maintains iptables rules routing from virtual IP to healthy pod IPs. Pods auto-register via Endpoints API. Health is monitored through liveness and readiness probes.</div>
+</div>
+<div class="qa">
+<div class="qa-q">Q: What's the difference between liveness and readiness probes?</div>
+<div class="qa-a">Liveness checks if the process is alive — failure triggers a restart. Readiness checks if it can handle traffic — failure removes it from the load balancer but keeps it running. A service loading its cache is alive but not ready.</div>
+</div>
+</div>
+
+<!-- ════════════════════════════════════════════ TOPIC 6 ════════════════════════════════════════════ -->
+<div class="section" id="t6">
+<div class="section-phase">Phase 2 — Resilience Patterns</div>
+<span class="section-num">TOPIC 06</span>
+<h2>Saga Pattern</h2>
+
+<h3>The Problem — Why Normal Transactions Break</h3>
+<p>In a monolith: <code>BEGIN TRANSACTION</code> wraps all steps — create order, reduce stock, charge payment. Either all commit or all rollback. <strong>ACID</strong>.</p>
+<p>In microservices: each service has its <strong>own database</strong>. There is no single transaction that spans all three. If Payment fails after Orders committed, you're stuck — the order exists, stock was reduced, but money was never charged.</p>
+
+<div class="diagram">
+<svg width="100%" viewBox="0 0 680 200">
+<text class="th" x="340" y="20" text-anchor="middle">Each service has its own DB — no shared transaction</text>
+<rect x="40" y="40" width="170" height="80" rx="10" fill="rgba(139,92,246,0.06)" stroke="rgba(139,92,246,0.15)" stroke-width="0.5"/>
+<text class="th" x="125" y="64" text-anchor="middle">Orders service</text>
+<rect x="60" y="80" width="130" height="28" rx="4" fill="var(--surface2)" stroke="var(--border2)" stroke-width="0.5"/>
+<text class="ts" x="125" y="98" text-anchor="middle">Orders DB</text>
+<rect x="255" y="40" width="170" height="80" rx="10" fill="rgba(251,191,36,0.06)" stroke="rgba(251,191,36,0.15)" stroke-width="0.5"/>
+<text class="th" x="340" y="64" text-anchor="middle">Inventory service</text>
+<rect x="275" y="80" width="130" height="28" rx="4" fill="var(--surface2)" stroke="var(--border2)" stroke-width="0.5"/>
+<text class="ts" x="340" y="98" text-anchor="middle">Inventory DB</text>
+<rect x="470" y="40" width="170" height="80" rx="10" fill="rgba(248,113,113,0.06)" stroke="rgba(248,113,113,0.15)" stroke-width="0.5"/>
+<text class="th" x="555" y="64" text-anchor="middle" style="fill:var(--red)">Payment service</text>
+<rect x="490" y="80" width="130" height="28" rx="4" fill="var(--surface2)" stroke="var(--border2)" stroke-width="0.5"/>
+<text class="ts" x="555" y="98" text-anchor="middle">Payments DB</text>
+<line x1="210" y1="72" x2="253" y2="72" stroke="rgba(255,255,255,0.15)" stroke-width="1" marker-end="url(#a1)"/>
+<line x1="425" y1="72" x2="468" y2="72" stroke="rgba(255,255,255,0.15)" stroke-width="1" marker-end="url(#a1)"/>
+<rect x="170" y="145" width="340" height="36" rx="8" fill="rgba(248,113,113,0.06)" stroke="rgba(248,113,113,0.15)" stroke-width="0.5"/>
+<text class="ts" x="340" y="168" text-anchor="middle" style="fill:var(--red)">Payment fails — but order already created, stock already reduced</text>
+</svg>
+</div>
+
+<h3>Why Not 2PC (Two-Phase Commit)?</h3>
+<ul>
+<li><strong>Blocking</strong> — all services lock rows and wait for coordinator. If coordinator crashes, everyone stays locked forever.</li>
+<li><strong>Performance</strong> — every service waits on the slowest. 50ms flow becomes 500ms.</li>
+<li><strong>Coupling</strong> — all services must be available simultaneously.</li>
+</ul>
+
+<h3>What is a Saga?</h3>
+<p>A sequence of <strong>local transactions</strong>, where each service does its own work and publishes an event. If any step fails, <strong>compensating transactions</strong> run backward to undo previous steps.</p>
+
+<div class="note">
+<div class="note-title">Compensation ≠ Rollback</div>
+A rollback undoes uncommitted changes automatically. A compensation is a <strong>new committed transaction</strong> that semantically reverses the previous one — you write the logic yourself.<br><br>
+Step 2 does <code>stock -= 5</code> → compensation does <code>stock += 5</code><br>
+Step 3 charged $100 to Stripe → compensation calls Stripe's <strong>refund</strong> API
+</div>
+
+<h3>Happy Path vs Failure Path</h3>
+<p><strong>Happy path:</strong> Create order (PENDING) → Reserve stock → Charge payment → Confirm order. All succeed → system consistent.</p>
+<p><strong>Failure path:</strong> Create order → Reserve stock → Payment FAILS → Compensation: release stock (<code>stock += quantity</code>) → Cancel order (<code>status = CANCELLED</code>). System returns to clean state.</p>
+
+<h3>Choreography — No Boss, Just Events</h3>
+<p>Each service publishes events and reacts to other services' events. No central controller:</p>
+
+<pre><code>Orders creates order → publishes OrderCreated
+    ↓
+Inventory hears OrderCreated → reserves stock → publishes StockReserved
+    ↓
+Payments hears StockReserved → charges card → publishes PaymentCompleted
+    ↓
+Orders hears PaymentCompleted → status = CONFIRMED</code></pre>
+
+<pre><code>// Events (shared contracts)
+public record OrderCreated(Guid OrderId, string ProductId, int Qty);
+public record StockReserved(Guid OrderId);
+public record PaymentCompleted(Guid OrderId);
+public record PaymentFailed(Guid OrderId, string Reason);
+
+// Inventory Service — reacts to OrderCreated
+public class InventoryService
+{
+    public async Task Handle(OrderCreated evt)
+    {
+        var stock = await _db.Stock.FindAsync(evt.ProductId);
+        if (stock.Quantity >= evt.Qty)
+        {
+            stock.Quantity -= evt.Qty;
+            await _db.SaveChangesAsync();
+            await _bus.PublishAsync(new StockReserved(evt.OrderId));
+        }
+        else
+        {
+            await _bus.PublishAsync(new PaymentFailed(evt.OrderId, "Out of stock"));
+        }
+    }
+}</code></pre>
+
+<h3>Choreography Problems at Scale</h3>
+<ul>
+<li><strong>No visibility</strong> — you can't look at one place and see "this saga is 60% done"</li>
+<li><strong>Cyclic dependencies</strong> — 10 services publishing events to each other can create event loops</li>
+<li><strong>Hard to add steps</strong> — inserting a fraud check means modifying multiple services' subscriptions</li>
+</ul>
+
+<h3>Orchestration — One Boss Controls Everything</h3>
+<p>A Saga Orchestrator knows the entire workflow and tells each service what to do. Hub-and-spoke model.</p>
+
+<pre><code>public class OrderSagaOrchestrator
+{
+    public async Task StartSaga(CreateOrderRequest req)
+    {
+        var saga = new OrderSaga
+        {
+            Id = Guid.NewGuid(),
+            CurrentStep = "CreateOrder",
+            Status = "IN_PROGRESS"
+        };
+        _db.Sagas.Add(saga);
+        await _db.SaveChangesAsync();
+        await _bus.SendCommandAsync(new CreateOrderCommand(saga.Id, req));
+    }
+
+    public async Task Handle(OrderCreated reply)
+    {
+        var saga = await _db.Sagas.FindAsync(reply.SagaId);
+        saga.CurrentStep = "ReserveStock";
+        await _db.SaveChangesAsync();
+        await _bus.SendCommandAsync(new ReserveStockCommand(saga.Id, ...));
+    }
+
+    public async Task Handle(StockReserved reply)
+    {
+        var saga = await _db.Sagas.FindAsync(reply.SagaId);
+        saga.CurrentStep = "ChargePayment";
+        await _db.SaveChangesAsync();
+        await _bus.SendCommandAsync(new ChargePaymentCommand(saga.Id, ...));
+    }
+
+    public async Task Handle(PaymentCompleted reply)
+    {
+        var saga = await _db.Sagas.FindAsync(reply.SagaId);
+        saga.Status = "COMPLETED";
+        await _db.SaveChangesAsync();
+        await _bus.SendCommandAsync(new ConfirmOrderCommand(saga.Id));
+    }
+
+    // COMPENSATION — payment failed
+    public async Task Handle(PaymentFailed reply)
+    {
+        var saga = await _db.Sagas.FindAsync(reply.SagaId);
+        saga.Status = "COMPENSATING";
+        await _db.SaveChangesAsync();
+        await _bus.SendCommandAsync(new ReleaseStockCommand(saga.Id));
+        await _bus.SendCommandAsync(new CancelOrderCommand(saga.Id));
+        saga.Status = "FAILED";
+        await _db.SaveChangesAsync();
+    }
+}</code></pre>
+
+<table>
+<tr><th>Aspect</th><th>Choreography</th><th>Orchestration</th></tr>
+<tr><td>Control</td><td>No one — services react to events</td><td>Orchestrator — one central boss</td></tr>
+<tr><td>Visibility</td><td>No — workflow scattered across services</td><td>Yes — one class has the full workflow</td></tr>
+<tr><td>Adding steps</td><td>Edit multiple services</td><td>Edit one orchestrator</td></tr>
+<tr><td>Single point of failure</td><td>None</td><td>Orchestrator (must be resilient)</td></tr>
+<tr><td>Best for</td><td>Simple sagas (2–4 steps)</td><td>Complex sagas (5+ steps)</td></tr>
+</table>
+
+<h3>Crash Recovery — Durable State Machine</h3>
+<p>The orchestrator saves <code>CurrentStep</code> and <code>Status</code> to DB before every command. If it crashes, another instance queries for <code>IN_PROGRESS</code> sagas and resumes exactly where it left off.</p>
+
+<h3>Idempotency — Preventing Double-Processing</h3>
+<pre><code>public async Task Handle(ChargePaymentCommand cmd)
+{
+    // Already processed? Just re-publish the reply
+    var existing = await _db.Payments
+        .FirstOrDefaultAsync(p => p.SagaId == cmd.SagaId);
+    if (existing != null)
+    {
+        await _bus.PublishAsync(new PaymentCompleted(cmd.SagaId));
+        return;
+    }
+    // First time — actually charge
+    var result = await _stripe.ChargeAsync(cmd.Amount);
+    _db.Payments.Add(new Payment { SagaId = cmd.SagaId, ... });
+    await _db.SaveChangesAsync();
+    await _bus.PublishAsync(new PaymentCompleted(cmd.SagaId));
+}</code></pre>
+
+<div class="qa">
+<div class="qa-q">Q: Does a saga guarantee ACID?</div>
+<div class="qa-a">No. A saga guarantees ACD (Atomicity via compensations, Consistency eventually, Durability via local commits) but not Isolation. Between steps, other transactions can see intermediate states. Handle with status fields (PENDING → CONFIRMED).</div>
+</div>
+<div class="qa">
+<div class="qa-q">Q: How do you handle the orchestrator crashing?</div>
+<div class="qa-a">The orchestrator persists saga state to DB before every step. Run multiple instances for availability. On restart, any instance queries for IN_PROGRESS sagas and resumes. Commands must be idempotent so retries are safe.</div>
+</div>
+<div class="qa">
+<div class="qa-q">Q: What's the difference between a compensating transaction and a rollback?</div>
+<div class="qa-a">A rollback undoes uncommitted changes automatically. A compensation is a new committed transaction that semantically reverses a previous one — you write the logic yourself (e.g., calling Stripe's refund API, not "un-charging").</div>
+</div>
+</div>
+
+<!-- ════════════════════════════════════════════ TOPIC 7 ════════════════════════════════════════════ -->
+<div class="section" id="t7">
+<div class="section-phase">Phase 3 — Infrastructure &amp; Data</div>
+<span class="section-num">TOPIC 07</span>
+<h2>Database per Service + CQRS</h2>
+
+<h3>The Rule: Database per Service</h3>
+<p>Each service owns its database <strong>privately</strong>. No other service can access it directly — not through SQL, not through a shared connection string, not through a back door. If Service A needs data from Service B, it must ask via API or consume an event.</p>
+
+<h3>Why Shared Database Breaks Microservices</h3>
+<ul>
+<li><strong>Tight coupling</strong> — Inventory adds a column to Products → Orders service SQL breaks → forced to deploy together</li>
+<li><strong>No independent scaling</strong> — search queries hammer the DB → Orders writes slow down → one bottleneck for everyone</li>
+<li><strong>No technology freedom</strong> — search needs Elasticsearch, Inventory needs a document store, but everyone is stuck on one PostgreSQL</li>
+</ul>
+
+<div class="note note-red">
+<div class="note-title">A shared database makes your microservices a distributed monolith</div>
+You get all the operational complexity of microservices with none of the independence benefits.
+</div>
+
+<h3>Polyglot Persistence — Pick the Right Tool</h3>
+<table>
+<tr><th>Service</th><th>Workload</th><th>Best Fit</th></tr>
+<tr><td>Orders</td><td>Transactions, relations, ACID</td><td>PostgreSQL / SQL Server</td></tr>
+<tr><td>Inventory</td><td>Fast reads, flexible schema</td><td>MongoDB</td></tr>
+<tr><td>Search</td><td>Full-text search, faceted queries</td><td>Elasticsearch</td></tr>
+<tr><td>Sessions</td><td>Key-value lookups, TTL</td><td>Redis</td></tr>
+<tr><td>Analytics</td><td>Append-only events, time-series</td><td>ClickHouse / Cassandra</td></tr>
+</table>
+
+<h3>Data Sharing via Events (Not Direct DB Access)</h3>
+<p>Wrong: Orders queries Catalogue's DB directly with <code>SELECT name FROM products</code>. If Catalogue renames the column → Orders breaks at runtime.</p>
+<p>Right: Catalogue publishes <code>ProductUpdated</code> events. Orders consumes them and stores a <strong>local copy</strong> (ProductCache table) with only the fields it needs. Zero coupling to Catalogue — data is eventually consistent.</p>
+
+<h3>CQRS — Command Query Responsibility Segregation</h3>
+<p>The deeper problem: reads and writes want <strong>different data shapes</strong>.</p>
+<pre><code>WRITE: UPDATE Products SET Price = 29.99 WHERE Id = 'prod-123'
+  → 1 table, 1 row. Needs normalization, ACID. Rare operation.
+
+READ:  SELECT p.Name, p.Price, AVG(r.Rating), COUNT(r.Id),
+              i.StockLevel, c.Name as CategoryName
+       FROM Products p JOIN Reviews r ... JOIN Inventory i ...
+  → 4 JOINs, aggregations, 100K times/second. Must be FAST.</code></pre>
+
+<p>CQRS splits your application into <strong>two separate models</strong>:</p>
+
+<div class="diagram">
+<svg width="100%" viewBox="0 0 680 200">
+<rect x="30" y="20" width="280" height="160" rx="12" fill="rgba(139,92,246,0.06)" stroke="rgba(139,92,246,0.15)" stroke-width="0.5"/>
+<text class="th" x="170" y="46" text-anchor="middle">Write side (commands)</text>
+<text class="ts" x="170" y="70" text-anchor="middle">Normalized, ACID, PostgreSQL</text>
+<text class="ts" x="170" y="90" text-anchor="middle">Optimized for transactions</text>
+<text class="ts" x="170" y="114" text-anchor="middle">UpdateProductPriceCommand</text>
+<text class="ts" x="170" y="134" text-anchor="middle">→ validate → write → publish event</text>
+<rect x="370" y="20" width="280" height="160" rx="12" fill="rgba(52,211,153,0.06)" stroke="rgba(52,211,153,0.15)" stroke-width="0.5"/>
+<text class="th" x="510" y="46" text-anchor="middle">Read side (queries)</text>
+<text class="ts" x="510" y="70" text-anchor="middle">Denormalized, pre-joined</text>
+<text class="ts" x="510" y="90" text-anchor="middle">Redis / Elasticsearch / Mongo</text>
+<text class="ts" x="510" y="114" text-anchor="middle">GetProductDetailsQuery</text>
+<text class="ts" x="510" y="134" text-anchor="middle">→ single read, no JOINs, instant</text>
+<line x1="310" y1="100" x2="368" y2="100" stroke="rgba(255,255,255,0.15)" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#a1)"/>
+<text class="ts" x="340" y="90" text-anchor="middle" style="font-size:10px">events sync</text>
+</svg>
+</div>
+
+<h3>The Full CQRS Flow in C#</h3>
+<p><strong>Command Handler (write side):</strong></p>
+<pre><code>public class UpdateProductPriceHandler
+{
+    private readonly WriteDbContext _db;
+    private readonly IEventBus _bus;
+
+    public async Task Handle(UpdateProductPriceCommand cmd)
+    {
+        var product = await _db.Products.FindAsync(cmd.ProductId);
+        if (cmd.NewPrice <= 0) throw new ValidationException("Price must be positive");
+
+        product.Price = cmd.NewPrice;
+        await _db.SaveChangesAsync();
+
+        // Publish event — read side picks this up
+        await _bus.PublishAsync(new ProductPriceUpdated(
+            cmd.ProductId, cmd.NewPrice, product.Name));
+    }
+}</code></pre>
+
+<p><strong>Query Handler (read side):</strong></p>
+<pre><code>public class GetProductDetailsHandler
+{
+    private readonly ReadDbContext _readDb;
+
+    public async Task&lt;ProductDetailsDto&gt; Handle(GetProductDetailsQuery query)
+    {
+        // Single read, no JOINs — everything pre-joined in the view
+        return await _readDb.ProductViews
+            .FirstOrDefaultAsync(p => p.ProductId == query.ProductId);
+    }
+}</code></pre>
+
+<p><strong>The Read Model — Denormalized View:</strong></p>
+<pre><code>public class ProductView  // in the Read DB
+{
+    public string ProductId { get; set; }
+    public string Name { get; set; }
+    public decimal Price { get; set; }
+    public string CategoryName { get; set; }    // pre-joined from Catalogue!
+    public double AverageRating { get; set; }   // pre-calculated from Reviews!
+    public int ReviewCount { get; set; }        // pre-calculated!
+    public int StockLevel { get; set; }         // from Inventory events!
+}</code></pre>
+
+<p><strong>Event Handler — bridges write to read:</strong></p>
+<pre><code>public class ProductReadModelUpdater
+{
+    public async Task Handle(ProductPriceUpdated evt)
+    {
+        var view = await _readDb.ProductViews.FindAsync(evt.ProductId);
+        view.Price = evt.NewPrice;
+        await _readDb.SaveChangesAsync();
+    }
+
+    // Also handles events from OTHER services
+    public async Task Handle(ReviewPosted evt)
+    {
+        var view = await _readDb.ProductViews.FindAsync(evt.ProductId);
+        view.ReviewCount++;
+        view.AverageRating = evt.NewAverageRating;
+        await _readDb.SaveChangesAsync();
+    }
+
+    public async Task Handle(StockLevelChanged evt)
+    {
+        var view = await _readDb.ProductViews.FindAsync(evt.ProductId);
+        view.StockLevel = evt.NewLevel;
+        await _readDb.SaveChangesAsync();
+    }
+}</code></pre>
+
+<p>The read model handler consumes events from <strong>multiple services</strong> and builds one flat, pre-joined view. The user's query hits this single table — no JOINs, blazing fast.</p>
+
+<div class="note note-warn">
+<div class="note-title">When NOT to Use CQRS</div>
+Simple CRUD with one entity. Read/write patterns are similar. Small scale. Team is small. Most services don't need CQRS — reserve it for read-heavy, cross-service aggregation scenarios (product pages, dashboards, search results, news feeds).
+</div>
+
+<div class="qa">
+<div class="qa-q">Q: What's the tradeoff of CQRS?</div>
+<div class="qa-a">Eventual consistency — the read model lags behind writes (milliseconds to seconds). Increased complexity: two databases, event handlers, sync logic. Only worth it when read/write patterns are significantly different or when aggregating data from multiple services.</div>
+</div>
+<div class="qa">
+<div class="qa-q">Q: How does CQRS connect to the Saga pattern?</div>
+<div class="qa-a">Sagas handle distributed writes (coordinating transactions across services). CQRS handles distributed reads (building query-optimized views from events published by multiple services). They often work together — a Saga orchestrates the write flow, and the events feed CQRS read models.</div>
+</div>
+</div>
+
+<!-- ════════════════════════════════════════════ TOPIC 8 ════════════════════════════════════════════ -->
+<div class="section" id="t8">
+<div class="section-phase">Phase 3 — Infrastructure &amp; Data</div>
+<span class="section-num">TOPIC 08</span>
+<h2>Event Sourcing</h2>
+
+<h3>The Problem</h3>
+<p>Traditional databases store <strong>current state only</strong>. Product price is $29.99. What was it yesterday? Last month? Who changed it and why? You don't know — the previous state was overwritten. Like editing a Word document without Track Changes.</p>
+
+<h3>Core Idea: Store What HAPPENED, Not What Things ARE</h3>
+<pre><code>Event 1: ProductCreated  { id: "prod-123", name: "Gaming Mouse", price: 19.99 }
+Event 2: PriceChanged    { id: "prod-123", newPrice: 24.99, reason: "demand" }
+Event 3: PriceChanged    { id: "prod-123", newPrice: 29.99, reason: "new model" }
+Event 4: ReviewPosted    { id: "prod-123", rating: 5, userId: "user-abc" }
+
+Current state = replay all events: $19.99 → $24.99 → $29.99 = $29.99</code></pre>
+
+<p>This is exactly how <strong>Git</strong> works — Git doesn't store "the current file." It stores every commit (event). Current file = replay all commits.</p>
+
+<h3>The Apply Pattern in C#</h3>
+<pre><code>public class Product
+{
+    public string Id { get; private set; }
+    public decimal Price { get; private set; }
+    public bool IsActive { get; private set; }
+    private readonly List&lt;object&gt; _pendingEvents = new();
+
+    // Rebuild from history
+    public Product(IEnumerable&lt;object&gt; eventHistory)
+    {
+        foreach (var evt in eventHistory) Apply(evt);
+    }
+
+    // Business operations produce events, NOT state changes
+    public void ChangePrice(decimal newPrice, string reason)
+    {
+        if (!IsActive) throw new InvalidOperationException("Inactive product");
+        if (newPrice <= 0) throw new ValidationException("Must be positive");
+        var evt = new PriceChanged(Id, Price, newPrice, reason, DateTime.UtcNow);
+        Apply(evt);
+        _pendingEvents.Add(evt);
+    }
+
+    // The ONLY place state changes
+    private void Apply(object evt)
+    {
+        switch (evt)
+        {
+            case ProductCreated e:
+                Id = e.ProductId; Price = e.Price; IsActive = true; break;
+            case PriceChanged e:
+                Price = e.NewPrice; break;
+            case ProductDeactivated:
+                IsActive = false; break;
+        }
+    }
+}</code></pre>
+
+<h3>Using It Together</h3>
+<pre><code>public async Task ChangePriceAsync(string productId, decimal newPrice, string reason)
+{
+    // 1. Load all events for this product
+    var events = await _store.GetEventsAsync($"product-{productId}");
+    // 2. Rebuild current state by replaying events
+    var product = new Product(events);
+    // 3. Execute business logic (produces new events)
+    product.ChangePrice(newPrice, reason);
+    // 4. Save new events to the store
+    await _store.SaveEventsAsync($"product-{productId}", product.GetPendingEvents());
+    // 5. Publish events — CQRS read model handlers pick these up
+    foreach (var evt in product.GetPendingEvents())
+        await _bus.PublishAsync(evt);
+}</code></pre>
+
+<h3>Projections — Multiple Views from Same Events</h3>
+<p>One <code>PriceChanged</code> event feeds multiple projections simultaneously:</p>
+<ul>
+<li><strong>Product detail projection</strong> — updates the product page view</li>
+<li><strong>Price history projection</strong> — adds a row to the price timeline for analytics</li>
+<li><strong>Revenue forecast projection</strong> — recalculates projected revenue</li>
+</ul>
+<p>Need a new projection six months later? <strong>Replay all events from the store</strong> → new projection is fully populated with historical data.</p>
+
+<h3>Snapshots — Performance Optimization</h3>
+<p>If a product has 10,000 events, replaying all is slow. A snapshot captures state at a specific version. To load: read snapshot at event 9,900, replay only the last 100.</p>
+
+<h3>Event Sourcing + CQRS Together</h3>
+<pre><code>Event Store (source of truth, append-only)
+    → publishes events to Event Bus (Kafka)
+    → Projection Handlers build denormalized Read DB views
+    
+Read DB corrupted? Delete it, replay events → fully restored
+Need new field in view? Replay events → populated with all history
+Add new projection? Replay events → ready from day one</code></pre>
+
+<div class="note note-warn">
+<div class="note-title">When NOT to Use Event Sourcing</div>
+Simple CRUD. Team doesn't need replay power. Events would be trivial (just "FieldUpdated"). Schema evolution of events is hard to manage. Most services should use a regular database + CQRS. Reserve event sourcing for domains where <strong>history is a business requirement</strong> — finance, medical records, audit-heavy systems.
+</div>
+
+<div class="qa">
+<div class="qa-q">Q: What's the hardest part of Event Sourcing?</div>
+<div class="qa-a">Event schema evolution. Once stored, you can't change an event's structure — it's an immutable fact. Need a new field? Create PriceChangedV2 and handle both versions in your Apply method. Over time, managing multiple event versions adds complexity.</div>
+</div>
+<div class="qa">
+<div class="qa-q">Q: How does Event Sourcing relate to CQRS?</div>
+<div class="qa-a">They're independent but pair naturally. Event sourcing provides the write side (events appended to store). Those events feed projection handlers that build read models. The killer benefit: if you need a new read model or the existing one is corrupted, replay all events to rebuild it.</div>
+</div>
+</div>
+
+<!-- ════════════════════════════════════════════ TOPIC 9 ════════════════════════════════════════════ -->
+<div class="section" id="t9">
+<div class="section-phase">Phase 3 — Infrastructure &amp; Data</div>
+<span class="section-num">TOPIC 09</span>
+<h2>Observability</h2>
+
+<h3>The Problem</h3>
+<p>In a monolith: one server, one log file, <code>grep "error" app.log</code>, done. In microservices: 10 servers, 10 log streams. A user reports "my order failed" — which service caused it? Where in the chain did it break?</p>
+<p>With <code>Console.WriteLine</code>: SSH into each server, read each log, try to match timestamps manually. 1000s of requests per second — which log line belongs to THIS user? Containers restart — logs are GONE.</p>
+
+<h3>The 3 Pillars</h3>
+<p><strong>Logs</strong> tell you WHAT happened. <strong>Metrics</strong> tell you HOW MUCH. <strong>Traces</strong> tell you WHERE.</p>
+
+<table>
+<tr><th>Pillar</th><th>Question</th><th>Example</th><th>Tools</th></tr>
+<tr><td>Logs</td><td>What happened?</td><td>"Order #123 failed: insufficient stock"</td><td>Serilog, ELK, Seq</td></tr>
+<tr><td>Metrics</td><td>How is it performing?</td><td>Request rate: 1200/sec, P99: 340ms, Error rate: 2.3%</td><td>Prometheus, Grafana</td></tr>
+<tr><td>Traces</td><td>Where did time go?</td><td>Gateway: 5ms → Orders: 15ms → Inventory DB: 230ms (slow!)</td><td>Jaeger, Zipkin</td></tr>
+</table>
+
+<h3>Traces vs Metrics — The Key Difference</h3>
+<table>
+<tr><th></th><th>Trace</th><th>Metric</th></tr>
+<tr><td>Scope</td><td>One specific request</td><td>All requests aggregated</td></tr>
+<tr><td>Granularity</td><td>Detailed — every hop, every ms</td><td>Averages, percentiles, trends</td></tr>
+<tr><td>Question</td><td>"Why was THIS request slow?"</td><td>"Is the system healthy right now?"</td></tr>
+<tr><td>When used</td><td>After you know something is wrong</td><td>To detect something IS wrong</td></tr>
+<tr><td>Analogy</td><td>Following one car through the city</td><td>Traffic report for the whole city</td></tr>
+</table>
+
+<h3>Debugging Workflow</h3>
+<div class="flow">
+<div class="flow-step">1. Metrics alert you</div><span class="flow-arrow">→</span>
+<div class="flow-step">2. Traces pinpoint the cause</div><span class="flow-arrow">→</span>
+<div class="flow-step">3. Logs give the details</div>
+</div>
+<p>Metrics (Grafana): "Error rate on Payments spiked to 5%." → Traces (Jaeger): "Open a failing trace → Stripe returning 503 after 5s timeout." → Logs (Seq): "Search correlation ID → exact error message and payload."</p>
+
+<h3>Structured Logging with Serilog</h3>
+<pre><code>// Not this:
+Console.WriteLine("Order failed for user");
+
+// This:
+Log.Error("Order failed {@OrderId} for {@UserId} — reason: {@Reason}",
+    order.Id, userId, "insufficient_stock");
+
+// Outputs structured JSON:
+{
+  "timestamp": "2026-03-26T14:32:01Z",
+  "level": "Error",
+  "properties": {
+    "OrderId": "ord-123",
+    "UserId": "user-abc",
+    "Reason": "insufficient_stock",
+    "ServiceName": "orders-service",
+    "CorrelationId": "abc-123-def"
+  }
+}</code></pre>
+
+<h3>The Correlation ID</h3>
+<p>A unique ID generated at the API Gateway, propagated through every service via <code>X-Correlation-Id</code> header. Every log line includes it. Search for one ID → see the entire request journey across all services in chronological order.</p>
+
+<pre><code>// Middleware — extract or create correlation ID
+public class CorrelationIdMiddleware
+{
+    public async Task InvokeAsync(HttpContext context)
+    {
+        var id = context.Request.Headers["X-Correlation-Id"].FirstOrDefault()
+                 ?? Guid.NewGuid().ToString();
+        context.Response.Headers["X-Correlation-Id"] = id;
+
+        using (LogContext.PushProperty("CorrelationId", id))
+            await _next(context);
+    }
+}
+
+// When calling another service — forward it
+request.Headers.Add("X-Correlation-Id", correlationId);</code></pre>
+
+<h3>Distributed Tracing — The Waterfall</h3>
+<p>A trace is made of <strong>spans</strong>. Each span = one operation (HTTP call, DB query, method). Nested spans show parent-child relationships with timing:</p>
+<pre><code>Gateway     ████████████████████████████████████████████  680ms
+  Orders      ██████████████████████████████████████████  650ms
+    Inventory    █████████████████                         230ms
+      DB query     ██████████████                          200ms ← SLOW!
+    Payments                      █████████████████████    370ms
+      Stripe API                    ██████████████████     340ms</code></pre>
+
+<h3>OpenTelemetry — One Standard for Everything</h3>
+<p>OpenTelemetry replaces the <strong>client libraries</strong> (not the backends). Instrument once, export to any backend by changing config:</p>
+<pre><code>builder.Services.AddOpenTelemetry()
+    .WithTracing(tracing => tracing
+        .SetResourceBuilder(ResourceBuilder.CreateDefault()
+            .AddService("orders-service"))
+        .AddAspNetCoreInstrumentation()          // auto-trace incoming HTTP
+        .AddHttpClientInstrumentation()           // auto-trace outgoing HTTP
+        .AddEntityFrameworkCoreInstrumentation()  // auto-trace EF queries
+        .AddJaegerExporter())                     // change this line = change backend
+    .WithMetrics(metrics => metrics
+        .AddAspNetCoreInstrumentation()
+        .AddPrometheusExporter());</code></pre>
+
+<p>Switch from Jaeger to Zipkin? Change one line. Switch from Prometheus to Datadog? Change one line. Your instrumentation code stays the same.</p>
+
+<div class="qa">
+<div class="qa-q">Q: What is a Correlation ID and why is it critical?</div>
+<div class="qa-a">A unique ID generated at the entry point and propagated through every service via HTTP headers. Every log line includes it. To debug a failed request, search for that one ID → see the complete journey across all services in order. Without it, matching logs across 10 services at 1000 req/sec is impossible.</div>
+</div>
+<div class="qa">
+<div class="qa-q">Q: What is OpenTelemetry?</div>
+<div class="qa-a">A vendor-neutral standard for telemetry. You instrument once with OTel SDK, export to any backend (Jaeger, Prometheus, Datadog) by changing config. It replaces client libraries, not backends themselves. Prevents vendor lock-in — the industry standard supported by all major cloud providers.</div>
+</div>
+</div>
+
+<!-- ════════════════════════════════════════════ TOPIC 10 ════════════════════════════════════════════ -->
+<div class="section" id="t10">
+<div class="section-phase">Phase 4 — Advanced &amp; Interview</div>
+<span class="section-num">TOPIC 10</span>
+<h2>Security Across Services</h2>
+
+<h3>Part 1 — External: JWT Authentication</h3>
+<p>In microservices, session-based auth doesn't work — which service stores the session? Solution: <strong>stateless tokens</strong>. The user carries their identity in every request as a JWT.</p>
+<p>A JWT has 3 parts: <strong>Header</strong> (algorithm), <strong>Payload</strong> (claims — userId, role, expiry), <strong>Signature</strong> (proves it wasn't tampered). The Identity Server signs with its PRIVATE key. Any service verifies using the PUBLIC key — no network call needed.</p>
+
+<h3>Auth Flow</h3>
+<div class="flow">
+<div class="flow-step">User logs in</div><span class="flow-arrow">→</span>
+<div class="flow-step">Identity Server returns JWT</div><span class="flow-arrow">→</span>
+<div class="flow-step">JWT sent with every request</div><span class="flow-arrow">→</span>
+<div class="flow-step">Gateway verifies locally</div><span class="flow-arrow">→</span>
+<div class="flow-step">Forwards to services</div>
+</div>
+
+<pre><code>// Gateway — verify JWT (no call to Identity Server!)
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.Authority = "https://identity-server.example.com";
+        options.Audience = "api-gateway";
+        // SDK auto-fetches + caches public key from .well-known/openid-configuration
+    });</code></pre>
+
+<h3>JWT Propagation — Two Strategies</h3>
+<table>
+<tr><th>Strategy A: Forward Full JWT</th><th>Strategy B: Extract Claims at Gateway</th></tr>
+<tr><td>Each service re-verifies the signature</td><td>Gateway stamps X-User-Id, X-User-Role headers</td></tr>
+<tr><td>More secure — every service validates</td><td>Simpler — services just read headers</td></tr>
+<tr><td>Adds verification overhead per service</td><td>Requires trusted internal network</td></tr>
+</table>
+
+<h3>Part 2 — Internal: mTLS (Mutual TLS)</h3>
+<p><strong>Regular TLS</strong>: client verifies server (one-way). <strong>mTLS</strong>: both sides verify each other (two-way). A rogue service without a valid certificate is rejected. All traffic is encrypted — sniffing captures gibberish.</p>
+<p><strong>Without mTLS:</strong> attacker gets into network → deploys fake service → calls Payments directly → steals money. Internal traffic is unencrypted → attacker sniffs credit card data.</p>
+<p><strong>With mTLS:</strong> fake service has no valid cert → Payments rejects. All traffic encrypted → sniffing captures nothing.</p>
+
+<h3>Part 3 — Authorization (RBAC vs Policy-Based)</h3>
+<pre><code>// RBAC — simple, covers 80% of cases
+[Authorize(Roles = "admin")]
+[HttpDelete("/api/products/{id}")]
+public async Task&lt;IActionResult&gt; DeleteProduct(string id) { ... }
+
+// Policy-based — flexible, handles complex rules
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("CanDeleteProducts", policy =>
+        policy.RequireRole("admin")
+              .RequireClaim("department", "catalog-team"));
+});</code></pre>
+
+<h3>Part 4 — Service Mesh (Istio, Linkerd)</h3>
+<p>A sidecar proxy (Envoy) deployed alongside each service handles mTLS, certificate rotation, and authorization policies. Your app sends <strong>plain HTTP to localhost</strong> — the proxy handles all security. Zero code changes.</p>
+
+<h3>Part 5 — Secrets Management</h3>
+<table>
+<tr><th>Approach</th><th>Security</th><th>When</th></tr>
+<tr><td>Hardcoded in code</td><td style="color:var(--red)">Terrible</td><td>Never</td></tr>
+<tr><td>appsettings.json in Git</td><td style="color:var(--red)">Terrible</td><td>Never</td></tr>
+<tr><td>Environment variables</td><td>OK</td><td>Docker Compose, dev</td></tr>
+<tr><td>K8s Secrets</td><td>Good</td><td>Kubernetes</td></tr>
+<tr><td>Azure Key Vault / HashiCorp Vault</td><td style="color:var(--green)">Best</td><td>Production</td></tr>
+</table>
+
+<div class="note note-green">
+<div class="note-title">Zero-Trust Principle</div>
+Never trust, always verify — even inside your own network. Every call is authenticated and authorized regardless of origin. mTLS for service identity, JWT at every boundary, least-privilege policies, encrypted traffic everywhere. If an attacker compromises one service, zero-trust limits the blast radius.
+</div>
+
+<div class="qa">
+<div class="qa-q">Q: How do you handle authentication in microservices?</div>
+<div class="qa-a">Users authenticate against an Identity Server and receive a JWT. The API Gateway verifies the JWT signature using the cached public key — no network call. Internally, either the full JWT is propagated or the Gateway extracts claims and forwards them as trusted headers.</div>
+</div>
+<div class="qa">
+<div class="qa-q">Q: What is mTLS and why do microservices need it?</div>
+<div class="qa-a">Mutual TLS — both client and server present certificates. Ensures only legitimate services communicate. Also encrypts all internal traffic. Foundation of zero-trust: don't trust the network, verify every caller.</div>
+</div>
+</div>
+
+<!-- ════════════════════════════════════════════ TOPIC 11 ════════════════════════════════════════════ -->
+<div class="section" id="t11">
+<div class="section-phase">Phase 4 — Advanced &amp; Interview</div>
+<span class="section-num">TOPIC 11</span>
+<h2>Deployment &amp; Containers</h2>
+
+<h3>The Problem</h3>
+<p>In a monolith: one deploy. In microservices: 20+ services deployed independently. How do you update a running service <strong>without users noticing</strong>?</p>
+
+<h3>Strategy 1 — Rolling Deploy (Kubernetes Default)</h3>
+<p>K8s replaces pods <strong>one at a time</strong>. Each new pod must pass its readiness probe before K8s terminates the next old pod. During transition, <strong>both v1 and v2 serve traffic</strong>.</p>
+<pre><code>Before:  [v1] [v1] [v1]
+Step 1:  [v2] [v1] [v1]   ← new pod created, old pod terminated
+Step 2:  [v2] [v2] [v1]   ← next pod replaced
+Step 3:  [v2] [v2] [v2]   ← deploy complete</code></pre>
+
+<pre><code># K8s deployment config
+strategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxSurge: 1        # create 1 extra pod during update
+    maxUnavailable: 0   # never fewer than 3 running pods</code></pre>
+<p>Rollback: <code>kubectl rollout undo deploy/orders</code> (slow — re-rolls all pods).</p>
+
+<h3>Strategy 2 — Blue-Green Deploy</h3>
+<p>Two full environments: <strong>Blue</strong> (current live) and <strong>Green</strong> (new version). Green is deployed and tested while Blue serves traffic. When ready, switch the load balancer from Blue to Green <strong>instantly</strong>.</p>
+<pre><code>Before:  Users → LB → Blue (v1) [LIVE]     Green (empty)
+Deploy:  Users → LB → Blue (v1) [LIVE]     Green (v2) [testing]
+Switch:  Users → LB → Green (v2) [LIVE]    Blue (v1) [standby]
+Rollback: Users → LB → Blue (v1) [LIVE]    Green (v2) [investigate]</code></pre>
+<p><strong>Pro:</strong> instant rollback (Blue never stopped). <strong>Con:</strong> 2× resource cost during deployment.</p>
+
+<h3>Strategy 3 — Canary Deploy</h3>
+<p>Deploy new version alongside old. Gradually shift traffic: <strong>5% → 25% → 50% → 100%</strong>. Monitor error rates at each stage. If anything breaks, route all traffic back — only the small % on the canary was affected.</p>
+<pre><code>Stage 1:  [████████████████████v1 95%████████████████████][v2 5%]
+Stage 2:  [███████████████v1 75%███████████████][████v2 25%████]
+Stage 3:  [██████████v1 50%██████████][██████████v2 50%██████████]
+Stage 4:  [████████████████████████v2 100%████████████████████████]</code></pre>
+<p><strong>Pro:</strong> smallest blast radius, safest. <strong>Con:</strong> requires traffic splitting infrastructure (Istio, Nginx, feature flag).</p>
+
+<h3>Comparison</h3>
+<table>
+<tr><th>Aspect</th><th>Rolling</th><th>Blue-Green</th><th>Canary</th></tr>
+<tr><td>Downtime</td><td>Zero</td><td>Zero</td><td>Zero</td></tr>
+<tr><td>Rollback</td><td>Slow (re-roll)</td><td>Instant</td><td>Instant</td></tr>
+<tr><td>Resource cost</td><td>Same</td><td>2×</td><td>1.1–1.5×</td></tr>
+<tr><td>Risk during deploy</td><td>Medium</td><td>Low</td><td>Lowest</td></tr>
+<tr><td>Complexity</td><td>Simple (K8s default)</td><td>Medium</td><td>High</td></tr>
+<tr><td>Best for</td><td>Most services</td><td>Critical services, DB migrations</td><td>High-traffic user-facing</td></tr>
+</table>
+
+<h3>CI/CD for Microservices</h3>
+<p>Each service has its own <strong>independent pipeline</strong>, triggered only by changes to its codebase:</p>
+<pre><code># GitHub Actions — triggers only for this service
+name: Deploy Orders Service
+on:
+  push:
+    branches: [main]
+    paths: ['orders-service/**']   # only this service!
+
+jobs:
+  build-and-deploy:
+    steps:
+      - dotnet test orders-service/tests/
+      - docker build -t orders:$COMMIT_SHA orders-service/
+      - docker push registry.io/orders:$COMMIT_SHA
+      - kubectl set image deploy/orders orders=registry.io/orders:$COMMIT_SHA
+      - kubectl rollout status deploy/orders --timeout=300s</code></pre>
+<p>A change to Payments doesn't trigger the Orders pipeline. Each team deploys independently.</p>
+
+<div class="qa">
+<div class="qa-q">Q: Which strategy for a payment processing service?</div>
+<div class="qa-a">Blue-green or canary — never simple rolling deploy. With blue-green, fully test the new version with synthetic transactions before switching. With canary, route 1% of payment traffic first and monitor success rates. Rolling deploy is risky because both versions serve traffic — a subtle bug in payments could affect real money before you catch it.</div>
+</div>
+<div class="qa">
+<div class="qa-q">Q: How does CI/CD change with microservices?</div>
+<div class="qa-a">Each service has its own independent pipeline triggered only by changes to its own codebase (via path filters). Pipeline: test → build Docker image (tagged with commit SHA) → push to registry → deploy to K8s. Teams deploy independently — a change to Orders doesn't trigger or affect Payments.</div>
+</div>
+</div>
+
+<!-- ════════════════════════════════════════════ CHEAT SHEET ════════════════════════════════════════════ -->
+<div class="section" id="cheat">
+<span class="section-num">★ BONUS</span>
+<h2>Master Interview Cheat Sheet</h2>
+
+<h3>One-Liner Per Topic</h3>
+<table>
+<tr><th>#</th><th>Topic</th><th>One-sentence summary</th></tr>
+<tr><td>1</td><td>Monolith vs Micro</td><td>Trade simplicity for independence — break when you hit deployment bottlenecks, scaling mismatches, or team growth.</td></tr>
+<tr><td>2</td><td>Sync vs Async</td><td>Sync when you need the answer now, async when you don't — and most things don't.</td></tr>
+<tr><td>3</td><td>API Gateway</td><td>Single entry point: routing, auth, rate limiting — so services stay hidden and focused.</td></tr>
+<tr><td>4</td><td>Circuit Breaker</td><td>Stop calling a dead service after a threshold, fail fast, give it time to recover.</td></tr>
+<tr><td>5</td><td>Service Discovery</td><td>Services register dynamically; callers find them via DNS or registry, not hardcoded URLs.</td></tr>
+<tr><td>6</td><td>Saga</td><td>Chain of local transactions with compensations replacing distributed ACID.</td></tr>
+<tr><td>7</td><td>DB per Service</td><td>Each service owns its data privately; share via events, never shared databases.</td></tr>
+<tr><td>8</td><td>Event Sourcing</td><td>Store events not state — enables replay, audit, and projection rebuilds.</td></tr>
+<tr><td>9</td><td>Observability</td><td>Logs (what), metrics (how much), traces (where) + correlation IDs threading them together.</td></tr>
+<tr><td>10</td><td>Security</td><td>JWT for users, mTLS for services, zero-trust everywhere — never trust the network.</td></tr>
+<tr><td>11</td><td>Deployment</td><td>Rolling (default), blue-green (instant rollback), canary (smallest blast radius) — all zero-downtime.</td></tr>
+</table>
+
+<h3>Common Interview Traps</h3>
+<div class="qa">
+<div class="qa-q">Trap: "Microservices are always better than monoliths"</div>
+<div class="qa-a">Wrong. They're a tradeoff. Start monolith, migrate when you hit concrete pain. A distributed monolith is the worst of both worlds.</div>
+</div>
+<div class="qa">
+<div class="qa-q">Trap: "Use a distributed transaction (2PC) across services"</div>
+<div class="qa-a">2PC blocks all participants, doesn't scale, creates tight coupling. Use the Saga pattern — local transactions + compensations.</div>
+</div>
+<div class="qa">
+<div class="qa-q">Trap: "Services can share a database for simplicity"</div>
+<div class="qa-a">That's a distributed monolith. Schema changes in one service break all others. Each service must own its data privately.</div>
+</div>
+<div class="qa">
+<div class="qa-q">Trap: "Retry everything on failure"</div>
+<div class="qa-a">Only retry transient errors (503, 429, timeouts). Never retry 400 or 401. Always use exponential backoff + jitter to prevent thundering herd.</div>
+</div>
+<div class="qa">
+<div class="qa-q">Trap: "Internal services trust each other"</div>
+<div class="qa-a">Zero-trust: never trust, always verify. mTLS between services, encrypt all traffic, least-privilege authorization even internally.</div>
+</div>
+<div class="qa">
+<div class="qa-q">Trap: "Console.WriteLine is good enough for logging"</div>
+<div class="qa-a">In microservices, logs are on 10 different servers, containers restart (logs vanish), 1000s of requests per second. You need structured logging (Serilog), centralized collection (ELK/Seq), and correlation IDs to trace one request across all services.</div>
+</div>
+</div>
+
+<div class="footer">
+  Microservices Architecture — Complete Study Guide · C# / .NET · Interview Prep · 11 Topics · 2026
+</div>
+
+</div>
+</body>
+</html>

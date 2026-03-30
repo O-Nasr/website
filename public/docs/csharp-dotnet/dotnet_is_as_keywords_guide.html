@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Is As Keywords</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0c10;
+      --surface: #111318;
+      --surface2: #181c24;
+      --surface3: #1f2530;
+      --border: rgba(255,255,255,0.06);
+      --border2: rgba(255,255,255,0.11);
+      --accent: #6ea1ff;
+      --accent2: #8b6cf6;
+      --green: #34d399;
+      --amber: #fbbf24;
+      --red: #f87171;
+      --teal: #2dd4bf;
+      --text: #dfe5ef;
+      --muted: #7e8a9e;
+      --code-bg: #080a0e;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Outfit', sans-serif;
+      font-size: 15px;
+      line-height: 1.78;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      padding: 56px 28px 44px;
+      max-width: 900px;
+      margin: 0 auto;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -80px;
+      right: -40px;
+      width: 360px;
+      height: 360px;
+      background: radial-gradient(circle, rgba(110,161,255,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-tag {
+      display: inline-block;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10.5px;
+      font-weight: 500;
+      color: var(--accent);
+      background: rgba(110,161,255,0.07);
+      border: 1px solid rgba(110,161,255,0.18);
+      padding: 4px 14px;
+      border-radius: 20px;
+      letter-spacing: 0.09em;
+      margin-bottom: 14px;
+      text-transform: uppercase;
+    }
+    .hero h1 {
+      font-size: clamp(26px, 4.2vw, 42px);
+      font-weight: 700;
+      line-height: 1.15;
+      letter-spacing: -0.03em;
+      margin-bottom: 0;
+      background: linear-gradient(135deg, #dfe5ef 0%, #6ea1ff 50%, #34d399 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* ── Page layout ── */
+    .page {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 28px 100px;
+    }
+
+    /* ── Sections ── */
+    .doc-content h1 {
+      font-size: 20px;
+      font-weight: 700;
+      color: #fff;
+      margin: 30px 0 0;
+      padding: 24px 0 14px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      -webkit-text-fill-color: #fff;
+      background-clip: padding-box;
+    }
+    .doc-content h1:first-child { margin-top: 10px; }
+
+    .doc-content h2 {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--accent);
+      margin: 22px 0 10px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+    }
+
+    .doc-content h3 {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--accent2);
+      margin: 18px 0 8px;
+    }
+
+    .doc-content h4, .doc-content h5, .doc-content h6 {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--teal);
+      margin: 14px 0 6px;
+    }
+
+    p {
+      margin: 0;
+      padding: 6px 0;
+      font-size: 14.5px;
+      line-height: 1.75;
+    }
+    strong, b { color: #fff; }
+    em { color: var(--muted); }
+
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ── Lists ── */
+    ul, ol {
+      padding-left: 20px;
+      margin: 4px 0 10px;
+    }
+    li {
+      margin: 3px 0;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+    li strong { color: #fff; }
+
+    /* ── Tables ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin: 12px 0;
+    }
+    th {
+      background: var(--surface2);
+      color: var(--accent);
+      font-weight: 600;
+      text-align: left;
+      padding: 9px 13px;
+      border: 1px solid var(--border);
+    }
+    td {
+      padding: 8px 13px;
+      border: 1px solid var(--border);
+    }
+    tr:nth-child(even) td {
+      background: rgba(255,255,255,0.012);
+    }
+
+    /* Single-cell tables = note/callout boxes */
+    table:has(tr:only-child td:only-child) {
+      background: rgba(110,161,255,0.05);
+      border: 1px solid rgba(110,161,255,0.14);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    table:has(tr:only-child td:only-child) td {
+      border: none;
+      padding: 13px 16px;
+      font-size: 13px;
+      line-height: 1.7;
+    }
+    table:has(tr:only-child td:only-child) td strong {
+      color: var(--accent);
+    }
+
+    /* ── Code ── */
+    code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12.5px;
+      color: var(--accent);
+      background: rgba(110,161,255,0.07);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    pre {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 18px;
+      overflow-x: auto;
+      margin: 12px 0;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12.5px;
+      line-height: 1.7;
+      color: #c4cdd9;
+      scrollbar-width: thin;
+      scrollbar-color: #333 transparent;
+    }
+    pre::-webkit-scrollbar { height: 4px; }
+    pre::-webkit-scrollbar-track { background: transparent; }
+    pre::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+    pre::-webkit-scrollbar-thumb:hover { background: #555; }
+    pre code {
+      background: none;
+      padding: 0;
+      color: inherit;
+      font-size: inherit;
+    }
+
+    /* ── Blockquote ── */
+    blockquote {
+      background: rgba(110,161,255,0.05);
+      border: 1px solid rgba(110,161,255,0.14);
+      border-left: 3px solid var(--accent);
+      border-radius: 0 10px 10px 0;
+      padding: 13px 16px;
+      margin: 10px 0;
+      font-size: 13px;
+      line-height: 1.7;
+    }
+    blockquote b, blockquote strong { color: var(--accent); }
+
+    /* ── Images ── */
+    img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 10px;
+      margin: 12px 0;
+      border: 1px solid var(--border);
+    }
+
+    /* ── HR ── */
+    hr {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 24px 0;
+    }
+
+    /* ── Footer ── */
+    .footer {
+      text-align: center;
+      padding: 36px 0 16px;
+      font-size: 11px;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      margin-top: 40px;
+    }
+
+    @media (max-width: 640px) {
+      .page { padding: 0 16px 60px; }
+      .hero { padding: 36px 16px 30px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-tag">C# & .NET</div>
+  <h1>Is As Keywords</h1>
+</div>
+
+<div class="page">
+  <div class="doc-content">
+<p><strong>.NET Interview Study Guide</strong></p><p><em>IS and AS Keywords — Complete Guide</em></p><h1><strong>1. Quick Summary</strong></h1><pre><code>IS = Checks if an object is compatible with a type. Returns true or false.
+AS = Tries to convert an object to a type. Returns the converted object or null.</code></pre><table><tr><td></td><td><p><strong>IS</strong></p></td><td><p><strong>AS</strong></p></td></tr><tr><td><p>What it does</p></td><td><p>Checks type compatibility</p></td><td><p>Converts to type</p></td></tr><tr><td><p>Returns</p></td><td><p>true or false</p></td><td><p>Converted object or null</p></td></tr><tr><td><p>On failure</p></td><td><p>Returns false</p></td><td><p>Returns null</p></td></tr><tr><td><p>Throws exception?</p></td><td><p>❌ Never</p></td><td><p>❌ Never</p></td></tr><tr><td><p>Works with value types?</p></td><td><p>✅ Yes</p></td><td><p>❌ No — reference types only</p></td></tr><tr><td><p>Use case</p></td><td><p>Type checking</p></td><td><p>Safe type conversion</p></td></tr></table><h1><strong>2. IS Keyword — Type Checking</strong></h1><p>IS simply asks a yes/no question: "Is this object of this type?"</p><pre><code>object obj = "Hello";
+
+if (obj is string)
+{
+    Console.WriteLine("Yes! obj is a string"); // ✅ prints this
+}
+
+// Works with inheritance too
+class Animal { }
+class Dog : Animal { }
+
+Dog d = new Dog();
+Console.WriteLine(d is Dog);    // true
+Console.WriteLine(d is Animal); // true — Dog inherits from Animal
+Console.WriteLine(d is string); // false</code></pre><h1><strong>3. AS Keyword — Safe Type Conversion</strong></h1><pre><code>AS tries to convert the object to the given type. If it fails it returns null instead of throwing an exception.
+// Successful conversion
+object obj = "Hello";
+string str = obj as string;
+Console.WriteLine(str); // "Hello" ✅
+
+// Failed conversion — returns null NOT exception
+object obj = 42;
+string str = obj as string;
+Console.WriteLine(str == null); // true — safe, no crash ✅
+
+// vs direct cast — DANGEROUS
+object obj = 42;
+string s = (string)obj; // 💥 InvalidCastException thrown!</code></pre><table><tr><td><p><strong>⚠️ Important:  </strong>AS never throws an exception on failed conversion. Direct cast (string)obj throws InvalidCastException. Always prefer AS for uncertain conversions.</p></td></tr></table><h1><strong>4. AS Only Works With Reference Types</strong></h1><pre><code>object obj = 42;
+
+int i = obj as int;    // ❌ COMPILE ERROR — AS doesn't work with value types</code></pre><p> </p><p>// Fix — use IS with pattern matching for value types</p><pre><code>if (obj is int i)      // ✅ pattern matching works fine
+{
+    Console.WriteLine(i);
+}</code></pre><h1><strong>5. Modern C# — Pattern Matching (C# 7+)</strong></h1><pre><code>Since C# 7, you can combine IS with variable assignment in one line. This is the preferred modern approach.
+// Old way — checks type twice internally
+if (obj is string)
+{
+    string s = (string)obj; // two operations
+    Console.WriteLine(s);
+}
+
+// Modern way — pattern matching
+if (obj is string s) // checks type AND assigns in one shot ✅
+{
+    Console.WriteLine(s); // s is already typed as string here
+}
+
+// Switch pattern matching
+switch (obj)
+{
+    case string s:
+        Console.WriteLine("String: " + s);
+        break;
+    case int i:
+        Console.WriteLine("Int: " + i);
+        break;
+    case null:
+        Console.WriteLine("Null");
+        break;
+}</code></pre><h1><strong>6. When to Use Which</strong></h1><table><tr><td><p><strong>Situation</strong></p></td><td><p><strong>Use</strong></p></td></tr><tr><td><p>Just want to check the type</p></td><td><p>IS</p></td></tr><tr><td><p>Want to convert AND use the object</p></td><td><p>AS</p></td></tr><tr><td><p>Safe conversion without try/catch</p></td><td><p>AS</p></td></tr><tr><td><p>Modern type check + assignment</p></td><td><p>IS with pattern matching</p></td></tr><tr><td><p>Value types</p></td><td><p>IS or pattern matching — AS not allowed</p></td></tr></table><h1><strong>7. Interview Questions</strong></h1><p><strong>Q: What is the difference between IS and AS?</strong></p><table><tr><td><p><strong>🎯 Interview Answer:  </strong>The IS keyword checks if an object is compatible with a given type and returns true or false without performing any conversion. The AS keyword attempts to convert an object to a given type — if successful it returns the converted object, if it fails it returns null instead of throwing an exception. This makes AS safer than a direct cast for uncertain conversions.</p></td></tr></table><p><strong>Q: What is pattern matching in C#?</strong></p><table><tr><td><p><strong>🎯 Interview Answer:  </strong>Pattern matching introduced in C# 7 extends the IS keyword to combine type checking and variable assignment in a single statement. Instead of checking is string then casting separately, you write if (obj is string s) which checks the type and assigns the typed variable in one operation. This eliminates the double-check overhead and produces cleaner more readable code.</p></td></tr></table><p><strong>Q: Why can't AS be used with value types?</strong></p><table><tr><td><p><strong>🎯 Interview Answer:  </strong>AS returns null when conversion fails, but value types like int and bool cannot be null. Therefore AS is only valid for reference types and nullable value types. For value types, use pattern matching with IS which handles the type check and conversion safely without requiring nullability.</p></td></tr></table><p><em>Good luck with your interview! 🚀</em></p>
+  </div>
+  <div class="footer">Study Docs Portal</div>
+</div>
+
+</body>
+</html>

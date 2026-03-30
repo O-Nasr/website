@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Circuit Breaker, Retry &amp; Timeout — Microservices Study Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0c10;--surface:#111318;--surface2:#181c24;--surface3:#1f2530;--border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.11);--accent:#6ea1ff;--accent2:#8b6cf6;--green:#34d399;--amber:#fbbf24;--red:#f87171;--teal:#2dd4bf;--coral:#fb923c;--text:#dfe5ef;--muted:#7e8a9e;--code-bg:#080a0e}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font-size:15px;line-height:1.78;-webkit-font-smoothing:antialiased}
+.page{max-width:900px;margin:0 auto;padding:0 28px 100px}
+.hero{padding:56px 28px 44px;max-width:900px;margin:0 auto;border-bottom:1px solid var(--border);position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-80px;right:-40px;width:360px;height:360px;background:radial-gradient(circle,rgba(110,161,255,0.08) 0%,transparent 70%);pointer-events:none}
+.hero-tag{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:10.5px;font-weight:500;color:var(--accent);background:rgba(110,161,255,0.07);border:1px solid rgba(110,161,255,0.18);padding:4px 14px;border-radius:20px;letter-spacing:0.09em;margin-bottom:14px;text-transform:uppercase}
+.hero h1{font-size:clamp(26px,4.2vw,42px);font-weight:700;line-height:1.15;letter-spacing:-0.03em;margin-bottom:10px;background:linear-gradient(135deg,#dfe5ef 0%,#6ea1ff 50%,#34d399 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero-sub{font-size:15px;color:var(--muted);line-height:1.65;max-width:600px}
+.section{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:30px;margin-top:30px}
+.section h2{font-size:20px;font-weight:700;color:#fff;margin-bottom:18px;display:flex;align-items:center;gap:10px}
+.section h2 .num{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--accent);background:rgba(110,161,255,0.1);padding:3px 10px;border-radius:6px;font-weight:500}
+.section h3{font-size:15px;font-weight:600;color:var(--accent);margin:22px 0 10px;padding-top:14px;border-top:1px solid var(--border)}
+.section h3:first-of-type{border-top:none;padding-top:0}
+p{margin-bottom:12px}strong{color:#fff}
+ul{padding-left:20px;margin:8px 0 14px}li{margin:4px 0;font-size:14px}
+pre{background:var(--code-bg);border:1px solid var(--border);border-radius:10px;padding:14px 18px;overflow-x:auto;margin:12px 0;font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.7;color:#c4cdd9}
+code{font-family:'JetBrains Mono',monospace;font-size:12.5px;color:var(--accent);background:rgba(110,161,255,0.07);padding:2px 6px;border-radius:4px}
+pre code{background:none;padding:0;color:inherit}
+table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13px}
+th{background:var(--surface2);color:var(--accent);font-weight:600;text-align:left;padding:9px 13px;border:1px solid var(--border)}
+td{padding:8px 13px;border:1px solid var(--border)}
+tr:nth-child(even) td{background:rgba(255,255,255,0.012)}
+.note{background:rgba(110,161,255,0.05);border:1px solid rgba(110,161,255,0.14);border-radius:10px;padding:13px 16px;margin:12px 0;font-size:13px;line-height:1.7}.note b{color:var(--accent)}
+.note-warn{background:rgba(251,191,36,0.05);border-color:rgba(251,191,36,0.14)}.note-warn b{color:var(--amber)}
+.note-red{background:rgba(248,113,113,0.05);border-color:rgba(248,113,113,0.14)}.note-red b{color:var(--red)}
+.note-green{background:rgba(52,211,153,0.05);border-color:rgba(52,211,153,0.14)}.note-green b{color:var(--green)}
+.qa{background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:14px 18px;margin:10px 0}
+.qa-q{font-weight:600;color:#fff;margin-bottom:5px;font-size:14px}
+.qa-a{color:var(--muted);font-size:13px;line-height:1.7}
+.tab-group{margin:16px 0}.tab-bar{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.tab-btn{padding:6px 14px;font-size:12px;font-weight:500;font-family:'Outfit',sans-serif;border:1px solid var(--border2);border-radius:6px;background:transparent;color:var(--muted);cursor:pointer;transition:all 0.15s}
+.tab-btn:hover{border-color:rgba(110,161,255,0.3);color:var(--text)}
+.tab-btn.active{background:rgba(110,161,255,0.1);color:var(--accent);border-color:rgba(110,161,255,0.3)}
+.tab-panel{display:none}.tab-panel.active{display:block}
+.flow{display:flex;align-items:center;gap:8px;margin:10px 0;flex-wrap:wrap}
+.flow-step{background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:8px 14px;font-size:13px;color:var(--text);font-weight:500}
+.flow-arrow{color:var(--muted);font-size:16px}
+.env-row{display:flex;gap:12px;margin:10px 0;align-items:stretch}
+.env-card{flex:1;border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:4px}
+.env-card .env-name{font-size:13px;font-weight:600}.env-card .env-status{font-size:11px;color:var(--muted)}
+.pod-row{display:flex;gap:8px;margin:12px 0;align-items:center;flex-wrap:wrap}
+.pod{width:90px;height:48px;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:12px;font-weight:500;gap:2px}
+.pod-v1{background:rgba(110,161,255,0.08);border:1px solid rgba(110,161,255,0.18);color:var(--accent)}
+.pod-v2{background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.18);color:var(--green)}
+.traffic{display:flex;height:32px;border-radius:8px;overflow:hidden;border:1px solid var(--border);margin:10px 0}
+.traffic-v1{background:rgba(110,161,255,0.1);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;color:var(--accent)}
+.traffic-v2{background:rgba(52,211,153,0.1);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;color:var(--green)}
+.toc{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px 24px;margin:30px 0}
+.toc h3{font-size:12px;font-weight:600;color:var(--accent);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.06em}
+.toc a{font-size:13px;color:var(--muted);text-decoration:none;display:block;padding:4px 0;transition:color 0.15s}
+.toc a:hover{color:var(--accent)}
+.footer{text-align:center;padding:36px 0 16px;font-size:11px;color:var(--muted);border-top:1px solid var(--border);margin-top:40px}
+@media(max-width:640px){.page{padding:0 16px 60px}.section{padding:20px 16px}.env-row{flex-direction:column}.hero{padding:36px 16px 30px}}
+</style>
+
+</head>
+<body>
+<div class="hero">
+  <div class="hero-tag">Microservices · Topic 04</div>
+  <h1>Circuit Breaker, Retry &amp; Timeout</h1>
+  <p class="hero-sub">3 states, Polly in .NET, exponential backoff, jitter, bulkhead, fallbacks. Interactive diagrams and code.</p>
+</div>
+<div class="page">
+
+<div class="section" id="s1">
+<h2><span class="num">01</span> The Cascading Failure Problem</h2>
+<p>Service A calls Service B. B is dead. Without protection: threads in A pile up → A dies → everything upstream dies. One dead service takes down the whole system.</p>
+<div class="flow"><div class="flow-step">Orders (healthy)</div><span class="flow-arrow">→</span><div class="flow-step">Payments (healthy)</div><span class="flow-arrow">→</span><div class="flow-step" style="border-color:rgba(248,113,113,0.3);color:var(--red)">Stripe (DOWN)</div></div>
+<p style="color:var(--red)">Payments waits for Stripe → threads pile up → Orders waits for Payments → Users see 500 errors</p>
+</div>
+
+<div class="section" id="s2">
+<h2><span class="num">02</span> The 3 States</h2>
+<div class="tab-group" id="states">
+<div class="tab-bar">
+<button class="tab-btn active" onclick="showTab('states',0)">Closed (normal)</button>
+<button class="tab-btn" onclick="showTab('states',1)">Open (blocking)</button>
+<button class="tab-btn" onclick="showTab('states',2)">Half-Open (testing)</button>
+<button class="tab-btn" onclick="showTab('states',3)">State machine</button>
+</div>
+<div class="tab-panel active">
+<div class="env-card" style="background:rgba(52,211,153,0.04);border:1px solid rgba(52,211,153,0.1)"><div class="env-name" style="color:var(--green)">CLOSED — normal operation</div><div class="env-status">All calls go through. Failures counted in a sliding window.</div><div class="env-status">Transitions to OPEN when failure rate exceeds threshold (e.g., 50% of last 10 calls).</div></div>
+</div>
+<div class="tab-panel">
+<div class="env-card" style="background:rgba(248,113,113,0.04);border:1px solid rgba(248,113,113,0.1)"><div class="env-name" style="color:var(--red)">OPEN — blocking all calls</div><div class="env-status">All calls fail immediately — NO network call made. Returns fallback response.</div><div class="env-status">Transitions to HALF-OPEN after recovery timeout (e.g., 30 seconds).</div></div>
+</div>
+<div class="tab-panel">
+<div class="env-card" style="background:rgba(251,191,36,0.04);border:1px solid rgba(251,191,36,0.1)"><div class="env-name" style="color:var(--amber)">HALF-OPEN — testing recovery</div><div class="env-status">ONE probe request allowed through to test.</div><div class="env-status">If probe succeeds → back to CLOSED. If probe fails → back to OPEN.</div></div>
+</div>
+<div class="tab-panel">
+<pre><code>CLOSED ──(failure rate > 50%)──→ OPEN
+                                   │
+                           (wait 30 seconds)
+                                   │
+CLOSED ←──(probe succeeds)── HALF-OPEN ──(probe fails)──→ OPEN</code></pre>
+</div>
+</div>
+</div>
+
+<div class="section" id="s3">
+<h2><span class="num">03</span> Retry + Timeout + Circuit Breaker in Polly</h2>
+<div class="tab-group" id="polly">
+<div class="tab-bar">
+<button class="tab-btn active" onclick="showTab('polly',0)">Timeout</button>
+<button class="tab-btn" onclick="showTab('polly',1)">Retry + jitter</button>
+<button class="tab-btn" onclick="showTab('polly',2)">Full Polly pipeline</button>
+<button class="tab-btn" onclick="showTab('polly',3)">Execution order</button>
+<button class="tab-btn" onclick="showTab('polly',4)">What NOT to retry</button>
+</div>
+<div class="tab-panel active">
+<p style="font-weight:600;color:#fff;margin-bottom:8px">Timeout — limit each individual call</p>
+<pre><code>// Bad — no timeout, thread hangs indefinitely
+var response = await _http.GetAsync("http://payments/api/charge");
+
+// Good — fail after 3 seconds
+var cts = new CancellationTokenSource(TimeSpan.FromSeconds(3));
+var response = await _http.GetAsync("http://payments/api/charge", cts.Token);</code></pre>
+</div>
+<div class="tab-panel">
+<p style="font-weight:600;color:#fff;margin-bottom:8px">Retry with exponential backoff + jitter</p>
+<pre><code>Attempt 1: immediate
+Attempt 2: wait 200ms + random(0-50ms)
+Attempt 3: wait 400ms + random(0-50ms)
+Attempt 4: wait 800ms + random(0-50ms)</code></pre>
+<p><strong>Why jitter?</strong> Without it, all instances retry at identical intervals — a synchronized storm that overwhelms the recovering service. Jitter spreads the load.</p>
+</div>
+<div class="tab-panel">
+<pre><code>builder.Services
+    .AddHttpClient&lt;IPaymentsClient, PaymentsClient&gt;()
+    .AddResilienceHandler("payments-pipeline", builder =>
+    {
+        builder.AddTimeout(TimeSpan.FromSeconds(3));
+
+        builder.AddRetry(new HttpRetryStrategyOptions
+        {
+            MaxRetryAttempts = 3,
+            Delay = TimeSpan.FromMilliseconds(200),
+            BackoffType = DelayBackoffType.Exponential,
+            UseJitter = true,
+            ShouldHandle = args => ValueTask.FromResult(
+                args.Outcome.Result?.StatusCode
+                    is HttpStatusCode.ServiceUnavailable
+                    or HttpStatusCode.TooManyRequests)
+        });
+
+        builder.AddCircuitBreaker(new HttpCircuitBreakerStrategyOptions
+        {
+            FailureRatio = 0.5,
+            SamplingDuration = TimeSpan.FromSeconds(30),
+            MinimumThroughput = 10,
+            BreakDuration = TimeSpan.FromSeconds(30)
+        });
+    });</code></pre>
+</div>
+<div class="tab-panel">
+<div class="note"><b>Order: Circuit Breaker → Retry → Timeout</b><br><br>
+<code>Circuit breaker open? → fail immediately, no network call</code><br>
+<code>Attempt 1 with 3s timeout → fails</code><br>
+<code>Retry: wait 200ms + jitter</code><br>
+<code>Attempt 2 with 3s timeout → fails</code><br>
+<code>Retry: wait 400ms + jitter</code><br>
+<code>Attempt 3 with 3s timeout → fails</code><br>
+<code>Failure recorded → circuit breaker checks rate</code></div>
+</div>
+<div class="tab-panel">
+<div class="note-red note"><b>Never retry these:</b><br>
+400 Bad Request — payload is wrong, retrying won't fix it<br>
+401 Unauthorized — token is invalid<br>
+404 Not Found — resource doesn't exist<br><br>
+<b>Only retry:</b> 503 Service Unavailable, 429 Too Many Requests, 504 Gateway Timeout, network failures</div>
+</div>
+</div>
+</div>
+
+<div class="section" id="s4">
+<h2><span class="num">04</span> Fallback + Bulkhead</h2>
+<pre><code>public async Task&lt;PaymentResult&gt; ChargeAsync(PaymentRequest request)
+{
+    try { return await _paymentsClient.ChargeAsync(request); }
+    catch (BrokenCircuitException)
+    {
+        return PaymentResult.ServiceUnavailable(
+            "Payment processing is temporarily unavailable.");
+    }
+}</code></pre>
+<p><strong>Bulkhead:</strong> isolate thread pools per dependency. One slow service can't consume all threads. Named after ship compartments — one floods, others survive.</p>
+</div>
+
+<div class="section" id="s5">
+<h2><span class="num">05</span> Interview Q&amp;A</h2>
+<div class="qa"><div class="qa-q">Q: Circuit breaker vs timeout?</div><div class="qa-a">Timeout limits one call. Circuit breaker tracks history and stops all calls when service is clearly unhealthy. They work together: timeouts generate the failures the circuit breaker counts.</div></div>
+<div class="qa"><div class="qa-q">Q: Why does retry need jitter?</div><div class="qa-a">Without jitter, all instances retry at identical intervals — a synchronized storm. Jitter (random ±50ms) spreads retry load across time, giving the service room to recover.</div></div>
+</div>
+<div class="footer">Circuit Breaker, Retry &amp; Timeout — Microservices Study Guide · C# / .NET · Interview Prep · 2026</div>
+</div>
+<script>
+function showTab(g,i){var p=document.getElementById(g).querySelectorAll('.tab-panel'),b=document.getElementById(g).querySelectorAll('.tab-btn');p.forEach(function(x,j){x.classList.toggle('active',j===i)});b.forEach(function(x,j){x.classList.remove('active');if(j===i)x.classList.add('active')})}
+</script>
+</body>
+</html>

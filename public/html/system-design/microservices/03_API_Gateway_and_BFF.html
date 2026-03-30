@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Topic 3 — API Gateway</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0d0f0a;--s:#141810;--s2:#1c2218;--b:rgba(255,255,255,.06);--b2:rgba(255,255,255,.12);--accent:#84cc16;--blue:#3b82f6;--amber:#f59e0b;--red:#ef4444;--teal:#14b8a6;--purple:#a855f7;--text:#e8ecd0;--muted:#8a9470;--code:#080c04;--r:10px}
+*{box-sizing:border-box;margin:0;padding:0}html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Sora',sans-serif;font-size:15px;line-height:1.75}
+.hero{padding:0;background:linear-gradient(135deg,#080c04 0%,#0d1008 50%,#080c04 100%);border-bottom:1px solid var(--b2);position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-80px;right:-80px;width:600px;height:600px;background:radial-gradient(circle,rgba(132,204,22,.08) 0%,transparent 65%);pointer-events:none}
+.hero::after{content:'';position:absolute;bottom:-60px;left:-60px;width:400px;height:400px;background:radial-gradient(circle,rgba(59,130,246,.07) 0%,transparent 60%);pointer-events:none}
+.hero-inner{max-width:980px;margin:0 auto;padding:64px 32px 56px;position:relative;z-index:1}
+.badge{display:inline-flex;align-items:center;gap:7px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent);background:rgba(132,204,22,.1);border:1px solid rgba(132,204,22,.22);padding:4px 12px;border-radius:20px;letter-spacing:.06em;margin-bottom:22px}
+.bdot{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:blink 2s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+h1{font-size:clamp(30px,5vw,52px);font-weight:700;line-height:1.1;letter-spacing:-.03em;margin-bottom:14px;background:linear-gradient(135deg,#e8ecd0 0%,#6b7460 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-sub{font-size:16px;color:var(--muted);max-width:560px;line-height:1.7;margin-bottom:24px}
+.hero-tags{display:flex;gap:8px;flex-wrap:wrap}
+.hero-tag{font-size:11px;color:var(--muted);background:var(--s);border:1px solid var(--b2);padding:3px 12px;border-radius:20px}
+.page{max-width:980px;margin:0 auto;padding:0 32px 100px}
+.toc{margin:36px 0;background:var(--s);border:1px solid var(--b);border-radius:var(--r);padding:24px 28px}
+.toc-title{font-size:10px;font-weight:600;color:var(--muted);letter-spacing:.14em;text-transform:uppercase;margin-bottom:14px}
+.toc ol{list-style:none;counter-reset:t;display:grid;grid-template-columns:1fr 1fr;gap:5px 24px}
+.toc li{counter-increment:t;display:flex;gap:8px;align-items:baseline}
+.toc li::before{content:counter(t,decimal-leading-zero);font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--accent);opacity:.55;flex-shrink:0}
+.toc a{color:var(--muted);text-decoration:none;font-size:13px;transition:color .15s}.toc a:hover{color:var(--text)}
+.section{padding-top:60px}
+.sec-lbl{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);margin-bottom:10px;display:flex;align-items:center;gap:10px}
+.sec-lbl::after{content:'';flex:1;height:1px;background:var(--b)}
+h2{font-size:26px;font-weight:700;letter-spacing:-.025em;margin-bottom:14px;line-height:1.25}
+h3{font-size:17px;font-weight:600;margin:28px 0 12px}
+p{color:var(--muted);margin-bottom:14px;line-height:1.75}p strong{color:var(--text);font-weight:600}
+.code-block{background:var(--code);border:1px solid var(--b);border-radius:var(--r);overflow:hidden;margin:18px 0}
+.code-hdr{display:flex;align-items:center;justify-content:space-between;padding:9px 16px;background:rgba(255,255,255,.02);border-bottom:1px solid var(--b)}
+.code-lang{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--accent);font-weight:600;letter-spacing:.1em;text-transform:uppercase}
+.code-dots{display:flex;gap:5px}.code-dots span{width:9px;height:9px;border-radius:50%}
+.code-dots span:nth-child(1){background:#ef4444}.code-dots span:nth-child(2){background:#f59e0b}.code-dots span:nth-child(3){background:#22c55e}
+pre{padding:20px;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.8}
+code{color:#c8d0e0}.kw{color:#7c9ef5}.cm{color:#3a5068;font-style:italic}.str{color:#7ec891}.typ{color:#e8a96e}.num{color:#c3a6e0}
+.callout{border-radius:var(--r);padding:14px 18px;margin:16px 0;border-left:3px solid;display:flex;gap:12px;align-items:flex-start}
+.callout-icon{font-size:14px;flex-shrink:0;margin-top:2px}.callout-body{flex:1;font-size:13px;line-height:1.65}.callout-body strong{font-weight:600}
+.callout.info{background:rgba(59,130,246,.07);border-color:var(--blue)}.callout.info .callout-body{color:#93b8f8}
+.callout.tip{background:rgba(132,204,22,.07);border-color:var(--accent)}.callout.tip .callout-body{color:#bef264}
+.callout.warn{background:rgba(245,158,11,.07);border-color:var(--amber)}.callout.warn .callout-body{color:#fcd34d}
+.callout.danger{background:rgba(239,68,68,.07);border-color:var(--red)}.callout.danger .callout-body{color:#fca5a5}
+.diagram-card{background:var(--s);border:1px solid var(--b);border-radius:var(--r);padding:28px;margin:20px 0;overflow:hidden}
+.diagram-card svg{width:100%;display:block}
+.table-wrap{overflow-x:auto;margin:16px 0}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:480px}
+th{text-align:left;padding:10px 14px;background:rgba(255,255,255,.03);color:var(--text);font-weight:600;font-size:11px;letter-spacing:.06em;border-bottom:1px solid var(--b2)}
+td{padding:10px 14px;color:var(--muted);border-bottom:1px solid var(--b);vertical-align:top;line-height:1.5}
+tr:last-child td{border-bottom:none}td strong{color:var(--text)}
+.bdg{display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600;letter-spacing:.04em;white-space:nowrap}
+.bdg-g{background:rgba(132,204,22,.15);color:var(--accent)}.bdg-r{background:rgba(239,68,68,.15);color:var(--red)}.bdg-b{background:rgba(59,130,246,.15);color:var(--blue)}.bdg-a{background:rgba(245,158,11,.15);color:var(--amber)}
+.qa-list{display:flex;flex-direction:column;gap:12px;margin:16px 0}
+.qa-item{background:var(--s);border:1px solid var(--b);border-radius:var(--r);overflow:hidden}
+.qa-q{padding:14px 18px;font-size:13.5px;color:var(--text);font-weight:600;background:rgba(255,255,255,.02);display:flex;gap:12px;align-items:flex-start}
+.qa-q::before{content:'Q';font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;color:var(--accent);background:rgba(132,204,22,.12);border:1px solid rgba(132,204,22,.25);padding:2px 7px;border-radius:4px;flex-shrink:0;margin-top:1px}
+.qa-a{padding:14px 18px;font-size:13px;color:var(--muted);border-top:1px solid var(--b);display:flex;gap:12px;line-height:1.65}
+.qa-a::before{content:'A';font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;color:#22c55e;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.2);padding:2px 7px;border-radius:4px;flex-shrink:0;margin-top:2px}
+.divider{height:1px;background:var(--b);margin:52px 0 0}
+.footer{margin-top:60px;padding-top:20px;border-top:1px solid var(--b);text-align:center;font-size:11px;color:var(--muted);opacity:.4}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:16px 0}
+.card{background:var(--s);border:1px solid var(--b);border-radius:var(--r);padding:18px}
+.card-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px}
+.card-body{font-size:12.5px;color:var(--muted);line-height:1.6}
+.tag{display:inline-block;font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px;margin-top:8px}
+.tag-bad{background:rgba(239,68,68,.15);color:var(--red)}.tag-ok{background:rgba(132,204,22,.15);color:var(--accent)}
+.resp-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin:16px 0}
+.resp-card{background:var(--s);border:1px solid var(--b);border-radius:var(--r);padding:16px;border-top:2px solid}
+.resp-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px}
+.resp-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px}
+.resp-body{font-size:12px;color:var(--muted);line-height:1.55}
+button{font-family:'Sora',sans-serif;font-size:12px;font-weight:500;padding:5px 14px;border-radius:20px;border:1px solid var(--b2);background:transparent;color:var(--muted);cursor:pointer;transition:all .15s}
+button:hover{background:var(--s2);color:var(--text)}
+button.act{background:rgba(132,204,22,.12);color:var(--accent);border-color:rgba(132,204,22,.3)}
+button.act-fail{background:rgba(239,68,68,.12);color:var(--red);border-color:rgba(239,68,68,.3)}
+.sim-note{font-size:13px;color:var(--muted);padding:10px 14px;border-radius:var(--r);background:var(--s2);border:1px solid var(--b);margin-top:8px;min-height:44px;line-height:1.65}
+@media(max-width:640px){.toc ol,.grid2,.resp-grid{grid-template-columns:1fr}.page,.hero-inner{padding-left:16px;padding-right:16px}h2{font-size:20px}}
+</style>
+</head>
+<body>
+<div class="hero">
+<div class="hero-inner">
+  <div class="badge"><span class="bdot"></span>Microservices · Topic 3 · C# / .NET</div>
+  <h1>API Gateway</h1>
+  <p class="hero-sub">The front door of your microservices system. Routing, auth, rate limiting, aggregation, the BFF pattern, and a full implementation with YARP.</p>
+  <div class="hero-tags">
+    <span class="hero-tag">YARP</span><span class="hero-tag">JWT verification</span>
+    <span class="hero-tag">Rate limiting</span><span class="hero-tag">Request aggregation</span>
+    <span class="hero-tag">BFF pattern</span><span class="hero-tag">SSL termination</span>
+  </div>
+</div>
+</div>
+
+<div class="page">
+
+<div class="toc">
+<div class="toc-title">Contents</div>
+<ol>
+<li><a href="#s1">The problem without a gateway</a></li>
+<li><a href="#s2">What the gateway does</a></li>
+<li><a href="#s3">Responsibility 1 — Routing (YARP)</a></li>
+<li><a href="#s4">Responsibility 2 — Authentication</a></li>
+<li><a href="#s5">Responsibility 3 — Rate limiting</a></li>
+<li><a href="#s6">Responsibility 4 — Request aggregation</a></li>
+<li><a href="#s7">The BFF pattern</a></li>
+<li><a href="#s8">Full request lifecycle — animated</a></li>
+<li><a href="#s9">Gateway vs backend responsibilities</a></li>
+<li><a href="#s10">Gateway vs load balancer</a></li>
+<li><a href="#s11">Interview Q&A</a></li>
+</ol>
+</div>
+
+<!-- S1 -->
+<div class="section" id="s1">
+<div class="sec-lbl">01</div>
+<h2>The Problem Without a Gateway</h2>
+<p>Without a gateway, every client talks directly to every service. The mobile app needs to know 8 service URLs. Auth is implemented in every service. CORS is configured everywhere.</p>
+<div class="grid2">
+<div class="card">
+<div class="card-title">Without API Gateway</div>
+<div class="card-body">Every client knows every service URL. Auth logic duplicated in every service. CORS configured everywhere. Move a service = update all clients. No aggregation across services.</div>
+<span class="tag tag-bad">Tight coupling</span>
+</div>
+<div class="card">
+<div class="card-title">With API Gateway</div>
+<div class="card-body">One front door. Clients talk to one URL. Gateway routes, authenticates, rate-limits, and aggregates. Services stay completely hidden behind it.</div>
+<span class="tag tag-ok">Single entry point</span>
+</div>
+</div>
+<div class="diagram-card">
+<svg viewBox="0 0 820 260" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="a1" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#ef4444" stroke-width="1.2" stroke-linecap="round"/></marker></defs>
+<text x="205" y="18" text-anchor="middle" fill="#ef4444" font-size="12" font-weight="600" font-family="Sora,sans-serif">Without gateway — chaos</text>
+<!-- Clients -->
+<rect x="16" y="36" width="86" height="36" rx="6" fill="rgba(255,255,255,.04)" stroke="rgba(255,255,255,.08)" stroke-width="1"/>
+<text x="59" y="57" text-anchor="middle" fill="#94a3b8" font-size="11" font-weight="600" font-family="Sora,sans-serif">Mobile app</text>
+<rect x="16" y="88" width="86" height="36" rx="6" fill="rgba(255,255,255,.04)" stroke="rgba(255,255,255,.08)" stroke-width="1"/>
+<text x="59" y="109" text-anchor="middle" fill="#94a3b8" font-size="11" font-weight="600" font-family="Sora,sans-serif">Web browser</text>
+<rect x="16" y="140" width="86" height="36" rx="6" fill="rgba(255,255,255,.04)" stroke="rgba(255,255,255,.08)" stroke-width="1"/>
+<text x="59" y="161" text-anchor="middle" fill="#94a3b8" font-size="11" font-weight="600" font-family="Sora,sans-serif">Partner API</text>
+<!-- Services -->
+<rect x="238" y="24" width="110" height="36" rx="6" fill="rgba(239,68,68,.07)" stroke="rgba(239,68,68,.2)" stroke-width="1"/>
+<text x="293" y="45" text-anchor="middle" fill="#fca5a5" font-size="11" font-family="Sora,sans-serif">Orders :8001</text>
+<rect x="238" y="72" width="110" height="36" rx="6" fill="rgba(239,68,68,.07)" stroke="rgba(239,68,68,.2)" stroke-width="1"/>
+<text x="293" y="93" text-anchor="middle" fill="#fca5a5" font-size="11" font-family="Sora,sans-serif">Payments :8002</text>
+<rect x="238" y="120" width="110" height="36" rx="6" fill="rgba(239,68,68,.07)" stroke="rgba(239,68,68,.2)" stroke-width="1"/>
+<text x="293" y="141" text-anchor="middle" fill="#fca5a5" font-size="11" font-family="Sora,sans-serif">Users :8003</text>
+<rect x="238" y="168" width="110" height="36" rx="6" fill="rgba(239,68,68,.07)" stroke="rgba(239,68,68,.2)" stroke-width="1"/>
+<text x="293" y="189" text-anchor="middle" fill="#fca5a5" font-size="11" font-family="Sora,sans-serif">Inventory :8004</text>
+<!-- Crossing arrows (chaos) -->
+<line x1="102" y1="54" x2="236" y2="42" stroke="#ef4444" stroke-width="1" marker-end="url(#a1)"/>
+<line x1="102" y1="54" x2="236" y2="90" stroke="#ef4444" stroke-width="1" marker-end="url(#a1)"/>
+<line x1="102" y1="54" x2="236" y2="138" stroke="#ef4444" stroke-width="1" marker-end="url(#a1)"/>
+<line x1="102" y1="106" x2="236" y2="90" stroke="#ef4444" stroke-width="1" marker-end="url(#a1)"/>
+<line x1="102" y1="106" x2="236" y2="138" stroke="#ef4444" stroke-width="1" marker-end="url(#a1)"/>
+<line x1="102" y1="106" x2="236" y2="186" stroke="#ef4444" stroke-width="1" marker-end="url(#a1)"/>
+<line x1="102" y1="158" x2="236" y2="42" stroke="#ef4444" stroke-width="1" marker-end="url(#a1)"/>
+<line x1="102" y1="158" x2="236" y2="138" stroke="#ef4444" stroke-width="1" marker-end="url(#a1)"/>
+<line x1="102" y1="158" x2="236" y2="186" stroke="#ef4444" stroke-width="1" marker-end="url(#a1)"/>
+<!-- Problem list -->
+<rect x="380" y="24" width="420" height="190" rx="10" fill="rgba(239,68,68,.05)" stroke="rgba(239,68,68,.2)" stroke-width="1"/>
+<text x="400" y="52" fill="#fca5a5" font-size="12" font-weight="600" font-family="Sora,sans-serif">Problems</text>
+<text x="400" y="76" fill="#94a3b8" font-size="11" font-family="Sora,sans-serif">Each client knows every service URL</text>
+<text x="400" y="98" fill="#94a3b8" font-size="11" font-family="Sora,sans-serif">Auth logic duplicated in every service</text>
+<text x="400" y="120" fill="#94a3b8" font-size="11" font-family="Sora,sans-serif">CORS configured in 6 different places</text>
+<text x="400" y="142" fill="#94a3b8" font-size="11" font-family="Sora,sans-serif">Rate limiting in every service</text>
+<text x="400" y="164" fill="#94a3b8" font-size="11" font-family="Sora,sans-serif">Move a service = update all clients</text>
+<text x="400" y="186" fill="#94a3b8" font-size="11" font-family="Sora,sans-serif">No single place to add logging / tracing</text>
+</svg>
+</div>
+</div>
+
+<div class="divider"></div>
+
+<!-- S2 -->
+<div class="section" id="s2">
+<div class="sec-lbl">02</div>
+<h2>What the Gateway Does — 6 Responsibilities</h2>
+<div class="diagram-card">
+<svg viewBox="0 0 820 290" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="a2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#84cc16" stroke-width="1.5" stroke-linecap="round"/></marker></defs>
+<!-- All clients → single arrow to gateway -->
+<rect x="16" y="78" width="84" height="36" rx="6" fill="rgba(255,255,255,.04)" stroke="rgba(255,255,255,.08)" stroke-width="1"/>
+<text x="58" y="99" text-anchor="middle" fill="#94a3b8" font-size="11" font-weight="600" font-family="Sora,sans-serif">All clients</text>
+<line x1="100" y1="96" x2="136" y2="96" stroke="#84cc16" stroke-width="1.5" marker-end="url(#a2)"/>
+<!-- Gateway -->
+<rect x="138" y="52" width="180" height="120" rx="10" fill="rgba(132,204,22,.06)" stroke="rgba(132,204,22,.3)" stroke-width="1.5"/>
+<text x="228" y="78" text-anchor="middle" fill="#84cc16" font-size="13" font-weight="700" font-family="Sora,sans-serif">API Gateway</text>
+<line x1="154" y1="90" x2="302" y2="90" stroke="rgba(255,255,255,.08)" stroke-width="1"/>
+<text x="228" y="108" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="Sora,sans-serif">1. Route request</text>
+<text x="228" y="124" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="Sora,sans-serif">2. Auth / JWT verify</text>
+<text x="228" y="140" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="Sora,sans-serif">3. Rate limiting</text>
+<text x="228" y="156" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="Sora,sans-serif">4. SSL termination</text>
+<!-- Arrows to services -->
+<line x1="318" y1="82" x2="368" y2="54" stroke="#84cc16" stroke-width="1.5" marker-end="url(#a2)"/>
+<line x1="318" y1="112" x2="368" y2="112" stroke="#84cc16" stroke-width="1.5" marker-end="url(#a2)"/>
+<line x1="318" y1="142" x2="368" y2="168" stroke="#84cc16" stroke-width="1.5" marker-end="url(#a2)"/>
+<!-- Services -->
+<rect x="370" y="34" width="140" height="40" rx="8" fill="rgba(20,184,166,.08)" stroke="rgba(20,184,166,.25)" stroke-width="1"/>
+<text x="440" y="49" text-anchor="middle" fill="#5eead4" font-size="12" font-weight="600" font-family="Sora,sans-serif">Orders service</text>
+<text x="440" y="65" text-anchor="middle" fill="#94a3b8" font-size="10" font-family="Sora,sans-serif">/api/orders/*</text>
+<rect x="370" y="90" width="140" height="40" rx="8" fill="rgba(20,184,166,.08)" stroke="rgba(20,184,166,.25)" stroke-width="1"/>
+<text x="440" y="105" text-anchor="middle" fill="#5eead4" font-size="12" font-weight="600" font-family="Sora,sans-serif">Users service</text>
+<text x="440" y="121" text-anchor="middle" fill="#94a3b8" font-size="10" font-family="Sora,sans-serif">/api/users/*</text>
+<rect x="370" y="148" width="140" height="40" rx="8" fill="rgba(20,184,166,.08)" stroke="rgba(20,184,166,.25)" stroke-width="1"/>
+<text x="440" y="163" text-anchor="middle" fill="#5eead4" font-size="12" font-weight="600" font-family="Sora,sans-serif">Payments service</text>
+<text x="440" y="179" text-anchor="middle" fill="#94a3b8" font-size="10" font-family="Sora,sans-serif">/api/payments/*</text>
+<!-- Also handles -->
+<rect x="540" y="34" width="264" height="194" rx="10" fill="rgba(255,255,255,.02)" stroke="rgba(255,255,255,.07)" stroke-width="1"/>
+<text x="672" y="58" text-anchor="middle" fill="#94a3b8" font-size="12" font-weight="600" font-family="Sora,sans-serif">Also handles</text>
+<text x="558" y="84" fill="#94a3b8" font-size="11" font-family="Sora,sans-serif">5. Request aggregation</text>
+<text x="558" y="102" fill="#64748b" font-size="11" font-family="Sora,sans-serif">   merge N service calls → one</text>
+<line x1="554" y1="115" x2="796" y2="115" stroke="rgba(255,255,255,.06)" stroke-width="1"/>
+<text x="558" y="138" fill="#94a3b8" font-size="11" font-family="Sora,sans-serif">6. Protocol translation</text>
+<text x="558" y="156" fill="#64748b" font-size="11" font-family="Sora,sans-serif">   REST in → gRPC out</text>
+<text x="558" y="174" fill="#64748b" font-size="11" font-family="Sora,sans-serif">   to internal services</text>
+<!-- Bottom note -->
+<text x="228" y="252" text-anchor="middle" fill="#64748b" font-size="11" font-family="Sora,sans-serif">Clients see one URL. Services stay completely hidden behind the gateway.</text>
+</svg>
+</div>
+</div>
+
+<div class="divider"></div>
+
+<!-- S3 -->
+<div class="section" id="s3">
+<div class="sec-lbl">03</div>
+<h2>Responsibility 1 — Routing with YARP</h2>
+<p>The gateway maps URL patterns to services. A request for <code>/api/orders/123</code> goes to Orders service. The client never knows the internal address. In .NET, YARP (Yet Another Reverse Proxy) is Microsoft's production-grade gateway library.</p>
+<div class="code-block">
+<div class="code-hdr"><span class="code-lang">bash — Install</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+<pre><code>dotnet add package Yarp.ReverseProxy</code></pre>
+</div>
+<div class="code-block">
+<div class="code-hdr"><span class="code-lang">JSON — appsettings.json — declarative routing</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+<pre><code>{
+  <span class="str">"ReverseProxy"</span>: {
+    <span class="str">"Routes"</span>: {
+      <span class="str">"orders-route"</span>: {
+        <span class="str">"ClusterId"</span>: <span class="str">"orders-cluster"</span>,
+        <span class="str">"Match"</span>: { <span class="str">"Path"</span>: <span class="str">"/api/orders/{**catch-all}"</span> }
+      },
+      <span class="str">"users-route"</span>: {
+        <span class="str">"ClusterId"</span>: <span class="str">"users-cluster"</span>,
+        <span class="str">"Match"</span>: { <span class="str">"Path"</span>: <span class="str">"/api/users/{**catch-all}"</span> }
+      },
+      <span class="str">"payments-route"</span>: {
+        <span class="str">"ClusterId"</span>: <span class="str">"payments-cluster"</span>,
+        <span class="str">"Match"</span>: { <span class="str">"Path"</span>: <span class="str">"/api/payments/{**catch-all}"</span> }
+      }
+    },
+    <span class="str">"Clusters"</span>: {
+      <span class="str">"orders-cluster"</span>: {
+        <span class="str">"Destinations"</span>: {
+          <span class="str">"primary"</span>: { <span class="str">"Address"</span>: <span class="str">"http://orders-service:8001/"</span> }
+        }
+      },
+      <span class="str">"payments-cluster"</span>: {
+        <span class="str">"Destinations"</span>: {
+          <span class="str">"primary"</span>: { <span class="str">"Address"</span>: <span class="str">"http://payments-service:8002/"</span> }
+        }
+      }
+    }
+  }
+}</code></pre>
+</div>
+<div class="code-block">
+<div class="code-hdr"><span class="code-lang">C# — Program.cs — wire it up</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+<pre><code>builder.Services.AddReverseProxy()
+    .LoadFromConfig(builder.Configuration.GetSection(<span class="str">"ReverseProxy"</span>));
+
+app.MapReverseProxy();
+
+<span class="cm">// That's it. YARP reads config, listens on port 80,</span>
+<span class="cm">// forwards traffic to the right service.</span>
+<span class="cm">// Change an internal address = update one config line, zero clients affected.</span></code></pre>
+</div>
+</div>
+
+<div class="divider"></div>
+
+<!-- S4 -->
+<div class="section" id="s4">
+<div class="sec-lbl">04</div>
+<h2>Responsibility 2 — Authentication</h2>
+<p>The gateway verifies JWTs <strong>once</strong> before forwarding. Services downstream trust that if a request arrived through the gateway, it's already authenticated — they don't parse tokens.</p>
+<div class="code-block">
+<div class="code-hdr"><span class="code-lang">C# — Gateway — JWT verification + header injection</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+<pre><code>builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =&gt;
+    {
+        options.Authority = <span class="str">"https://your-identity-server"</span>;
+        options.Audience  = <span class="str">"api-gateway"</span>;
+    });
+
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapReverseProxy(proxyPipeline =&gt;
+{
+    proxyPipeline.Use(<span class="kw">async</span> (context, next) =&gt;
+    {
+        <span class="cm">// Stamp the verified userId into a header</span>
+        <span class="cm">// Downstream services read this — no JWT parsing needed</span>
+        <span class="kw">if</span> (context.User.Identity?.IsAuthenticated == <span class="kw">true</span>)
+        {
+            <span class="kw">var</span> userId = context.User.FindFirst(<span class="str">"sub"</span>)?.Value;
+            context.Request.Headers[<span class="str">"X-User-Id"</span>] = userId;
+        }
+        <span class="kw">await</span> next();
+    });
+});</code></pre>
+</div>
+<div class="code-block">
+<div class="code-hdr"><span class="code-lang">C# — Orders service — trusts the header, never parses JWT</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+<pre><code>[HttpPost]
+<span class="kw">public async</span> Task&lt;<span class="typ">IActionResult</span>&gt; PlaceOrder()
+{
+    <span class="cm">// Gateway already verified the token — just read the header</span>
+    <span class="kw">var</span> userId = Request.Headers[<span class="str">"X-User-Id"</span>].ToString();
+    <span class="cm">// ... use userId directly — no auth library needed in this service</span>
+}</code></pre>
+</div>
+<div class="callout tip">
+<span class="callout-icon">✅</span>
+<div class="callout-body"><strong>The gateway is the trust boundary.</strong> Inside the network, services communicate freely without re-authenticating. This is called the "internal network trust" model — every service trusts headers that came from the gateway.</div>
+</div>
+</div>
+
+<div class="divider"></div>
+
+<!-- S5 -->
+<div class="section" id="s5">
+<div class="sec-lbl">05</div>
+<h2>Responsibility 3 — Rate Limiting</h2>
+<p>Protect services from being overwhelmed. The gateway enforces limits per client before requests even reach your services.</p>
+<div class="code-block">
+<div class="code-hdr"><span class="code-lang">C# — Rate limiting policies</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+<pre><code>builder.Services.AddRateLimiter(options =&gt;
+{
+    <span class="cm">// Standard: 100 requests per minute per IP</span>
+    options.AddFixedWindowLimiter(<span class="str">"standard"</span>, opt =&gt;
+    {
+        opt.PermitLimit = <span class="num">100</span>;
+        opt.Window      = TimeSpan.FromMinutes(<span class="num">1</span>);
+        opt.QueueLimit  = <span class="num">10</span>;
+    });
+
+    <span class="cm">// Premium: 1000/min for authenticated premium clients</span>
+    options.AddFixedWindowLimiter(<span class="str">"premium"</span>, opt =&gt;
+    {
+        opt.PermitLimit = <span class="num">1000</span>;
+        opt.Window      = TimeSpan.FromMinutes(<span class="num">1</span>);
+    });
+
+    <span class="cm">// Return 429 Too Many Requests when limit hit</span>
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+});
+
+app.UseRateLimiter();</code></pre>
+</div>
+</div>
+
+<div class="divider"></div>
+
+<!-- S6 -->
+<div class="section" id="s6">
+<div class="sec-lbl">06</div>
+<h2>Responsibility 4 — Request Aggregation</h2>
+<p>A mobile app's home screen needs data from Users, Orders, and Inventory simultaneously. Without aggregation: 3 round trips. With aggregation: the gateway fans out in parallel and returns one merged response.</p>
+<div class="diagram-card">
+<svg viewBox="0 0 820 260" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="a3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#84cc16" stroke-width="1.5" stroke-linecap="round"/></marker>
+<marker id="a3g" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round"/></marker></defs>
+<!-- Mobile -->
+<rect x="16" y="104" width="110" height="52" rx="8" fill="rgba(255,255,255,.04)" stroke="rgba(255,255,255,.08)" stroke-width="1"/>
+<text x="71" y="125" text-anchor="middle" fill="#94a3b8" font-size="12" font-weight="600" font-family="Sora,sans-serif">Mobile app</text>
+<text x="71" y="143" text-anchor="middle" fill="#94a3b8" font-size="10" font-family="Sora,sans-serif">1 request</text>
+<line x1="126" y1="130" x2="162" y2="130" stroke="#84cc16" stroke-width="1.5" marker-end="url(#a3)"/>
+<!-- Gateway -->
+<rect x="164" y="94" width="160" height="72" rx="8" fill="rgba(132,204,22,.06)" stroke="rgba(132,204,22,.25)" stroke-width="1"/>
+<text x="244" y="118" text-anchor="middle" fill="#84cc16" font-size="13" font-weight="600" font-family="Sora,sans-serif">API Gateway</text>
+<text x="244" y="136" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="Sora,sans-serif">fans out in parallel</text>
+<text x="244" y="152" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="Sora,sans-serif">Task.WhenAll()</text>
+<!-- Parallel arrows -->
+<line x1="324" y1="114" x2="380" y2="72" stroke="#84cc16" stroke-width="1.5" marker-end="url(#a3)"/>
+<line x1="324" y1="130" x2="380" y2="130" stroke="#84cc16" stroke-width="1.5" marker-end="url(#a3)"/>
+<line x1="324" y1="146" x2="380" y2="188" stroke="#84cc16" stroke-width="1.5" marker-end="url(#a3)"/>
+<!-- Services -->
+<rect x="382" y="52" width="140" height="40" rx="8" fill="rgba(20,184,166,.08)" stroke="rgba(20,184,166,.25)" stroke-width="1"/>
+<text x="452" y="73" text-anchor="middle" fill="#5eead4" font-size="12" font-weight="600" font-family="Sora,sans-serif">Users service</text>
+<rect x="382" y="110" width="140" height="40" rx="8" fill="rgba(20,184,166,.08)" stroke="rgba(20,184,166,.25)" stroke-width="1"/>
+<text x="452" y="131" text-anchor="middle" fill="#5eead4" font-size="12" font-weight="600" font-family="Sora,sans-serif">Orders service</text>
+<rect x="382" y="168" width="140" height="40" rx="8" fill="rgba(20,184,166,.08)" stroke="rgba(20,184,166,.25)" stroke-width="1"/>
+<text x="452" y="189" text-anchor="middle" fill="#5eead4" font-size="12" font-weight="600" font-family="Sora,sans-serif">Inventory service</text>
+<!-- Converge arrows -->
+<line x1="522" y1="72" x2="576" y2="130" stroke="#94a3b8" stroke-width="1" marker-end="url(#a3g)"/>
+<line x1="522" y1="130" x2="576" y2="130" stroke="#94a3b8" stroke-width="1" marker-end="url(#a3g)"/>
+<line x1="522" y1="188" x2="576" y2="130" stroke="#94a3b8" stroke-width="1" marker-end="url(#a3g)"/>
+<!-- Merged response -->
+<rect x="578" y="108" width="148" height="44" rx="8" fill="rgba(59,130,246,.08)" stroke="rgba(59,130,246,.25)" stroke-width="1"/>
+<text x="652" y="127" text-anchor="middle" fill="#93b8f8" font-size="12" font-weight="600" font-family="Sora,sans-serif">One merged</text>
+<text x="652" y="143" text-anchor="middle" fill="#93b8f8" font-size="12" font-weight="600" font-family="Sora,sans-serif">response</text>
+<text x="410" y="238" text-anchor="middle" fill="#64748b" font-size="11" font-family="Sora,sans-serif">Total latency = slowest of 3 calls (not sum). One round trip instead of three.</text>
+</svg>
+</div>
+<div class="code-block">
+<div class="code-hdr"><span class="code-lang">C# — Aggregation endpoint in gateway</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+<pre><code>[HttpGet(<span class="str">"/api/dashboard"</span>)]
+<span class="kw">public async</span> Task&lt;<span class="typ">IActionResult</span>&gt; GetDashboard()
+{
+    <span class="kw">var</span> userId = Request.Headers[<span class="str">"X-User-Id"</span>].ToString();
+
+    <span class="cm">// Fan out — all 3 calls fire simultaneously</span>
+    <span class="kw">var</span> profileTask   = _usersClient.GetProfileAsync(userId);
+    <span class="kw">var</span> ordersTask    = _ordersClient.GetRecentAsync(userId);
+    <span class="kw">var</span> inventoryTask = _inventoryClient.GetAlertsAsync();
+
+    <span class="kw">await</span> Task.WhenAll(profileTask, ordersTask, inventoryTask);
+
+    <span class="cm">// Merge into one response — client gets everything in one round trip</span>
+    <span class="kw">return</span> Ok(<span class="kw">new</span>
+    {
+        Profile   = profileTask.Result,
+        Orders    = ordersTask.Result,
+        Inventory = inventoryTask.Result
+    });
+}</code></pre>
+</div>
+</div>
+
+<div class="divider"></div>
+
+<!-- S7 -->
+<div class="section" id="s7">
+<div class="sec-lbl">07</div>
+<h2>The BFF Pattern — Backend for Frontend</h2>
+<p>Different clients (mobile, web, partner API) have different data needs. Instead of one gateway trying to serve everyone, you create a dedicated gateway per client type.</p>
+<div class="resp-grid">
+<div class="resp-card" style="border-top-color:var(--teal)">
+<div class="resp-label" style="color:var(--teal)">Mobile BFF</div>
+<div class="resp-title">iOS / Android</div>
+<div class="resp-body">Compact payloads. Offline sync support. Minimal data transfer. Owned by the mobile team.</div>
+</div>
+<div class="resp-card" style="border-top-color:var(--blue)">
+<div class="resp-label" style="color:var(--blue)">Web BFF</div>
+<div class="resp-title">React / Vue app</div>
+<div class="resp-body">Rich data aggregations. Server-side auth. Session management. Owned by the web team.</div>
+</div>
+<div class="resp-card" style="border-top-color:var(--amber)">
+<div class="resp-label" style="color:var(--amber)">Partner BFF</div>
+<div class="resp-title">Third party API</div>
+<div class="resp-body">Versioned, heavily throttled, well-documented public API. Owned by the platform team.</div>
+</div>
+</div>
+<div class="callout info">
+<span class="callout-icon">💡</span>
+<div class="callout-body"><strong>Each BFF is owned by the frontend team that uses it.</strong> The mobile team owns the Mobile BFF — they control what data they get without negotiating with backend teams. No conflicting requirements from multiple clients in one gateway.</div>
+</div>
+<div class="diagram-card">
+<svg viewBox="0 0 820 270" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="a4" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round"/></marker>
+<marker id="a4g" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#84cc16" stroke-width="1.5" stroke-linecap="round"/></marker></defs>
+<!-- Clients -->
+<rect x="16" y="28" width="100" height="40" rx="6" fill="rgba(255,255,255,.04)" stroke="rgba(255,255,255,.08)" stroke-width="1"/>
+<text x="66" y="50" text-anchor="middle" fill="#94a3b8" font-size="11" font-weight="600" font-family="Sora,sans-serif">Mobile app</text>
+<rect x="16" y="116" width="100" height="40" rx="6" fill="rgba(255,255,255,.04)" stroke="rgba(255,255,255,.08)" stroke-width="1"/>
+<text x="66" y="138" text-anchor="middle" fill="#94a3b8" font-size="11" font-weight="600" font-family="Sora,sans-serif">Web app</text>
+<rect x="16" y="204" width="100" height="40" rx="6" fill="rgba(255,255,255,.04)" stroke="rgba(255,255,255,.08)" stroke-width="1"/>
+<text x="66" y="226" text-anchor="middle" fill="#94a3b8" font-size="11" font-weight="600" font-family="Sora,sans-serif">Partner API</text>
+<!-- Arrows to BFFs -->
+<line x1="116" y1="48" x2="156" y2="48" stroke="#94a3b8" stroke-width="1" marker-end="url(#a4)"/>
+<line x1="116" y1="136" x2="156" y2="136" stroke="#94a3b8" stroke-width="1" marker-end="url(#a4)"/>
+<line x1="116" y1="224" x2="156" y2="224" stroke="#94a3b8" stroke-width="1" marker-end="url(#a4)"/>
+<!-- BFFs -->
+<rect x="158" y="26" width="160" height="44" rx="8" fill="rgba(20,184,166,.07)" stroke="rgba(20,184,166,.25)" stroke-width="1"/>
+<text x="238" y="45" text-anchor="middle" fill="#5eead4" font-size="12" font-weight="600" font-family="Sora,sans-serif">Mobile BFF</text>
+<text x="238" y="61" text-anchor="middle" fill="#94a3b8" font-size="10" font-family="Sora,sans-serif">compact payloads, offline</text>
+<rect x="158" y="114" width="160" height="44" rx="8" fill="rgba(168,85,247,.07)" stroke="rgba(168,85,247,.25)" stroke-width="1"/>
+<text x="238" y="133" text-anchor="middle" fill="#d8b4fe" font-size="12" font-weight="600" font-family="Sora,sans-serif">Web BFF</text>
+<text x="238" y="149" text-anchor="middle" fill="#94a3b8" font-size="10" font-family="Sora,sans-serif">rich data, server auth</text>
+<rect x="158" y="202" width="160" height="44" rx="8" fill="rgba(245,158,11,.07)" stroke="rgba(245,158,11,.25)" stroke-width="1"/>
+<text x="238" y="221" text-anchor="middle" fill="#fbbf24" font-size="12" font-weight="600" font-family="Sora,sans-serif">Partner BFF</text>
+<text x="238" y="237" text-anchor="middle" fill="#94a3b8" font-size="10" font-family="Sora,sans-serif">versioned, throttled</text>
+<!-- BFFs to services -->
+<line x1="318" y1="48" x2="358" y2="100" stroke="#84cc16" stroke-width="1.5" marker-end="url(#a4g)"/>
+<line x1="318" y1="136" x2="358" y2="136" stroke="#84cc16" stroke-width="1.5" marker-end="url(#a4g)"/>
+<line x1="318" y1="224" x2="358" y2="174" stroke="#84cc16" stroke-width="1.5" marker-end="url(#a4g)"/>
+<!-- Services -->
+<rect x="360" y="76" width="130" height="40" rx="8" fill="rgba(20,184,166,.08)" stroke="rgba(20,184,166,.25)" stroke-width="1"/>
+<text x="425" y="97" text-anchor="middle" fill="#5eead4" font-size="12" font-weight="600" font-family="Sora,sans-serif">Orders service</text>
+<rect x="360" y="126" width="130" height="40" rx="8" fill="rgba(20,184,166,.08)" stroke="rgba(20,184,166,.25)" stroke-width="1"/>
+<text x="425" y="147" text-anchor="middle" fill="#5eead4" font-size="12" font-weight="600" font-family="Sora,sans-serif">Users service</text>
+<rect x="360" y="176" width="130" height="40" rx="8" fill="rgba(20,184,166,.08)" stroke="rgba(20,184,166,.25)" stroke-width="1"/>
+<text x="425" y="197" text-anchor="middle" fill="#5eead4" font-size="12" font-weight="600" font-family="Sora,sans-serif">Payments</text>
+<text x="410" y="254" text-anchor="middle" fill="#64748b" font-size="11" font-family="Sora,sans-serif">All 3 BFFs talk to the same downstream services — they just shape data differently per client.</text>
+</svg>
+</div>
+</div>
+
+<div class="divider"></div>
+
+<!-- S8 -->
+<div class="section" id="s8">
+<div class="sec-lbl">08</div>
+<h2>Full Request Lifecycle — Animated</h2>
+<p>Every request goes through the gateway pipeline in order: rate limiting → auth → routing → forward. Bad requests are stopped early without touching any service.</p>
+<div style="background:var(--s);border:1px solid var(--b);border-radius:var(--r);padding:20px;margin:20px 0">
+<svg id="lc-svg" width="100%" viewBox="0 0 680 180">
+<defs><marker id="alc" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round"/></marker></defs>
+<g id="lc-client" class="node" style="cursor:default">
+  <rect x="10" y="68" width="76" height="44" rx="6" fill="rgba(255,255,255,.04)" stroke="rgba(255,255,255,.08)" stroke-width="1"/>
+  <text x="48" y="86" text-anchor="middle" fill="#94a3b8" font-size="11" font-weight="600" font-family="Sora,sans-serif">Client</text>
+  <text x="48" y="101" text-anchor="middle" fill="#94a3b8" font-size="10" font-family="Sora,sans-serif">sends JWT</text>
+</g>
+<line id="lc-a1" x1="86" y1="90" x2="118" y2="90" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#alc)" opacity="0.2"/>
+<rect id="lc-rl" x="120" y="56" width="76" height="68" rx="6" fill="rgba(239,68,68,.07)" stroke="rgba(239,68,68,.2)" stroke-width="1" opacity="0.4"/>
+<text x="158" y="80" text-anchor="middle" fill="#fca5a5" font-size="11" font-weight="600" font-family="Sora,sans-serif">Rate</text>
+<text x="158" y="95" text-anchor="middle" fill="#fca5a5" font-size="11" font-weight="600" font-family="Sora,sans-serif">Limiter</text>
+<text x="158" y="112" text-anchor="middle" fill="#94a3b8" font-size="9" font-family="Sora,sans-serif">429 if over</text>
+<line id="lc-a2" x1="196" y1="90" x2="228" y2="90" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#alc)" opacity="0.2"/>
+<rect id="lc-auth" x="230" y="56" width="76" height="68" rx="6" fill="rgba(168,85,247,.07)" stroke="rgba(168,85,247,.2)" stroke-width="1" opacity="0.4"/>
+<text x="268" y="80" text-anchor="middle" fill="#d8b4fe" font-size="11" font-weight="600" font-family="Sora,sans-serif">Auth</text>
+<text x="268" y="95" text-anchor="middle" fill="#d8b4fe" font-size="11" font-weight="600" font-family="Sora,sans-serif">Check</text>
+<text x="268" y="112" text-anchor="middle" fill="#94a3b8" font-size="9" font-family="Sora,sans-serif">401 if bad</text>
+<line id="lc-a3" x1="306" y1="90" x2="338" y2="90" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#alc)" opacity="0.2"/>
+<rect id="lc-router" x="340" y="56" width="76" height="68" rx="6" fill="rgba(245,158,11,.07)" stroke="rgba(245,158,11,.2)" stroke-width="1" opacity="0.4"/>
+<text x="378" y="80" text-anchor="middle" fill="#fbbf24" font-size="11" font-weight="600" font-family="Sora,sans-serif">Route</text>
+<text x="378" y="95" text-anchor="middle" fill="#fbbf24" font-size="11" font-weight="600" font-family="Sora,sans-serif">Match</text>
+<text x="378" y="112" text-anchor="middle" fill="#94a3b8" font-size="9" font-family="Sora,sans-serif">pick service</text>
+<line id="lc-a4" x1="416" y1="90" x2="448" y2="90" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#alc)" opacity="0.2"/>
+<rect id="lc-fwd" x="450" y="56" width="76" height="68" rx="6" fill="rgba(59,130,246,.07)" stroke="rgba(59,130,246,.2)" stroke-width="1" opacity="0.4"/>
+<text x="488" y="80" text-anchor="middle" fill="#93b8f8" font-size="11" font-weight="600" font-family="Sora,sans-serif">Forward</text>
+<text x="488" y="95" text-anchor="middle" fill="#93b8f8" font-size="11" font-weight="600" font-family="Sora,sans-serif">+ inject</text>
+<text x="488" y="112" text-anchor="middle" fill="#94a3b8" font-size="9" font-family="Sora,sans-serif">X-User-Id</text>
+<line id="lc-a5" x1="526" y1="90" x2="558" y2="90" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#alc)" opacity="0.2"/>
+<rect id="lc-svc" x="560" y="68" width="100" height="44" rx="6" fill="rgba(132,204,22,.07)" stroke="rgba(132,204,22,.2)" stroke-width="1" opacity="0.4"/>
+<text x="610" y="86" text-anchor="middle" fill="#bef264" font-size="11" font-weight="600" font-family="Sora,sans-serif">Orders</text>
+<text x="610" y="101" text-anchor="middle" fill="#94a3b8" font-size="10" font-family="Sora,sans-serif">service</text>
+<text id="lc-rej1" x="158" y="148" text-anchor="middle" fill="#ef4444" font-size="10" font-family="Sora,sans-serif" opacity="0">429 Too Many Requests</text>
+<text id="lc-rej2" x="268" y="148" text-anchor="middle" fill="#ef4444" font-size="10" font-family="Sora,sans-serif" opacity="0">401 Unauthorized</text>
+</svg>
+<div style="display:flex;gap:6px;flex-wrap:wrap;margin:12px 0 8px" id="lc-btns">
+  <button id="lb0" onclick="lc(0)">Reset</button>
+  <button id="lb1" onclick="lc(1)">1 — arrive</button>
+  <button id="lb2" onclick="lc(2)">2 — rate check</button>
+  <button id="lb3" onclick="lc(3)">3 — auth</button>
+  <button id="lb4" onclick="lc(4)">4 — route</button>
+  <button id="lb5" onclick="lc(5)">5 — forward</button>
+  <button id="lb6" onclick="lc(6)">Rejected: rate limit</button>
+  <button id="lb7" onclick="lc(7)">Rejected: bad token</button>
+</div>
+<div class="sim-note" id="lc-note">Press step 1 to walk through a successful request — or jump to a rejection scenario.</div>
+</div>
+</div>
+
+<div class="divider"></div>
+
+<!-- S9 -->
+<div class="section" id="s9">
+<div class="sec-lbl">09</div>
+<h2>Gateway vs Backend — What Lives Where</h2>
+<p>The gateway handles infrastructure concerns. Business logic stays in services. This distinction came up in our conversation — you correctly identified that aggregation and BFF logic belong in the application layer, not the pure proxy.</p>
+<div class="grid2">
+<div class="card" style="border-top:2px solid var(--accent)">
+<div class="card-title">Lives in the dedicated gateway (YARP/Nginx/Kong)</div>
+<div class="card-body">
+Routing — URL pattern → service mapping<br>
+SSL termination — HTTPS at the edge<br>
+JWT verification — auth happens once here<br>
+Rate limiting — per IP or per client<br>
+CORS — configured in one place<br>
+Access logging — all requests audited
+</div>
+</div>
+<div class="card" style="border-top:2px solid var(--blue)">
+<div class="card-title">Lives in ASP.NET Core BFF (application layer)</div>
+<div class="card-body">
+Request aggregation — fan-out + merge<br>
+Response transformation — reshape for client<br>
+BFF logic — client-specific data shaping<br>
+Business rules — context-aware decisions<br>
+Session management — stateful operations
+</div>
+</div>
+</div>
+<div class="callout info">
+<span class="callout-icon">💡</span>
+<div class="callout-body">In practice most teams run both: a dedicated reverse proxy (YARP or Kong) for pure infrastructure routing, and an ASP.NET Core BFF behind it for the aggregation logic. Two layers, two concerns.</div>
+</div>
+</div>
+
+<div class="divider"></div>
+
+<!-- S10 -->
+<div class="section" id="s10">
+<div class="sec-lbl">10</div>
+<h2>Gateway vs Load Balancer</h2>
+<p>Frequently confused in interviews. They operate at different layers and solve different problems.</p>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Aspect</th><th>API Gateway</th><th>Load Balancer</th></tr></thead>
+<tbody>
+<tr><td><strong>Purpose</strong></td><td>Route requests to different services based on URL/rules</td><td>Distribute traffic across instances of the SAME service</td></tr>
+<tr><td><strong>Layer</strong></td><td>Application layer (L7) — understands HTTP, headers, JWTs</td><td>Transport/network layer (L4/L7) — sees IPs and ports</td></tr>
+<tr><td><strong>Intelligence</strong></td><td>Understands routes, reads JWTs, transforms requests</td><td>Just distributes load — round-robin, least-connections</td></tr>
+<tr><td><strong>Use together?</strong></td><td colspan="2">Yes — gateway does smart routing, LB handles instance distribution behind it</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+
+<div class="divider"></div>
+
+<!-- S11 -->
+<div class="section" id="s11">
+<div class="sec-lbl">11</div>
+<h2>Interview Q&A</h2>
+<div class="qa-list">
+<div class="qa-item">
+<div class="qa-q">What is an API Gateway and why do microservices need one?</div>
+<div class="qa-a">A single entry point for all client requests. It handles cross-cutting concerns — routing, auth, rate limiting, SSL termination — in one place instead of duplicating them in every service. Without it, clients are coupled to service addresses, and every service must independently implement auth and rate limiting.</div>
+</div>
+<div class="qa-item">
+<div class="qa-q">What is the BFF pattern and when do you use it?</div>
+<div class="qa-a">Backend for Frontend — a dedicated gateway per client type (mobile, web, partner). Use it when different clients have meaningfully different data requirements. A mobile app needs compact payloads; a web app needs rich aggregations; a partner API needs versioning. One gateway serving all three becomes a bottleneck of conflicting requirements. Each BFF is owned by the frontend team that consumes it.</div>
+</div>
+<div class="qa-item">
+<div class="qa-q">What's the difference between an API Gateway and a load balancer?</div>
+<div class="qa-a">A load balancer distributes traffic across multiple instances of the same service — purely availability and throughput. A gateway operates at the application layer: it understands routes, reads JWTs, applies business logic, transforms requests, and aggregates responses across multiple different services. You typically use both — the gateway does smart routing, load balancers handle instance distribution behind it.</div>
+</div>
+<div class="qa-item">
+<div class="qa-q">What are the risks of an API Gateway?</div>
+<div class="qa-a">Two main ones. First, it becomes a single point of failure — if it goes down, everything goes down. Mitigation: run multiple gateway instances behind a load balancer. Second, it becomes a bottleneck or "God service" if too much business logic is put inside it. A gateway should handle cross-cutting concerns only — not order processing or database calls.</div>
+</div>
+<div class="qa-item">
+<div class="qa-q">Why does the gateway inject X-User-Id instead of passing the JWT to services?</div>
+<div class="qa-a">The gateway is the trust boundary — it verifies the JWT once and stamps the verified identity into a simple header. Downstream services trust this header without needing JWT libraries, public key configs, or auth complexity. It decouples auth from business services. If the auth mechanism changes (e.g. switch from JWT to OAuth2), only the gateway changes — services are unaffected.</div>
+</div>
+</div>
+</div>
+
+<div class="footer">API Gateway · Microservices Topic 3 · C# / .NET · Interview Prep</div>
+</div>
+
+<script>
+const lcSteps = [
+  {nodes:['lc-client','lc-rl','lc-auth','lc-router','lc-fwd','lc-svc'],arrows:['lc-a1','lc-a2','lc-a3','lc-a4','lc-a5'],active:[],rejects:[],note:'Press step 1 to walk through a successful request, or jump to a rejection scenario.'},
+  {nodes:['lc-client'],arrows:['lc-a1'],active:['lc-client'],rejects:[],note:'Request arrives at the gateway. Client sends a JWT token in the Authorization header. The gateway is the only entry point — services are not reachable from outside.'},
+  {nodes:['lc-client','lc-rl'],arrows:['lc-a1','lc-a2'],active:['lc-client','lc-rl'],rejects:[],note:'Rate limiter checks: has this IP/client sent too many requests? If yes → 429 Too Many Requests, blocked here. If no → pass through to auth.'},
+  {nodes:['lc-client','lc-rl','lc-auth'],arrows:['lc-a1','lc-a2','lc-a3'],active:['lc-client','lc-rl','lc-auth'],rejects:[],note:'Auth verifies the JWT signature and expiry. If invalid or expired → 401 Unauthorized, blocked here. If valid → extract userId claim, pass through.'},
+  {nodes:['lc-client','lc-rl','lc-auth','lc-router'],arrows:['lc-a1','lc-a2','lc-a3','lc-a4'],active:['lc-client','lc-rl','lc-auth','lc-router'],rejects:[],note:'Router matches the path (/api/orders/123) against the route table → maps to Orders service cluster. If no match → 404 Not Found.'},
+  {nodes:['lc-client','lc-rl','lc-auth','lc-router','lc-fwd','lc-svc'],arrows:['lc-a1','lc-a2','lc-a3','lc-a4','lc-a5'],active:['lc-client','lc-rl','lc-auth','lc-router','lc-fwd','lc-svc'],rejects:[],note:'Gateway forwards to Orders service with X-User-Id header injected. Orders service reads the header — never sees the JWT. Response flows back through the gateway to the client.'},
+  {nodes:['lc-client','lc-rl'],arrows:['lc-a1'],active:['lc-client','lc-rl'],rejects:['lc-rej1'],note:'Rejection: rate limit exceeded. Blocked at step 2. 429 returned immediately — zero load reaches any downstream service.'},
+  {nodes:['lc-client','lc-rl','lc-auth'],arrows:['lc-a1','lc-a2'],active:['lc-client','lc-rl','lc-auth'],rejects:['lc-rej2'],note:'Rejection: invalid JWT. Passes rate limiter but fails auth. 401 returned. Orders service never receives this request — bad tokens stopped at the boundary.'},
+];
+const allNodes=['lc-client','lc-rl','lc-auth','lc-router','lc-fwd','lc-svc'];
+const allArrows=['lc-a1','lc-a2','lc-a3','lc-a4','lc-a5'];
+const allRejects=['lc-rej1','lc-rej2'];
+function lc(i){
+  const s=lcSteps[i];
+  document.querySelectorAll('#lc-btns button').forEach((b,j)=>{
+    b.classList.remove('act','act-fail');
+    if(j===i) b.classList.add(i>=6?'act-fail':'act');
+  });
+  allNodes.forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el)return;
+    el.style.opacity = (i===0||s.active.includes(id))?'1':'0.2';
+  });
+  allArrows.forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el)return;
+    el.style.opacity = (i===0||s.arrows.includes(id))?'0.9':'0.08';
+  });
+  allRejects.forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el)return;
+    el.style.opacity = s.rejects.includes(id)?'1':'0';
+  });
+  document.getElementById('lc-note').textContent=s.note;
+}
+lc(0);
+</script>
+</body>
+</html>

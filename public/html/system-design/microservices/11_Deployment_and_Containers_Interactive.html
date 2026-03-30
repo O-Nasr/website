@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Deployment &amp; Containers — Microservices Study Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0c10;--surface:#111318;--surface2:#181c24;--surface3:#1f2530;--border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.11);--accent:#6ea1ff;--accent2:#8b6cf6;--green:#34d399;--amber:#fbbf24;--red:#f87171;--teal:#2dd4bf;--coral:#fb923c;--text:#dfe5ef;--muted:#7e8a9e;--code-bg:#080a0e}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font-size:15px;line-height:1.78;-webkit-font-smoothing:antialiased}
+.page{max-width:900px;margin:0 auto;padding:0 28px 100px}
+.hero{padding:56px 28px 44px;max-width:900px;margin:0 auto;border-bottom:1px solid var(--border);position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-80px;right:-40px;width:360px;height:360px;background:radial-gradient(circle,rgba(110,161,255,0.08) 0%,transparent 70%);pointer-events:none}
+.hero-tag{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:10.5px;font-weight:500;color:var(--accent);background:rgba(110,161,255,0.07);border:1px solid rgba(110,161,255,0.18);padding:4px 14px;border-radius:20px;letter-spacing:0.09em;margin-bottom:14px;text-transform:uppercase}
+.hero h1{font-size:clamp(26px,4.2vw,42px);font-weight:700;line-height:1.15;letter-spacing:-0.03em;margin-bottom:10px;background:linear-gradient(135deg,#dfe5ef 0%,#6ea1ff 50%,#34d399 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero-sub{font-size:15px;color:var(--muted);line-height:1.65;max-width:600px}
+.section{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:30px 30px;margin-top:30px}
+.section h2{font-size:20px;font-weight:700;color:#fff;margin-bottom:18px;letter-spacing:-0.02em;display:flex;align-items:center;gap:10px}
+.section h2 .num{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--accent);background:rgba(110,161,255,0.1);padding:3px 10px;border-radius:6px;font-weight:500}
+.section h3{font-size:15px;font-weight:600;color:var(--accent);margin:22px 0 10px;padding-top:14px;border-top:1px solid var(--border)}
+.section h3:first-of-type{border-top:none;padding-top:0}
+p{margin-bottom:12px}
+strong{color:#fff}
+ul{padding-left:20px;margin:8px 0 14px}
+li{margin:4px 0;font-size:14px}
+pre{background:var(--code-bg);border:1px solid var(--border);border-radius:10px;padding:14px 18px;overflow-x:auto;margin:12px 0;font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.7;color:#c4cdd9}
+code{font-family:'JetBrains Mono',monospace;font-size:12.5px;color:var(--accent);background:rgba(110,161,255,0.07);padding:2px 6px;border-radius:4px}
+pre code{background:none;padding:0;color:inherit}
+table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13px}
+th{background:var(--surface2);color:var(--accent);font-weight:600;text-align:left;padding:9px 13px;border:1px solid var(--border)}
+td{padding:8px 13px;border:1px solid var(--border)}
+tr:nth-child(even) td{background:rgba(255,255,255,0.012)}
+.note{background:rgba(110,161,255,0.05);border:1px solid rgba(110,161,255,0.14);border-radius:10px;padding:13px 16px;margin:12px 0;font-size:13px;line-height:1.7}
+.note b{color:var(--accent)}
+.note-warn{background:rgba(251,191,36,0.05);border-color:rgba(251,191,36,0.14)}
+.note-warn b{color:var(--amber)}
+.note-red{background:rgba(248,113,113,0.05);border-color:rgba(248,113,113,0.14)}
+.note-red b{color:var(--red)}
+.note-green{background:rgba(52,211,153,0.05);border-color:rgba(52,211,153,0.14)}
+.note-green b{color:var(--green)}
+.qa{background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:14px 18px;margin:10px 0}
+.qa-q{font-weight:600;color:#fff;margin-bottom:5px;font-size:14px}
+.qa-a{color:var(--muted);font-size:13px;line-height:1.7}
+
+/* Interactive tabs */
+.tab-group{margin:16px 0}
+.tab-bar{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.tab-btn{padding:6px 14px;font-size:12px;font-weight:500;font-family:'Outfit',sans-serif;border:1px solid var(--border2);border-radius:6px;background:transparent;color:var(--muted);cursor:pointer;transition:all 0.15s}
+.tab-btn:hover{border-color:rgba(110,161,255,0.3);color:var(--text)}
+.tab-btn.active{background:rgba(110,161,255,0.1);color:var(--accent);border-color:rgba(110,161,255,0.3)}
+.tab-btn.active-green{background:rgba(52,211,153,0.1);color:var(--green);border-color:rgba(52,211,153,0.3)}
+.tab-btn.active-amber{background:rgba(251,191,36,0.1);color:var(--amber);border-color:rgba(251,191,36,0.3)}
+.tab-btn.active-red{background:rgba(248,113,113,0.1);color:var(--red);border-color:rgba(248,113,113,0.3)}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+
+/* Pod visuals */
+.pod-row{display:flex;gap:8px;margin:12px 0;align-items:center;flex-wrap:wrap}
+.pod{width:90px;height:48px;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:12px;font-weight:500;gap:2px}
+.pod-v1{background:rgba(110,161,255,0.08);border:1px solid rgba(110,161,255,0.18);color:var(--accent)}
+.pod-v2{background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.18);color:var(--green)}
+.pod-dead{background:rgba(248,113,113,0.05);border:1px dashed rgba(248,113,113,0.15);color:var(--red);opacity:0.5}
+.pod span{font-size:10px;opacity:0.7}
+
+/* Traffic bar */
+.traffic{display:flex;height:32px;border-radius:8px;overflow:hidden;border:1px solid var(--border);margin:10px 0}
+.traffic-v1{background:rgba(110,161,255,0.1);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;color:var(--accent)}
+.traffic-v2{background:rgba(52,211,153,0.1);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;color:var(--green)}
+.traffic-full{background:rgba(110,161,255,0.1);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;color:var(--accent);width:100%}
+
+/* Flow diagram boxes */
+.flow-box{background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:14px 18px;margin:10px 0}
+.flow-box .label{font-size:12px;color:var(--muted);margin-bottom:6px}
+.flow-box .content{font-size:13px;color:var(--text);line-height:1.7}
+
+/* Blue/Green specific */
+.env-row{display:flex;gap:12px;margin:10px 0;align-items:stretch}
+.env-card{flex:1;border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:4px}
+.env-blue{background:rgba(110,161,255,0.06);border:1px solid rgba(110,161,255,0.15)}
+.env-green{background:rgba(52,211,153,0.06);border:1px solid rgba(52,211,153,0.15)}
+.env-idle{background:var(--surface2);border:1px dashed var(--border2);opacity:0.6}
+.env-card .env-name{font-size:13px;font-weight:600}
+.env-card .env-status{font-size:11px;color:var(--muted)}
+.env-blue .env-name{color:var(--accent)}
+.env-green .env-name{color:var(--green)}
+.env-idle .env-name{color:var(--muted)}
+.lb-arrow{display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--muted);padding:4px 0}
+.lb-arrow span{background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.15);padding:4px 12px;border-radius:6px;color:var(--amber);font-weight:500}
+
+.toc{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px 24px;margin:30px 0}
+.toc h3{font-size:12px;font-weight:600;color:var(--accent);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.06em}
+.toc a{font-size:13px;color:var(--muted);text-decoration:none;display:block;padding:4px 0;transition:color 0.15s}
+.toc a:hover{color:var(--accent)}
+.footer{text-align:center;padding:36px 0 16px;font-size:11px;color:var(--muted);border-top:1px solid var(--border);margin-top:40px}
+@media(max-width:640px){.page{padding:0 16px 60px}.section{padding:20px 16px}.env-row{flex-direction:column}.hero{padding:36px 16px 30px}}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-tag">Microservices · Topic 11 · Interview Prep</div>
+  <h1>Deployment &amp; Containers</h1>
+  <p class="hero-sub">Rolling deploys, blue-green, canary releases, CI/CD pipelines for microservices. Interactive diagrams, all code, and interview Q&amp;A.</p>
+</div>
+
+<div class="page">
+
+<div class="toc">
+  <h3>Contents</h3>
+  <a href="#s1">1. The Problem — deploying 20 services without downtime</a>
+  <a href="#s2">2. Strategy 1 — Rolling Deploy (K8s default)</a>
+  <a href="#s3">3. Strategy 2 — Blue-Green Deploy</a>
+  <a href="#s4">4. Strategy 3 — Canary Deploy</a>
+  <a href="#s5">5. Head-to-Head Comparison</a>
+  <a href="#s6">6. CI/CD for Microservices</a>
+  <a href="#s7">7. Kubernetes Deployment YAML Deep Dive</a>
+  <a href="#s8">8. Interview Q&amp;A</a>
+</div>
+
+<!-- ═══════════════════════ SECTION 1 ═══════════════════════ -->
+<div class="section" id="s1">
+<h2><span class="num">01</span> The Problem</h2>
+<p>In a monolith, you deploy <strong>one thing</strong>. In microservices, you deploy <strong>20+ services independently</strong>. How do you update a running service without users noticing?</p>
+<p>Three requirements: <strong>zero downtime</strong> (users never see errors), <strong>safe rollback</strong> (revert quickly if buggy), and <strong>independence</strong> (deploying Orders doesn't require deploying Payments).</p>
+
+<div class="tab-group" id="overview">
+<div class="tab-bar">
+<button class="tab-btn active" onclick="showTab('overview',0)">Rolling</button>
+<button class="tab-btn" onclick="showTab('overview',1)">Blue-Green</button>
+<button class="tab-btn" onclick="showTab('overview',2)">Canary</button>
+</div>
+<div class="tab-panel active">
+<div class="flow-box"><div class="label">Rolling deploy</div><div class="content">Replace pods one by one. Old and new run together during transition. K8s default. Zero extra cost. Slowest rollback.</div></div>
+</div>
+<div class="tab-panel">
+<div class="flow-box"><div class="label">Blue-green deploy</div><div class="content">Two full environments. Deploy and test the new one privately. Switch all traffic instantly. Instant rollback. 2× resource cost.</div></div>
+</div>
+<div class="tab-panel">
+<div class="flow-box"><div class="label">Canary deploy</div><div class="content">Send small % of traffic to new version first. Monitor. Gradually increase. Smallest blast radius. Most complex to set up.</div></div>
+</div>
+</div>
+</div>
+
+<!-- ═══════════════════════ SECTION 2: ROLLING ═══════════════════════ -->
+<div class="section" id="s2">
+<h2><span class="num">02</span> Rolling Deploy (Kubernetes Default)</h2>
+<p>This is what happens when you run <code>kubectl set image</code>. Click through each step to see exactly what K8s does behind the scenes:</p>
+
+<div class="tab-group" id="rolling">
+<div class="tab-bar">
+<button class="tab-btn active" onclick="showTab('rolling',0)">Before</button>
+<button class="tab-btn" onclick="showTab('rolling',1)">Step 1</button>
+<button class="tab-btn" onclick="showTab('rolling',2)">Step 2</button>
+<button class="tab-btn" onclick="showTab('rolling',3)">Step 3</button>
+<button class="tab-btn" onclick="showTab('rolling',4)">Done</button>
+</div>
+
+<div class="tab-panel active">
+<p style="font-weight:600;color:#fff;margin-bottom:8px">Before deploy: 3 pods running v1</p>
+<div class="pod-row">
+<div class="pod pod-v1">Pod 1<span>orders:v1</span></div>
+<div class="pod pod-v1">Pod 2<span>orders:v1</span></div>
+<div class="pod pod-v1">Pod 3<span>orders:v1</span></div>
+</div>
+<div class="traffic"><div class="traffic-full">v1 — 100% of traffic</div></div>
+<p>You run: <code>kubectl set image deploy/orders orders=orders:v2</code></p>
+<p>K8s starts the rolling update...</p>
+</div>
+
+<div class="tab-panel">
+<p style="font-weight:600;color:#fff;margin-bottom:8px">Step 1: K8s creates one v2 pod, terminates one v1</p>
+<div class="pod-row">
+<div class="pod pod-v2">Pod 1<span>orders:v2</span></div>
+<div class="pod pod-v1">Pod 2<span>orders:v1</span></div>
+<div class="pod pod-v1">Pod 3<span>orders:v1</span></div>
+</div>
+<div class="traffic">
+<div class="traffic-v2" style="width:33%">v2 ~33%</div>
+<div class="traffic-v1" style="width:67%">v1 ~67%</div>
+</div>
+<p>K8s waits for the v2 pod to <strong>pass its readiness probe</strong> before continuing. If the probe fails, the rollout pauses — the bad pod never receives traffic.</p>
+</div>
+
+<div class="tab-panel">
+<p style="font-weight:600;color:#fff;margin-bottom:8px">Step 2: second v2 pod replaces another v1</p>
+<div class="pod-row">
+<div class="pod pod-v2">Pod 1<span>orders:v2</span></div>
+<div class="pod pod-v2">Pod 2<span>orders:v2</span></div>
+<div class="pod pod-v1">Pod 3<span>orders:v1</span></div>
+</div>
+<div class="traffic">
+<div class="traffic-v2" style="width:67%">v2 ~67%</div>
+<div class="traffic-v1" style="width:33%">v1 ~33%</div>
+</div>
+</div>
+
+<div class="tab-panel">
+<p style="font-weight:600;color:#fff;margin-bottom:8px">Step 3: last v1 pod replaced</p>
+<div class="pod-row">
+<div class="pod pod-v2">Pod 1<span>orders:v2</span></div>
+<div class="pod pod-v2">Pod 2<span>orders:v2</span></div>
+<div class="pod pod-v2">Pod 3<span>orders:v2</span></div>
+</div>
+<div class="traffic">
+<div class="traffic-v2" style="width:100%">v2 — 100%</div>
+</div>
+<p>All traffic on v2. Deploy complete.</p>
+</div>
+
+<div class="tab-panel">
+<div class="note">
+<b>Rolling deploy — summary</b><br><br>
+K8s replaces pods one at a time (configurable via <code>maxSurge</code> / <code>maxUnavailable</code>).<br>
+Each new pod must pass readiness probe before K8s continues.<br>
+During transition: <strong>both v1 and v2 serve traffic simultaneously</strong>.<br>
+Rollback: <code>kubectl rollout undo deploy/orders</code> (re-does rolling update back to v1 — slow).<br><br>
+Your new version must be <strong>backward compatible</strong> — some users hit v1 and some hit v2 during the transition.
+</div>
+</div>
+</div>
+
+<div class="qa">
+<div class="qa-q">Q: What happens if the readiness probe fails on the new pod?</div>
+<div class="qa-a">K8s stops the rollout. The new pod is never added to the Service endpoints — it never receives traffic. K8s keeps trying. Remaining v1 pods continue serving normally. You either fix the image or run <code>kubectl rollout undo</code>.</div>
+</div>
+</div>
+
+<!-- ═══════════════════════ SECTION 3: BLUE-GREEN ═══════════════════════ -->
+<div class="section" id="s3">
+<h2><span class="num">03</span> Blue-Green Deploy</h2>
+<p>Two complete environments side by side. Click through each stage:</p>
+
+<div class="tab-group" id="bluegreen">
+<div class="tab-bar">
+<button class="tab-btn active" onclick="showTab('bluegreen',0)">Blue is live</button>
+<button class="tab-btn" onclick="showTab('bluegreen',1)">Deploy Green</button>
+<button class="tab-btn" onclick="showTab('bluegreen',2)">Switch traffic</button>
+<button class="tab-btn" onclick="showTab('bluegreen',3)">Rollback</button>
+</div>
+
+<div class="tab-panel active">
+<p style="font-weight:600;color:#fff;margin-bottom:8px">Stage 1: Blue is live — all traffic goes here</p>
+<div class="lb-arrow"><span>Load Balancer → routes to Blue</span></div>
+<div class="env-row">
+<div class="env-card env-blue">
+<div class="env-name">Blue (v1) — LIVE</div>
+<div class="env-status">3 pods running orders:v1</div>
+<div class="env-status">Receiving all user traffic</div>
+</div>
+<div class="env-card env-idle">
+<div class="env-name">Green — empty</div>
+<div class="env-status">Doesn't exist yet (or idle from last deploy)</div>
+</div>
+</div>
+</div>
+
+<div class="tab-panel">
+<p style="font-weight:600;color:#fff;margin-bottom:8px">Stage 2: Deploy v2 to Green — test it while Blue stays live</p>
+<div class="lb-arrow"><span>Load Balancer → still routes to Blue</span></div>
+<div class="env-row">
+<div class="env-card env-blue">
+<div class="env-name">Blue (v1) — LIVE</div>
+<div class="env-status">Users still here, unaffected</div>
+</div>
+<div class="env-card env-green">
+<div class="env-name">Green (v2) — STAGING</div>
+<div class="env-status">Deployed and tested privately</div>
+<div class="env-status">No user traffic. QA tests via internal URL.</div>
+</div>
+</div>
+<p>Zero risk at this stage. Users see nothing. Green is fully tested before any switch.</p>
+</div>
+
+<div class="tab-panel">
+<p style="font-weight:600;color:#fff;margin-bottom:8px">Stage 3: Switch! Load balancer points to Green</p>
+<div class="lb-arrow"><span>Load Balancer → now routes to Green</span></div>
+<div class="env-row">
+<div class="env-card env-idle">
+<div class="env-name">Blue (v1) — IDLE</div>
+<div class="env-status">Kept alive for instant rollback</div>
+<div class="env-status">Still running, still ready</div>
+</div>
+<div class="env-card env-green">
+<div class="env-name">Green (v2) — LIVE</div>
+<div class="env-status">All users on v2 now</div>
+</div>
+</div>
+<p>Switch is <strong>instant</strong> — just change the load balancer target. No pod restarts, no waiting.</p>
+</div>
+
+<div class="tab-panel">
+<p style="font-weight:600;color:var(--red);margin-bottom:8px">Bug in v2? Switch back to Blue — instant rollback</p>
+<div class="lb-arrow"><span>Load Balancer → back to Blue</span></div>
+<div class="env-row">
+<div class="env-card env-blue">
+<div class="env-name">Blue (v1) — LIVE again</div>
+<div class="env-status">Still running, never stopped</div>
+<div class="env-status">Rollback took seconds</div>
+</div>
+<div class="env-card" style="background:rgba(248,113,113,0.04);border:1px solid rgba(248,113,113,0.12)">
+<div class="env-name" style="color:var(--red)">Green (v2) — investigate bug</div>
+<div class="env-status">Debug without time pressure</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="note-warn note">
+<b>Tradeoff:</b> 2× infrastructure during deployment. Both Blue and Green are fully running. For critical services (payments, auth) — worth it. For low-risk internal services, rolling deploy is fine.
+</div>
+</div>
+
+<!-- ═══════════════════════ SECTION 4: CANARY ═══════════════════════ -->
+<div class="section" id="s4">
+<h2><span class="num">04</span> Canary Deploy</h2>
+<p>Named after the canary in a coal mine — send a small group first, see if they survive. Click through each stage:</p>
+
+<div class="tab-group" id="canary">
+<div class="tab-bar">
+<button class="tab-btn active" onclick="showTab('canary',0)">5% canary</button>
+<button class="tab-btn" onclick="showTab('canary',1)">25%</button>
+<button class="tab-btn" onclick="showTab('canary',2)">50%</button>
+<button class="tab-btn" onclick="showTab('canary',3)">100% rollout</button>
+<button class="tab-btn" onclick="showTab('canary',4)">Bug? Rollback</button>
+</div>
+
+<div class="tab-panel active">
+<p style="font-weight:600;color:#fff;margin-bottom:8px">Stage 1: send 5% of traffic to v2</p>
+<div class="traffic">
+<div class="traffic-v1" style="width:95%">v1 — 95%</div>
+<div class="traffic-v2" style="width:5%">5%</div>
+</div>
+<p>Only 5% of users see v2. Monitor error rates, latency, and metrics for 15–30 minutes. If anything looks wrong, <strong>only 5% were affected</strong> — tiny blast radius.</p>
+</div>
+
+<div class="tab-panel">
+<p style="font-weight:600;color:#fff;margin-bottom:8px">Stage 2: metrics look good — increase to 25%</p>
+<div class="traffic">
+<div class="traffic-v1" style="width:75%">v1 — 75%</div>
+<div class="traffic-v2" style="width:25%">v2 — 25%</div>
+</div>
+<p>Error rate on v2 matches v1. Latency is normal. Monitor another 15 minutes. Confidence growing.</p>
+</div>
+
+<div class="tab-panel">
+<p style="font-weight:600;color:#fff;margin-bottom:8px">Stage 3: increase to 50%</p>
+<div class="traffic">
+<div class="traffic-v1" style="width:50%">v1 — 50%</div>
+<div class="traffic-v2" style="width:50%">v2 — 50%</div>
+</div>
+<p>Half your users on v2. If a subtle bug only appears under load, this is where you'd catch it.</p>
+</div>
+
+<div class="tab-panel">
+<p style="font-weight:600;color:#fff;margin-bottom:8px">Stage 4: full rollout — 100% on v2</p>
+<div class="traffic">
+<div class="traffic-v2" style="width:100%">v2 — 100%</div>
+</div>
+<p>All traffic on v2. v1 pods terminated. Deploy complete. At no point did you risk all users on untested code.</p>
+</div>
+
+<div class="tab-panel">
+<p style="font-weight:600;color:var(--red);margin-bottom:8px">Bug detected at 25%? Route all traffic back to v1</p>
+<div class="traffic">
+<div class="traffic-v1" style="width:100%">v1 — 100% (rollback)</div>
+</div>
+<p>Only 25% of users experienced the bug. Rollback is instant — shift traffic back. v1 was still running. This is why canary is the <strong>safest strategy</strong>.</p>
+</div>
+</div>
+
+<div class="note-green note">
+<b>Implementation options:</b> Istio (VirtualService traffic splitting), Nginx Ingress (canary annotations), Argo Rollouts (K8s-native canary with automatic analysis), or feature flags (route specific user segments to v2 at the application level).
+</div>
+</div>
+
+<!-- ═══════════════════════ SECTION 5: COMPARISON ═══════════════════════ -->
+<div class="section" id="s5">
+<h2><span class="num">05</span> Head-to-Head Comparison</h2>
+
+<table>
+<tr><th>Aspect</th><th>Rolling</th><th>Blue-Green</th><th>Canary</th></tr>
+<tr><td><strong>How it works</strong></td><td>Replace pods one by one</td><td>Two full environments, switch traffic</td><td>Gradual traffic shift (5%→25%→100%)</td></tr>
+<tr><td><strong>Downtime</strong></td><td>Zero</td><td>Zero</td><td>Zero</td></tr>
+<tr><td><strong>Rollback speed</strong></td><td>Slow (re-roll all pods)</td><td>Instant (switch LB back)</td><td>Instant (route back to v1)</td></tr>
+<tr><td><strong>Resource cost</strong></td><td>Same (no extra)</td><td>2× during deploy</td><td>1.1–1.5× during deploy</td></tr>
+<tr><td><strong>Risk during deploy</strong></td><td>Medium (both versions serve)</td><td>Low (fully tested before switch)</td><td>Lowest (tiny blast radius)</td></tr>
+<tr><td><strong>Complexity</strong></td><td>Simple (K8s default)</td><td>Medium (LB switching)</td><td>High (traffic splitting infra)</td></tr>
+<tr><td><strong>Version coexistence</strong></td><td>Yes, during rollout</td><td>No (clean cutover)</td><td>Yes, during rollout</td></tr>
+<tr><td><strong>Testing before users</strong></td><td>No</td><td>Yes (test Green privately)</td><td>Partial (5% is real users)</td></tr>
+<tr><td><strong>Best for</strong></td><td>Most internal services</td><td>Critical services, DB migrations</td><td>High-traffic user-facing</td></tr>
+</table>
+
+<div class="note">
+<b>The interview answer:</b> "Rolling for most services (simple, K8s default). Blue-green for payments and auth (instant rollback, test before switch). Canary for high-traffic user-facing endpoints (smallest blast radius)."
+</div>
+</div>
+
+<!-- ═══════════════════════ SECTION 6: CI/CD ═══════════════════════ -->
+<div class="section" id="s6">
+<h2><span class="num">06</span> CI/CD for Microservices</h2>
+
+<h3>The fundamental change</h3>
+<p>Monolith: one repo, one pipeline, one deploy. Microservices: <strong>each service has its own independent pipeline</strong>.</p>
+
+<h3>Repository structure</h3>
+<pre><code>├── orders-service/
+│   ├── src/
+│   ├── tests/
+│   ├── Dockerfile
+│   ├── k8s/deployment.yaml
+│   └── .github/workflows/deploy.yml    ← its own pipeline
+│
+├── payments-service/
+│   ├── src/
+│   ├── Dockerfile
+│   └── .github/workflows/deploy.yml    ← its own pipeline
+│
+└── inventory-service/
+    ├── src/
+    ├── Dockerfile
+    └── .github/workflows/deploy.yml    ← its own pipeline</code></pre>
+
+<h3>Full pipeline (GitHub Actions)</h3>
+<pre><code>name: Deploy Orders Service
+on:
+  push:
+    branches: [main]
+    paths: ['orders-service/**']   # ONLY trigger for THIS service
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # 1. Run tests — gate the deploy
+      - run: dotnet test orders-service/tests/
+
+      # 2. Build Docker image — tag with commit SHA
+      - run: docker build -t orders:${{ github.sha }} orders-service/
+
+      # 3. Push to container registry
+      - run: |
+          docker tag orders:${{ github.sha }} registry.io/orders:${{ github.sha }}
+          docker push registry.io/orders:${{ github.sha }}
+
+      # 4. Deploy to K8s (triggers rolling update)
+      - run: |
+          kubectl set image deployment/orders-service \
+            orders=registry.io/orders:${{ github.sha }}
+
+      # 5. Wait for rollout (fail pipeline if stuck)
+      - run: kubectl rollout status deployment/orders-service --timeout=300s</code></pre>
+
+<h3>The Dockerfile (multi-stage build)</h3>
+<pre><code>FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
+COPY src/ .
+RUN dotnet publish -c Release -o /app
+
+FROM mcr.microsoft.com/dotnet/aspnet:8.0
+WORKDIR /app
+COPY --from=build /app .
+EXPOSE 5001
+ENTRYPOINT ["dotnet", "OrdersService.dll"]</code></pre>
+
+<div class="note">
+<b>Why multi-stage?</b> SDK image is ~700MB (compilers, tools). Runtime image is ~80MB. Build in the big image, copy only compiled output to the small one. Smaller images = faster pulls = faster deploys = smaller attack surface.
+</div>
+
+<div class="note">
+<b>Why tag with commit SHA?</b> With <code>:latest</code>, you can't tell which code is running. With <code>:abc123def</code>, you <code>git checkout</code> that exact commit. It also prevents K8s from pulling a different image — <code>:latest</code> changes every build, <code>:abc123def</code> is immutable.
+</div>
+</div>
+
+<!-- ═══════════════════════ SECTION 7: K8S YAML ═══════════════════════ -->
+<div class="section" id="s7">
+<h2><span class="num">07</span> Kubernetes Deployment YAML Deep Dive</h2>
+
+<p>The full annotated config that controls everything — probes, strategy, resources, secrets:</p>
+
+<pre><code>apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orders-service
+spec:
+  replicas: 3
+
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1        # create at most 1 EXTRA pod during update
+      maxUnavailable: 0   # never fewer than 3 running pods
+
+  template:
+    spec:
+      containers:
+        - name: orders
+          image: registry.io/orders:abc123def
+
+          readinessProbe:              # "Can this pod handle traffic?"
+            httpGet:
+              path: /health/ready
+              port: 5001
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            failureThreshold: 3
+
+          livenessProbe:               # "Is the process alive?"
+            httpGet:
+              path: /health
+              port: 5001
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            failureThreshold: 3
+
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+
+          env:
+            - name: ASPNETCORE_ENVIRONMENT
+              value: "Production"
+            - name: ConnectionStrings__OrdersDb
+              valueFrom:
+                secretKeyRef:
+                  name: orders-secrets
+                  key: db-connection</code></pre>
+
+<h3>maxSurge and maxUnavailable configurations</h3>
+
+<div class="tab-group" id="surge">
+<div class="tab-bar">
+<button class="tab-btn active" onclick="showTab('surge',0)">Safest (default)</button>
+<button class="tab-btn" onclick="showTab('surge',1)">Faster</button>
+<button class="tab-btn" onclick="showTab('surge',2)">Save resources</button>
+</div>
+<div class="tab-panel active">
+<div class="flow-box">
+<div class="label">maxSurge: 1, maxUnavailable: 0</div>
+<div class="content">Always 3+ pods running. Briefly have 4 (3 old + 1 new). Slowest but <strong>no capacity loss</strong>. Best for critical services.</div>
+</div>
+<div class="pod-row">
+<div class="pod pod-v2">new v2<span>extra</span></div>
+<div class="pod pod-v1">v1</div>
+<div class="pod pod-v1">v1</div>
+<div class="pod pod-v1">v1</div>
+</div>
+<p style="font-size:12px;color:var(--muted)">4 pods temporarily → then one v1 removed → repeat</p>
+</div>
+<div class="tab-panel">
+<div class="flow-box">
+<div class="label">maxSurge: 2, maxUnavailable: 1</div>
+<div class="content">Can drop to 2 pods temporarily, creates 2 new pods at once. <strong>Faster rollout</strong> but briefly reduced capacity.</div>
+</div>
+<div class="pod-row">
+<div class="pod pod-v2">new v2<span>extra</span></div>
+<div class="pod pod-v2">new v2<span>extra</span></div>
+<div class="pod pod-v1">v1</div>
+<div class="pod pod-dead">killed<span>v1</span></div>
+</div>
+<p style="font-size:12px;color:var(--muted)">2 new pods + 1 killed simultaneously → faster but less safe</p>
+</div>
+<div class="tab-panel">
+<div class="flow-box">
+<div class="label">maxSurge: 0, maxUnavailable: 1</div>
+<div class="content">No extra pods — kill one first, then create one. <strong>Saves resources</strong> but briefly only 2 pods handle traffic.</div>
+</div>
+<div class="pod-row">
+<div class="pod pod-dead">killed<span>v1</span></div>
+<div class="pod pod-v1">v1</div>
+<div class="pod pod-v1">v1</div>
+</div>
+<p style="font-size:12px;color:var(--muted)">Kill first → then create v2 pod → only 2 pods serving temporarily</p>
+</div>
+</div>
+
+<h3>Probe behavior during rolling deploy</h3>
+<table>
+<tr><th>Probe</th><th>During deploy</th><th>On failure</th></tr>
+<tr><td><code>readinessProbe</code></td><td>New pod must pass this BEFORE K8s routes traffic and terminates old pod</td><td>Removed from endpoints (no traffic), kept running</td></tr>
+<tr><td><code>livenessProbe</code></td><td>Monitors continuously — catches deadlocks and memory leaks</td><td>Pod killed and restarted</td></tr>
+</table>
+</div>
+
+<!-- ═══════════════════════ SECTION 8: Q&A ═══════════════════════ -->
+<div class="section" id="s8">
+<h2><span class="num">08</span> Interview Q&amp;A</h2>
+
+<div class="qa">
+<div class="qa-q">Q: What is a rolling deployment?</div>
+<div class="qa-a">K8s replaces pods one at a time. Each new pod must pass readiness probe before K8s terminates the next old pod. Both versions serve during transition. K8s default, zero extra cost, but rollback is slow (re-rolls all pods). Configured via maxSurge and maxUnavailable.</div>
+</div>
+<div class="qa">
+<div class="qa-q">Q: What is blue-green deployment?</div>
+<div class="qa-a">Two identical environments — Blue (live) and Green (new). Green is deployed and tested while Blue serves traffic. Switch LB from Blue to Green instantly. Rollback: switch back. Blue never stopped. Tradeoff: 2× resources.</div>
+</div>
+<div class="qa">
+<div class="qa-q">Q: What is canary deployment?</div>
+<div class="qa-a">Deploy new version alongside old, shift traffic gradually: 5%→25%→50%→100%. Monitor at each stage. If anything breaks, route back — only the small % was affected. Safest strategy. Requires traffic splitting (Istio, Nginx, Argo Rollouts).</div>
+</div>
+<div class="qa">
+<div class="qa-q">Q: Which strategy for a payment processing service?</div>
+<div class="qa-a">Blue-green or canary — never simple rolling. Blue-green: fully test with synthetic transactions before switching. Canary: route 1% first, monitor success rates. Rolling is risky because both versions serve during transition — a subtle bug could affect real money.</div>
+</div>
+<div class="qa">
+<div class="qa-q">Q: How does CI/CD change with microservices?</div>
+<div class="qa-a">Each service has its own pipeline triggered only by its own code changes (path filter). Pipeline: test → build Docker image (tag: commit SHA) → push to registry → deploy to K8s → verify rollout. Teams deploy independently.</div>
+</div>
+<div class="qa">
+<div class="qa-q">Q: What happens during a rolling deploy if the new version has a bug?</div>
+<div class="qa-a">If readiness probe fails: K8s pauses rollout, bad pod never receives traffic, old pods continue normally. If probe passes but bug is logical: some users experience it during transition. Run <code>kubectl rollout undo</code> — slow because it re-rolls everything. This is why blue-green and canary offer instant rollback.</div>
+</div>
+<div class="qa">
+<div class="qa-q">Q: What is maxSurge vs maxUnavailable?</div>
+<div class="qa-a">maxSurge = how many extra pods above desired count during update. maxUnavailable = how many can be missing. maxSurge=1, maxUnavailable=0: always ≥3 pods, briefly 4 — safest. maxSurge=0, maxUnavailable=1: kill first, create after — saves resources but reduced capacity briefly.</div>
+</div>
+<div class="qa">
+<div class="qa-q">Q: Why tag images with commit SHA?</div>
+<div class="qa-a">Traceability. <code>:latest</code> — you don't know which code is running. <code>:abc123def</code> — git checkout that exact commit. Also immutable: <code>:latest</code> changes every build, SHA never changes.</div>
+</div>
+<div class="qa">
+<div class="qa-q">Q: What is a multi-stage Docker build?</div>
+<div class="qa-a">Build in SDK image (~700MB), copy only compiled output to runtime image (~80MB). Final image has no source code, no build tools. Smaller = faster deploys = smaller attack surface.</div>
+</div>
+</div>
+
+<div class="footer">
+  Deployment &amp; Containers — Microservices Study Guide · Topic 11 · C# / .NET · 2026
+</div>
+
+</div>
+
+<script>
+function showTab(groupId, index) {
+  const group = document.getElementById(groupId);
+  const panels = group.querySelectorAll('.tab-panel');
+  const btns = group.querySelectorAll('.tab-btn');
+  panels.forEach((p, i) => p.classList.toggle('active', i === index));
+  btns.forEach((b, i) => {
+    b.classList.remove('active', 'active-green', 'active-amber', 'active-red');
+    if (i === index) b.classList.add('active');
+  });
+}
+</script>
+</body>
+</html>

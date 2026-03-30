@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Database per Service + CQRS — Microservices Study Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0c10;--surface:#111318;--surface2:#181c24;--surface3:#1f2530;--border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.11);--accent:#6ea1ff;--accent2:#8b6cf6;--green:#34d399;--amber:#fbbf24;--red:#f87171;--teal:#2dd4bf;--coral:#fb923c;--text:#dfe5ef;--muted:#7e8a9e;--code-bg:#080a0e}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font-size:15px;line-height:1.78;-webkit-font-smoothing:antialiased}
+.page{max-width:900px;margin:0 auto;padding:0 28px 100px}
+.hero{padding:56px 28px 44px;max-width:900px;margin:0 auto;border-bottom:1px solid var(--border);position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-80px;right:-40px;width:360px;height:360px;background:radial-gradient(circle,rgba(110,161,255,0.08) 0%,transparent 70%);pointer-events:none}
+.hero-tag{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:10.5px;font-weight:500;color:var(--accent);background:rgba(110,161,255,0.07);border:1px solid rgba(110,161,255,0.18);padding:4px 14px;border-radius:20px;letter-spacing:0.09em;margin-bottom:14px;text-transform:uppercase}
+.hero h1{font-size:clamp(26px,4.2vw,42px);font-weight:700;line-height:1.15;letter-spacing:-0.03em;margin-bottom:10px;background:linear-gradient(135deg,#dfe5ef 0%,#6ea1ff 50%,#8b6cf6 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero-sub{font-size:15px;color:var(--muted);line-height:1.65;max-width:600px}
+.section{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:30px;margin-top:30px}
+.section h2{font-size:20px;font-weight:700;color:#fff;margin-bottom:18px;display:flex;align-items:center;gap:10px}
+.section h2 .num{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--accent);background:rgba(110,161,255,0.1);padding:3px 10px;border-radius:6px;font-weight:500}
+p{margin-bottom:12px}strong{color:#fff}
+ul{padding-left:20px;margin:8px 0 14px}li{margin:4px 0;font-size:14px}
+pre{background:var(--code-bg);border:1px solid var(--border);border-radius:10px;padding:14px 18px;overflow-x:auto;margin:12px 0;font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.7;color:#c4cdd9}
+code{font-family:'JetBrains Mono',monospace;font-size:12.5px;color:var(--accent);background:rgba(110,161,255,0.07);padding:2px 6px;border-radius:4px}
+pre code{background:none;padding:0;color:inherit}
+table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13px}
+th{background:var(--surface2);color:var(--accent);font-weight:600;text-align:left;padding:9px 13px;border:1px solid var(--border)}
+td{padding:8px 13px;border:1px solid var(--border)}
+tr:nth-child(even) td{background:rgba(255,255,255,0.012)}
+.note{background:rgba(110,161,255,0.05);border:1px solid rgba(110,161,255,0.14);border-radius:10px;padding:13px 16px;margin:12px 0;font-size:13px;line-height:1.7}.note b{color:var(--accent)}
+.note-warn{background:rgba(251,191,36,0.05);border-color:rgba(251,191,36,0.14)}.note-warn b{color:var(--amber)}
+.note-red{background:rgba(248,113,113,0.05);border-color:rgba(248,113,113,0.14)}.note-red b{color:var(--red)}
+.note-green{background:rgba(52,211,153,0.05);border-color:rgba(52,211,153,0.14)}.note-green b{color:var(--green)}
+.qa{background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:14px 18px;margin:10px 0}
+.qa-q{font-weight:600;color:#fff;margin-bottom:5px;font-size:14px}
+.qa-a{color:var(--muted);font-size:13px;line-height:1.7}
+.tab-group{margin:16px 0}.tab-bar{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.tab-btn{padding:6px 14px;font-size:12px;font-weight:500;font-family:'Outfit',sans-serif;border:1px solid var(--border2);border-radius:6px;background:transparent;color:var(--muted);cursor:pointer;transition:all 0.15s}
+.tab-btn:hover{border-color:rgba(110,161,255,0.3);color:var(--text)}
+.tab-btn.active{background:rgba(110,161,255,0.1);color:var(--accent);border-color:rgba(110,161,255,0.3)}
+.tab-panel{display:none}.tab-panel.active{display:block}
+.flow{display:flex;align-items:center;gap:8px;margin:10px 0;flex-wrap:wrap}
+.flow-step{background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:8px 14px;font-size:13px;color:var(--text);font-weight:500}
+.flow-arrow{color:var(--muted);font-size:16px}
+.env-row{display:flex;gap:12px;margin:10px 0;align-items:stretch}
+.env-card{flex:1;border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:4px}
+.env-card .env-name{font-size:13px;font-weight:600}.env-card .env-status{font-size:11px;color:var(--muted)}
+.toc{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px 24px;margin:30px 0}
+.toc h3{font-size:12px;font-weight:600;color:var(--accent);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.06em}
+.toc a{font-size:13px;color:var(--muted);text-decoration:none;display:block;padding:4px 0;transition:color 0.15s}.toc a:hover{color:var(--accent)}
+.footer{text-align:center;padding:36px 0 16px;font-size:11px;color:var(--muted);border-top:1px solid var(--border);margin-top:40px}
+@media(max-width:640px){.page{padding:0 16px 60px}.section{padding:20px 16px}.env-row{flex-direction:column}.hero{padding:36px 16px 30px}}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-tag">Microservices · Topic 07 · Interview Prep</div>
+  <h1>Database per Service + CQRS</h1>
+  <p class="hero-sub">Why each service owns its data, polyglot persistence, the read/write mismatch problem, Command Query Responsibility Segregation with full C# implementations, and the bridge to Event Sourcing.</p>
+</div>
+
+<div class="page">
+
+<div class="toc">
+  <h3>Contents</h3>
+  <a href="#s1">1. Shared database — the distributed monolith trap</a>
+  <a href="#s2">2. Why shared DB breaks microservices (3 reasons)</a>
+  <a href="#s3">3. Database per service + polyglot persistence</a>
+  <a href="#s4">4. Data sharing via events (not shared tables)</a>
+  <a href="#s5">5. The read/write mismatch problem</a>
+  <a href="#s6">6. Enter CQRS — two separate models</a>
+  <a href="#s7">7. Full C# — Command side (write)</a>
+  <a href="#s8">8. Full C# — Query side + ProductView (read)</a>
+  <a href="#s9">9. Full C# — Event handler (bridges write → read)</a>
+  <a href="#s10">10. When to use / NOT use CQRS</a>
+  <a href="#s11">11. Connection to Saga and Event Sourcing</a>
+  <a href="#s12">12. Interview Q&amp;A</a>
+</div>
+
+<!-- ═══════════════════ SECTION 1 ═══════════════════ -->
+<div class="section" id="s1">
+<h2><span class="num">01</span> Shared Database — The Trap</h2>
+
+<div class="tab-group" id="shared">
+<div class="tab-bar">
+<button class="tab-btn active" onclick="showTab('shared',0)">Shared DB (wrong)</button>
+<button class="tab-btn" onclick="showTab('shared',1)">DB per service (right)</button>
+</div>
+<div class="tab-panel active">
+<pre><code>              Orders    Inventory    Payments    Shipping
+                │           │           │           │
+                └─────────┐ │ ┌─────────┘           │
+                          ▼ ▼ ▼                     ▼
+                ┌─────────────────────────────────────┐
+                │     ONE SHARED DATABASE              │
+                │  Orders table, Products table,       │
+                │  Payments table — all here            │
+                └─────────────────────────────────────┘
+
+Every service reads and writes every table.
+Schema change in Products → breaks Orders, Inventory, Shipping.
+This is a distributed monolith disguised as microservices.</code></pre>
+</div>
+<div class="tab-panel">
+<pre><code>  Orders         Inventory        Payments         Search
+    │                │                │                │
+    ▼                ▼                ▼                ▼
+┌─────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐
+│Orders DB │    │Inventory │    │Payments  │    │Search    │
+│PostgreSQL│    │DB MongoDB│    │DB Postgres│    │Elastic   │
+└─────────┘    └──────────┘    └──────────┘    └──────────┘
+
+Each service picks the best database for its workload.
+Schema changes in Orders DB affect nobody else.
+This is called polyglot persistence.</code></pre>
+</div>
+</div>
+</div>
+
+<!-- ═══════════════════ SECTION 2 ═══════════════════ -->
+<div class="section" id="s2">
+<h2><span class="num">02</span> Why Shared DB Breaks Microservices</h2>
+
+<div class="tab-group" id="breaks">
+<div class="tab-bar">
+<button class="tab-btn active" onclick="showTab('breaks',0)">Tight coupling</button>
+<button class="tab-btn" onclick="showTab('breaks',1)">No independent scaling</button>
+<button class="tab-btn" onclick="showTab('breaks',2)">No technology freedom</button>
+</div>
+<div class="tab-panel active">
+<div class="env-card" style="background:rgba(248,113,113,0.04);border:1px solid rgba(248,113,113,0.1)">
+<div class="env-name" style="color:var(--red)">1. Tight coupling</div>
+<div class="env-status" style="color:var(--text);font-size:13px;line-height:1.7;margin-top:6px">Inventory adds a column to Products table → Orders service's SQL breaks → must deploy together. You've recreated a monolith with extra network hops.</div>
+</div>
+</div>
+<div class="tab-panel">
+<div class="env-card" style="background:rgba(251,191,36,0.04);border:1px solid rgba(251,191,36,0.1)">
+<div class="env-name" style="color:var(--amber)">2. No independent scaling</div>
+<div class="env-status" style="color:var(--text);font-size:13px;line-height:1.7;margin-top:6px">Search queries hammer the DB → Orders writes slow down → one DB bottlenecks everyone. You can't scale the Search read path without affecting the Orders write path.</div>
+</div>
+</div>
+<div class="tab-panel">
+<div class="env-card" style="background:rgba(139,92,246,0.04);border:1px solid rgba(139,92,246,0.1)">
+<div class="env-name" style="color:var(--accent2)">3. No technology freedom</div>
+<div class="env-status" style="color:var(--text);font-size:13px;line-height:1.7;margin-top:6px">Search needs Elasticsearch, Inventory needs a document store, Sessions need Redis — but everyone is stuck on one PostgreSQL because they share a database.</div>
+</div>
+</div>
+</div>
+<div class="note-red note"><b>A shared database makes your microservices a distributed monolith.</b> All the operational complexity of microservices, none of the independence benefits.</div>
+</div>
+
+<!-- ═══════════════════ SECTION 3 ═══════════════════ -->
+<div class="section" id="s3">
+<h2><span class="num">03</span> Database per Service + Polyglot Persistence</h2>
+<p>Each service owns its database <strong>privately</strong>. No other service accesses it directly. If Service A needs data from Service B, it asks via <strong>API</strong> or consumes an <strong>event</strong>.</p>
+<div class="env-row">
+<div class="env-card" style="background:rgba(139,92,246,0.04);border:1px solid rgba(139,92,246,0.1)"><div class="env-name" style="color:var(--accent2)">Orders</div><div class="env-status">PostgreSQL — ACID transactions</div></div>
+<div class="env-card" style="background:rgba(251,191,36,0.04);border:1px solid rgba(251,191,36,0.1)"><div class="env-name" style="color:var(--amber)">Inventory</div><div class="env-status">MongoDB — flexible schema</div></div>
+</div>
+<div class="env-row">
+<div class="env-card" style="background:rgba(52,211,153,0.04);border:1px solid rgba(52,211,153,0.1)"><div class="env-name" style="color:var(--green)">Search</div><div class="env-status">Elasticsearch — full-text</div></div>
+<div class="env-card" style="background:rgba(251,146,60,0.04);border:1px solid rgba(251,146,60,0.1)"><div class="env-name" style="color:var(--coral)">Sessions</div><div class="env-status">Redis — key-value, TTL</div></div>
+</div>
+<table>
+<tr><th>Service</th><th>Workload</th><th>Best Fit</th></tr>
+<tr><td>Orders</td><td>Transactions, ACID, foreign keys</td><td>PostgreSQL / SQL Server</td></tr>
+<tr><td>Inventory</td><td>Flexible schema, nested documents</td><td>MongoDB</td></tr>
+<tr><td>Search</td><td>Full-text, faceted search, ranking</td><td>Elasticsearch</td></tr>
+<tr><td>Sessions</td><td>Key-value lookups, TTL expiry</td><td>Redis</td></tr>
+<tr><td>Analytics</td><td>Append-only, time-series, aggregation</td><td>ClickHouse / Cassandra</td></tr>
+</table>
+</div>
+
+<!-- ═══════════════════ SECTION 4 ═══════════════════ -->
+<div class="section" id="s4">
+<h2><span class="num">04</span> Data Sharing via Events</h2>
+<p>If Orders needs product info, it does <strong>NOT</strong> query Catalogue's database. Instead:</p>
+<div class="flow"><div class="flow-step" style="border-color:rgba(139,92,246,0.3);color:var(--accent2)">Catalogue updates price</div><span class="flow-arrow">→</span><div class="flow-step" style="border-color:rgba(251,191,36,0.3);color:var(--amber)">Publishes ProductPriceUpdated</div><span class="flow-arrow">→</span><div class="flow-step" style="border-color:rgba(52,211,153,0.3);color:var(--green)">Orders consumes event</div><span class="flow-arrow">→</span><div class="flow-step" style="border-color:rgba(52,211,153,0.3);color:var(--green)">Stores local copy</div></div>
+<p>Orders keeps a <strong>local copy</strong> of only the fields it needs (product name, price). This means <strong>data duplication</strong> — and that's intentional. The tradeoff: duplicate data buys full independence. Each service can deploy, scale, and change its schema without breaking anyone else.</p>
+</div>
+
+<!-- ═══════════════════ SECTION 5 ═══════════════════ -->
+<div class="section" id="s5">
+<h2><span class="num">05</span> The Read/Write Mismatch Problem</h2>
+<p>This is where CQRS comes from. In a typical e-commerce product page:</p>
+
+<div class="tab-group" id="mismatch">
+<div class="tab-bar">
+<button class="tab-btn active" onclick="showTab('mismatch',0)">Write operation</button>
+<button class="tab-btn" onclick="showTab('mismatch',1)">Read operation (the 4-JOIN problem)</button>
+<button class="tab-btn" onclick="showTab('mismatch',2)">The conflict</button>
+</div>
+<div class="tab-panel active">
+<pre><code>-- WRITE: admin updates price — 10 updates/min
+UPDATE Products SET Price = 29.99 WHERE Id = 'prod-123'
+
+→ Touches 1 table, 1 row
+→ Needs normalization, constraints, ACID
+→ Simple and fast</code></pre>
+</div>
+<div class="tab-panel">
+<pre><code>-- READ: user views product page — 100,000 reads/sec
+SELECT p.Name, p.Price, p.Description,
+       AVG(r.Rating), COUNT(r.Id),
+       i.StockLevel, i.EstimatedDelivery,
+       c.Name AS CategoryName
+FROM Products p
+JOIN Reviews r ON r.ProductId = p.Id
+JOIN Inventory i ON i.ProductId = p.Id
+JOIN Categories c ON c.Id = p.CategoryId
+WHERE p.Id = 'prod-123'
+
+→ 4 JOINs, aggregations, 100K times/second
+→ SLOW at scale</code></pre>
+</div>
+<div class="tab-panel">
+<p>The <strong>write model</strong> wants <strong>normalized</strong> data — no duplicated data, foreign keys, constraints. Clean writes.</p>
+<p>The <strong>read model</strong> wants <strong>denormalized</strong> data — everything pre-joined, ready to serve instantly. No JOINs.</p>
+<p style="color:var(--red);font-weight:600">Optimizing for one hurts the other. Add indexes to speed up reads → writes slow down. Normalize for clean writes → reads need expensive JOINs.</p>
+<div class="note"><b>This is NOT a replication problem</b> (read replicas solve that). The deeper problem is that reads and writes want <strong>different data shapes</strong>. Reads want flat, pre-joined documents. Writes want normalized, constrained tables.</div>
+</div>
+</div>
+</div>
+
+<!-- ═══════════════════ SECTION 6 ═══════════════════ -->
+<div class="section" id="s6">
+<h2><span class="num">06</span> Enter CQRS — Two Separate Models</h2>
+<p><strong>Command Query Responsibility Segregation</strong> — split your application into two models:</p>
+
+<div class="tab-group" id="cqrs">
+<div class="tab-bar">
+<button class="tab-btn active" onclick="showTab('cqrs',0)">Traditional (one model)</button>
+<button class="tab-btn" onclick="showTab('cqrs',1)">CQRS (two models)</button>
+<button class="tab-btn" onclick="showTab('cqrs',2)">Full CQRS flow</button>
+</div>
+<div class="tab-panel active">
+<pre><code>         Admin writes (10/min)    User reads (100K/sec)
+                  \                  /
+                   ▼                ▼
+            ┌──────────────────────────┐
+            │    One database, one     │
+            │    schema for both       │
+            └──────────────────────────┘
+  Optimized for writes → reads suffer
+  Optimized for reads  → writes suffer</code></pre>
+</div>
+<div class="tab-panel">
+<pre><code>  Command side (write)              Query side (read)
+  UpdateProductPriceCommand         GetProductDetailsQuery
+          │                                  │
+          ▼                                  ▼
+  ┌──────────────────┐          ┌──────────────────────┐
+  │     Write DB     │──events──│      Read DB          │
+  │ Normalized, ACID │          │ Denormalized, fast    │
+  │   PostgreSQL     │          │ Redis / Elasticsearch │
+  └──────────────────┘          └──────────────────────┘
+  Scale each independently. Optimize each for its workload.</code></pre>
+</div>
+<div class="tab-panel">
+<div class="flow"><div class="flow-step">Admin UI</div><span class="flow-arrow">→</span><div class="flow-step" style="border-color:rgba(139,92,246,0.3);color:var(--accent2)">Command handler validates + writes</div><span class="flow-arrow">→</span><div class="flow-step" style="border-color:rgba(139,92,246,0.3);color:var(--accent2)">Write DB (PostgreSQL)</div></div>
+<div class="flow"><span style="width:70px"></span><span class="flow-arrow">then →</span><div class="flow-step" style="border-color:rgba(251,191,36,0.3);color:var(--amber)">Publishes ProductPriceUpdated event</div></div>
+<div class="flow"><span style="width:140px"></span><span class="flow-arrow">→</span><div class="flow-step" style="border-color:rgba(52,211,153,0.3);color:var(--green)">Event handler updates Read DB</div><span class="flow-arrow">→</span><div class="flow-step" style="border-color:rgba(52,211,153,0.3);color:var(--green)">User queries Read DB — instant</div></div>
+<p style="margin-top:8px"><strong>Key insight:</strong> Write side = normalized, ACID, slow is OK (rare operation). Read side = denormalized, fast, eventual consistency is OK.</p>
+</div>
+</div>
+</div>
+
+<!-- ═══════════════════ SECTION 7 ═══════════════════ -->
+<div class="section" id="s7">
+<h2><span class="num">07</span> Full C# — Command Side (Write)</h2>
+<pre><code>// === Command — represents an intention to change state ===
+public record UpdateProductPriceCommand(string ProductId, decimal NewPrice);
+
+// === Command Handler — validates and writes ===
+public class UpdateProductPriceHandler
+{
+    private readonly WriteDbContext _db;
+    private readonly IEventBus _bus;
+
+    public async Task Handle(UpdateProductPriceCommand cmd)
+    {
+        var product = await _db.Products.FindAsync(cmd.ProductId);
+        if (product == null) throw new NotFoundException();
+
+        // Business validation
+        if (cmd.NewPrice <= 0)
+            throw new ValidationException("Price must be positive");
+
+        // Write to normalized DB
+        product.Price = cmd.NewPrice;
+        product.UpdatedAt = DateTime.UtcNow;
+        await _db.SaveChangesAsync();
+
+        // Publish event — read side will pick this up
+        await _bus.PublishAsync(new ProductPriceUpdated(
+            cmd.ProductId, cmd.NewPrice, product.Name));
+    }
+}</code></pre>
+</div>
+
+<!-- ═══════════════════ SECTION 8 ═══════════════════ -->
+<div class="section" id="s8">
+<h2><span class="num">08</span> Full C# — Query Side + ProductView (Read)</h2>
+
+<div class="tab-group" id="query">
+<div class="tab-bar">
+<button class="tab-btn active" onclick="showTab('query',0)">Query handler</button>
+<button class="tab-btn" onclick="showTab('query',1)">ProductView (denormalized read model)</button>
+</div>
+<div class="tab-panel active">
+<pre><code>// === Query — represents a request for data ===
+public record GetProductDetailsQuery(string ProductId);
+
+// === Query Handler — reads from denormalized store ===
+public class GetProductDetailsHandler
+{
+    private readonly ReadDbContext _readDb;  // DIFFERENT DB!
+
+    public async Task&lt;ProductDetailsDto&gt; Handle(GetProductDetailsQuery query)
+    {
+        // Single read, no JOINs — everything pre-joined
+        return await _readDb.ProductViews
+            .FirstOrDefaultAsync(p => p.ProductId == query.ProductId);
+    }
+}</code></pre>
+<p>Compare this to the 4-JOIN SQL in Section 5. One flat read vs four JOINs. At 100K reads/sec, this is the difference between <strong>2ms and 200ms</strong>.</p>
+</div>
+<div class="tab-panel">
+<pre><code>// === The read model — flat, denormalized, ready to serve ===
+public class ProductView  // this lives in the Read DB
+{
+    public string ProductId { get; set; }
+    public string Name { get; set; }
+    public decimal Price { get; set; }
+    public string CategoryName { get; set; }     // pre-joined from Categories!
+    public double AverageRating { get; set; }    // pre-calculated from Reviews!
+    public int ReviewCount { get; set; }         // pre-calculated from Reviews!
+    public int StockLevel { get; set; }          // from Inventory events!
+    public string EstimatedDelivery { get; set; }
+}</code></pre>
+<p>Every field that required a JOIN in traditional SQL is now <strong>pre-computed and stored flat</strong>. The query handler does zero JOINs — just one single-table lookup.</p>
+</div>
+</div>
+</div>
+
+<!-- ═══════════════════ SECTION 9 ═══════════════════ -->
+<div class="section" id="s9">
+<h2><span class="num">09</span> Full C# — Event Handler (Write → Read Bridge)</h2>
+<p>This is the glue. The <code>ProductReadModelUpdater</code> consumes events from <strong>multiple services</strong> and builds the denormalized read model:</p>
+<pre><code>public class ProductReadModelUpdater
+{
+    private readonly ReadDbContext _readDb;
+
+    // Event from Catalogue service — price changed
+    public async Task Handle(ProductPriceUpdated evt)
+    {
+        var view = await _readDb.ProductViews
+            .FirstOrDefaultAsync(p => p.ProductId == evt.ProductId);
+
+        if (view == null)
+        {
+            view = new ProductView { ProductId = evt.ProductId };
+            _readDb.ProductViews.Add(view);
+        }
+
+        view.Price = evt.NewPrice;
+        view.Name = evt.ProductName;
+        await _readDb.SaveChangesAsync();
+    }
+
+    // Event from Reviews service — new review posted
+    public async Task Handle(ReviewPosted evt)
+    {
+        var view = await _readDb.ProductViews.FindAsync(evt.ProductId);
+        view.ReviewCount++;
+        view.AverageRating = evt.NewAverageRating;
+        await _readDb.SaveChangesAsync();
+    }
+
+    // Event from Inventory service — stock level changed
+    public async Task Handle(StockLevelChanged evt)
+    {
+        var view = await _readDb.ProductViews.FindAsync(evt.ProductId);
+        view.StockLevel = evt.NewLevel;
+        await _readDb.SaveChangesAsync();
+    }
+}</code></pre>
+<div class="note-green note"><b>Key insight:</b> This one handler consumes events from <strong>3 different services</strong> — Catalogue, Reviews, Inventory — and builds ONE flat, pre-joined view. The user's query hits this single table and gets everything in one read. No JOINs. No cross-service calls. Blazing fast.</div>
+</div>
+
+<!-- ═══════════════════ SECTION 10 ═══════════════════ -->
+<div class="section" id="s10">
+<h2><span class="num">10</span> When to Use / NOT Use CQRS</h2>
+<table>
+<tr><th style="color:var(--green)">Use CQRS when</th><th style="color:var(--red)">Don't use CQRS when</th></tr>
+<tr><td>Read/write ratio is heavily skewed (100:1+)</td><td>Read and write patterns are similar</td></tr>
+<tr><td>Read model needs data from multiple services</td><td>Simple CRUD with one entity</td></tr>
+<tr><td>Reads need a different shape than writes</td><td>Small scale — adds unnecessary complexity</td></tr>
+<tr><td>You need to scale reads independently</td><td>Team is small and doesn't need the separation</td></tr>
+</table>
+<div class="note-warn note"><b>The honest truth:</b> most services don't need CQRS. A simple Orders service with PostgreSQL and normal Entity Framework queries is fine. CQRS shines on <strong>read-heavy, cross-service aggregation scenarios</strong> — product pages, dashboards, search results, news feeds.</div>
+</div>
+
+<!-- ═══════════════════ SECTION 11 ═══════════════════ -->
+<div class="section" id="s11">
+<h2><span class="num">11</span> Connection to Saga and Event Sourcing</h2>
+
+<div class="tab-group" id="conn">
+<div class="tab-bar">
+<button class="tab-btn active" onclick="showTab('conn',0)">CQRS + Saga</button>
+<button class="tab-btn" onclick="showTab('conn',1)">CQRS + Event Sourcing</button>
+<button class="tab-btn" onclick="showTab('conn',2)">Rebuilding the read model</button>
+</div>
+<div class="tab-panel active">
+<p><strong>Sagas</strong> handle distributed <strong>writes</strong> — coordinating transactions across services.</p>
+<p><strong>CQRS</strong> handles distributed <strong>reads</strong> — building query-optimized views from events published by multiple services.</p>
+<p>They work together: a Saga orchestrates the write flow, and the events produced during that flow feed the CQRS read models.</p>
+</div>
+<div class="tab-panel">
+<p>With just CQRS, the write DB stores <strong>current state</strong> only. If the read DB gets corrupted, you rebuild from current state — but you <strong>lose history</strong>.</p>
+<p>With <strong>Event Sourcing + CQRS</strong>: the event store keeps every event that ever happened. Read DB corrupted? <strong>Replay all events</strong> → fully restored. Need a new field? Replay → populated with historical data.</p>
+</div>
+<div class="tab-panel">
+<pre><code>Without Event Sourcing:
+  Read DB dies → rebuild from write DB current state
+  → ProductView gets current price ($29.99)
+  → But price history ($19.99 → $24.99 → $29.99) is LOST
+
+With Event Sourcing:
+  Read DB dies → replay all events from event store
+  → Event 1: ProductCreated { price: $19.99 }
+  → Event 2: PriceChanged  { price: $24.99 }
+  → Event 3: PriceChanged  { price: $29.99 }
+  → Full history restored
+  → Add "price trend" field later? No problem — replay events.</code></pre>
+</div>
+</div>
+</div>
+
+<!-- ═══════════════════ SECTION 12 ═══════════════════ -->
+<div class="section" id="s12">
+<h2><span class="num">12</span> Interview Q&amp;A</h2>
+
+<div class="qa"><div class="qa-q">Q: What is Database per Service and why is it important?</div><div class="qa-a">Each microservice owns its database privately. No other service accesses it directly. This ensures services can deploy independently, choose the right storage engine for their workload (polyglot persistence), and evolve their schema without breaking others. Services share data through APIs or events, not shared tables.</div></div>
+<div class="qa"><div class="qa-q">Q: What is CQRS?</div><div class="qa-a">Command Query Responsibility Segregation splits your application into two models: a write model (commands) optimized for transactions and validation with normalized data, and a read model (queries) optimized for fast retrieval with denormalized, pre-joined data. The write side publishes events, and event handlers update the read model asynchronously.</div></div>
+<div class="qa"><div class="qa-q">Q: What's the tradeoff of CQRS?</div><div class="qa-a">Eventual consistency — the read model lags behind the write model by the time it takes to process events (typically milliseconds to seconds). Increased complexity: two databases, event handlers, and sync logic. Only worth it when read/write patterns are significantly different or when aggregating data from multiple services into a single view.</div></div>
+<div class="qa"><div class="qa-q">Q: How does CQRS connect to the Saga pattern?</div><div class="qa-a">Sagas handle distributed writes (coordinating transactions across services). CQRS handles distributed reads (building query-optimized views from events published by multiple services). They often work together — a Saga orchestrates the write flow, and the events produced feed the CQRS read models.</div></div>
+<div class="qa"><div class="qa-q">Q: What is polyglot persistence?</div><div class="qa-a">Each service uses the database technology best suited to its workload. Orders uses PostgreSQL for ACID transactions. Search uses Elasticsearch for full-text queries. Sessions use Redis for fast key-value lookups with TTL. This is only possible when each service owns its database independently.</div></div>
+<div class="qa"><div class="qa-q">Q: How do services share data without accessing each other's database?</div><div class="qa-a">Through events. Catalogue publishes ProductPriceUpdated. Orders consumes it and stores a local copy of only the fields it needs. This is intentional data duplication — each service stays in sync via events, not via shared database access. Duplication buys independence.</div></div>
+</div>
+
+<div class="footer">Database per Service + CQRS — Microservices Study Guide · Topic 07 · C# / .NET · Interview Prep · 2026</div>
+</div>
+
+<script>
+function showTab(g,i){var p=document.getElementById(g).querySelectorAll('.tab-panel'),b=document.getElementById(g).querySelectorAll('.tab-btn');p.forEach(function(x,j){x.classList.toggle('active',j===i)});b.forEach(function(x,j){x.classList.remove('active');if(j===i)x.classList.add('active')})}
+</script>
+</body>
+</html>

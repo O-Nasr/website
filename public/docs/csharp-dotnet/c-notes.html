@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>C# Notes</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0c10;
+      --surface: #111318;
+      --surface2: #181c24;
+      --surface3: #1f2530;
+      --border: rgba(255,255,255,0.06);
+      --border2: rgba(255,255,255,0.11);
+      --accent: #6ea1ff;
+      --accent2: #8b6cf6;
+      --green: #34d399;
+      --amber: #fbbf24;
+      --red: #f87171;
+      --teal: #2dd4bf;
+      --text: #dfe5ef;
+      --muted: #7e8a9e;
+      --code-bg: #080a0e;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Outfit', sans-serif;
+      font-size: 15px;
+      line-height: 1.78;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      padding: 56px 28px 44px;
+      max-width: 900px;
+      margin: 0 auto;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -80px;
+      right: -40px;
+      width: 360px;
+      height: 360px;
+      background: radial-gradient(circle, rgba(110,161,255,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-tag {
+      display: inline-block;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10.5px;
+      font-weight: 500;
+      color: var(--accent);
+      background: rgba(110,161,255,0.07);
+      border: 1px solid rgba(110,161,255,0.18);
+      padding: 4px 14px;
+      border-radius: 20px;
+      letter-spacing: 0.09em;
+      margin-bottom: 14px;
+      text-transform: uppercase;
+    }
+    .hero h1 {
+      font-size: clamp(26px, 4.2vw, 42px);
+      font-weight: 700;
+      line-height: 1.15;
+      letter-spacing: -0.03em;
+      margin-bottom: 0;
+      background: linear-gradient(135deg, #dfe5ef 0%, #6ea1ff 50%, #34d399 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* ── Page layout ── */
+    .page {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 28px 100px;
+    }
+
+    /* ── Sections ── */
+    .doc-content h1 {
+      font-size: 20px;
+      font-weight: 700;
+      color: #fff;
+      margin: 30px 0 0;
+      padding: 24px 0 14px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      -webkit-text-fill-color: #fff;
+      background-clip: padding-box;
+    }
+    .doc-content h1:first-child { margin-top: 10px; }
+
+    .doc-content h2 {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--accent);
+      margin: 22px 0 10px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+    }
+
+    .doc-content h3 {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--accent2);
+      margin: 18px 0 8px;
+    }
+
+    .doc-content h4, .doc-content h5, .doc-content h6 {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--teal);
+      margin: 14px 0 6px;
+    }
+
+    p {
+      margin: 0;
+      padding: 6px 0;
+      font-size: 14.5px;
+      line-height: 1.75;
+    }
+    strong, b { color: #fff; }
+    em { color: var(--muted); }
+
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ── Lists ── */
+    ul, ol {
+      padding-left: 20px;
+      margin: 4px 0 10px;
+    }
+    li {
+      margin: 3px 0;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+    li strong { color: #fff; }
+
+    /* ── Tables ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin: 12px 0;
+    }
+    th {
+      background: var(--surface2);
+      color: var(--accent);
+      font-weight: 600;
+      text-align: left;
+      padding: 9px 13px;
+      border: 1px solid var(--border);
+    }
+    td {
+      padding: 8px 13px;
+      border: 1px solid var(--border);
+    }
+    tr:nth-child(even) td {
+      background: rgba(255,255,255,0.012);
+    }
+
+    /* Single-cell tables = note/callout boxes */
+    table:has(tr:only-child td:only-child) {
+      background: rgba(110,161,255,0.05);
+      border: 1px solid rgba(110,161,255,0.14);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    table:has(tr:only-child td:only-child) td {
+      border: none;
+      padding: 13px 16px;
+      font-size: 13px;
+      line-height: 1.7;
+    }
+    table:has(tr:only-child td:only-child) td strong {
+      color: var(--accent);
+    }
+
+    /* ── Code ── */
+    code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12.5px;
+      color: var(--accent);
+      background: rgba(110,161,255,0.07);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    pre {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 18px;
+      overflow-x: auto;
+      margin: 12px 0;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12.5px;
+      line-height: 1.7;
+      color: #c4cdd9;
+      scrollbar-width: thin;
+      scrollbar-color: #333 transparent;
+    }
+    pre::-webkit-scrollbar { height: 4px; }
+    pre::-webkit-scrollbar-track { background: transparent; }
+    pre::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+    pre::-webkit-scrollbar-thumb:hover { background: #555; }
+    pre code {
+      background: none;
+      padding: 0;
+      color: inherit;
+      font-size: inherit;
+    }
+
+    /* ── Blockquote ── */
+    blockquote {
+      background: rgba(110,161,255,0.05);
+      border: 1px solid rgba(110,161,255,0.14);
+      border-left: 3px solid var(--accent);
+      border-radius: 0 10px 10px 0;
+      padding: 13px 16px;
+      margin: 10px 0;
+      font-size: 13px;
+      line-height: 1.7;
+    }
+    blockquote b, blockquote strong { color: var(--accent); }
+
+    /* ── Images ── */
+    img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 10px;
+      margin: 12px 0;
+      border: 1px solid var(--border);
+    }
+
+    /* ── HR ── */
+    hr {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 24px 0;
+    }
+
+    /* ── Footer ── */
+    .footer {
+      text-align: center;
+      padding: 36px 0 16px;
+      font-size: 11px;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      margin-top: 40px;
+    }
+
+    @media (max-width: 640px) {
+      .page { padding: 0 16px 60px; }
+      .hero { padding: 36px 16px 30px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-tag">C# & .NET</div>
+  <h1>C# Notes</h1>
+</div>
+
+<div class="page">
+  <div class="doc-content">
+<p>Great question—let’s dig into why String.Split(' ') can sometimes be problematic and why StringSplitOptions.RemoveEmptyEntries is safer.</p><p><strong>The Issue with s.Split(' ')</strong></p><ul><li>When you call s.Split(' '), the string is split at every space character.</li><li>If the input string has <strong>extra spaces</strong> (leading, trailing, or multiple consecutive spaces), the result will include <strong>empty strings</strong> in the array. <ul><li>Example: </li><li>string s = "dog  cat"; // two spaces between words</li><li>var words = s.Split(' ');</li><li>// Result: ["dog", "", "cat"]</li></ul></li><li>That empty string ("") can cause mismatches when comparing against the pattern, because you’ll think there’s an extra "word" that doesn’t exist.</li></ul><p><strong>Why StringSplitOptions.RemoveEmptyEntries Helps</strong></p><ul><li>By adding this option, you tell Split to <strong>ignore empty strings</strong> in the result.</li><li>Example: </li><li>string s = "dog  cat";</li><li>var words = s.Split(' ', StringSplitOptions.RemoveEmptyEntries);</li><li>// Result: ["dog", "cat"]</li><li>This way, you only get actual words, no empty entries—even if the input has irregular spacing.</li></ul><p><strong>Practical Benefit</strong></p><ul><li>It makes your solution more <strong>robust</strong> against messy input.</li><li>While LeetCode test cases usually don’t include extra spaces, in real-world scenarios (like parsing user input or logs), this safeguard prevents subtle bugs.</li></ul><p><strong>Recommendation</strong></p><pre><code>For competitive programming problems like Word Pattern, s.Split(' ') is usually fine because inputs are clean. But if you want to write production-ready code, prefer:
+var words = s.Split(' ', StringSplitOptions.RemoveEmptyEntries);</code></pre><p><strong>The Simple Difference First</strong></p><p>Think of it like this:</p><p><strong>IComparable</strong> = The object knows how to sort <strong>itself</strong> <strong>IComparer</strong> = A separate class that knows how to sort <strong>from outside</strong></p><p><strong>Real Life Analogy</strong></p><p>Imagine you have a list of <strong>students</strong>.</p><p><strong>IComparable</strong> is like telling the student:</p><p>"Hey student, you decide how you compare yourself to others."</p><p><strong>IComparer</strong> is like hiring an <strong>external judge</strong>:</p><pre><code>"Hey judge, YOU decide how to compare these two students."
+The difference is who holds the comparison logic — the object itself, or an outside class.</code></pre><p><strong>IComparable — Internal Sorting</strong></p><pre><code>The class implements the sorting logic inside itself.
+class Student : IComparable&lt;Student&gt;
+{
+    public string Name { get; set; }
+    public int Age { get; set; }
+    // Sorting logic lives INSIDE the class
+    public int CompareTo(Student other)
+    {
+        return this.Age.CompareTo(other.Age); // sort by Age
+    }
+}
+Now when you call Sort():
+List&lt;Student&gt; students = new List&lt;Student&gt;();
+students.Add(new Student { Name = "Ali",   Age = 25 });
+students.Add(new Student { Name = "Omar",  Age = 20 });
+students.Add(new Student { Name = "Ahmed", Age = 22 });
+students.Sort(); // Uses CompareTo() internally</code></pre><p>Output:</p><p>Omar  — 20</p><p>Ahmed — 22</p><p>Ali   — 25</p><p>✅ Works perfectly — BUT you can only sort by <strong>one fixed criteria</strong> (Age in this case).</p><p><strong>The Problem with IComparable</strong></p><p>What if sometimes you want to sort by <strong>Name</strong>, and other times by <strong>Age</strong>?</p><pre><code>With IComparable you are stuck. The logic is hardcoded inside the class.
+students.Sort(); // always sorts by Age — no flexibility
+❌ You cannot change the sort criteria without modifying the class itself.</code></pre><p><strong>IComparer — External Sorting</strong></p><pre><code>You create separate classes for each sort criteria. The logic lives outside the Student class.
+// Sort by Name
+class SortByName : IComparer&lt;Student&gt;
+{
+    public int Compare(Student x, Student y)
+    {
+        return string.Compare(x.Name, y.Name);
+    }
+}
+// Sort by Age
+class SortByAge : IComparer&lt;Student&gt;
+{
+    public int Compare(Student x, Student y)
+    {
+        if (x.Age &gt; y.Age) return 1;
+        if (x.Age &lt; y.Age) return -1;
+        return 0;
+    }
+}</code></pre><p>Now you can sort any way you want:</p><pre><code>students.Sort(new SortByName()); // sort by Name
+students.Sort(new SortByAge());  // sort by Age</code></pre><p>Sort by Name output:</p><p>Ahmed — 22</p><p>Ali   — 25</p><p>Omar  — 20</p><p>Sort by Age output:</p><p>Omar  — 20</p><p>Ahmed — 22</p><p>Ali   — 25</p><p>✅ Fully flexible. The Student class is not touched at all.</p><p><strong>Side by Side Comparison</strong></p><table><thead><tr><th></th><th><p><strong>IComparable</strong></p></th><th><p><strong>IComparer</strong></p></th></tr></thead><tbody><tr><td><p>Where is logic?</p></td><td><p>Inside the class</p></td><td><p>Outside in a separate class</p></td></tr><tr><td><p>How many sort options?</p></td><td><p>Only one default</p></td><td><p>As many as you want</p></td></tr><tr><td><p>Who calls it?</p></td><td><p>list.Sort()</p></td><td><p>list.Sort(new SortByX())</p></td></tr><tr><td><p>Flexible?</p></td><td><p>❌ No</p></td><td><p>✅ Yes</p></td></tr><tr><td><p>Modifies original class?</p></td><td><p>✅ Yes</p></td><td><p>❌ No</p></td></tr><tr><td><p>Best for?</p></td><td><p>Simple default sorting</p></td><td><p>Multiple sort scenarios</p></td></tr></tbody></table><p><strong>Interview-Ready Answer</strong></p><pre><code>IComparable defines a default sort logic inside the class itself using CompareTo(). It is limited to one fixed sorting criteria. IComparer separates the sorting logic into an external class using Compare(), allowing multiple different sort strategies without modifying the original class. IComparer is more flexible and follows the Open/Closed principle — the class is closed for modification but open for extension.
+That last line — Open/Closed principle — is a SOLID principle. Saying that in an interview instantly shows mid-level thinking. 💪</code></pre><p>Want to continue to the next topic? 😄</p>
+  </div>
+  <div class="footer">Study Docs Portal</div>
+</div>
+
+</body>
+</html>

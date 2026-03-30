@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Async Await</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0c10;
+      --surface: #111318;
+      --surface2: #181c24;
+      --surface3: #1f2530;
+      --border: rgba(255,255,255,0.06);
+      --border2: rgba(255,255,255,0.11);
+      --accent: #6ea1ff;
+      --accent2: #8b6cf6;
+      --green: #34d399;
+      --amber: #fbbf24;
+      --red: #f87171;
+      --teal: #2dd4bf;
+      --text: #dfe5ef;
+      --muted: #7e8a9e;
+      --code-bg: #080a0e;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Outfit', sans-serif;
+      font-size: 15px;
+      line-height: 1.78;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      padding: 56px 28px 44px;
+      max-width: 900px;
+      margin: 0 auto;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -80px;
+      right: -40px;
+      width: 360px;
+      height: 360px;
+      background: radial-gradient(circle, rgba(110,161,255,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-tag {
+      display: inline-block;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10.5px;
+      font-weight: 500;
+      color: var(--accent);
+      background: rgba(110,161,255,0.07);
+      border: 1px solid rgba(110,161,255,0.18);
+      padding: 4px 14px;
+      border-radius: 20px;
+      letter-spacing: 0.09em;
+      margin-bottom: 14px;
+      text-transform: uppercase;
+    }
+    .hero h1 {
+      font-size: clamp(26px, 4.2vw, 42px);
+      font-weight: 700;
+      line-height: 1.15;
+      letter-spacing: -0.03em;
+      margin-bottom: 0;
+      background: linear-gradient(135deg, #dfe5ef 0%, #6ea1ff 50%, #34d399 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* ── Page layout ── */
+    .page {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 28px 100px;
+    }
+
+    /* ── Sections ── */
+    .doc-content h1 {
+      font-size: 20px;
+      font-weight: 700;
+      color: #fff;
+      margin: 30px 0 0;
+      padding: 24px 0 14px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      -webkit-text-fill-color: #fff;
+      background-clip: padding-box;
+    }
+    .doc-content h1:first-child { margin-top: 10px; }
+
+    .doc-content h2 {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--accent);
+      margin: 22px 0 10px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+    }
+
+    .doc-content h3 {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--accent2);
+      margin: 18px 0 8px;
+    }
+
+    .doc-content h4, .doc-content h5, .doc-content h6 {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--teal);
+      margin: 14px 0 6px;
+    }
+
+    p {
+      margin: 0;
+      padding: 6px 0;
+      font-size: 14.5px;
+      line-height: 1.75;
+    }
+    strong, b { color: #fff; }
+    em { color: var(--muted); }
+
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ── Lists ── */
+    ul, ol {
+      padding-left: 20px;
+      margin: 4px 0 10px;
+    }
+    li {
+      margin: 3px 0;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+    li strong { color: #fff; }
+
+    /* ── Tables ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin: 12px 0;
+    }
+    th {
+      background: var(--surface2);
+      color: var(--accent);
+      font-weight: 600;
+      text-align: left;
+      padding: 9px 13px;
+      border: 1px solid var(--border);
+    }
+    td {
+      padding: 8px 13px;
+      border: 1px solid var(--border);
+    }
+    tr:nth-child(even) td {
+      background: rgba(255,255,255,0.012);
+    }
+
+    /* Single-cell tables = note/callout boxes */
+    table:has(tr:only-child td:only-child) {
+      background: rgba(110,161,255,0.05);
+      border: 1px solid rgba(110,161,255,0.14);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    table:has(tr:only-child td:only-child) td {
+      border: none;
+      padding: 13px 16px;
+      font-size: 13px;
+      line-height: 1.7;
+    }
+    table:has(tr:only-child td:only-child) td strong {
+      color: var(--accent);
+    }
+
+    /* ── Code ── */
+    code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12.5px;
+      color: var(--accent);
+      background: rgba(110,161,255,0.07);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    pre {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 18px;
+      overflow-x: auto;
+      margin: 12px 0;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12.5px;
+      line-height: 1.7;
+      color: #c4cdd9;
+      scrollbar-width: thin;
+      scrollbar-color: #333 transparent;
+    }
+    pre::-webkit-scrollbar { height: 4px; }
+    pre::-webkit-scrollbar-track { background: transparent; }
+    pre::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+    pre::-webkit-scrollbar-thumb:hover { background: #555; }
+    pre code {
+      background: none;
+      padding: 0;
+      color: inherit;
+      font-size: inherit;
+    }
+
+    /* ── Blockquote ── */
+    blockquote {
+      background: rgba(110,161,255,0.05);
+      border: 1px solid rgba(110,161,255,0.14);
+      border-left: 3px solid var(--accent);
+      border-radius: 0 10px 10px 0;
+      padding: 13px 16px;
+      margin: 10px 0;
+      font-size: 13px;
+      line-height: 1.7;
+    }
+    blockquote b, blockquote strong { color: var(--accent); }
+
+    /* ── Images ── */
+    img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 10px;
+      margin: 12px 0;
+      border: 1px solid var(--border);
+    }
+
+    /* ── HR ── */
+    hr {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 24px 0;
+    }
+
+    /* ── Footer ── */
+    .footer {
+      text-align: center;
+      padding: 36px 0 16px;
+      font-size: 11px;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      margin-top: 40px;
+    }
+
+    @media (max-width: 640px) {
+      .page { padding: 0 16px 60px; }
+      .hero { padding: 36px 16px 30px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-tag">C# & .NET</div>
+  <h1>Async Await</h1>
+</div>
+
+<div class="page">
+  <div class="doc-content">
+<p><strong>.NET Interview Study Guide</strong></p><p><em>async / await and Task — Complete Guide</em></p><h1><strong>1. The Problem — Why We Need Async</strong></h1><pre><code>Synchronous code blocks the thread while waiting. In web and UI apps this means the UI freezes or the server cannot handle other requests during slow operations like DB calls, file reads, or API calls.
+// ❌ Synchronous — blocks thread completely
+public string GetDataSync()
+{
+    Thread.Sleep(3000); // thread blocked — doing nothing for 3 seconds
+    return "Data";
+}
+
+// ✅ Asynchronous — releases thread
+public async Task&lt;string&gt; GetDataAsync()
+{
+    await Task.Delay(3000); // thread released — free to handle other work
+    return "Data";
+}</code></pre><h1><strong>2. Thread vs Task</strong></h1><h2><strong>Thread — Old Way</strong></h2><pre><code>Raw threads are expensive — each consumes ~1MB of memory. Hard to manage, no easy return values, difficult exception handling.
+Thread thread = new Thread(() =&gt;
+{
+    Thread.Sleep(3000);
+    Console.WriteLine("Done");
+});
+thread.Start();</code></pre><h2><strong>Task — Modern Way</strong></h2><pre><code>Task is a higher-level abstraction over threads. It uses the Thread Pool — reusable threads that are borrowed and returned instead of created and destroyed.
+// Task with return value
+Task&lt;string&gt; task = Task.Run(() =&gt;
+{
+    Thread.Sleep(2000);
+    return "Data from DB";
+});
+
+string result = await task; // non-blocking wait
+Console.WriteLine(result);</code></pre><table><tr><td></td><td><p><strong>Thread</strong></p></td><td><p><strong>Task</strong></p></td></tr><tr><td><p>Memory</p></td><td><p>~1MB each</p></td><td><p>Uses thread pool — cheap</p></td></tr><tr><td><p>Management</p></td><td><p>Manual</p></td><td><p>Automatic</p></td></tr><tr><td><p>Return value</p></td><td><p>Difficult</p></td><td><p>Task&lt;T&gt;</p></td></tr><tr><td><p>Exception handling</p></td><td><p>Complex</p></td><td><p>Built-in</p></td></tr><tr><td><p>Recommended?</p></td><td><p>❌ Rarely</p></td><td><p>✅ Always</p></td></tr></table><h1><strong>3. async and await — How They Work</strong></h1><pre><code>async — marks the method. Tells compiler to transform it into a state machine. By itself does nothing.
+await — the real magic. Releases the thread while waiting. Method pauses, thread is freed, method resumes when operation completes.
+public async Task&lt;string&gt; GetDataAsync()
+{
+    Console.WriteLine("1 - Before await, Thread: " + Thread.CurrentThread.ManagedThreadId);
+
+    string data = await FetchFromDBAsync(); // ← thread released here
+
+    Console.WriteLine("3 - After await, Thread: " + Thread.CurrentThread.ManagedThreadId);
+    return data;
+}
+
+// What happens at await:
+// Step 1 → method runs until await
+// Step 2 → thread released back to thread pool
+// Step 3 → FetchFromDBAsync() runs</code></pre><p>// Step 4 → when complete, method resumes from where it left off</p><h1><strong>4. Return Types</strong></h1><pre><code>// Task — no return value
+public async Task SaveDataAsync()
+{
+    await File.WriteAllTextAsync("file.txt", "data");
+}
+
+// Task&lt;T&gt; — returns a value
+public async Task&lt;string&gt; GetDataAsync()
+{
+    return await File.ReadAllTextAsync("file.txt");
+}
+
+// void — ONLY for event handlers — avoid everywhere else
+public async void Button_Click(object sender, EventArgs e)
+{
+    await DoSomethingAsync();
+}</code></pre><table><tr><td><p><strong>⚠️ Important:  </strong>Never use async void except for event handlers. Exceptions from async void cannot be caught by the caller and will crash the application silently.</p></td></tr></table><h1><strong>5. Common Mistakes</strong></h1><h2><strong>Mistake 1 — Deadlock with .Result or .Wait()</strong></h2><pre><code>In environments with SynchronizationContext (WinForms, WPF, classic ASP.NET) — calling .Result blocks the thread and causes a deadlock because the async method tries to resume on the same blocked thread.
+// ❌ DEADLOCK in WinForms/WPF/classic ASP.NET
+public string GetData()
+{
+    return GetDataAsync().Result; // blocks thread — deadlock! 💀
+}
+
+// ✅ Fix — await all the way
+public async Task&lt;string&gt; GetData()
+{
+    return await GetDataAsync(); // no deadlock
+}
+
+// Why no deadlock in Console/ASP.NET Core?
+// No SynchronizationContext — can resume on any thread pool thread</code></pre><h2><strong>Mistake 2 — Forgetting await</strong></h2><pre><code>// ❌ Fire and forget — result never waited for
+public async Task SaveAsync()
+{
+    SaveToDBAsync(); // no await — runs but result ignored!
+    Console.WriteLine("Saved"); // prints immediately even if save failed
+}
+
+// ✅ Correct
+public async Task SaveAsync()
+{
+    await SaveToDBAsync();
+    Console.WriteLine("Saved"); // prints only after save completes
+}</code></pre><h2><strong>Mistake 3 — Sequential Instead of Parallel</strong></h2><pre><code>// ❌ Sequential — each waits for previous
+foreach (int id in ids)
+{
+    await GetUserAsync(id); // one by one — slow
+}
+
+// ✅ Parallel — all run at the same time
+List&lt;Task&lt;User&gt;&gt; tasks = ids.Select(id =&gt; GetUserAsync(id)).ToList();
+await Task.WhenAll(tasks); // all parallel — fast 🚀</code></pre><h1><strong>6. Task.WhenAll vs Task.WhenAny</strong></h1><pre><code>// Task.WhenAll — wait for ALL to complete
+Task&lt;string&gt; task1 = GetFromDB();
+Task&lt;string&gt; task2 = GetFromAPI();
+Task&lt;string&gt; task3 = GetFromCache();
+
+string[] results = await Task.WhenAll(task1, task2, task3);
+// All three run in parallel — total time = slowest one
+
+// Task.WhenAny — continue when FIRST completes
+Task&lt;string&gt; winner = await Task.WhenAny(task1, task2);
+string result = await winner; // fastest server wins</code></pre><h1><strong>7. ConfigureAwait</strong></h1><pre><code>// Default — resumes on original thread (needed for UI updates)
+string data = await GetDataAsync();
+
+// ConfigureAwait(false) — resumes on any thread pool thread
+// Use in library/service code — slightly more performant
+string data = await GetDataAsync().ConfigureAwait(false);
+
+// Rule:
+// UI apps     → dont use ConfigureAwait(false) when updating UI
+// Library code → always use ConfigureAwait(false)</code></pre><h1><strong>8. Summary Table</strong></h1><table><tr><td><p><strong>Concept</strong></p></td><td><p><strong>Details</strong></p></td></tr><tr><td><p>async</p></td><td><p>Marks method — compiler creates state machine</p></td></tr><tr><td><p>await</p></td><td><p>Releases thread while waiting — resumes when done</p></td></tr><tr><td><p>Task</p></td><td><p>Async operation with no return value</p></td></tr><tr><td><p>Task&lt;T&gt;</p></td><td><p>Async operation that returns a value</p></td></tr><tr><td><p>async void</p></td><td><p>Only for event handlers — never use elsewhere</p></td></tr><tr><td><p>Task.WhenAll</p></td><td><p>Wait for all tasks — run in parallel</p></td></tr><tr><td><p>Task.WhenAny</p></td><td><p>Continue when first task completes</p></td></tr><tr><td><p>.Result/.Wait()</p></td><td><p>Blocks thread — causes deadlock — avoid</p></td></tr><tr><td><p>ConfigureAwait(false)</p></td><td><p>Resume on any thread — use in library code</p></td></tr></table><h1><strong>9. Interview Questions</strong></h1><p><strong>Q: What is the difference between async/await and Thread?</strong></p><table><tr><td><p><strong>🎯 Interview Answer:  </strong>A Thread creates an OS-level thread consuming ~1MB of memory and requires manual management. async/await uses the Thread Pool through the Task abstraction — threads are reused instead of created fresh each time. The key difference is that await releases the thread while waiting for an operation to complete, whereas Thread.Sleep blocks the thread entirely. This makes async/await far more efficient for I/O-bound operations.</p></td></tr></table><p><strong>Q: Why does .Result cause a deadlock?</strong></p><table><tr><td><p><strong>🎯 Interview Answer:  </strong>Deadlock occurs in environments with a SynchronizationContext like WinForms, WPF, or classic ASP.NET. When await captures the context it promises to resume on that specific thread. But if that thread is blocked by .Result waiting for the async method to finish, neither can proceed — the async method needs the thread to resume and the thread needs the async method to finish. Console apps and ASP.NET Core have no SynchronizationContext so they can resume on any thread pool thread — no deadlock.</p></td></tr></table><p><strong>Q: What is the difference between Task.WhenAll and Task.WhenAny?</strong></p><table><tr><td><p><strong>🎯 Interview Answer:  </strong>Task.WhenAll waits for all tasks to complete and is used for parallel execution where you need all results. The total time equals the slowest task instead of the sum of all tasks. Task.WhenAny completes as soon as the first task finishes — useful for redundancy scenarios like querying multiple servers and using whichever responds first.</p></td></tr></table><p><em>Good luck with your interview! 🚀</em></p>
+  </div>
+  <div class="footer">Study Docs Portal</div>
+</div>
+
+</body>
+</html>

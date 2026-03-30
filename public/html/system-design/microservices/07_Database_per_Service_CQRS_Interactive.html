@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Database per Service + CQRS — Microservices Study Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0c10;--surface:#111318;--surface2:#181c24;--surface3:#1f2530;--border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.11);--accent:#6ea1ff;--accent2:#8b6cf6;--green:#34d399;--amber:#fbbf24;--red:#f87171;--teal:#2dd4bf;--coral:#fb923c;--text:#dfe5ef;--muted:#7e8a9e;--code-bg:#080a0e}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font-size:15px;line-height:1.78;-webkit-font-smoothing:antialiased}
+.page{max-width:900px;margin:0 auto;padding:0 28px 100px}
+.hero{padding:56px 28px 44px;max-width:900px;margin:0 auto;border-bottom:1px solid var(--border);position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-80px;right:-40px;width:360px;height:360px;background:radial-gradient(circle,rgba(110,161,255,0.08) 0%,transparent 70%);pointer-events:none}
+.hero-tag{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:10.5px;font-weight:500;color:var(--accent);background:rgba(110,161,255,0.07);border:1px solid rgba(110,161,255,0.18);padding:4px 14px;border-radius:20px;letter-spacing:0.09em;margin-bottom:14px;text-transform:uppercase}
+.hero h1{font-size:clamp(26px,4.2vw,42px);font-weight:700;line-height:1.15;letter-spacing:-0.03em;margin-bottom:10px;background:linear-gradient(135deg,#dfe5ef 0%,#6ea1ff 50%,#34d399 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero-sub{font-size:15px;color:var(--muted);line-height:1.65;max-width:600px}
+.section{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:30px;margin-top:30px}
+.section h2{font-size:20px;font-weight:700;color:#fff;margin-bottom:18px;display:flex;align-items:center;gap:10px}
+.section h2 .num{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--accent);background:rgba(110,161,255,0.1);padding:3px 10px;border-radius:6px;font-weight:500}
+.section h3{font-size:15px;font-weight:600;color:var(--accent);margin:22px 0 10px;padding-top:14px;border-top:1px solid var(--border)}
+.section h3:first-of-type{border-top:none;padding-top:0}
+p{margin-bottom:12px}strong{color:#fff}
+ul{padding-left:20px;margin:8px 0 14px}li{margin:4px 0;font-size:14px}
+pre{background:var(--code-bg);border:1px solid var(--border);border-radius:10px;padding:14px 18px;overflow-x:auto;margin:12px 0;font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.7;color:#c4cdd9}
+code{font-family:'JetBrains Mono',monospace;font-size:12.5px;color:var(--accent);background:rgba(110,161,255,0.07);padding:2px 6px;border-radius:4px}
+pre code{background:none;padding:0;color:inherit}
+table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13px}
+th{background:var(--surface2);color:var(--accent);font-weight:600;text-align:left;padding:9px 13px;border:1px solid var(--border)}
+td{padding:8px 13px;border:1px solid var(--border)}
+tr:nth-child(even) td{background:rgba(255,255,255,0.012)}
+.note{background:rgba(110,161,255,0.05);border:1px solid rgba(110,161,255,0.14);border-radius:10px;padding:13px 16px;margin:12px 0;font-size:13px;line-height:1.7}.note b{color:var(--accent)}
+.note-warn{background:rgba(251,191,36,0.05);border-color:rgba(251,191,36,0.14)}.note-warn b{color:var(--amber)}
+.note-red{background:rgba(248,113,113,0.05);border-color:rgba(248,113,113,0.14)}.note-red b{color:var(--red)}
+.note-green{background:rgba(52,211,153,0.05);border-color:rgba(52,211,153,0.14)}.note-green b{color:var(--green)}
+.qa{background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:14px 18px;margin:10px 0}
+.qa-q{font-weight:600;color:#fff;margin-bottom:5px;font-size:14px}
+.qa-a{color:var(--muted);font-size:13px;line-height:1.7}
+.tab-group{margin:16px 0}.tab-bar{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.tab-btn{padding:6px 14px;font-size:12px;font-weight:500;font-family:'Outfit',sans-serif;border:1px solid var(--border2);border-radius:6px;background:transparent;color:var(--muted);cursor:pointer;transition:all 0.15s}
+.tab-btn:hover{border-color:rgba(110,161,255,0.3);color:var(--text)}
+.tab-btn.active{background:rgba(110,161,255,0.1);color:var(--accent);border-color:rgba(110,161,255,0.3)}
+.tab-panel{display:none}.tab-panel.active{display:block}
+.flow{display:flex;align-items:center;gap:8px;margin:10px 0;flex-wrap:wrap}
+.flow-step{background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:8px 14px;font-size:13px;color:var(--text);font-weight:500}
+.flow-arrow{color:var(--muted);font-size:16px}
+.env-row{display:flex;gap:12px;margin:10px 0;align-items:stretch}
+.env-card{flex:1;border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:4px}
+.env-card .env-name{font-size:13px;font-weight:600}.env-card .env-status{font-size:11px;color:var(--muted)}
+.pod-row{display:flex;gap:8px;margin:12px 0;align-items:center;flex-wrap:wrap}
+.pod{width:90px;height:48px;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:12px;font-weight:500;gap:2px}
+.pod-v1{background:rgba(110,161,255,0.08);border:1px solid rgba(110,161,255,0.18);color:var(--accent)}
+.pod-v2{background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.18);color:var(--green)}
+.traffic{display:flex;height:32px;border-radius:8px;overflow:hidden;border:1px solid var(--border);margin:10px 0}
+.traffic-v1{background:rgba(110,161,255,0.1);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;color:var(--accent)}
+.traffic-v2{background:rgba(52,211,153,0.1);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;color:var(--green)}
+.toc{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px 24px;margin:30px 0}
+.toc h3{font-size:12px;font-weight:600;color:var(--accent);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.06em}
+.toc a{font-size:13px;color:var(--muted);text-decoration:none;display:block;padding:4px 0;transition:color 0.15s}
+.toc a:hover{color:var(--accent)}
+.footer{text-align:center;padding:36px 0 16px;font-size:11px;color:var(--muted);border-top:1px solid var(--border);margin-top:40px}
+@media(max-width:640px){.page{padding:0 16px 60px}.section{padding:20px 16px}.env-row{flex-direction:column}.hero{padding:36px 16px 30px}}
+</style>
+
+</head>
+<body>
+<div class="hero">
+  <div class="hero-tag">Microservices · Topic 07</div>
+  <h1>Database per Service + CQRS</h1>
+  <p class="hero-sub">Polyglot persistence, command/query separation, read models, event handlers. Full C# code.</p>
+</div>
+<div class="page">
+
+<div class="section" id="s1">
+<h2><span class="num">01</span> Database per Service</h2>
+<div class="tab-group" id="dbp">
+<div class="tab-bar">
+<button class="tab-btn active" onclick="showTab('dbp',0)">Shared DB (wrong)</button>
+<button class="tab-btn" onclick="showTab('dbp',1)">DB per service (right)</button>
+<button class="tab-btn" onclick="showTab('dbp',2)">Why shared breaks</button>
+</div>
+<div class="tab-panel active">
+<div class="pod-row">
+<div class="pod" style="background:rgba(139,92,246,0.06);border:1px solid rgba(139,92,246,0.12);color:var(--accent2);width:100px">Orders</div>
+<div class="pod" style="background:rgba(251,191,36,0.06);border:1px solid rgba(251,191,36,0.12);color:var(--amber);width:100px">Inventory</div>
+<div class="pod" style="background:rgba(52,211,153,0.06);border:1px solid rgba(52,211,153,0.12);color:var(--green);width:100px">Payments</div>
+</div>
+<div style="text-align:center;color:var(--muted);margin:4px 0">↓ all hit ↓</div>
+<div class="pod-row" style="justify-content:center"><div class="pod" style="background:rgba(248,113,113,0.06);border:1px solid rgba(248,113,113,0.12);color:var(--red);width:280px;height:40px">One shared database</div></div>
+</div>
+<div class="tab-panel">
+<div class="env-row">
+<div class="env-card" style="background:rgba(139,92,246,0.04);border:1px solid rgba(139,92,246,0.1)"><div class="env-name" style="color:var(--accent2)">Orders → PostgreSQL</div></div>
+<div class="env-card" style="background:rgba(251,191,36,0.04);border:1px solid rgba(251,191,36,0.1)"><div class="env-name" style="color:var(--amber)">Inventory → MongoDB</div></div>
+<div class="env-card" style="background:rgba(52,211,153,0.04);border:1px solid rgba(52,211,153,0.1)"><div class="env-name" style="color:var(--green)">Search → Elasticsearch</div></div>
+</div>
+<p>Each service picks the best DB for its workload. This is <strong>polyglot persistence</strong>.</p>
+</div>
+<div class="tab-panel">
+<ul>
+<li><strong>Tight coupling:</strong> Inventory adds column → Orders SQL breaks → forced to deploy together</li>
+<li><strong>No independent scaling:</strong> Search queries hammer DB → Orders writes slow down</li>
+<li><strong>No tech freedom:</strong> Search needs Elasticsearch but everyone's stuck on PostgreSQL</li>
+</ul>
+<div class="note-red note"><b>A shared database makes your microservices a distributed monolith.</b></div>
+</div>
+</div>
+</div>
+
+<div class="section" id="s2">
+<h2><span class="num">02</span> CQRS</h2>
+<div class="tab-group" id="cqrs">
+<div class="tab-bar">
+<button class="tab-btn active" onclick="showTab('cqrs',0)">The problem</button>
+<button class="tab-btn" onclick="showTab('cqrs',1)">Write side (C#)</button>
+<button class="tab-btn" onclick="showTab('cqrs',2)">Read side (C#)</button>
+<button class="tab-btn" onclick="showTab('cqrs',3)">Event handler</button>
+<button class="tab-btn" onclick="showTab('cqrs',4)">When NOT to use</button>
+</div>
+<div class="tab-panel active">
+<p>Writes want <strong>normalized</strong> data (ACID, constraints). Reads want <strong>denormalized</strong> data (pre-joined, no JOINs, fast). Optimizing for one hurts the other. CQRS splits into two models.</p>
+</div>
+<div class="tab-panel">
+<pre><code>public class UpdateProductPriceHandler
+{
+    public async Task Handle(UpdateProductPriceCommand cmd)
+    {
+        var product = await _db.Products.FindAsync(cmd.ProductId);
+        if (cmd.NewPrice <= 0) throw new ValidationException();
+        product.Price = cmd.NewPrice;
+        await _db.SaveChangesAsync();
+        await _bus.PublishAsync(new ProductPriceUpdated(
+            cmd.ProductId, cmd.NewPrice, product.Name));
+    }
+}</code></pre>
+</div>
+<div class="tab-panel">
+<pre><code>// Single read, no JOINs — everything pre-joined
+public class ProductView
+{
+    public string ProductId { get; set; }
+    public string Name { get; set; }
+    public decimal Price { get; set; }
+    public string CategoryName { get; set; }   // pre-joined!
+    public double AverageRating { get; set; }  // pre-calculated!
+    public int StockLevel { get; set; }        // from Inventory events!
+}</code></pre>
+</div>
+<div class="tab-panel">
+<pre><code>// Consumes events from MULTIPLE services
+public class ProductReadModelUpdater
+{
+    public async Task Handle(ProductPriceUpdated evt)
+    {   view.Price = evt.NewPrice; }
+
+    public async Task Handle(ReviewPosted evt)
+    {   view.ReviewCount++; view.AverageRating = evt.NewAvg; }
+
+    public async Task Handle(StockLevelChanged evt)
+    {   view.StockLevel = evt.NewLevel; }
+}</code></pre>
+</div>
+<div class="tab-panel">
+<div class="note-warn note"><b>Don't use CQRS when:</b> Simple CRUD. Read/write patterns are similar. Small scale. Most services don't need it — reserve for read-heavy, cross-service aggregation (product pages, dashboards, search results).</div>
+</div>
+</div>
+</div>
+
+<div class="section" id="s3">
+<h2><span class="num">03</span> Interview Q&amp;A</h2>
+<div class="qa"><div class="qa-q">Q: What's the tradeoff of CQRS?</div><div class="qa-a">Eventual consistency — read model lags behind writes (ms to seconds). Two databases, event handlers, sync logic. Only worth it when read/write patterns differ significantly.</div></div>
+<div class="qa"><div class="qa-q">Q: How does CQRS connect to Saga?</div><div class="qa-a">Sagas handle distributed writes (coordinating across services). CQRS handles distributed reads (building views from events). They pair naturally — Saga events feed CQRS read models.</div></div>
+</div>
+<div class="footer">Database per Service + CQRS — Microservices Study Guide · C# / .NET · Interview Prep · 2026</div>
+</div>
+<script>
+function showTab(g,i){var p=document.getElementById(g).querySelectorAll('.tab-panel'),b=document.getElementById(g).querySelectorAll('.tab-btn');p.forEach(function(x,j){x.classList.toggle('active',j===i)});b.forEach(function(x,j){x.classList.remove('active');if(j===i)x.classList.add('active')})}
+</script>
+</body>
+</html>

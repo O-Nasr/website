@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exception Handling</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0c10;
+      --surface: #111318;
+      --surface2: #181c24;
+      --surface3: #1f2530;
+      --border: rgba(255,255,255,0.06);
+      --border2: rgba(255,255,255,0.11);
+      --accent: #6ea1ff;
+      --accent2: #8b6cf6;
+      --green: #34d399;
+      --amber: #fbbf24;
+      --red: #f87171;
+      --teal: #2dd4bf;
+      --text: #dfe5ef;
+      --muted: #7e8a9e;
+      --code-bg: #080a0e;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Outfit', sans-serif;
+      font-size: 15px;
+      line-height: 1.78;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      padding: 56px 28px 44px;
+      max-width: 900px;
+      margin: 0 auto;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -80px;
+      right: -40px;
+      width: 360px;
+      height: 360px;
+      background: radial-gradient(circle, rgba(110,161,255,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-tag {
+      display: inline-block;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10.5px;
+      font-weight: 500;
+      color: var(--accent);
+      background: rgba(110,161,255,0.07);
+      border: 1px solid rgba(110,161,255,0.18);
+      padding: 4px 14px;
+      border-radius: 20px;
+      letter-spacing: 0.09em;
+      margin-bottom: 14px;
+      text-transform: uppercase;
+    }
+    .hero h1 {
+      font-size: clamp(26px, 4.2vw, 42px);
+      font-weight: 700;
+      line-height: 1.15;
+      letter-spacing: -0.03em;
+      margin-bottom: 0;
+      background: linear-gradient(135deg, #dfe5ef 0%, #6ea1ff 50%, #34d399 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* ── Page layout ── */
+    .page {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 28px 100px;
+    }
+
+    /* ── Sections ── */
+    .doc-content h1 {
+      font-size: 20px;
+      font-weight: 700;
+      color: #fff;
+      margin: 30px 0 0;
+      padding: 24px 0 14px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      -webkit-text-fill-color: #fff;
+      background-clip: padding-box;
+    }
+    .doc-content h1:first-child { margin-top: 10px; }
+
+    .doc-content h2 {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--accent);
+      margin: 22px 0 10px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+    }
+
+    .doc-content h3 {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--accent2);
+      margin: 18px 0 8px;
+    }
+
+    .doc-content h4, .doc-content h5, .doc-content h6 {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--teal);
+      margin: 14px 0 6px;
+    }
+
+    p {
+      margin: 0;
+      padding: 6px 0;
+      font-size: 14.5px;
+      line-height: 1.75;
+    }
+    strong, b { color: #fff; }
+    em { color: var(--muted); }
+
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ── Lists ── */
+    ul, ol {
+      padding-left: 20px;
+      margin: 4px 0 10px;
+    }
+    li {
+      margin: 3px 0;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+    li strong { color: #fff; }
+
+    /* ── Tables ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin: 12px 0;
+    }
+    th {
+      background: var(--surface2);
+      color: var(--accent);
+      font-weight: 600;
+      text-align: left;
+      padding: 9px 13px;
+      border: 1px solid var(--border);
+    }
+    td {
+      padding: 8px 13px;
+      border: 1px solid var(--border);
+    }
+    tr:nth-child(even) td {
+      background: rgba(255,255,255,0.012);
+    }
+
+    /* Single-cell tables = note/callout boxes */
+    table:has(tr:only-child td:only-child) {
+      background: rgba(110,161,255,0.05);
+      border: 1px solid rgba(110,161,255,0.14);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    table:has(tr:only-child td:only-child) td {
+      border: none;
+      padding: 13px 16px;
+      font-size: 13px;
+      line-height: 1.7;
+    }
+    table:has(tr:only-child td:only-child) td strong {
+      color: var(--accent);
+    }
+
+    /* ── Code ── */
+    code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12.5px;
+      color: var(--accent);
+      background: rgba(110,161,255,0.07);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    pre {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 18px;
+      overflow-x: auto;
+      margin: 12px 0;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12.5px;
+      line-height: 1.7;
+      color: #c4cdd9;
+      scrollbar-width: thin;
+      scrollbar-color: #333 transparent;
+    }
+    pre::-webkit-scrollbar { height: 4px; }
+    pre::-webkit-scrollbar-track { background: transparent; }
+    pre::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+    pre::-webkit-scrollbar-thumb:hover { background: #555; }
+    pre code {
+      background: none;
+      padding: 0;
+      color: inherit;
+      font-size: inherit;
+    }
+
+    /* ── Blockquote ── */
+    blockquote {
+      background: rgba(110,161,255,0.05);
+      border: 1px solid rgba(110,161,255,0.14);
+      border-left: 3px solid var(--accent);
+      border-radius: 0 10px 10px 0;
+      padding: 13px 16px;
+      margin: 10px 0;
+      font-size: 13px;
+      line-height: 1.7;
+    }
+    blockquote b, blockquote strong { color: var(--accent); }
+
+    /* ── Images ── */
+    img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 10px;
+      margin: 12px 0;
+      border: 1px solid var(--border);
+    }
+
+    /* ── HR ── */
+    hr {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 24px 0;
+    }
+
+    /* ── Footer ── */
+    .footer {
+      text-align: center;
+      padding: 36px 0 16px;
+      font-size: 11px;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      margin-top: 40px;
+    }
+
+    @media (max-width: 640px) {
+      .page { padding: 0 16px 60px; }
+      .hero { padding: 36px 16px 30px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-tag">C# & .NET</div>
+  <h1>Exception Handling</h1>
+</div>
+
+<div class="page">
+  <div class="doc-content">
+<p><strong>.NET Interview Study Guide</strong></p><p><em>Exception Handling Deep Dive — Complete Guide</em></p><h1><strong>1. Exception Hierarchy</strong></h1><pre><code>System.Exception                      ← base of everything
+    ├── System.SystemException         ← thrown by .NET runtime
+    │       ├── NullReferenceException
+    │       ├── IndexOutOfRangeException
+    │       ├── InvalidCastException
+    │       ├── StackOverflowException
+    │       └── OutOfMemoryException
+    │
+    └── System.ApplicationException   ← thrown by application code
+            └── YourCustomException   ← your own exceptions</code></pre><h1><strong>2. Catching Specific Exceptions — Most Specific First</strong></h1><pre><code>public void ProcessOrder(string orderId)
+{
+    try
+    {
+        var order = GetOrder(orderId);
+        SaveOrder(order);
+    }
+    catch (OrderNotFoundException ex)  // most specific first
+    {
+        Console.WriteLine("Order not found: " + ex.OrderId);
+    }
+    catch (DatabaseException ex)       // more general
+    {
+        Console.WriteLine("DB error: " + ex.Message);
+    }
+    catch (Exception ex)               // catch-all — last resort
+    {
+        Console.WriteLine("Unexpected: " + ex.Message);
+        throw; // rethrow after logging
+    }
+    finally
+    {
+        // ALWAYS runs — exception, return, or normal flow
+        Console.WriteLine("Processing complete");
+    }
+}</code></pre><h1><strong>3. throw vs throw ex — Most Important Distinction</strong></h1><table><tr><td><p><strong>⚠️ Important:  </strong>throw preserves the original stack trace. throw ex RESETS the stack trace — you lose where the error originally happened. Always use throw.</p></td></tr></table><pre><code>// ❌ throw ex — destroys evidence
+catch (Exception ex)
+{
+    throw ex; // stack trace now starts HERE — lost original location
+}
+
+// ✅ throw — preserves full history
+catch (Exception ex)
+{
+    Logger.Log(ex);
+    throw; // original stack trace fully preserved
+}
+
+// Stack trace with throw ex:
+// at MethodB()  ← starts here — MethodC info LOST 😱
+// at MethodA()
+
+// Stack trace with throw:
+// at MethodC() line 5  ← original source preserved ✅
+// at MethodB()
+// at MethodA()</code></pre><h1><strong>4. Finally Block</strong></h1><pre><code>Finally ALWAYS runs — even with return statements, exceptions, or break statements inside try.
+public string Test()
+{
+    try
+    {
+        return "from try"; // return is here
+    }
+    finally
+    {
+        Console.WriteLine("finally runs!"); // STILL runs before returning
+    }
+}
+// Output: "finally runs!" then returns "from try"
+
+// finally only skipped on:
+// Environment.FailFast() or power failure</code></pre><h1><strong>5. Custom Exceptions</strong></h1><pre><code>public class OrderNotFoundException : Exception
+{
+    public string OrderId { get; }
+    public DateTime AttemptedAt { get; }
+
+    public OrderNotFoundException(string orderId)
+        : base($"Order '{orderId}' was not found")
+    {
+        OrderId = orderId;
+        AttemptedAt = DateTime.UtcNow;
+    }
+
+    // Always include InnerException constructor
+    public OrderNotFoundException(string orderId, Exception innerException)
+        : base($"Order '{orderId}' was not found", innerException)
+    {
+        OrderId = orderId;
+        AttemptedAt = DateTime.UtcNow;
+    }
+}
+
+// Throw it
+throw new OrderNotFoundException(orderId);
+
+// Catch it specifically
+catch (OrderNotFoundException ex)
+{
+    Console.WriteLine($"Order {ex.OrderId} not found at {ex.AttemptedAt}");
+}</code></pre><h1><strong>6. Global Exception Handler — ASP.NET Core</strong></h1><pre><code>public class GlobalExceptionMiddleware
+{
+    private readonly RequestDelegate _next;
+    private readonly ILogger _logger;
+
+    public GlobalExceptionMiddleware(RequestDelegate next, ILogger logger)
+    {
+        _next = next;
+        _logger = logger;
+    }
+
+    public async Task Invoke(HttpContext context)
+    {
+        try
+        {
+            await _next(context);
+        }
+        catch (OrderNotFoundException ex)
+        {
+            _logger.LogWarning(ex, "Order not found");
+            await HandleException(context, StatusCodes.Status404NotFound, ex.Message);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error");
+            await HandleException(context, StatusCodes.Status500InternalServerError, "An unexpected error occurred");
+        }
+    }
+
+    private async Task HandleException(HttpContext ctx, int statusCode, string message)
+    {
+        ctx.Response.StatusCode = statusCode;
+        ctx.Response.ContentType = "application/json";
+        await ctx.Response.WriteAsJsonAsync(new { error = message, statusCode });
+    }
+}
+
+// Register in Program.cs
+app.UseMiddleware&lt;GlobalExceptionMiddleware&gt;();</code></pre><h1><strong>7. Exception Best Practices</strong></h1><h2><strong>Never Swallow Exceptions Silently</strong></h2><pre><code>// ❌ Empty catch — exception disappears silently
+catch (Exception ex) { }
+
+// ✅ Always log at minimum
+catch (Exception ex)
+{
+    _logger.LogError(ex, "Something went wrong");
+    throw;
+}</code></pre><h2><strong>Don't Use Exceptions for Flow Control</strong></h2><pre><code>// ❌ Using exception for normal logic
+public bool UserExists(string email)
+{
+    try { var user = GetUser(email); return true; }
+    catch (UserNotFoundException) { return false; } // expensive!
+}
+
+// ✅ Simple check
+public bool UserExists(string email)
+{
+    return _repository.Exists(email);
+}</code></pre><h2><strong>Always Include InnerException When Wrapping</strong></h2><pre><code>// ❌ Loses original exception
+catch (SqlException ex)
+{
+    throw new DatabaseException("DB operation failed");
+}
+
+// ✅ Preserves original as InnerException
+catch (SqlException ex)
+{
+    throw new DatabaseException("DB operation failed", ex);
+    //                                                  ↑ original preserved</code></pre><h1><strong>8. Best Practices Summary</strong></h1><table><tr><td><p><strong>Rule</strong></p></td><td><p><strong>Details</strong></p></td></tr><tr><td><p>Catch specific first</p></td><td><p>Most specific exception type at top, general at bottom</p></td></tr><tr><td><p>throw vs throw ex</p></td><td><p>Always use throw — preserves stack trace</p></td></tr><tr><td><p>finally</p></td><td><p>Always runs — use for cleanup and resource disposal</p></td></tr><tr><td><p>Custom exceptions</p></td><td><p>Extend Exception — add context properties like OrderId</p></td></tr><tr><td><p>InnerException</p></td><td><p>Always pass original when wrapping exceptions</p></td></tr><tr><td><p>Never swallow</p></td><td><p>Always log before swallowing — never empty catch block</p></td></tr><tr><td><p>No flow control</p></td><td><p>Never use exceptions for expected business logic</p></td></tr><tr><td><p>Global handler</p></td><td><p>Catch all unhandled exceptions in one central place</p></td></tr></table><h1><strong>9. Interview Questions</strong></h1><p><strong>Q: What is the difference between throw and throw ex?</strong></p><table><tr><td><p><strong>🎯 Interview Answer:  </strong>throw preserves the original stack trace showing exactly where the exception first occurred. throw ex resets the stack trace making it appear the exception originated at the catch block — you lose the original error location. Always use throw when rethrowing. Only use throw ex inside a new exception constructor to wrap it, passing the original as InnerException.</p></td></tr></table><p><strong>Q: When does the finally block run?</strong></p><table><tr><td><p><strong>🎯 Interview Answer:  </strong>The finally block always runs regardless of whether an exception was thrown, whether a return statement was hit inside try, or whether the code completed normally. The only scenarios where finally does not run are Environment.FailFast() which terminates the process immediately, or a machine power failure. Finally is used for cleanup code like disposing connections and closing files.</p></td></tr></table><p><strong>Q: When should you catch an exception vs let it bubble up?</strong></p><table><tr><td><p><strong>🎯 Interview Answer:  </strong>Catch an exception when you can actually recover from it, need to translate it to a different exception type, need to log it at this specific layer, or need to return a specific HTTP response to the client. Let it bubble up when you cannot do anything useful with it, a higher layer handles it better, or the global exception handler will catch it anyway. Never catch exceptions just to rethrow them without adding value.</p></td></tr></table><p><em>Good luck with your interview! 🚀</em></p>
+  </div>
+  <div class="footer">Study Docs Portal</div>
+</div>
+
+</body>
+</html>

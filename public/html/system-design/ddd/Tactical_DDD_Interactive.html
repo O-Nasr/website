@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tactical DDD — Domain-Driven Design Study Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0c10;--surface:#111318;--surface2:#181c24;--surface3:#1f2530;--border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.11);--accent:#6ea1ff;--accent2:#8b6cf6;--green:#34d399;--amber:#fbbf24;--red:#f87171;--teal:#2dd4bf;--coral:#fb923c;--text:#dfe5ef;--muted:#7e8a9e;--code-bg:#080a0e}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font-size:15px;line-height:1.78;-webkit-font-smoothing:antialiased}
+.page{max-width:900px;margin:0 auto;padding:0 28px 100px}
+.hero{padding:56px 28px 44px;max-width:900px;margin:0 auto;border-bottom:1px solid var(--border);position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-80px;right:-40px;width:360px;height:360px;background:radial-gradient(circle,rgba(52,211,153,0.08) 0%,transparent 70%);pointer-events:none}
+.hero-tag{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:10.5px;font-weight:500;color:var(--green);background:rgba(52,211,153,0.07);border:1px solid rgba(52,211,153,0.18);padding:4px 14px;border-radius:20px;letter-spacing:0.09em;margin-bottom:14px;text-transform:uppercase}
+.hero h1{font-size:clamp(26px,4.2vw,42px);font-weight:700;line-height:1.15;letter-spacing:-0.03em;margin-bottom:10px;background:linear-gradient(135deg,#dfe5ef 0%,#34d399 50%,#6ea1ff 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero-sub{font-size:15px;color:var(--muted);line-height:1.65;max-width:600px}
+.section{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:30px;margin-top:30px}
+.section h2{font-size:20px;font-weight:700;color:#fff;margin-bottom:18px;display:flex;align-items:center;gap:10px}
+.section h2 .num{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--green);background:rgba(52,211,153,0.1);padding:3px 10px;border-radius:6px;font-weight:500}
+.section h3{font-size:15px;font-weight:600;color:var(--accent);margin:22px 0 10px;padding-top:14px;border-top:1px solid var(--border)}
+.section h3:first-of-type{border-top:none;padding-top:0}
+p{margin-bottom:12px}strong{color:#fff}
+ul{padding-left:20px;margin:8px 0 14px}li{margin:4px 0;font-size:14px}
+pre{background:var(--code-bg);border:1px solid var(--border);border-radius:10px;padding:14px 18px;overflow-x:auto;margin:12px 0;font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.7;color:#c4cdd9}
+code{font-family:'JetBrains Mono',monospace;font-size:12.5px;color:var(--accent);background:rgba(110,161,255,0.07);padding:2px 6px;border-radius:4px}
+pre code{background:none;padding:0;color:inherit}
+table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13px}
+th{background:var(--surface2);color:var(--accent);font-weight:600;text-align:left;padding:9px 13px;border:1px solid var(--border)}
+td{padding:8px 13px;border:1px solid var(--border)}
+tr:nth-child(even) td{background:rgba(255,255,255,0.012)}
+.note{background:rgba(110,161,255,0.05);border:1px solid rgba(110,161,255,0.14);border-radius:10px;padding:13px 16px;margin:12px 0;font-size:13px;line-height:1.7}.note b{color:var(--accent)}
+.note-warn{background:rgba(251,191,36,0.05);border-color:rgba(251,191,36,0.14)}.note-warn b{color:var(--amber)}
+.note-red{background:rgba(248,113,113,0.05);border-color:rgba(248,113,113,0.14)}.note-red b{color:var(--red)}
+.note-green{background:rgba(52,211,153,0.05);border-color:rgba(52,211,153,0.14)}.note-green b{color:var(--green)}
+.qa{background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:14px 18px;margin:10px 0}
+.qa-q{font-weight:600;color:#fff;margin-bottom:5px;font-size:14px}
+.qa-a{color:var(--muted);font-size:13px;line-height:1.7}
+.tab-group{margin:16px 0}.tab-bar{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.tab-btn{padding:6px 14px;font-size:12px;font-weight:500;font-family:'Outfit',sans-serif;border:1px solid var(--border2);border-radius:6px;background:transparent;color:var(--muted);cursor:pointer;transition:all 0.15s}
+.tab-btn:hover{border-color:rgba(52,211,153,0.3);color:var(--text)}
+.tab-btn.active{background:rgba(52,211,153,0.1);color:var(--green);border-color:rgba(52,211,153,0.3)}
+.tab-panel{display:none}.tab-panel.active{display:block}
+.env-row{display:flex;gap:12px;margin:10px 0;align-items:stretch}
+.env-card{flex:1;border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:4px}
+.env-card .env-name{font-size:13px;font-weight:600}.env-card .env-status{font-size:11px;color:var(--muted)}
+.flow{display:flex;align-items:center;gap:8px;margin:10px 0;flex-wrap:wrap}
+.flow-step{background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:8px 14px;font-size:13px;color:var(--text);font-weight:500}
+.flow-arrow{color:var(--muted);font-size:16px}
+.toc{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px 24px;margin:30px 0}
+.toc h3{font-size:12px;font-weight:600;color:var(--green);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.06em}
+.toc a{font-size:13px;color:var(--muted);text-decoration:none;display:block;padding:4px 0;transition:color 0.15s}.toc a:hover{color:var(--green)}
+.footer{text-align:center;padding:36px 0 16px;font-size:11px;color:var(--muted);border-top:1px solid var(--border);margin-top:40px}
+@media(max-width:640px){.page{padding:0 16px 60px}.section{padding:20px 16px}.env-row{flex-direction:column}.hero{padding:36px 16px 30px}}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-tag">DDD Deep Dive · Part 2 of 2 · Interview Prep</div>
+  <h1>Tactical DDD</h1>
+  <p class="hero-sub">Entity, Value Object, Aggregate, Domain Events, Repository, Domain Service. The building blocks for writing code INSIDE a bounded context. Full C# implementations.</p>
+</div>
+
+<div class="page">
+
+<div class="toc">
+  <h3>Contents</h3>
+  <a href="#s1">1. Entity vs Value Object — the foundation</a>
+  <a href="#s2">2. Value Objects in practice — avoiding primitive obsession</a>
+  <a href="#s3">3. Aggregate — the hardest concept</a>
+  <a href="#s4">4. Aggregate Boundaries — Customer + Order trap</a>
+  <a href="#s5">5. Protecting internal entities</a>
+  <a href="#s6">6. Domain Events — full pipeline with C# code</a>
+  <a href="#s7">7. Shopping Cart — design challenge (worked example)</a>
+  <a href="#s8">8. Interview Q&amp;A</a>
+</div>
+
+<!-- ═══════════════════ SECTION 1 ═══════════════════ -->
+<div class="section" id="s1">
+<h2><span class="num">01</span> Entity vs Value Object</h2>
+<p>The foundation of all tactical DDD. The question: <strong>how do you determine identity?</strong></p>
+
+<div class="tab-group" id="evo">
+<div class="tab-bar">
+<button class="tab-btn active" onclick="showTab('evo',0)">The difference</button>
+<button class="tab-btn" onclick="showTab('evo',1)">Entity (C# code)</button>
+<button class="tab-btn" onclick="showTab('evo',2)">Value Object (C# code)</button>
+<button class="tab-btn" onclick="showTab('evo',3)">Side by side</button>
+</div>
+<div class="tab-panel active">
+<p><strong>Entity:</strong> two Orders with the same Id are the <strong>same order</strong>, even if fields differ. Identity comes from the ID. You can change every field — it's still the same entity. Like a person: you change hair, weight, address — still you.</p>
+<p><strong>Value Object:</strong> $59.99 USD and $59.99 USD — there's no "identity" to money. If all fields match, they ARE the same. Like a $20 bill: any $20 is the same as any other $20.</p>
+<pre><code>// Entity — identity matters
+var order1 = new Order { Id = "ord-123", Total = 59.99m };
+var order2 = new Order { Id = "ord-123", Total = 79.99m }; // price changed!
+// order1 == order2?  YES — same Id
+
+// Value Object — value matters
+var money1 = new Money(59.99m, "USD");
+var money2 = new Money(59.99m, "USD");
+// money1 == money2?  YES — same amount + currency</code></pre>
+</div>
+<div class="tab-panel">
+<p style="font-weight:600;color:var(--accent);margin-bottom:8px">Entity — has identity, mutable, compared by ID</p>
+<pre><code>public abstract class Entity
+{
+    public Guid Id { get; protected set; }
+
+    public override bool Equals(object? obj)
+    {
+        if (obj is not Entity other) return false;
+        return Id == other.Id;  // compared by ID only
+    }
+    public override int GetHashCode() => Id.GetHashCode();
+}
+
+public class Order : Entity
+{
+    public CustomerId CustomerId { get; private set; }
+    public Money TotalAmount { get; private set; }
+    public OrderStatus Status { get; private set; }
+
+    // State changes through methods, not public setters
+    public void Cancel(string reason)
+    {
+        if (Status == OrderStatus.Shipped)
+            throw new DomainException("Cannot cancel shipped order");
+        Status = OrderStatus.Cancelled;
+    }
+}</code></pre>
+<p>"State changes over time" means an entity has a <strong>lifecycle</strong>: Draft → Submitted → Shipped → Delivered. Same Id, different state at each stage.</p>
+</div>
+<div class="tab-panel">
+<p style="font-weight:600;color:var(--green);margin-bottom:8px">Value Object — no identity, immutable, compared by value</p>
+<pre><code>// C# records are PERFECT for value objects
+public record Money(decimal Amount, string Currency)
+{
+    public Money Add(Money other)
+    {
+        if (Currency != other.Currency)
+            throw new DomainException("Cannot add different currencies");
+        return new Money(Amount + other.Amount, Currency);
+    }
+    public Money Multiply(int quantity)
+        => new Money(Amount * quantity, Currency);
+}
+
+// Usage — immutable, compared by value
+var price1 = new Money(29.99m, "USD");
+var price2 = new Money(29.99m, "USD");
+Console.WriteLine(price1 == price2);  // TRUE
+
+var doubled = price1.Multiply(2);  // NEW object, price1 unchanged</code></pre>
+<p>No Id. Immutable — <code>Multiply</code> returns a NEW object. C# <code>record</code> gives equality + immutability for free.</p>
+</div>
+<div class="tab-panel">
+<table>
+<tr><th></th><th style="color:var(--accent)">Entity</th><th style="color:var(--green)">Value Object</th></tr>
+<tr><td>Has an ID?</td><td>Yes</td><td>No</td></tr>
+<tr><td>Equality</td><td>Same ID = same entity</td><td>Same values = same object</td></tr>
+<tr><td>Mutable?</td><td>Yes — state changes over time (lifecycle)</td><td>No — immutable, replace entire object</td></tr>
+<tr><td>C# pattern</td><td><code>class</code> with <code>Id</code> field</td><td><code>record</code> (built-in equality)</td></tr>
+<tr><td>Examples</td><td>Order, Customer, Product</td><td>Money, Address, DateRange, Email</td></tr>
+<tr><td>Analogy</td><td>A person — same even if they change hair</td><td>A $20 bill — any $20 is the same</td></tr>
+</table>
+</div>
+</div>
+</div>
+
+<!-- ═══════════════════ SECTION 2 ═══════════════════ -->
+<div class="section" id="s2">
+<h2><span class="num">02</span> Value Objects in Practice</h2>
+<p>Instead of passing raw strings, decimals, and Guids — wrap them in value objects. This is called avoiding <strong>primitive obsession</strong>:</p>
+
+<div class="tab-group" id="vo">
+<div class="tab-bar">
+<button class="tab-btn active" onclick="showTab('vo',0)">Email</button>
+<button class="tab-btn" onclick="showTab('vo',1)">Address</button>
+<button class="tab-btn" onclick="showTab('vo',2)">DateRange</button>
+<button class="tab-btn" onclick="showTab('vo',3)">Typed IDs</button>
+</div>
+<div class="tab-panel active">
+<pre><code>// Instead of: string email
+public record Email(string Value)
+{
+    public Email(string value) : this(value)
+    {
+        if (!value.Contains('@'))
+            throw new DomainException("Invalid email");
+    }
+}
+// Validation at construction — impossible to create invalid Email</code></pre>
+</div>
+<div class="tab-panel">
+<pre><code>// Instead of: string street, string city, string country, string zip
+public record Address(
+    string Street, string City, string Country, string PostalCode);</code></pre>
+</div>
+<div class="tab-panel">
+<pre><code>// Instead of: DateTime start, DateTime end
+public record DateRange(DateTime Start, DateTime End)
+{
+    public DateRange(DateTime start, DateTime end) : this(start, end)
+    {
+        if (end < start)
+            throw new DomainException("End must be after start");
+    }
+    public bool Contains(DateTime date) => date >= Start && date <= End;
+    public int Days => (End - Start).Days;
+}</code></pre>
+</div>
+<div class="tab-panel">
+<pre><code>// Instead of: Guid customerId (primitive obsession!)
+public record CustomerId(Guid Value);
+public record ProductId(Guid Value);
+public record OrderId(Guid Value);
+
+// Now you can't accidentally pass an OrderId where CustomerId is expected:
+void Process(CustomerId id) { ... }
+Process(new OrderId(guid));  // COMPILE ERROR — type safety!</code></pre>
+</div>
+</div>
+<div class="note-green note"><b>Benefits of value objects:</b> validation at construction (impossible to create invalid data), type safety (can't mix up CustomerId and OrderId), natural home for related behavior (Money.Add, DateRange.Contains), self-documenting code.</div>
+</div>
+
+<!-- ═══════════════════ SECTION 3 ═══════════════════ -->
+<div class="section" id="s3">
+<h2><span class="num">03</span> Aggregate — The Hardest Concept</h2>
+<p>A cluster of entities and value objects treated as <strong>one unit</strong> for data changes. One entry point called the <strong>Aggregate Root</strong>.</p>
+
+<h3>The Rules</h3>
+<ul>
+<li><strong>Everything outside talks ONLY to the root</strong> — never reach into internal entities</li>
+<li><strong>One transaction = one aggregate</strong> — never modify two aggregates in same transaction</li>
+<li><strong>Aggregates reference each other by ID only</strong> — not by object reference</li>
+</ul>
+
+<div class="tab-group" id="agg">
+<div class="tab-bar">
+<button class="tab-btn active" onclick="showTab('agg',0)">Full Order aggregate (C#)</button>
+<button class="tab-btn" onclick="showTab('agg',1)">OrderLine (internal entity)</button>
+<button class="tab-btn" onclick="showTab('agg',2)">What ProductId references</button>
+</div>
+<div class="tab-panel active">
+<pre><code>public class Order : AggregateRoot  // the root — only entry point
+{
+    public CustomerId CustomerId { get; private set; }  // reference by ID!
+    public Address ShippingAddress { get; private set; }
+    public OrderStatus Status { get; private set; }
+    public Money TotalAmount { get; private set; }
+
+    private readonly List&lt;OrderLine&gt; _lines = new();
+    public IReadOnlyList&lt;OrderLine&gt; Lines => _lines.AsReadOnly();
+
+    // All state changes go through the root
+    public void AddLine(ProductId productId, string name, int qty, Money price)
+    {
+        if (Status != OrderStatus.Draft)
+            throw new DomainException("Can only add lines to draft orders");
+
+        var line = new OrderLine(Guid.NewGuid(), productId, name, qty, price);
+        _lines.Add(line);
+        RecalculateTotal();
+    }
+
+    public void Submit()
+    {
+        if (!_lines.Any())
+            throw new DomainException("Cannot submit empty order");
+        Status = OrderStatus.Submitted;
+        RaiseDomainEvent(new OrderSubmitted(Id, CustomerId, TotalAmount));
+    }
+
+    private void RecalculateTotal()
+    {
+        TotalAmount = _lines
+            .Select(l => l.UnitPrice.Multiply(l.Quantity))
+            .Aggregate(Money.Zero("USD"), (sum, p) => sum.Add(p));
+    }
+}</code></pre>
+</div>
+<div class="tab-panel">
+<pre><code>// Internal entity — can't exist without an Order
+public class OrderLine
+{
+    internal OrderLine(Guid id, ProductId productId, string name,
+                       int qty, Money price)
+    {
+        Id = id;
+        ProductId = productId;     // reference to Product aggregate by ID
+        ProductName = name;         // local copy (denormalized)
+        Quantity = qty;
+        UnitPrice = price;          // price at time of order
+    }
+
+    public Guid Id { get; }            // has identity (entity)
+    public ProductId ProductId { get; } // NOT a Product object!
+    public string ProductName { get; }
+    public int Quantity { get; }
+    public Money UnitPrice { get; }     // value object
+}</code></pre>
+</div>
+<div class="tab-panel">
+<pre><code>// ProductId points to the Product aggregate (in Catalogue service)
+// NOT to the Order class. It's how OrderLine remembers WHICH product.
+
+Order aggregate (in Orders service)
+├── Order (root)
+│   ├── CustomerId     → points to Customer (different aggregate)
+│   └── OrderLines[]
+│       └── OrderLine
+│           ├── ProductId  → points to Product (Catalogue service!)
+│           ├── ProductName (local copy — denormalized)
+│           └── UnitPrice  (price at time of order)
+
+// Why ID only? Three reasons:
+// 1. Product lives in different service — can't hold C# object reference
+// 2. Price at time of order — if product price changes, this stays correct
+// 3. Aggregate rule — reference other aggregates by ID only</code></pre>
+</div>
+</div>
+</div>
+
+<!-- ═══════════════════ SECTION 4 ═══════════════════ -->
+<div class="section" id="s4">
+<h2><span class="num">04</span> Aggregate Boundaries — The Customer + Order Trap</h2>
+<p>The most common mistake: "Order can't exist without Customer → put them in the same aggregate." <strong>WRONG.</strong></p>
+
+<div class="tab-group" id="bnd">
+<div class="tab-bar">
+<button class="tab-btn active" onclick="showTab('bnd',0)">Wrong: one big aggregate</button>
+<button class="tab-btn" onclick="showTab('bnd',1)">Right: separate aggregates</button>
+<button class="tab-btn" onclick="showTab('bnd',2)">The concurrency problem</button>
+<button class="tab-btn" onclick="showTab('bnd',3)">The golden rule</button>
+<button class="tab-btn" onclick="showTab('bnd',4)">How they communicate</button>
+</div>
+<div class="tab-panel active">
+<div class="env-card" style="background:rgba(248,113,113,0.04);border:1px solid rgba(248,113,113,0.1)">
+<div class="env-name" style="color:var(--red)">Wrong: Customer + all Orders in one aggregate</div>
+<div class="env-status" style="color:var(--text)">To change ANYTHING you must load and lock the ENTIRE aggregate. Customer with 500 orders means loading 500 orders just to update a phone number.</div>
+</div>
+<pre><code>Customer aggregate (TOO BIG)
+├── Customer (root)
+│   ├── Name, Email, Phone
+│   ├── Order #1 (with lines)
+│   ├── Order #2 (with lines)
+│   └── Order #3 (with lines)  ← load ALL just to update phone?</code></pre>
+</div>
+<div class="tab-panel">
+<div class="env-card" style="background:rgba(52,211,153,0.04);border:1px solid rgba(52,211,153,0.1)">
+<div class="env-name" style="color:var(--green)">Right: separate aggregates, connected by ID</div>
+<div class="env-status" style="color:var(--text)">Customer changes phone? Load only Customer. Add item to Order #3? Load only that Order. Each small, fast, independent.</div>
+</div>
+<pre><code>Customer aggregate          Order aggregate
+├── Customer (root)         ├── Order (root)
+│   ├── Name                │   ├── CustomerId → reference by ID!
+│   ├── Email               │   ├── Status
+│   └── Phone               │   ├── OrderLine
+                             │   └── TotalAmount</code></pre>
+</div>
+<div class="tab-panel">
+<p style="font-weight:600;color:#fff;margin-bottom:8px">Big aggregate = fake conflicts</p>
+<p><strong>Thread 1:</strong> Customer updates email. <strong>Thread 2:</strong> Customer adds item to Order #3.</p>
+<p>Both load the same big aggregate. Both modify it. One save wins, the other gets a <strong>concurrency conflict</strong>. Email update fails because someone added an item to an order. These operations have NOTHING to do with each other.</p>
+<p>With separate aggregates: Thread 1 loads Customer. Thread 2 loads Order #3. No conflict. Independent units.</p>
+</div>
+<div class="tab-panel">
+<div class="note-green note">
+<b>The golden rule: make aggregates as SMALL as possible.</b><br><br>
+The question is NOT "does A need B?"<br>
+The question IS "must A and B change <strong>in the same transaction</strong>?"<br><br>
+Order + OrderLine = same aggregate (adding a line must update total atomically)<br>
+Customer + Order = different aggregates (updating email doesn't need order total to change)
+</div>
+</div>
+<div class="tab-panel">
+<p style="font-weight:600;color:#fff;margin-bottom:8px">Application service orchestrates between aggregates</p>
+<pre><code>public class PlaceOrderHandler
+{
+    public async Task Handle(PlaceOrderCommand cmd)
+    {
+        // Load each aggregate independently
+        var customer = await _customerRepo.GetByIdAsync(cmd.CustomerId);
+        if (customer == null) throw new NotFoundException();
+
+        // Create order with CustomerId (not Customer object)
+        var order = new Order(customerId: customer.Id, ...);
+        order.AddLine(cmd.ProductId, cmd.Name, cmd.Qty, cmd.Price);
+        order.Submit();
+
+        // Save ONLY the order — customer wasn't modified
+        await _orderRepo.SaveAsync(order);
+
+        // Domain events notify other aggregates
+        await _eventBus.PublishAsync(order.DomainEvents);
+    }
+}</code></pre>
+</div>
+</div>
+</div>
+
+<!-- ═══════════════════ SECTION 5 ═══════════════════ -->
+<div class="section" id="s5">
+<h2><span class="num">05</span> Protecting Internal Entities</h2>
+<p>OrderLine is <code>public</code> but shouldn't be created directly. Three approaches to enforce this:</p>
+
+<div class="tab-group" id="prt">
+<div class="tab-bar">
+<button class="tab-btn active" onclick="showTab('prt',0)">internal constructor</button>
+<button class="tab-btn" onclick="showTab('prt',1)">IReadOnlyList</button>
+<button class="tab-btn" onclick="showTab('prt',2)">Practical combo</button>
+</div>
+<div class="tab-panel active">
+<pre><code>public class OrderLine
+{
+    // Only code in the SAME project can create it
+    internal OrderLine(Guid id, ProductId productId, ...) { ... }
+}
+
+// Inside Order (same project) — works fine
+var line = new OrderLine(Guid.NewGuid(), productId, ...);  // OK
+
+// From API layer (different project) — BLOCKED
+var line = new OrderLine(...);  // Compile error!</code></pre>
+</div>
+<div class="tab-panel">
+<pre><code>public class Order : AggregateRoot
+{
+    private readonly List&lt;OrderLine&gt; _lines = new();
+
+    // Read-only — can see but not add/remove
+    public IReadOnlyList&lt;OrderLine&gt; Lines => _lines.AsReadOnly();
+
+    // Only way to add — through the root
+    public void AddLine(...) { _lines.Add(...); RecalculateTotal(); }
+}
+
+// From outside:
+order.Lines.Add(new OrderLine(...));   // Compile error!
+order.AddLine(productId, name, 2, price);  // OK — root validates</code></pre>
+</div>
+<div class="tab-panel">
+<pre><code>// Most teams combine both + convention:
+// 1. internal constructor (can't create from outside)
+// 2. IReadOnlyList (can't add from outside)
+// 3. Team convention: always go through the root
+
+// The real protection is the pattern being understood.
+// internal + IReadOnlyList are safety nets for larger teams.</code></pre>
+</div>
+</div>
+</div>
+
+<!-- ═══════════════════ SECTION 6 ═══════════════════ -->
+<div class="section" id="s6">
+<h2><span class="num">06</span> Domain Events — Full Pipeline</h2>
+<p>How aggregates communicate without being in the same transaction. The full pipeline:</p>
+
+<div class="tab-group" id="evt">
+<div class="tab-bar">
+<button class="tab-btn active" onclick="showTab('evt',0)">Step 1: Aggregate raises event</button>
+<button class="tab-btn" onclick="showTab('evt',1)">Step 2: Save then dispatch</button>
+<button class="tab-btn" onclick="showTab('evt',2)">Step 3: Handlers react</button>
+<button class="tab-btn" onclick="showTab('evt',3)">Full pipeline</button>
+<button class="tab-btn" onclick="showTab('evt',4)">In-process vs cross-service</button>
+<button class="tab-btn" onclick="showTab('evt',5)">Full C# code</button>
+</div>
+<div class="tab-panel active">
+<pre><code>public abstract class AggregateRoot
+{
+    private readonly List&lt;IDomainEvent&gt; _domainEvents = new();
+    public IReadOnlyList&lt;IDomainEvent&gt; DomainEvents => _domainEvents;
+    protected void RaiseDomainEvent(IDomainEvent evt) => _domainEvents.Add(evt);
+    public void ClearDomainEvents() => _domainEvents.Clear();
+}
+
+public class Order : AggregateRoot
+{
+    public void Submit()
+    {
+        Status = OrderStatus.Submitted;
+        // Raised — stored in list, NOT dispatched yet
+        RaiseDomainEvent(new OrderSubmitted(Id, CustomerId, TotalAmount));
+    }
+}</code></pre>
+</div>
+<div class="tab-panel">
+<pre><code>public class SubmitOrderHandler
+{
+    public async Task Handle(SubmitOrderCommand cmd)
+    {
+        var order = await _repo.GetByIdAsync(cmd.OrderId);
+        order.Submit();     // raises event internally
+
+        // 1. Save FIRST
+        await _repo.SaveAsync(order);
+
+        // 2. Dispatch AFTER save succeeds
+        foreach (var evt in order.DomainEvents)
+        {
+            await _mediator.Publish(evt);    // in-process
+            await _bus.PublishAsync(evt);     // cross-service
+        }
+        order.ClearDomainEvents();
+    }
+}</code></pre>
+<div class="note-red note"><b>Critical ordering: save first, dispatch second.</b> If save fails → events never dispatched, no inconsistency. If handler fails after save → order is committed, handler can retry.</div>
+</div>
+<div class="tab-panel">
+<pre><code>// Handler 1: Loyalty (same service — MediatR)
+public class UpdateLoyaltyHandler : INotificationHandler&lt;OrderSubmitted&gt;
+{
+    public async Task Handle(OrderSubmitted evt, CancellationToken ct)
+    {
+        var customer = await _customerRepo.GetByIdAsync(evt.CustomerId);
+        customer.AddLoyaltyPoints(evt.TotalAmount);
+        await _customerRepo.SaveAsync(customer);
+        // Own transaction — if this fails, order still submitted
+    }
+}
+
+// Handler 2: Inventory (different service — Kafka/RabbitMQ)
+public class ReserveStockHandler : IConsumer&lt;OrderSubmitted&gt;
+{
+    public async Task Consume(ConsumeContext&lt;OrderSubmitted&gt; context)
+    {
+        // Runs in Inventory microservice, own DB, own transaction
+    }
+}
+
+// Handler 3: Email (different service)
+public class SendConfirmationHandler : IConsumer&lt;OrderSubmitted&gt;
+{
+    public async Task Consume(ConsumeContext&lt;OrderSubmitted&gt; context)
+    {
+        await _email.SendOrderConfirmationAsync(context.Message.OrderId);
+    }
+}</code></pre>
+<p>Each handler runs in its <strong>own transaction</strong>. If email fails, order is still submitted and loyalty points still added. Handlers are independent.</p>
+</div>
+<div class="tab-panel">
+<div class="flow"><div class="flow-step">SubmitOrder cmd</div><span class="flow-arrow">→</span><div class="flow-step" style="border-color:rgba(110,161,255,0.3);color:var(--accent)">App service</div><span class="flow-arrow">→</span><div class="flow-step" style="border-color:rgba(139,92,246,0.3);color:var(--accent2)">order.Submit()</div><span class="flow-arrow">→</span><div class="flow-step">Save to DB</div></div>
+<div class="flow"><span style="width:50px"></span><span class="flow-arrow">then →</span><div class="flow-step" style="border-color:rgba(251,191,36,0.3);color:var(--amber)">Dispatch OrderSubmitted</div></div>
+<div class="flow"><span style="width:100px"></span><span class="flow-arrow">→</span><div class="flow-step" style="border-color:rgba(45,212,191,0.3);color:var(--teal)">Loyalty handler (own txn)</div></div>
+<div class="flow"><span style="width:100px"></span><span class="flow-arrow">→</span><div class="flow-step" style="border-color:rgba(139,92,246,0.3);color:var(--accent2)">Inventory handler (own txn)</div></div>
+<div class="flow"><span style="width:100px"></span><span class="flow-arrow">→</span><div class="flow-step" style="border-color:rgba(251,146,60,0.3);color:var(--coral)">Email handler (own txn)</div></div>
+</div>
+<div class="tab-panel">
+<table>
+<tr><th></th><th style="color:var(--accent)">In-process</th><th style="color:var(--green)">Cross-service</th></tr>
+<tr><td>When</td><td>Handler in SAME service</td><td>Handler in DIFFERENT service</td></tr>
+<tr><td>Transport</td><td>MediatR (in-memory)</td><td>Kafka / RabbitMQ</td></tr>
+<tr><td>Speed</td><td>Microseconds</td><td>Milliseconds</td></tr>
+<tr><td>C# tool</td><td>MediatR INotification</td><td>MassTransit / NServiceBus</td></tr>
+<tr><td>Example</td><td>Update Discount aggregate</td><td>Reserve Inventory</td></tr>
+</table>
+</div>
+<div class="tab-panel">
+<pre><code>// The complete pipeline in one view:
+
+// 1. Define event
+public record OrderSubmitted(
+    OrderId OrderId, CustomerId CustomerId,
+    Money TotalAmount, DateTime OccurredAt) : IDomainEvent;
+
+// 2. Aggregate raises it
+public void Submit()
+{
+    Status = OrderStatus.Submitted;
+    RaiseDomainEvent(new OrderSubmitted(Id, CustomerId, TotalAmount, DateTime.UtcNow));
+}
+
+// 3. App service: save → dispatch
+await _repo.SaveAsync(order);
+foreach (var evt in order.DomainEvents)
+{
+    await _mediator.Publish(evt);   // in-process (MediatR)
+    await _bus.PublishAsync(evt);    // cross-service (MassTransit)
+}
+
+// 4. Handlers react independently
+// Each in own transaction. One failure doesn't affect others.</code></pre>
+</div>
+</div>
+</div>
+
+<!-- ═══════════════════ SECTION 7 ═══════════════════ -->
+<div class="section" id="s7">
+<h2><span class="num">07</span> Shopping Cart — Worked Example</h2>
+<p>A full aggregate design exercise applying everything above:</p>
+
+<div class="tab-group" id="cart">
+<div class="tab-bar">
+<button class="tab-btn active" onclick="showTab('cart',0)">Design decisions</button>
+<button class="tab-btn" onclick="showTab('cart',1)">Full Cart aggregate (C#)</button>
+<button class="tab-btn" onclick="showTab('cart',2)">What's inside vs outside</button>
+</div>
+<div class="tab-panel active">
+<p style="font-weight:600;color:#fff;margin-bottom:8px">The scenario and design decisions:</p>
+<p><strong>Cart + CartItem = same aggregate, Cart is root.</strong> Why? Adding a CartItem MUST recalculate the total in the same transaction. They change atomically.</p>
+<p><strong>Checkout → domain event, not direct call.</strong> Reserving inventory is a different service (Inventory). Cart just announces "I was checked out" — Inventory reacts independently.</p>
+<pre><code>Direct method call (same transaction):
+  cart.AddItem()    → recalculate total immediately
+  cart.RemoveItem() → recalculate total immediately
+
+Domain event (different transaction):
+  cart.Checkout()   → raises CartCheckedOut
+                    → Inventory handler reserves stock
+                    → Orders handler creates the Order
+                    → Notification handler sends email</code></pre>
+</div>
+<div class="tab-panel">
+<pre><code>public class Cart : AggregateRoot
+{
+    public CustomerId CustomerId { get; private set; }
+    private readonly List&lt;CartItem&gt; _items = new();
+    public IReadOnlyList&lt;CartItem&gt; Items => _items.AsReadOnly();
+    public Money Total { get; private set; }
+
+    public void AddItem(ProductId productId, string name, int qty, Money price)
+    {
+        var existing = _items.FirstOrDefault(i => i.ProductId == productId);
+        if (existing != null)
+            existing.IncreaseQuantity(qty);
+        else
+            _items.Add(new CartItem(productId, name, qty, price));
+        RecalculateTotal();  // same transaction
+    }
+
+    public void RemoveItem(ProductId productId)
+    {
+        _items.RemoveAll(i => i.ProductId == productId);
+        RecalculateTotal();
+    }
+
+    public void Checkout()
+    {
+        if (!_items.Any())
+            throw new DomainException("Cannot checkout empty cart");
+        Status = CartStatus.CheckedOut;
+
+        // Event — inventory is OUTSIDE this aggregate
+        RaiseDomainEvent(new CartCheckedOut(
+            Id, CustomerId,
+            _items.Select(i => new CheckoutItem(i.ProductId, i.Quantity)).ToList()));
+    }
+
+    private void RecalculateTotal()
+    {
+        Total = _items
+            .Select(i => i.UnitPrice.Multiply(i.Quantity))
+            .Aggregate(Money.Zero("USD"), (sum, p) => sum.Add(p));
+    }
+}</code></pre>
+</div>
+<div class="tab-panel">
+<div class="env-row">
+<div class="env-card" style="background:rgba(52,211,153,0.04);border:1px solid rgba(52,211,153,0.1)">
+<div class="env-name" style="color:var(--green)">INSIDE aggregate (direct method, same txn)</div>
+<div class="env-status" style="color:var(--text)">AddItem → recalculate total</div>
+<div class="env-status" style="color:var(--text)">RemoveItem → recalculate total</div>
+<div class="env-status" style="color:var(--text)">Cart + CartItem live together</div>
+</div>
+<div class="env-card" style="background:rgba(251,191,36,0.04);border:1px solid rgba(251,191,36,0.1)">
+<div class="env-name" style="color:var(--amber)">OUTSIDE aggregate (event, different txn)</div>
+<div class="env-status" style="color:var(--text)">Reserve inventory → CartCheckedOut event</div>
+<div class="env-status" style="color:var(--text)">Create order → CartCheckedOut event</div>
+<div class="env-status" style="color:var(--text)">Send email → CartCheckedOut event</div>
+</div>
+</div>
+<div class="note"><b>The rule:</b> Must be consistent immediately → direct method inside aggregate. Can be eventually consistent → domain event outside.</div>
+</div>
+</div>
+</div>
+
+<!-- ═══════════════════ SECTION 8 ═══════════════════ -->
+<div class="section" id="s8">
+<h2><span class="num">08</span> Interview Q&amp;A</h2>
+
+<div class="qa"><div class="qa-q">Q: What is the difference between an Entity and a Value Object?</div><div class="qa-a">Entity has identity (compared by ID, mutable, has a lifecycle). Value Object has no identity (compared by value, immutable, replaced entirely). In C#: entities are classes with an Id field. Value objects are records. Order is an entity (same Id even if total changes). Money is a value object ($59.99 USD = $59.99 USD regardless of which object).</div></div>
+<div class="qa"><div class="qa-q">Q: What is an Aggregate?</div><div class="qa-a">A cluster of entities and value objects treated as one unit for data changes. Has a single entry point (aggregate root). Rules: one transaction = one aggregate, reference other aggregates by ID, all access through the root. The root enforces business invariants.</div></div>
+<div class="qa"><div class="qa-q">Q: How do you decide aggregate boundaries?</div><div class="qa-a">Make aggregates as small as possible. The question is NOT "does A need B" but "must A and B change in the same transaction?" Order + OrderLine = same aggregate (total must be consistent). Customer + Order = different aggregates (updating email doesn't need order total to change). Big aggregates cause concurrency conflicts and performance issues.</div></div>
+<div class="qa"><div class="qa-q">Q: How do aggregates communicate?</div><div class="qa-a">Via domain events. The aggregate raises an event (stored in a list), the application service saves then dispatches. Handlers in the same service use MediatR (in-process). Handlers in other services use message queues (MassTransit/Kafka). Each handler runs in its own transaction. Critical: save first, dispatch second.</div></div>
+<div class="qa"><div class="qa-q">Q: What is a Domain Event?</div><div class="qa-a">Something that happened in the domain — OrderSubmitted, PaymentCompleted, CartCheckedOut. Named in past tense. Raised by aggregates, dispatched after save, handled independently. They decouple aggregates: Order doesn't know about Inventory, it just says "I was submitted" and Inventory reacts.</div></div>
+<div class="qa"><div class="qa-q">Q: Why reference other aggregates by ID instead of object?</div><div class="qa-a">Three reasons: (1) the other aggregate may be in a different service — can't hold a C# reference across boundaries, (2) you want the data at the time of the event (price at time of order, not current price), (3) holding an object reference creates tight coupling — loading one aggregate would load all referenced aggregates transitively.</div></div>
+<div class="qa"><div class="qa-q">Q: What is primitive obsession and how do Value Objects fix it?</div><div class="qa-a">Using raw strings, ints, and Guids instead of domain types. string email can be anything — no validation. Email value object validates at construction. Guid customerId and Guid orderId are interchangeable — typed CustomerId and OrderId prevent mixing them up. Value objects add validation, type safety, and a natural home for behavior.</div></div>
+</div>
+
+<div class="footer">Tactical DDD — Domain-Driven Design Study Guide · Part 2 of 2 · C# / .NET · 2026</div>
+</div>
+
+<script>
+function showTab(g,i){var p=document.getElementById(g).querySelectorAll('.tab-panel'),b=document.getElementById(g).querySelectorAll('.tab-btn');p.forEach(function(x,j){x.classList.toggle('active',j===i)});b.forEach(function(x,j){x.classList.remove('active');if(j===i)x.classList.add('active')})}
+</script>
+</body>
+</html>

@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Topic 1 — Monolith vs Microservices</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#090d12;--s:#111620;--s2:#171d28;--b:rgba(255,255,255,.06);--b2:rgba(255,255,255,.12);--accent:#3b82f6;--green:#22c55e;--amber:#f59e0b;--red:#ef4444;--teal:#14b8a6;--purple:#a855f7;--coral:#f97316;--text:#e2e8f0;--muted:#7d8a9c;--code:#080b10;--r:10px}
+*{box-sizing:border-box;margin:0;padding:0}html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Sora',sans-serif;font-size:15px;line-height:1.75}
+.hero{padding:0;background:linear-gradient(135deg,#0a0f1a 0%,#0d1420 50%,#0a1228 100%);border-bottom:1px solid var(--b2);position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-100px;right:-80px;width:600px;height:600px;background:radial-gradient(circle,rgba(59,130,246,.1) 0%,transparent 65%);pointer-events:none}
+.hero::after{content:'';position:absolute;bottom:-60px;left:-60px;width:400px;height:400px;background:radial-gradient(circle,rgba(20,184,166,.07) 0%,transparent 60%);pointer-events:none}
+.hero-inner{max-width:980px;margin:0 auto;padding:64px 32px 56px;position:relative;z-index:1}
+.badge{display:inline-flex;align-items:center;gap:7px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent);background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.22);padding:4px 12px;border-radius:20px;letter-spacing:.06em;margin-bottom:22px}
+.bdot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:blink 2s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+h1{font-size:clamp(30px,5vw,52px);font-weight:700;line-height:1.1;letter-spacing:-.03em;margin-bottom:14px;background:linear-gradient(135deg,#e2e8f0 0%,#64748b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-sub{font-size:16px;color:var(--muted);max-width:560px;line-height:1.7;margin-bottom:24px}
+.hero-tags{display:flex;gap:8px;flex-wrap:wrap}
+.hero-tag{font-size:11px;color:var(--muted);background:var(--s);border:1px solid var(--b2);padding:3px 12px;border-radius:20px}
+.page{max-width:980px;margin:0 auto;padding:0 32px 100px}
+.toc{margin:36px 0;background:var(--s);border:1px solid var(--b);border-radius:var(--r);padding:24px 28px}
+.toc-title{font-size:10px;font-weight:600;color:var(--muted);letter-spacing:.14em;text-transform:uppercase;margin-bottom:14px}
+.toc ol{list-style:none;counter-reset:t;display:grid;grid-template-columns:1fr 1fr;gap:5px 24px}
+.toc li{counter-increment:t;display:flex;gap:8px;align-items:baseline}
+.toc li::before{content:counter(t,decimal-leading-zero);font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--accent);opacity:.55;flex-shrink:0}
+.toc a{color:var(--muted);text-decoration:none;font-size:13px;transition:color .15s}.toc a:hover{color:var(--text)}
+.section{padding-top:60px}
+.sec-lbl{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);margin-bottom:10px;display:flex;align-items:center;gap:10px}
+.sec-lbl::after{content:'';flex:1;height:1px;background:var(--b)}
+h2{font-size:26px;font-weight:700;letter-spacing:-.025em;margin-bottom:14px;line-height:1.25}
+h3{font-size:17px;font-weight:600;margin:28px 0 12px}
+p{color:var(--muted);margin-bottom:14px;line-height:1.75}p strong{color:var(--text);font-weight:600}
+.code-block{background:var(--code);border:1px solid var(--b);border-radius:var(--r);overflow:hidden;margin:18px 0}
+.code-hdr{display:flex;align-items:center;justify-content:space-between;padding:9px 16px;background:rgba(255,255,255,.02);border-bottom:1px solid var(--b)}
+.code-lang{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--accent);font-weight:600;letter-spacing:.1em;text-transform:uppercase}
+.code-dots{display:flex;gap:5px}.code-dots span{width:9px;height:9px;border-radius:50%}
+.code-dots span:nth-child(1){background:#ef4444}.code-dots span:nth-child(2){background:#f59e0b}.code-dots span:nth-child(3){background:#22c55e}
+pre{padding:20px;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.8}
+code{color:#c8d0e0}.kw{color:#7c9ef5}.cm{color:#3a5068;font-style:italic}.str{color:#7ec891}.typ{color:#e8a96e}.num{color:#c3a6e0}
+.callout{border-radius:var(--r);padding:14px 18px;margin:16px 0;border-left:3px solid;display:flex;gap:12px;align-items:flex-start}
+.callout-icon{font-size:14px;flex-shrink:0;margin-top:2px}.callout-body{flex:1;font-size:13px;line-height:1.65}.callout-body strong{font-weight:600}
+.callout.info{background:rgba(59,130,246,.07);border-color:var(--accent)}.callout.info .callout-body{color:#93b8f8}
+.callout.tip{background:rgba(34,197,94,.07);border-color:var(--green)}.callout.tip .callout-body{color:#86efac}
+.callout.warn{background:rgba(245,158,11,.07);border-color:var(--amber)}.callout.warn .callout-body{color:#fcd34d}
+.callout.danger{background:rgba(239,68,68,.07);border-color:var(--red)}.callout.danger .callout-body{color:#fca5a5}
+.diagram-card{background:var(--s);border:1px solid var(--b);border-radius:var(--r);padding:28px;margin:20px 0;overflow:hidden}
+.diagram-card svg{width:100%;display:block}
+.table-wrap{overflow-x:auto;margin:16px 0}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:480px}
+th{text-align:left;padding:10px 14px;background:rgba(255,255,255,.03);color:var(--text);font-weight:600;font-size:11px;letter-spacing:.06em;border-bottom:1px solid var(--b2)}
+td{padding:10px 14px;color:var(--muted);border-bottom:1px solid var(--b);vertical-align:top;line-height:1.5}
+tr:last-child td{border-bottom:none}td strong{color:var(--text)}
+.bdg{display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600;letter-spacing:.04em;white-space:nowrap}
+.bdg-g{background:rgba(34,197,94,.15);color:var(--green)}.bdg-r{background:rgba(239,68,68,.15);color:var(--red)}.bdg-b{background:rgba(59,130,246,.15);color:var(--accent)}.bdg-a{background:rgba(245,158,11,.15);color:var(--amber)}
+.qa-list{display:flex;flex-direction:column;gap:12px;margin:16px 0}
+.qa-item{background:var(--s);border:1px solid var(--b);border-radius:var(--r);overflow:hidden}
+.qa-q{padding:14px 18px;font-size:13.5px;color:var(--text);font-weight:600;background:rgba(255,255,255,.02);display:flex;gap:12px;align-items:flex-start}
+.qa-q::before{content:'Q';font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;color:var(--accent);background:rgba(59,130,246,.12);border:1px solid rgba(59,130,246,.25);padding:2px 7px;border-radius:4px;flex-shrink:0;margin-top:1px}
+.qa-a{padding:14px 18px;font-size:13px;color:var(--muted);border-top:1px solid var(--b);display:flex;gap:12px;line-height:1.65}
+.qa-a::before{content:'A';font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;color:var(--green);background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.2);padding:2px 7px;border-radius:4px;flex-shrink:0;margin-top:2px}
+.divider{height:1px;background:var(--b);margin:52px 0 0}
+.footer{margin-top:60px;padding-top:20px;border-top:1px solid var(--b);text-align:center;font-size:11px;color:var(--muted);opacity:.4}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:16px 0}
+.card{background:var(--s);border:1px solid var(--b);border-radius:var(--r);padding:18px}
+.card-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px}
+.card-body{font-size:12.5px;color:var(--muted);line-height:1.6}
+.tag{display:inline-block;font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px;margin-top:8px}
+.tag-bad{background:rgba(239,68,68,.15);color:var(--red)}.tag-ok{background:rgba(34,197,94,.15);color:var(--green)}
+button{font-family:'Sora',sans-serif;font-size:12px;font-weight:500;padding:5px 14px;border-radius:20px;border:1px solid var(--b2);background:transparent;color:var(--muted);cursor:pointer;transition:all .15s}
+button:hover{background:var(--s2);color:var(--text)}
+button.act{background:rgba(59,130,246,.12);color:var(--accent);border-color:rgba(59,130,246,.3)}
+.sim-note{font-size:13px;color:var(--muted);padding:10px 14px;border-radius:var(--r);background:var(--s2);border:1px solid var(--b);margin-top:8px;min-height:44px;line-height:1.65}
+@media(max-width:640px){.toc ol,.grid2{grid-template-columns:1fr}.page,.hero-inner{padding-left:16px;padding-right:16px}h2{font-size:20px}}
+</style>
+</head>
+<body>
+
+<div class="hero">
+<div class="hero-inner">
+  <div class="badge"><span class="bdot"></span>Microservices · Topic 1 · C# / .NET</div>
+  <h1>Monolith vs<br>Microservices</h1>
+  <p class="hero-sub">The core tradeoff, decomposition strategies, the Strangler Fig pattern, and when you should actually split a monolith.</p>
+  <div class="hero-tags">
+    <span class="hero-tag">Core tradeoff</span><span class="hero-tag">Decomposition</span>
+    <span class="hero-tag">DDD boundaries</span><span class="hero-tag">Strangler Fig</span><span class="hero-tag">Interview ready</span>
+  </div>
+</div>
+</div>
+
+<div class="page">
+
+<!-- ROADMAP -->
+<div class="section" id="s0">
+<div class="sec-lbl">Roadmap</div>
+<h2>11-Topic Microservices Study Plan</h2>
+<p>This document covers Topic 1. The full plan is structured in 4 phases, building from foundations to advanced deployment.</p>
+<div class="diagram-card">
+<svg viewBox="0 0 840 360" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round"/></marker></defs>
+
+<!-- Phase 1 -->
+<rect x="16" y="16" width="190" height="328" rx="12" fill="rgba(59,130,246,.06)" stroke="rgba(59,130,246,.25)" stroke-width="1"/>
+<text x="111" y="42" text-anchor="middle" fill="#3b82f6" font-size="10" font-weight="700" font-family="JetBrains Mono,monospace" letter-spacing="1">PHASE 1</text>
+<text x="111" y="58" text-anchor="middle" fill="#93b8f8" font-size="12" font-weight="600" font-family="Sora,sans-serif">Foundation</text>
+
+<rect x="28" y="72" width="166" height="52" rx="8" fill="rgba(59,130,246,.12)" stroke="rgba(59,130,246,.3)" stroke-width="1"/>
+<text x="111" y="92" text-anchor="middle" fill="#93b8f8" font-size="11" font-weight="700" font-family="Sora,sans-serif">01 · Monolith vs</text>
+<text x="111" y="107" text-anchor="middle" fill="#93b8f8" font-size="11" font-weight="700" font-family="Sora,sans-serif">Microservices</text>
+<text x="36" y="92" fill="#3b82f6" font-size="9" font-family="JetBrains Mono,monospace">YOU ARE HERE</text>
+
+<rect x="28" y="134" width="166" height="44" rx="8" fill="rgba(255,255,255,.04)" stroke="rgba(255,255,255,.08)" stroke-width="1"/>
+<text x="111" y="150" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="Sora,sans-serif">02 · Inter-Service</text>
+<text x="111" y="165" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="Sora,sans-serif">Communication</text>
+
+<rect x="28" y="188" width="166" height="44" rx="8" fill="rgba(255,255,255,.04)" stroke="rgba(255,255,255,.08)" stroke-width="1"/>
+<text x="111" y="210" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="Sora,sans-serif">03 · API Gateway</text>
+
+<!-- Phase 2 -->
+<rect x="222" y="16" width="190" height="328" rx="12" fill="rgba(245,158,11,.05)" stroke="rgba(245,158,11,.2)" stroke-width="1"/>
+<text x="317" y="42" text-anchor="middle" fill="#f59e0b" font-size="10" font-weight="700" font-family="JetBrains Mono,monospace" letter-spacing="1">PHASE 2</text>
+<text x="317" y="58" text-anchor="middle" fill="#fcd34d" font-size="12" font-weight="600" font-family="Sora,sans-serif">Resilience</text>
+<rect x="234" y="72" width="166" height="44" rx="8" fill="rgba(255,255,255,.04)" stroke="rgba(255,255,255,.08)" stroke-width="1"/>
+<text x="317" y="94" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="Sora,sans-serif">04 · Circuit Breaker,</text>
+<text x="317" y="109" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="Sora,sans-serif">Retry &amp; Timeout</text>
+<rect x="234" y="126" width="166" height="44" rx="8" fill="rgba(255,255,255,.04)" stroke="rgba(255,255,255,.08)" stroke-width="1"/>
+<text x="317" y="148" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="Sora,sans-serif">05 · Service Discovery</text>
+<rect x="234" y="180" width="166" height="44" rx="8" fill="rgba(255,255,255,.04)" stroke="rgba(255,255,255,.08)" stroke-width="1"/>
+<text x="317" y="202" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="Sora,sans-serif">06 · Saga Pattern</text>
+
+<!-- Phase 3 -->
+<rect x="428" y="16" width="190" height="328" rx="12" fill="rgba(20,184,166,.05)" stroke="rgba(20,184,166,.2)" stroke-width="1"/>
+<text x="523" y="42" text-anchor="middle" fill="#14b8a6" font-size="10" font-weight="700" font-family="JetBrains Mono,monospace" letter-spacing="1">PHASE 3</text>
+<text x="523" y="58" text-anchor="middle" fill="#5eead4" font-size="12" font-weight="600" font-family="Sora,sans-serif">Infrastructure &amp; Data</text>
+<rect x="440" y="72" width="166" height="44" rx="8" fill="rgba(255,255,255,.04)" stroke="rgba(255,255,255,.08)" stroke-width="1"/>
+<text x="523" y="94" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="Sora,sans-serif">07 · Database per Service</text>
+<text x="523" y="109" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="Sora,sans-serif">+ CQRS</text>
+<rect x="440" y="126" width="166" height="44" rx="8" fill="rgba(255,255,255,.04)" stroke="rgba(255,255,255,.08)" stroke-width="1"/>
+<text x="523" y="148" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="Sora,sans-serif">08 · Event Sourcing</text>
+<rect x="440" y="180" width="166" height="44" rx="8" fill="rgba(255,255,255,.04)" stroke="rgba(255,255,255,.08)" stroke-width="1"/>
+<text x="523" y="202" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="Sora,sans-serif">09 · Observability</text>
+
+<!-- Phase 4 -->
+<rect x="634" y="16" width="190" height="328" rx="12" fill="rgba(239,68,68,.05)" stroke="rgba(239,68,68,.18)" stroke-width="1"/>
+<text x="729" y="42" text-anchor="middle" fill="#ef4444" font-size="10" font-weight="700" font-family="JetBrains Mono,monospace" letter-spacing="1">PHASE 4</text>
+<text x="729" y="58" text-anchor="middle" fill="#fca5a5" font-size="12" font-weight="600" font-family="Sora,sans-serif">Advanced</text>
+<rect x="646" y="72" width="166" height="44" rx="8" fill="rgba(255,255,255,.04)" stroke="rgba(255,255,255,.08)" stroke-width="1"/>
+<text x="729" y="94" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="Sora,sans-serif">10 · Security Across</text>
+<text x="729" y="109" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="Sora,sans-serif">Services</text>
+<rect x="646" y="126" width="166" height="44" rx="8" fill="rgba(255,255,255,.04)" stroke="rgba(255,255,255,.08)" stroke-width="1"/>
+<text x="729" y="148" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="Sora,sans-serif">11 · Deployment &amp;</text>
+<text x="729" y="163" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="Sora,sans-serif">Containers</text>
+</svg>
+</div>
+</div>
+
+<div class="toc">
+<div class="toc-title">This Document — Contents</div>
+<ol>
+<li><a href="#s1">The core concept</a></li>
+<li><a href="#s2">What a monolith looks like</a></li>
+<li><a href="#s3">The microservices split</a></li>
+<li><a href="#s4">The tradeoff table</a></li>
+<li><a href="#s5">When to break a monolith</a></li>
+<li><a href="#s6">Decomposition strategies</a></li>
+<li><a href="#s7">The Strangler Fig pattern</a></li>
+<li><a href="#s8">Right-sizing services</a></li>
+<li><a href="#s9">The distributed monolith anti-pattern</a></li>
+<li><a href="#s10">Interview Q&A</a></li>
+</ol>
+</div>
+
+<!-- S1 -->
+<div class="section" id="s1">
+<div class="sec-lbl">01</div>
+<h2>The Core Concept</h2>
+<p>The most important thing to internalize about this topic: <strong>Microservices are not better than monoliths. They are a tradeoff.</strong> You gain independence and scale. You pay with complexity and distributed systems problems. Every interview answer on this topic must reflect that balance.</p>
+<div class="grid2">
+<div class="card">
+<div class="card-title">Monolith</div>
+<div class="card-body">One deployable unit. All modules share the same process, memory, and database. You deploy everything together.</div>
+<span class="tag tag-bad">Single deploy</span>
+</div>
+<div class="card">
+<div class="card-title">Microservices</div>
+<div class="card-body">Many small, independent services. Each owns its data, deploys separately, and communicates over a network.</div>
+<span class="tag tag-ok">Independent deploys</span>
+</div>
+</div>
+<div class="callout warn">
+<span class="callout-icon">⚠️</span>
+<div class="callout-body"><strong>Interview trap:</strong> Never say "microservices are better." Say "microservices trade simplicity for independence." Interviewers want to see that you understand the cost.</div>
+</div>
+</div>
+
+<div class="divider"></div>
+
+<!-- S2 -->
+<div class="section" id="s2">
+<div class="sec-lbl">02</div>
+<h2>What a Monolith Looks Like</h2>
+<p>A monolith isn't bad code — it's a single deployable unit. All modules (Users, Orders, Payments, Inventory) live in the same process. When Orders calls Payments, it's a direct in-process method call — no network, no latency, no failure modes.</p>
+<div class="diagram-card">
+<svg viewBox="0 0 820 330" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="a1" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round"/></marker></defs>
+<!-- Outer monolith box -->
+<rect x="120" y="16" width="580" height="280" rx="14" fill="rgba(168,85,247,.06)" stroke="rgba(168,85,247,.3)" stroke-width="1.5"/>
+<text x="410" y="44" text-anchor="middle" fill="#a855f7" font-size="14" font-weight="700" font-family="Sora,sans-serif">Monolith — single deployable unit</text>
+<!-- Modules -->
+<rect x="148" y="64" width="236" height="64" rx="8" fill="rgba(20,184,166,.1)" stroke="rgba(20,184,166,.35)" stroke-width="1"/>
+<text x="266" y="90" text-anchor="middle" fill="#5eead4" font-size="13" font-weight="600" font-family="Sora,sans-serif">Users module</text>
+<text x="266" y="110" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="Sora,sans-serif">auth, profiles, sessions</text>
+<rect x="426" y="64" width="236" height="64" rx="8" fill="rgba(20,184,166,.1)" stroke="rgba(20,184,166,.35)" stroke-width="1"/>
+<text x="544" y="90" text-anchor="middle" fill="#5eead4" font-size="13" font-weight="600" font-family="Sora,sans-serif">Orders module</text>
+<text x="544" y="110" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="Sora,sans-serif">create, track, history</text>
+<rect x="148" y="148" width="236" height="64" rx="8" fill="rgba(20,184,166,.1)" stroke="rgba(20,184,166,.35)" stroke-width="1"/>
+<text x="266" y="174" text-anchor="middle" fill="#5eead4" font-size="13" font-weight="600" font-family="Sora,sans-serif">Payments module</text>
+<text x="266" y="194" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="Sora,sans-serif">charge, refund, ledger</text>
+<rect x="426" y="148" width="236" height="64" rx="8" fill="rgba(20,184,166,.1)" stroke="rgba(20,184,166,.35)" stroke-width="1"/>
+<text x="544" y="174" text-anchor="middle" fill="#5eead4" font-size="13" font-weight="600" font-family="Sora,sans-serif">Inventory module</text>
+<text x="544" y="194" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="Sora,sans-serif">stock, warehouse, SKUs</text>
+<!-- Arrows between modules -->
+<line x1="384" y1="96" x2="424" y2="96" stroke="#94a3b8" stroke-width="1" marker-end="url(#a1)"/>
+<line x1="384" y1="180" x2="424" y2="180" stroke="#94a3b8" stroke-width="1" marker-end="url(#a1)"/>
+<line x1="266" y1="128" x2="266" y2="146" stroke="#94a3b8" stroke-width="1" marker-end="url(#a1)"/>
+<line x1="544" y1="128" x2="544" y2="146" stroke="#94a3b8" stroke-width="1" marker-end="url(#a1)"/>
+<!-- Note about in-process -->
+<text x="410" y="234" text-anchor="middle" fill="#64748b" font-size="11" font-family="Sora,sans-serif">Direct in-process calls — no network, no latency, no timeout</text>
+<!-- Shared DB -->
+<rect x="250" y="248" width="320" height="34" rx="8" fill="rgba(255,255,255,.04)" stroke="rgba(255,255,255,.1)" stroke-width="1"/>
+<text x="410" y="265" text-anchor="middle" fill="#94a3b8" font-size="12" font-weight="600" font-family="Sora,sans-serif">Shared database — one DB, all modules read/write it</text>
+<line x1="266" y1="212" x2="320" y2="247" stroke="#64748b" stroke-width="1" marker-end="url(#a1)"/>
+<line x1="544" y1="212" x2="490" y2="247" stroke="#64748b" stroke-width="1" marker-end="url(#a1)"/>
+<!-- Client -->
+<rect x="20" y="160" width="84" height="42" rx="8" fill="rgba(255,255,255,.04)" stroke="rgba(255,255,255,.08)" stroke-width="1"/>
+<text x="62" y="181" text-anchor="middle" fill="#94a3b8" font-size="12" font-weight="600" font-family="Sora,sans-serif">Client</text>
+<line x1="104" y1="181" x2="147" y2="181" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#a1)"/>
+</svg>
+</div>
+<div class="code-block">
+<div class="code-hdr"><span class="code-lang">C# — In-process call (monolith)</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+<pre><code><span class="cm">// Orders calling Payments — direct method call, no network</span>
+<span class="kw">public class</span> <span class="typ">OrderService</span>
+{
+    <span class="kw">private readonly</span> <span class="typ">PaymentsModule</span> _payments; <span class="cm">// injected, same process</span>
+
+    <span class="kw">public async</span> Task PlaceOrderAsync(<span class="typ">Cart</span> cart)
+    {
+        <span class="kw">var</span> order = <span class="kw">await</span> CreateOrderAsync(cart);
+        <span class="kw">await</span> _payments.ChargeAsync(cart.Total); <span class="cm">// in-process: no latency, no failure</span>
+        <span class="kw">await</span> _inventory.ReserveAsync(cart.Items);
+    }
+}</code></pre>
+</div>
+</div>
+
+<div class="divider"></div>
+
+<!-- S3 -->
+<div class="section" id="s3">
+<div class="sec-lbl">03</div>
+<h2>The Microservices Split</h2>
+<p>Each module becomes a separate service with its own process, database, and deployment. When Orders calls Payments, it crosses a network. That single change creates all the complexity of microservices.</p>
+<div class="diagram-card">
+<svg viewBox="0 0 820 380" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="a2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#22c55e" stroke-width="1.5" stroke-linecap="round"/></marker></defs>
+<!-- Client -->
+<rect x="20" y="170" width="80" height="44" rx="8" fill="rgba(255,255,255,.04)" stroke="rgba(255,255,255,.08)" stroke-width="1"/>
+<text x="60" y="192" text-anchor="middle" fill="#94a3b8" font-size="12" font-weight="600" font-family="Sora,sans-serif">Client</text>
+<line x1="100" y1="192" x2="135" y2="192" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#a2)"/>
+<!-- Gateway -->
+<rect x="137" y="160" width="108" height="64" rx="8" fill="rgba(245,158,11,.08)" stroke="rgba(245,158,11,.3)" stroke-width="1"/>
+<text x="191" y="182" text-anchor="middle" fill="#fbbf24" font-size="12" font-weight="600" font-family="Sora,sans-serif">API Gateway</text>
+<text x="191" y="200" text-anchor="middle" fill="#94a3b8" font-size="10" font-family="Sora,sans-serif">single entry point</text>
+<!-- Arrows to services -->
+<line x1="245" y1="175" x2="295" y2="100" stroke="#22c55e" stroke-width="1.5" marker-end="url(#a2)"/>
+<line x1="245" y1="192" x2="295" y2="192" stroke="#22c55e" stroke-width="1.5" marker-end="url(#a2)"/>
+<line x1="245" y1="209" x2="295" y2="285" stroke="#22c55e" stroke-width="1.5" marker-end="url(#a2)"/>
+<!-- Service boxes -->
+<rect x="297" y="72" width="148" height="56" rx="8" fill="rgba(20,184,166,.08)" stroke="rgba(20,184,166,.3)" stroke-width="1"/>
+<text x="371" y="94" text-anchor="middle" fill="#5eead4" font-size="13" font-weight="600" font-family="Sora,sans-serif">Users service</text>
+<text x="371" y="112" text-anchor="middle" fill="#94a3b8" font-size="10" font-family="Sora,sans-serif">own process + DB</text>
+<rect x="297" y="164" width="148" height="56" rx="8" fill="rgba(20,184,166,.08)" stroke="rgba(20,184,166,.3)" stroke-width="1"/>
+<text x="371" y="186" text-anchor="middle" fill="#5eead4" font-size="13" font-weight="600" font-family="Sora,sans-serif">Orders service</text>
+<text x="371" y="204" text-anchor="middle" fill="#94a3b8" font-size="10" font-family="Sora,sans-serif">own process + DB</text>
+<rect x="297" y="256" width="148" height="56" rx="8" fill="rgba(20,184,166,.08)" stroke="rgba(20,184,166,.3)" stroke-width="1"/>
+<text x="371" y="278" text-anchor="middle" fill="#5eead4" font-size="13" font-weight="600" font-family="Sora,sans-serif">Payments service</text>
+<text x="371" y="296" text-anchor="middle" fill="#94a3b8" font-size="10" font-family="Sora,sans-serif">own process + DB</text>
+<!-- DB boxes -->
+<rect x="480" y="72" width="90" height="56" rx="8" fill="rgba(255,255,255,.04)" stroke="rgba(255,255,255,.08)" stroke-width="1"/>
+<text x="525" y="94" text-anchor="middle" fill="#94a3b8" font-size="11" font-weight="600" font-family="Sora,sans-serif">Users DB</text>
+<text x="525" y="112" text-anchor="middle" fill="#64748b" font-size="10" font-family="JetBrains Mono,monospace">PostgreSQL</text>
+<rect x="480" y="164" width="90" height="56" rx="8" fill="rgba(255,255,255,.04)" stroke="rgba(255,255,255,.08)" stroke-width="1"/>
+<text x="525" y="186" text-anchor="middle" fill="#94a3b8" font-size="11" font-weight="600" font-family="Sora,sans-serif">Orders DB</text>
+<text x="525" y="204" text-anchor="middle" fill="#64748b" font-size="10" font-family="JetBrains Mono,monospace">PostgreSQL</text>
+<rect x="480" y="256" width="90" height="56" rx="8" fill="rgba(255,255,255,.04)" stroke="rgba(255,255,255,.08)" stroke-width="1"/>
+<text x="525" y="278" text-anchor="middle" fill="#94a3b8" font-size="11" font-weight="600" font-family="Sora,sans-serif">Payments DB</text>
+<text x="525" y="296" text-anchor="middle" fill="#64748b" font-size="10" font-family="JetBrains Mono,monospace">Redis + SQL</text>
+<!-- DB arrows -->
+<line x1="445" y1="100" x2="478" y2="100" stroke="#64748b" stroke-width="1" marker-end="url(#a2)"/>
+<line x1="445" y1="192" x2="478" y2="192" stroke="#64748b" stroke-width="1" marker-end="url(#a2)"/>
+<line x1="445" y1="284" x2="478" y2="284" stroke="#64748b" stroke-width="1" marker-end="url(#a2)"/>
+<!-- Note -->
+<text x="410" y="348" text-anchor="middle" fill="#64748b" font-size="12" font-family="Sora,sans-serif">Each service: independent deploy, independent scale, independent DB</text>
+</svg>
+</div>
+<div class="callout info">
+<span class="callout-icon">💡</span>
+<div class="callout-body"><strong>The fundamental shift:</strong> When Orders calls Payments, it's now a network call. That one change creates all the complexity we study in Topics 2–11: retries, circuit breakers, service discovery, sagas, distributed tracing, and more.</div>
+</div>
+</div>
+
+<div class="divider"></div>
+
+<!-- S4 -->
+<div class="section" id="s4">
+<div class="sec-lbl">04</div>
+<h2>The Tradeoff Table</h2>
+<p>Monolith wins on simplicity; microservices wins on independence. Neither wins on everything. Memorize this for interviews.</p>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Dimension</th><th>Monolith</th><th>Microservices</th></tr></thead>
+<tbody>
+<tr><td><strong>Deployment speed</strong></td><td><span class="bdg bdg-r">Deploy everything</span></td><td><span class="bdg bdg-g">Deploy one service</span></td></tr>
+<tr><td><strong>Startup simplicity</strong></td><td><span class="bdg bdg-g">One codebase, just run it</span></td><td><span class="bdg bdg-r">Dozens of moving parts</span></td></tr>
+<tr><td><strong>Scaling</strong></td><td><span class="bdg bdg-r">Scale the whole app</span></td><td><span class="bdg bdg-g">Scale only hot services</span></td></tr>
+<tr><td><strong>Team autonomy</strong></td><td><span class="bdg bdg-r">Coordination required</span></td><td><span class="bdg bdg-g">Teams own their service</span></td></tr>
+<tr><td><strong>Failure isolation</strong></td><td><span class="bdg bdg-r">One bug can crash all</span></td><td><span class="bdg bdg-g">Failures stay contained</span></td></tr>
+<tr><td><strong>Data consistency</strong></td><td><span class="bdg bdg-g">Easy — one transaction</span></td><td><span class="bdg bdg-r">Hard — distributed txns</span></td></tr>
+<tr><td><strong>Debugging</strong></td><td><span class="bdg bdg-g">One log, one stacktrace</span></td><td><span class="bdg bdg-r">Trace across 10 services</span></td></tr>
+<tr><td><strong>Tech flexibility</strong></td><td><span class="bdg bdg-r">One language / DB</span></td><td><span class="bdg bdg-g">Polyglot — best tool</span></td></tr>
+<tr><td><strong>Network overhead</strong></td><td><span class="bdg bdg-g">Zero — in-process calls</span></td><td><span class="bdg bdg-r">Latency on every call</span></td></tr>
+<tr><td><strong>Ops complexity</strong></td><td><span class="bdg bdg-g">Low — one thing to run</span></td><td><span class="bdg bdg-r">High — containers, k8s</span></td></tr>
+</tbody>
+</table>
+</div>
+</div>
+
+<div class="divider"></div>
+
+<!-- S5 -->
+<div class="section" id="s5">
+<div class="sec-lbl">05</div>
+<h2>When to Break a Monolith</h2>
+<p>The answer interviewers want: <strong>not immediately, and not just because it's trendy.</strong> Break it when you hit a specific pain that microservices solves. The MonolithFirst pattern (Martin Fowler) — start with a well-structured modular monolith, split when you feel real pain.</p>
+<h3>The 4 Real Triggers</h3>
+<div class="grid2">
+<div class="card">
+<div class="card-title">Deployment bottleneck</div>
+<div class="card-body">10 teams stepping on each other trying to deploy at the same time. A small bug fix in checkout requires a full-app deploy and a release window.</div>
+</div>
+<div class="card">
+<div class="card-title">Scaling mismatch</div>
+<div class="card-body">Your search service gets 100× more traffic than your admin panel, but you're forced to scale both because they're the same binary.</div>
+</div>
+<div class="card">
+<div class="card-title">Technology divergence</div>
+<div class="card-body">Your ML team needs Python, your core team uses C#, your mobile backend needs Node. A monolith locks you to one.</div>
+</div>
+<div class="card">
+<div class="card-title">Team ownership</div>
+<div class="card-body">At 200 engineers, no one knows who owns what. Services give clear boundaries: the Orders team deploys the Orders service.</div>
+</div>
+</div>
+</div>
+
+<div class="divider"></div>
+
+<!-- S6 -->
+<div class="section" id="s6">
+<div class="sec-lbl">06</div>
+<h2>Decomposition Strategies</h2>
+<p>Three ways to split. Interviewers will ask which one and why.</p>
+<div class="diagram-card">
+<svg viewBox="0 0 820 290" xmlns="http://www.w3.org/2000/svg">
+<!-- By Business Domain -->
+<rect x="16" y="16" width="240" height="258" rx="12" fill="rgba(20,184,166,.06)" stroke="rgba(20,184,166,.25)" stroke-width="1"/>
+<text x="136" y="46" text-anchor="middle" fill="#5eead4" font-size="13" font-weight="700" font-family="Sora,sans-serif">By Business Domain</text>
+<text x="136" y="63" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="Sora,sans-serif">(DDD bounded contexts)</text>
+<line x1="34" y1="76" x2="238" y2="76" stroke="rgba(255,255,255,.07)" stroke-width="1"/>
+<text x="136" y="100" text-anchor="middle" fill="#94a3b8" font-size="12" font-family="Sora,sans-serif">One service per business</text>
+<text x="136" y="118" text-anchor="middle" fill="#94a3b8" font-size="12" font-family="Sora,sans-serif">capability. Orders,</text>
+<text x="136" y="136" text-anchor="middle" fill="#94a3b8" font-size="12" font-family="Sora,sans-serif">Payments, Users.</text>
+<line x1="34" y1="158" x2="238" y2="158" stroke="rgba(255,255,255,.07)" stroke-width="1"/>
+<text x="136" y="182" text-anchor="middle" fill="#5eead4" font-size="12" font-weight="600" font-family="Sora,sans-serif">Most common.</text>
+<text x="136" y="200" text-anchor="middle" fill="#5eead4" font-size="12" font-weight="600" font-family="Sora,sans-serif">Start here.</text>
+<!-- By Subdomain -->
+<rect x="290" y="16" width="240" height="258" rx="12" fill="rgba(168,85,247,.06)" stroke="rgba(168,85,247,.25)" stroke-width="1"/>
+<text x="410" y="46" text-anchor="middle" fill="#d8b4fe" font-size="13" font-weight="700" font-family="Sora,sans-serif">By Subdomain</text>
+<text x="410" y="63" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="Sora,sans-serif">(fine-grained split)</text>
+<line x1="308" y1="76" x2="512" y2="76" stroke="rgba(255,255,255,.07)" stroke-width="1"/>
+<text x="410" y="100" text-anchor="middle" fill="#94a3b8" font-size="12" font-family="Sora,sans-serif">Split further when</text>
+<text x="410" y="118" text-anchor="middle" fill="#94a3b8" font-size="12" font-family="Sora,sans-serif">subdomains diverge.</text>
+<text x="410" y="140" text-anchor="middle" fill="#94a3b8" font-size="12" font-family="Sora,sans-serif">Orders →</text>
+<text x="410" y="158" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="Sora,sans-serif">Order + Shipping + Returns</text>
+<line x1="308" y1="174" x2="512" y2="174" stroke="rgba(255,255,255,.07)" stroke-width="1"/>
+<text x="410" y="198" text-anchor="middle" fill="#d8b4fe" font-size="12" font-weight="600" font-family="Sora,sans-serif">Use when teams grow</text>
+<text x="410" y="216" text-anchor="middle" fill="#d8b4fe" font-size="12" font-weight="600" font-family="Sora,sans-serif">or scale diverges.</text>
+<!-- Strangler Fig -->
+<rect x="564" y="16" width="240" height="258" rx="12" fill="rgba(245,158,11,.06)" stroke="rgba(245,158,11,.25)" stroke-width="1"/>
+<text x="684" y="46" text-anchor="middle" fill="#fbbf24" font-size="13" font-weight="700" font-family="Sora,sans-serif">Strangler Fig</text>
+<text x="684" y="63" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="Sora,sans-serif">(incremental migration)</text>
+<line x1="582" y1="76" x2="786" y2="76" stroke="rgba(255,255,255,.07)" stroke-width="1"/>
+<text x="684" y="100" text-anchor="middle" fill="#94a3b8" font-size="12" font-family="Sora,sans-serif">Don't rewrite. Peel</text>
+<text x="684" y="118" text-anchor="middle" fill="#94a3b8" font-size="12" font-family="Sora,sans-serif">services off one by one.</text>
+<text x="684" y="140" text-anchor="middle" fill="#94a3b8" font-size="12" font-family="Sora,sans-serif">Monolith shrinks.</text>
+<text x="684" y="158" text-anchor="middle" fill="#94a3b8" font-size="12" font-family="Sora,sans-serif">Services grow.</text>
+<line x1="582" y1="174" x2="786" y2="174" stroke="rgba(255,255,255,.07)" stroke-width="1"/>
+<text x="684" y="198" text-anchor="middle" fill="#fbbf24" font-size="12" font-weight="600" font-family="Sora,sans-serif">The safe real-world</text>
+<text x="684" y="216" text-anchor="middle" fill="#fbbf24" font-size="12" font-weight="600" font-family="Sora,sans-serif">migration path.</text>
+</svg>
+</div>
+</div>
+
+<div class="divider"></div>
+
+<!-- S7 -->
+<div class="section" id="s7">
+<div class="sec-lbl">07</div>
+<h2>The Strangler Fig Pattern</h2>
+<p>You never rewrite a live monolith from scratch — that's a death march. Instead, peel off one service at a time, route traffic to it, and retire that piece from the monolith. The monolith shrinks over months, not in one big bang.</p>
+<div class="diagram-card">
+<svg viewBox="0 0 820 180" xmlns="http://www.w3.org/2000/svg">
+<!-- Stage 1 -->
+<rect x="16" y="20" width="170" height="140" rx="10" fill="rgba(245,158,11,.08)" stroke="rgba(245,158,11,.3)" stroke-width="1"/>
+<text x="101" y="46" text-anchor="middle" fill="#fbbf24" font-size="11" font-weight="700" font-family="Sora,sans-serif">Stage 1 — Start</text>
+<rect x="30" y="58" width="142" height="24" rx="4" fill="rgba(255,255,255,.05)" stroke="rgba(255,255,255,.08)" stroke-width="1"/>
+<text x="101" y="73" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="Sora,sans-serif">Users</text>
+<rect x="30" y="88" width="142" height="24" rx="4" fill="rgba(255,255,255,.05)" stroke="rgba(255,255,255,.08)" stroke-width="1"/>
+<text x="101" y="103" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="Sora,sans-serif">Orders</text>
+<rect x="30" y="118" width="142" height="24" rx="4" fill="rgba(255,255,255,.05)" stroke="rgba(255,255,255,.08)" stroke-width="1"/>
+<text x="101" y="133" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="Sora,sans-serif">Payments</text>
+<text x="101" y="155" text-anchor="middle" fill="#fbbf24" font-size="10" font-family="Sora,sans-serif">Monolith intact</text>
+<text x="205" y="90" text-anchor="middle" fill="#64748b" font-size="20" font-family="Sora,sans-serif">→</text>
+<!-- Stage 2 -->
+<rect x="220" y="20" width="170" height="140" rx="10" fill="rgba(245,158,11,.08)" stroke="rgba(245,158,11,.3)" stroke-width="1"/>
+<text x="305" y="46" text-anchor="middle" fill="#fbbf24" font-size="11" font-weight="700" font-family="Sora,sans-serif">Stage 2 — Extract</text>
+<rect x="234" y="58" width="142" height="24" rx="4" fill="rgba(255,255,255,.05)" stroke="rgba(255,255,255,.08)" stroke-width="1"/>
+<text x="305" y="73" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="Sora,sans-serif">Orders</text>
+<rect x="234" y="88" width="142" height="24" rx="4" fill="rgba(255,255,255,.05)" stroke="rgba(255,255,255,.08)" stroke-width="1"/>
+<text x="305" y="103" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="Sora,sans-serif">Payments</text>
+<rect x="234" y="120" width="142" height="28" rx="6" fill="rgba(20,184,166,.12)" stroke="rgba(20,184,166,.4)" stroke-width="1"/>
+<text x="305" y="138" text-anchor="middle" fill="#5eead4" font-size="11" font-weight="600" font-family="Sora,sans-serif">Users service ✓</text>
+<text x="305" y="155" text-anchor="middle" fill="#5eead4" font-size="10" font-family="Sora,sans-serif">Users extracted</text>
+<text x="405" y="90" text-anchor="middle" fill="#64748b" font-size="20" font-family="Sora,sans-serif">→</text>
+<!-- Stage 3 -->
+<rect x="424" y="20" width="170" height="140" rx="10" fill="rgba(245,158,11,.08)" stroke="rgba(245,158,11,.3)" stroke-width="1"/>
+<text x="509" y="46" text-anchor="middle" fill="#fbbf24" font-size="11" font-weight="700" font-family="Sora,sans-serif">Stage 3 — More</text>
+<rect x="438" y="58" width="142" height="24" rx="4" fill="rgba(255,255,255,.05)" stroke="rgba(255,255,255,.08)" stroke-width="1"/>
+<text x="509" y="73" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="Sora,sans-serif">Payments</text>
+<rect x="438" y="88" width="142" height="28" rx="6" fill="rgba(20,184,166,.12)" stroke="rgba(20,184,166,.4)" stroke-width="1"/>
+<text x="509" y="106" text-anchor="middle" fill="#5eead4" font-size="11" font-weight="600" font-family="Sora,sans-serif">Users service ✓</text>
+<rect x="438" y="122" width="142" height="28" rx="6" fill="rgba(20,184,166,.12)" stroke="rgba(20,184,166,.4)" stroke-width="1"/>
+<text x="509" y="140" text-anchor="middle" fill="#5eead4" font-size="11" font-weight="600" font-family="Sora,sans-serif">Orders service ✓</text>
+<text x="605" y="90" text-anchor="middle" fill="#64748b" font-size="20" font-family="Sora,sans-serif">→</text>
+<!-- Done -->
+<rect x="628" y="20" width="170" height="140" rx="10" fill="rgba(20,184,166,.08)" stroke="rgba(20,184,166,.3)" stroke-width="1"/>
+<text x="713" y="46" text-anchor="middle" fill="#5eead4" font-size="11" font-weight="700" font-family="Sora,sans-serif">Done — All Services</text>
+<rect x="642" y="58" width="142" height="28" rx="6" fill="rgba(20,184,166,.12)" stroke="rgba(20,184,166,.4)" stroke-width="1"/>
+<text x="713" y="76" text-anchor="middle" fill="#5eead4" font-size="11" font-weight="600" font-family="Sora,sans-serif">Users service ✓</text>
+<rect x="642" y="92" width="142" height="28" rx="6" fill="rgba(20,184,166,.12)" stroke="rgba(20,184,166,.4)" stroke-width="1"/>
+<text x="713" y="110" text-anchor="middle" fill="#5eead4" font-size="11" font-weight="600" font-family="Sora,sans-serif">Orders service ✓</text>
+<rect x="642" y="126" width="142" height="28" rx="6" fill="rgba(20,184,166,.12)" stroke="rgba(20,184,166,.4)" stroke-width="1"/>
+<text x="713" y="144" text-anchor="middle" fill="#5eead4" font-size="11" font-weight="600" font-family="Sora,sans-serif">Payments service ✓</text>
+</svg>
+</div>
+</div>
+
+<div class="divider"></div>
+
+<!-- S8 -->
+<div class="section" id="s8">
+<div class="sec-lbl">08</div>
+<h2>Right-Sizing Services</h2>
+<p>This trips many candidates. The answer has a name: the <strong>two-pizza rule</strong> (Amazon). A service should be owned by a team small enough to be fed by two pizzas (~6–8 people). One business capability end to end — not one function, not one table.</p>
+<div class="code-block">
+<div class="code-hdr"><span class="code-lang">Service sizing examples</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+<pre><code><span class="cm">// ❌ Too big — this is just a monolith</span>
+OrdersAndPaymentsAndInventoryService
+
+<span class="cm">// ✅ Just right — one business capability end to end</span>
+OrdersService  <span class="cm">// create, read, cancel, history</span>
+
+<span class="cm">// ❌ Too small (nano-services) — chatty, fragile coupling</span>
+CreateOrderService
+CancelOrderService
+UpdateOrderStatusService</code></pre>
+</div>
+<div class="callout warn">
+<span class="callout-icon">⚠️</span>
+<div class="callout-body"><strong>Nano-service danger:</strong> Going too small gives you massive network chattiness and tight operational coupling. You've added all the pain of microservices with none of the independence gain.</div>
+</div>
+</div>
+
+<div class="divider"></div>
+
+<!-- S9 -->
+<div class="section" id="s9">
+<div class="sec-lbl">09</div>
+<h2>The Distributed Monolith Anti-Pattern</h2>
+<p>This is the worst of both worlds. Looks like microservices (many services, over a network) but behaves like a monolith — services are tightly coupled, must deploy together, or share a database.</p>
+<div class="grid2">
+<div class="card">
+<div class="card-title" style="color:var(--red)">Distributed monolith (bad)</div>
+<div class="card-body">Services exist but they share a database, must deploy together, or can't function without each other. You get all the operational complexity of microservices with none of the independence benefits.</div>
+<span class="tag tag-bad">Avoid this</span>
+</div>
+<div class="card">
+<div class="card-title" style="color:var(--green)">True microservices (good)</div>
+<div class="card-body">Each service can deploy independently, owns its own database, and fails gracefully without taking down others. The network boundary is a real isolation boundary.</div>
+<span class="tag tag-ok">Target this</span>
+</div>
+</div>
+</div>
+
+<div class="divider"></div>
+
+<!-- S10 -->
+<div class="section" id="s10">
+<div class="sec-lbl">10</div>
+<h2>Interview Q&A</h2>
+<div class="qa-list">
+<div class="qa-item">
+<div class="qa-q">Would you start a new project with microservices?</div>
+<div class="qa-a">No, usually not. Start with a well-structured monolith — a "modular monolith" — where modules have clean boundaries. Migrate to services when you hit concrete pain: scaling mismatch, deployment bottleneck, or team growth. This is Martin Fowler's MonolithFirst pattern.</div>
+</div>
+<div class="qa-item">
+<div class="qa-q">What is the biggest advantage of microservices over a monolith?</div>
+<div class="qa-a">Independent deployability. Each team can deploy their service without coordinating with others. This enables true continuous delivery at scale — 10 teams can each ship 10 times per day independently. Second is independent scalability — you scale only the bottleneck service, not everything.</div>
+</div>
+<div class="qa-item">
+<div class="qa-q">What is the biggest challenge of microservices?</div>
+<div class="qa-a">Data consistency. In a monolith, you wrap everything in a transaction and either it all commits or all rolls back. In microservices, you have no distributed transaction. You must handle partial failures, eventual consistency, and compensating transactions manually. This is what the Saga pattern (Topic 6) solves.</div>
+</div>
+<div class="qa-item">
+<div class="qa-q">What is a distributed monolith?</div>
+<div class="qa-a">A system that looks like microservices (many services over a network) but behaves like a monolith — services must deploy together, share a database, or can't function independently. You get all the operational complexity of microservices with none of the independence benefits. The worst of both worlds.</div>
+</div>
+<div class="qa-item">
+<div class="qa-q">What is the Strangler Fig pattern?</div>
+<div class="qa-a">An incremental migration strategy — you don't rewrite the monolith all at once (that's a death march). Instead, you peel off services one by one, redirect traffic to each new service, and retire that piece from the monolith. The monolith shrinks gradually over months until it's fully replaced or reduced to a small core.</div>
+</div>
+<div class="qa-item">
+<div class="qa-q">How do you decide how big a microservice should be?</div>
+<div class="qa-a">One business capability end to end. Not one function (too small — creates chatty nano-services) and not multiple capabilities (too big — defeats independence). Use the two-pizza rule: a team small enough to be fed by two pizzas (~6–8 people) should own the service. If a single change requires modifying multiple services, your boundaries may be wrong.</div>
+</div>
+</div>
+</div>
+
+<div class="footer">Monolith vs Microservices · Microservices Topic 1 · C# / .NET · Interview Prep</div>
+</div>
+</body>
+</html>

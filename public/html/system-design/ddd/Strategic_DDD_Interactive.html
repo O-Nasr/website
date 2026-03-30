@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Strategic DDD — Domain-Driven Design Study Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0c10;--surface:#111318;--surface2:#181c24;--surface3:#1f2530;--border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.11);--accent:#6ea1ff;--accent2:#8b6cf6;--green:#34d399;--amber:#fbbf24;--red:#f87171;--teal:#2dd4bf;--coral:#fb923c;--text:#dfe5ef;--muted:#7e8a9e;--code-bg:#080a0e}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font-size:15px;line-height:1.78;-webkit-font-smoothing:antialiased}
+.page{max-width:900px;margin:0 auto;padding:0 28px 100px}
+.hero{padding:56px 28px 44px;max-width:900px;margin:0 auto;border-bottom:1px solid var(--border);position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-80px;right:-40px;width:360px;height:360px;background:radial-gradient(circle,rgba(139,92,246,0.08) 0%,transparent 70%);pointer-events:none}
+.hero-tag{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:10.5px;font-weight:500;color:var(--accent2);background:rgba(139,92,246,0.07);border:1px solid rgba(139,92,246,0.18);padding:4px 14px;border-radius:20px;letter-spacing:0.09em;margin-bottom:14px;text-transform:uppercase}
+.hero h1{font-size:clamp(26px,4.2vw,42px);font-weight:700;line-height:1.15;letter-spacing:-0.03em;margin-bottom:10px;background:linear-gradient(135deg,#dfe5ef 0%,#8b6cf6 50%,#6ea1ff 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero-sub{font-size:15px;color:var(--muted);line-height:1.65;max-width:600px}
+.section{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:30px;margin-top:30px}
+.section h2{font-size:20px;font-weight:700;color:#fff;margin-bottom:18px;display:flex;align-items:center;gap:10px}
+.section h2 .num{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--accent2);background:rgba(139,92,246,0.1);padding:3px 10px;border-radius:6px;font-weight:500}
+.section h3{font-size:15px;font-weight:600;color:var(--accent);margin:22px 0 10px;padding-top:14px;border-top:1px solid var(--border)}
+.section h3:first-of-type{border-top:none;padding-top:0}
+p{margin-bottom:12px}strong{color:#fff}
+ul{padding-left:20px;margin:8px 0 14px}li{margin:4px 0;font-size:14px}
+pre{background:var(--code-bg);border:1px solid var(--border);border-radius:10px;padding:14px 18px;overflow-x:auto;margin:12px 0;font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.7;color:#c4cdd9}
+code{font-family:'JetBrains Mono',monospace;font-size:12.5px;color:var(--accent);background:rgba(110,161,255,0.07);padding:2px 6px;border-radius:4px}
+pre code{background:none;padding:0;color:inherit}
+table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13px}
+th{background:var(--surface2);color:var(--accent);font-weight:600;text-align:left;padding:9px 13px;border:1px solid var(--border)}
+td{padding:8px 13px;border:1px solid var(--border)}
+tr:nth-child(even) td{background:rgba(255,255,255,0.012)}
+.note{background:rgba(110,161,255,0.05);border:1px solid rgba(110,161,255,0.14);border-radius:10px;padding:13px 16px;margin:12px 0;font-size:13px;line-height:1.7}.note b{color:var(--accent)}
+.note-warn{background:rgba(251,191,36,0.05);border-color:rgba(251,191,36,0.14)}.note-warn b{color:var(--amber)}
+.note-red{background:rgba(248,113,113,0.05);border-color:rgba(248,113,113,0.14)}.note-red b{color:var(--red)}
+.note-green{background:rgba(52,211,153,0.05);border-color:rgba(52,211,153,0.14)}.note-green b{color:var(--green)}
+.note-purple{background:rgba(139,92,246,0.05);border-color:rgba(139,92,246,0.14)}.note-purple b{color:var(--accent2)}
+.qa{background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:14px 18px;margin:10px 0}
+.qa-q{font-weight:600;color:#fff;margin-bottom:5px;font-size:14px}
+.qa-a{color:var(--muted);font-size:13px;line-height:1.7}
+.tab-group{margin:16px 0}.tab-bar{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.tab-btn{padding:6px 14px;font-size:12px;font-weight:500;font-family:'Outfit',sans-serif;border:1px solid var(--border2);border-radius:6px;background:transparent;color:var(--muted);cursor:pointer;transition:all 0.15s}
+.tab-btn:hover{border-color:rgba(139,92,246,0.3);color:var(--text)}
+.tab-btn.active{background:rgba(139,92,246,0.1);color:var(--accent2);border-color:rgba(139,92,246,0.3)}
+.tab-panel{display:none}.tab-panel.active{display:block}
+.env-row{display:flex;gap:12px;margin:10px 0;align-items:stretch}
+.env-card{flex:1;border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:4px}
+.env-card .env-name{font-size:13px;font-weight:600}.env-card .env-status{font-size:11px;color:var(--muted)}
+.toc{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px 24px;margin:30px 0}
+.toc h3{font-size:12px;font-weight:600;color:var(--accent2);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.06em}
+.toc a{font-size:13px;color:var(--muted);text-decoration:none;display:block;padding:4px 0;transition:color 0.15s}.toc a:hover{color:var(--accent2)}
+.footer{text-align:center;padding:36px 0 16px;font-size:11px;color:var(--muted);border-top:1px solid var(--border);margin-top:40px}
+@media(max-width:640px){.page{padding:0 16px 60px}.section{padding:20px 16px}.env-row{flex-direction:column}.hero{padding:36px 16px 30px}}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-tag">DDD Deep Dive · Part 1 of 2 · Interview Prep</div>
+  <h1>Strategic DDD</h1>
+  <p class="hero-sub">Ubiquitous language, subdomain types, bounded contexts, context mapping patterns, and the anti-corruption layer. The architect's view of Domain-Driven Design.</p>
+</div>
+
+<div class="page">
+
+<div class="toc">
+  <h3>Contents</h3>
+  <a href="#s1">1. Two Halves of DDD — strategic vs tactical</a>
+  <a href="#s2">2. Ubiquitous Language — the most important concept</a>
+  <a href="#s3">3. Subdomain Types — core, supporting, generic</a>
+  <a href="#s4">4. Bounded Context (deeper) — same word, different models</a>
+  <a href="#s5">5. Context Mapping — how contexts relate to each other</a>
+  <a href="#s6">6. Anti-Corruption Layer — full C# implementation</a>
+  <a href="#s7">7. Interview Q&amp;A</a>
+</div>
+
+<!-- ═══════════════════ SECTION 1 ═══════════════════ -->
+<div class="section" id="s1">
+<h2><span class="num">01</span> Two Halves of DDD</h2>
+<p>DDD has two distinct halves that solve different problems. Most people learn one and miss the other:</p>
+
+<div class="tab-group" id="halves">
+<div class="tab-bar">
+<button class="tab-btn active" onclick="showTab('halves',0)">Strategic (this doc)</button>
+<button class="tab-btn" onclick="showTab('halves',1)">Tactical (Part 2)</button>
+<button class="tab-btn" onclick="showTab('halves',2)">How they connect</button>
+</div>
+<div class="tab-panel active">
+<div class="env-card" style="background:rgba(139,92,246,0.05);border:1px solid rgba(139,92,246,0.12)">
+<div class="env-name" style="color:var(--accent2)">Strategic DDD — the architect's view</div>
+<div class="env-status">How to split a system into services. Where to draw boundaries. How services communicate at boundaries.</div>
+<div class="env-status" style="margin-top:8px;color:var(--text)">Concepts: ubiquitous language, bounded context, subdomain types, context mapping, anti-corruption layer</div>
+</div>
+</div>
+<div class="tab-panel">
+<div class="env-card" style="background:rgba(52,211,153,0.05);border:1px solid rgba(52,211,153,0.12)">
+<div class="env-name" style="color:var(--green)">Tactical DDD — the developer's view</div>
+<div class="env-status">How to structure code INSIDE a service. The building blocks of a rich domain model.</div>
+<div class="env-status" style="margin-top:8px;color:var(--text)">Concepts: entity, value object, aggregate, aggregate root, domain event, repository, domain service</div>
+</div>
+</div>
+<div class="tab-panel">
+<pre><code>Strategic DDD answers: "Where are the boundaries?"
+  → You discover bounded contexts (Orders, Payments, Inventory)
+  → Each bounded context becomes a microservice
+
+Tactical DDD answers: "How do I build INSIDE each boundary?"
+  → Inside Orders service: Order (aggregate), OrderLine (entity),
+    Money (value object), OrderPlaced (domain event)
+
+Strategic = draw the map. Tactical = build each city on the map.</code></pre>
+</div>
+</div>
+</div>
+
+<!-- ═══════════════════ SECTION 2 ═══════════════════ -->
+<div class="section" id="s2">
+<h2><span class="num">02</span> Ubiquitous Language</h2>
+<p>The <strong>most important</strong> concept in all of DDD, yet the most overlooked. The problem: developers and business people use different words for the same thing.</p>
+
+<div class="tab-group" id="ub">
+<div class="tab-bar">
+<button class="tab-btn active" onclick="showTab('ub',0)">The problem</button>
+<button class="tab-btn" onclick="showTab('ub',1)">The fix</button>
+<button class="tab-btn" onclick="showTab('ub',2)">The rule</button>
+</div>
+<div class="tab-panel active">
+<p style="font-weight:600;color:var(--red);margin-bottom:8px">Translation tax — every translation is a chance for a bug</p>
+<pre><code>Business says:          Developer writes:
+"Customer"              → User (in the DB)
+"Place an order"        → CreateOrderRequest (in the API)
+"The order is active"   → Status = 2 (in the database)
+"Discount"              → PriceModifier (in the code)</code></pre>
+<p>When business says "the customer's active order should get the loyalty discount," the developer mentally translates: "the User's Order where Status = 2 should get a PriceModifier of type Loyalty." Every translation is a chance for a bug.</p>
+</div>
+<div class="tab-panel">
+<pre><code>// ❌ Developer language — business can't read this
+public class User
+{
+    public int StatusCode { get; set; }  // what does 2 mean?
+    public List&lt;PriceModifier&gt; Modifiers { get; set; }
+}
+
+// ✅ Ubiquitous language — business can read this
+public class Customer
+{
+    public OrderStatus Status { get; set; }  // Active, Completed, Cancelled
+    public LoyaltyDiscount? LoyaltyDiscount { get; set; }
+
+    public bool HasActiveOrder =>
+        Orders.Any(o => o.Status == OrderStatus.Active);
+}</code></pre>
+</div>
+<div class="tab-panel">
+<div class="note-purple note">
+<b>The rule:</b> If a business person reads your class names and method names, they should understand what the code does <strong>without explanation</strong>. The code uses the <strong>exact same words</strong> as the business. No translation layer. No abbreviations. No "developer-speak."
+</div>
+</div>
+</div>
+</div>
+
+<!-- ═══════════════════ SECTION 3 ═══════════════════ -->
+<div class="section" id="s3">
+<h2><span class="num">03</span> Subdomain Types</h2>
+<p>There are three types of subdomain. Knowing which type determines <strong>how much effort you invest</strong>:</p>
+
+<div class="tab-group" id="sd">
+<div class="tab-bar">
+<button class="tab-btn active" onclick="showTab('sd',0)">Core</button>
+<button class="tab-btn" onclick="showTab('sd',1)">Supporting</button>
+<button class="tab-btn" onclick="showTab('sd',2)">Generic</button>
+<button class="tab-btn" onclick="showTab('sd',3)">Investment strategy</button>
+</div>
+<div class="tab-panel active">
+<div class="env-card" style="background:rgba(248,113,113,0.04);border:1px solid rgba(248,113,113,0.1)">
+<div class="env-name" style="color:var(--red)">Core subdomain — your competitive advantage</div>
+<div class="env-status" style="color:var(--text)">What makes your business UNIQUE. Complex, changes frequently, gives market edge.</div>
+<div class="env-status" style="margin-top:6px"><strong style="color:var(--text)">Examples:</strong> Amazon's recommendation engine. Uber's surge pricing. Netflix's personalization.</div>
+<div class="env-status" style="margin-top:6px"><strong style="color:var(--text)">Build:</strong> In-house, best engineers, full DDD tactical patterns. Never outsource.</div>
+</div>
+</div>
+<div class="tab-panel">
+<div class="env-card" style="background:rgba(251,191,36,0.04);border:1px solid rgba(251,191,36,0.1)">
+<div class="env-name" style="color:var(--amber)">Supporting subdomain — necessary but not differentiating</div>
+<div class="env-status" style="color:var(--text)">Your business needs it, but it's not what makes you special. Some custom logic, no competitive advantage.</div>
+<div class="env-status" style="margin-top:6px"><strong style="color:var(--text)">Examples:</strong> Inventory management for e-commerce. Employee scheduling for a restaurant chain.</div>
+<div class="env-status" style="margin-top:6px"><strong style="color:var(--text)">Build:</strong> In-house but simpler. CRUD is fine. Junior/mid developers. Don't over-engineer.</div>
+</div>
+</div>
+<div class="tab-panel">
+<div class="env-card" style="background:var(--surface2);border:1px solid var(--border2)">
+<div class="env-name" style="color:var(--muted)">Generic subdomain — solved problems, buy don't build</div>
+<div class="env-status" style="color:var(--text)">Every company needs this, nothing unique about your version. A solved problem.</div>
+<div class="env-status" style="margin-top:6px"><strong style="color:var(--text)">Examples:</strong> Authentication (Auth0). Email (SendGrid). Payments (Stripe). Storage (S3).</div>
+<div class="env-status" style="margin-top:6px"><strong style="color:var(--text)">Build:</strong> DON'T. Buy it or use SaaS. Every hour on this is an hour NOT on your core domain.</div>
+</div>
+</div>
+<div class="tab-panel">
+<table>
+<tr><th>Aspect</th><th style="color:var(--red)">Core</th><th style="color:var(--amber)">Supporting</th><th>Generic</th></tr>
+<tr><td>Build or buy?</td><td>Build in-house</td><td>Build simple</td><td>Buy / SaaS</td></tr>
+<tr><td>DDD patterns?</td><td>Full tactical DDD</td><td>Simple CRUD</td><td>Integrate only</td></tr>
+<tr><td>Best engineers?</td><td>Yes — top talent</td><td>Junior/mid</td><td>N/A</td></tr>
+<tr><td>Complexity</td><td>High — it's your edge</td><td>Medium</td><td>Low — solved problem</td></tr>
+</table>
+<div class="note"><b>The interview answer:</b> "I apply full DDD tactical patterns only to core subdomains — that's where complexity lives and where business differentiation matters. Supporting subdomains get simple CRUD. Generic subdomains get bought, not built."</div>
+</div>
+</div>
+</div>
+
+<!-- ═══════════════════ SECTION 4 ═══════════════════ -->
+<div class="section" id="s4">
+<h2><span class="num">04</span> Bounded Context — Deeper</h2>
+<p>You know bounded contexts from the microservices roadmap. Let's go deeper with what lives inside one:</p>
+
+<div class="tab-group" id="bc">
+<div class="tab-bar">
+<button class="tab-btn active" onclick="showTab('bc',0)">Same word, different models</button>
+<button class="tab-btn" onclick="showTab('bc',1)">What's inside a context</button>
+<button class="tab-btn" onclick="showTab('bc',2)">Full e-commerce map</button>
+</div>
+<div class="tab-panel active">
+<p style="font-weight:600;color:#fff;margin-bottom:8px">The word "Order" means different things in different contexts:</p>
+<div class="env-row">
+<div class="env-card" style="background:rgba(52,211,153,0.04);border:1px solid rgba(52,211,153,0.1)"><div class="env-name" style="color:var(--green)">Orders context</div><div class="env-status">Order = items, quantity, status, customer</div></div>
+<div class="env-card" style="background:rgba(251,191,36,0.04);border:1px solid rgba(251,191,36,0.1)"><div class="env-name" style="color:var(--amber)">Payments context</div><div class="env-status">Order = amount, payment method, transaction ID</div></div>
+</div>
+<div class="env-row">
+<div class="env-card" style="background:rgba(139,92,246,0.04);border:1px solid rgba(139,92,246,0.1)"><div class="env-name" style="color:var(--accent2)">Shipping context</div><div class="env-status">Order = weight, dimensions, address, carrier</div></div>
+<div class="env-card" style="background:rgba(244,114,182,0.04);border:1px solid rgba(244,114,182,0.1)"><div class="env-name" style="color:#f472b6">Analytics context</div><div class="env-status">Order = revenue, conversion data, funnel step</div></div>
+</div>
+<p>Each context owns its definition. They never share internal domain objects. Communication at boundaries is through events or API contracts with translation.</p>
+</div>
+<div class="tab-panel">
+<p style="font-weight:600;color:#fff;margin-bottom:8px">One bounded context contains multiple aggregates:</p>
+<pre><code>Orders bounded context (= one microservice)
+├── Aggregate: Order    (root: Order, entities: OrderLine)
+├── Aggregate: Cart     (root: Cart, entities: CartItem)
+└── Aggregate: Discount (root: Discount, entities: DiscountRule)
+
+Each aggregate has its own repository and its own transaction.
+They reference each other by ID and communicate via domain events.</code></pre>
+</div>
+<div class="tab-panel">
+<pre><code>Domain: e-commerce
+├── Bounded Context: Orders (= Orders microservice)
+│   ├── Order aggregate
+│   ├── Cart aggregate
+│   └── Discount aggregate
+├── Bounded Context: Catalogue (= Catalogue microservice)
+│   ├── Product aggregate
+│   ├── Category aggregate
+│   └── Review aggregate
+├── Bounded Context: Identity (= Identity microservice)
+│   ├── Customer aggregate
+│   └── Address aggregate
+└── Bounded Context: Payments (= Payments microservice)
+    ├── Payment aggregate
+    └── Refund aggregate</code></pre>
+</div>
+</div>
+</div>
+
+<!-- ═══════════════════ SECTION 5 ═══════════════════ -->
+<div class="section" id="s5">
+<h2><span class="num">05</span> Context Mapping Patterns</h2>
+<p>How do bounded contexts <strong>relate to each other</strong>? Context mapping defines the relationship patterns:</p>
+
+<div class="tab-group" id="cm">
+<div class="tab-bar">
+<button class="tab-btn active" onclick="showTab('cm',0)">Partnership</button>
+<button class="tab-btn" onclick="showTab('cm',1)">Customer-Supplier</button>
+<button class="tab-btn" onclick="showTab('cm',2)">Conformist</button>
+<button class="tab-btn" onclick="showTab('cm',3)">Anti-corruption layer</button>
+<button class="tab-btn" onclick="showTab('cm',4)">Shared kernel</button>
+<button class="tab-btn" onclick="showTab('cm',5)">When to use which</button>
+</div>
+<div class="tab-panel active">
+<p style="font-weight:600;color:var(--green)">Partnership — equals, co-evolve</p>
+<p>Two teams work together and evolve their APIs jointly. Neither dominates.</p>
+<p><strong>Example:</strong> Orders team and Payments team build checkout together, agree on shared events.</p>
+<p><strong>When:</strong> Two internal teams with strong dependency and good communication. Rare — requires high trust.</p>
+</div>
+<div class="tab-panel">
+<p style="font-weight:600;color:var(--accent)">Customer-Supplier — upstream serves downstream</p>
+<p>The <strong>upstream</strong> (supplier) provides an API. The <strong>downstream</strong> (customer) consumes it. Upstream considers downstream's needs but makes final decisions.</p>
+<p><strong>Example:</strong> Inventory (upstream) provides stock data. Orders (downstream) consumes it.</p>
+<p><strong>When:</strong> Most internal service-to-service relationships. The most common pattern.</p>
+</div>
+<div class="tab-panel">
+<p style="font-weight:600;color:var(--amber)">Conformist — just use their model</p>
+<p>Downstream has <strong>no influence</strong> over upstream. Must conform to whatever is provided.</p>
+<p><strong>Example:</strong> Your service integrates with Stripe's API. You can't ask Stripe to change their data model.</p>
+<p><strong>When:</strong> Integrating with external services, third-party APIs, legacy systems that won't change.</p>
+</div>
+<div class="tab-panel">
+<p style="font-weight:600;color:var(--red)">Anti-corruption layer (ACL) — protect your model</p>
+<p>Like conformist, upstream won't change. But instead of conforming, you build a <strong>translation layer</strong> that converts the external model into YOUR clean model.</p>
+<p><strong>Example:</strong> Legacy ERP exports <code>CUST_NR</code> and <code>ORD_DT</code>. ACL translates into clean <code>Customer</code> and <code>OrderDate</code>.</p>
+<p><strong>When:</strong> External model is so different that conforming would pollute your domain. <strong>The most important defensive pattern in DDD.</strong></p>
+</div>
+<div class="tab-panel">
+<p style="font-weight:600;color:var(--muted)">Shared kernel — shared code between contexts</p>
+<p>Two contexts share a small piece of code (types, events, contracts). Changes require agreement from both teams.</p>
+<p><strong>Example:</strong> Orders and Payments share <code>Money</code> value object and <code>OrderId</code> type in a shared NuGet package.</p>
+<p><strong>When:</strong> Use sparingly. Keep as small as possible. Shared events are the most common shared kernel.</p>
+</div>
+<div class="tab-panel">
+<table>
+<tr><th>Upstream is...</th><th>Pattern</th><th>Example</th></tr>
+<tr><td>Your team (co-owned)</td><td>Partnership</td><td>Orders + Payments co-develop checkout</td></tr>
+<tr><td>Internal team (cooperative)</td><td>Customer-Supplier</td><td>Inventory provides stock API</td></tr>
+<tr><td>External API (clean model)</td><td>Conformist</td><td>Stripe, SendGrid — good APIs</td></tr>
+<tr><td>External / legacy (messy)</td><td>Anti-corruption layer</td><td>Legacy ERP, old SOAP services</td></tr>
+</table>
+</div>
+</div>
+</div>
+
+<!-- ═══════════════════ SECTION 6 ═══════════════════ -->
+<div class="section" id="s6">
+<h2><span class="num">06</span> Anti-Corruption Layer — Full C# Implementation</h2>
+<p>The ACL translates ugly external models into your clean domain. The most important defensive pattern:</p>
+
+<div class="tab-group" id="acl">
+<div class="tab-bar">
+<button class="tab-btn active" onclick="showTab('acl',0)">The ugly external model</button>
+<button class="tab-btn" onclick="showTab('acl',1)">Your clean domain model</button>
+<button class="tab-btn" onclick="showTab('acl',2)">The translator (ACL)</button>
+<button class="tab-btn" onclick="showTab('acl',3)">Using it in a service</button>
+</div>
+<div class="tab-panel active">
+<pre><code>// The legacy ERP response — you didn't design this, it's horrible
+public class ErpOrderResponse
+{
+    public string CUST_NR { get; set; }
+    public string ORD_DT { get; set; }     // "20260328" — not even ISO format
+    public decimal TOT_AMT { get; set; }
+    public int STAT_CD { get; set; }        // 1=active, 2=complete, 99=cancelled
+    public List&lt;ErpLineItem&gt; LN_ITMS { get; set; }
+}</code></pre>
+</div>
+<div class="tab-panel">
+<pre><code>// Your clean domain model — ubiquitous language
+public class Order
+{
+    public CustomerId CustomerId { get; }
+    public DateTime OrderDate { get; }
+    public Money TotalAmount { get; }
+    public OrderStatus Status { get; }
+    public IReadOnlyList&lt;OrderLine&gt; Lines { get; }
+}</code></pre>
+</div>
+<div class="tab-panel">
+<pre><code>// The Anti-Corruption Layer — translates between the two
+public class ErpOrderTranslator
+{
+    public Order Translate(ErpOrderResponse erp)
+    {
+        return new Order(
+            customerId: new CustomerId(erp.CUST_NR),
+            orderDate: DateTime.ParseExact(erp.ORD_DT, "yyyyMMdd", null),
+            totalAmount: Money.FromDecimal(erp.TOT_AMT, Currency.USD),
+            status: MapStatus(erp.STAT_CD),
+            lines: erp.LN_ITMS.Select(TranslateLine).ToList()
+        );
+    }
+
+    private OrderStatus MapStatus(int code) => code switch
+    {
+        1  => OrderStatus.Active,
+        2  => OrderStatus.Completed,
+        99 => OrderStatus.Cancelled,
+        _  => throw new DomainException($"Unknown ERP status: {code}")
+    };
+}</code></pre>
+</div>
+<div class="tab-panel">
+<pre><code>// Your service uses the translator — never touches ERP model directly
+public class OrderService
+{
+    private readonly IErpClient _erp;
+    private readonly ErpOrderTranslator _translator;
+
+    public async Task&lt;Order&gt; GetOrderAsync(string orderId)
+    {
+        ErpOrderResponse ugly = await _erp.FetchOrderAsync(orderId);
+        Order clean = _translator.Translate(ugly);  // ACL does the work
+        return clean;  // your domain never sees CUST_NR or STAT_CD
+    }
+}</code></pre>
+<div class="note-green note"><b>ERP changes field names?</b> Update one translator. Your domain model is untouched. The mess is isolated in the ACL.</div>
+</div>
+</div>
+</div>
+
+<!-- ═══════════════════ SECTION 7 ═══════════════════ -->
+<div class="section" id="s7">
+<h2><span class="num">07</span> Interview Q&amp;A</h2>
+
+<div class="qa"><div class="qa-q">Q: What is ubiquitous language?</div><div class="qa-a">The code uses the exact same words as the business. Class names, method names, enums — all match how the business describes the domain. No translation between "business language" and "developer language." Every translation is a chance for a bug.</div></div>
+<div class="qa"><div class="qa-q">Q: What are the three subdomain types?</div><div class="qa-a">Core = your competitive advantage (build in-house, best engineers, full DDD). Supporting = necessary but not differentiating (build simple, CRUD). Generic = solved problem (buy/SaaS — auth, email, payments). Apply DDD patterns only to core subdomains.</div></div>
+<div class="qa"><div class="qa-q">Q: What is a bounded context?</div><div class="qa-a">An explicit boundary within which a domain model applies. The same word ("Order") means different things in different contexts — Orders context (items, status), Payments context (amount, transaction), Shipping context (weight, address). Each context owns its definition. They never share internal models.</div></div>
+<div class="qa"><div class="qa-q">Q: What is context mapping?</div><div class="qa-a">The patterns that describe how bounded contexts relate to each other. Partnership (co-evolve), Customer-Supplier (upstream serves downstream), Conformist (accept external model), Anti-corruption layer (translate external to internal), Shared kernel (small shared code).</div></div>
+<div class="qa"><div class="qa-q">Q: What is an anti-corruption layer?</div><div class="qa-a">A translation layer that protects your clean domain model from ugly external systems. Instead of conforming to a legacy ERP's CUST_NR and STAT_CD fields, the ACL translates them into Customer and OrderStatus. External mess stays in the translator; your domain stays clean.</div></div>
+<div class="qa"><div class="qa-q">Q: When do you NOT use DDD?</div><div class="qa-a">When the domain is simple. CRUD apps, data pipelines, supporting subdomains with no complex business rules. DDD adds overhead — only apply it to core subdomains where complex business logic and differentiation justify the investment.</div></div>
+</div>
+
+<div class="footer">Strategic DDD — Domain-Driven Design Study Guide · Part 1 of 2 · C# / .NET · 2026</div>
+</div>
+
+<script>
+function showTab(g,i){var p=document.getElementById(g).querySelectorAll('.tab-panel'),b=document.getElementById(g).querySelectorAll('.tab-btn');p.forEach(function(x,j){x.classList.toggle('active',j===i)});b.forEach(function(x,j){x.classList.remove('active');if(j===i)x.classList.add('active')})}
+</script>
+</body>
+</html>

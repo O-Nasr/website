@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Normalization Guide</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0c10;
+      --surface: #111318;
+      --surface2: #181c24;
+      --surface3: #1f2530;
+      --border: rgba(255,255,255,0.06);
+      --border2: rgba(255,255,255,0.11);
+      --accent: #6ea1ff;
+      --accent2: #8b6cf6;
+      --green: #34d399;
+      --amber: #fbbf24;
+      --red: #f87171;
+      --teal: #2dd4bf;
+      --text: #dfe5ef;
+      --muted: #7e8a9e;
+      --code-bg: #080a0e;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Outfit', sans-serif;
+      font-size: 15px;
+      line-height: 1.78;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      padding: 56px 28px 44px;
+      max-width: 900px;
+      margin: 0 auto;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -80px;
+      right: -40px;
+      width: 360px;
+      height: 360px;
+      background: radial-gradient(circle, rgba(110,161,255,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-tag {
+      display: inline-block;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10.5px;
+      font-weight: 500;
+      color: var(--accent);
+      background: rgba(110,161,255,0.07);
+      border: 1px solid rgba(110,161,255,0.18);
+      padding: 4px 14px;
+      border-radius: 20px;
+      letter-spacing: 0.09em;
+      margin-bottom: 14px;
+      text-transform: uppercase;
+    }
+    .hero h1 {
+      font-size: clamp(26px, 4.2vw, 42px);
+      font-weight: 700;
+      line-height: 1.15;
+      letter-spacing: -0.03em;
+      margin-bottom: 0;
+      background: linear-gradient(135deg, #dfe5ef 0%, #6ea1ff 50%, #34d399 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* ── Page layout ── */
+    .page {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 28px 100px;
+    }
+
+    /* ── Sections ── */
+    .doc-content h1 {
+      font-size: 20px;
+      font-weight: 700;
+      color: #fff;
+      margin: 30px 0 0;
+      padding: 24px 0 14px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      -webkit-text-fill-color: #fff;
+      background-clip: padding-box;
+    }
+    .doc-content h1:first-child { margin-top: 10px; }
+
+    .doc-content h2 {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--accent);
+      margin: 22px 0 10px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+    }
+
+    .doc-content h3 {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--accent2);
+      margin: 18px 0 8px;
+    }
+
+    .doc-content h4, .doc-content h5, .doc-content h6 {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--teal);
+      margin: 14px 0 6px;
+    }
+
+    p {
+      margin: 0;
+      padding: 6px 0;
+      font-size: 14.5px;
+      line-height: 1.75;
+    }
+    strong, b { color: #fff; }
+    em { color: var(--muted); }
+
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ── Lists ── */
+    ul, ol {
+      padding-left: 20px;
+      margin: 4px 0 10px;
+    }
+    li {
+      margin: 3px 0;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+    li strong { color: #fff; }
+
+    /* ── Tables ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin: 12px 0;
+    }
+    th {
+      background: var(--surface2);
+      color: var(--accent);
+      font-weight: 600;
+      text-align: left;
+      padding: 9px 13px;
+      border: 1px solid var(--border);
+    }
+    td {
+      padding: 8px 13px;
+      border: 1px solid var(--border);
+    }
+    tr:nth-child(even) td {
+      background: rgba(255,255,255,0.012);
+    }
+
+    /* Single-cell tables = note/callout boxes */
+    table:has(tr:only-child td:only-child) {
+      background: rgba(110,161,255,0.05);
+      border: 1px solid rgba(110,161,255,0.14);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    table:has(tr:only-child td:only-child) td {
+      border: none;
+      padding: 13px 16px;
+      font-size: 13px;
+      line-height: 1.7;
+    }
+    table:has(tr:only-child td:only-child) td strong {
+      color: var(--accent);
+    }
+
+    /* ── Code ── */
+    code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12.5px;
+      color: var(--accent);
+      background: rgba(110,161,255,0.07);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    pre {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 18px;
+      overflow-x: auto;
+      margin: 12px 0;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12.5px;
+      line-height: 1.7;
+      color: #c4cdd9;
+      scrollbar-width: thin;
+      scrollbar-color: #333 transparent;
+    }
+    pre::-webkit-scrollbar { height: 4px; }
+    pre::-webkit-scrollbar-track { background: transparent; }
+    pre::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+    pre::-webkit-scrollbar-thumb:hover { background: #555; }
+    pre code {
+      background: none;
+      padding: 0;
+      color: inherit;
+      font-size: inherit;
+    }
+
+    /* ── Blockquote ── */
+    blockquote {
+      background: rgba(110,161,255,0.05);
+      border: 1px solid rgba(110,161,255,0.14);
+      border-left: 3px solid var(--accent);
+      border-radius: 0 10px 10px 0;
+      padding: 13px 16px;
+      margin: 10px 0;
+      font-size: 13px;
+      line-height: 1.7;
+    }
+    blockquote b, blockquote strong { color: var(--accent); }
+
+    /* ── Images ── */
+    img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 10px;
+      margin: 12px 0;
+      border: 1px solid var(--border);
+    }
+
+    /* ── HR ── */
+    hr {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 24px 0;
+    }
+
+    /* ── Footer ── */
+    .footer {
+      text-align: center;
+      padding: 36px 0 16px;
+      font-size: 11px;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      margin-top: 40px;
+    }
+
+    @media (max-width: 640px) {
+      .page { padding: 0 16px 60px; }
+      .hero { padding: 36px 16px 30px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-tag">Database</div>
+  <h1>Normalization Guide</h1>
+</div>
+
+<div class="page">
+  <div class="doc-content">
+<p><strong>Database Normalization</strong></p><p>1NF, 2NF, 3NF &amp; BCNF</p><p><em>Interview Preparation Guide — Senior Database Engineer Perspective</em></p><h1><strong>1. What is Normalization?</strong></h1><p>Normalization is the process of structuring database tables to eliminate data redundancy and prevent data anomalies. It organizes columns and tables to ensure data dependencies make sense.</p><p><strong>The 3 Anomalies Normalization Prevents</strong></p><table><tr><td><p><strong>Anomaly</strong></p></td><td><p><strong>What Happens</strong></p></td><td><p><strong>Example</strong></p></td></tr><tr><td><p>Update Anomaly</p></td><td><p>Same data stored in multiple rows — changing one misses others</p></td><td><p>Customer email stored in every order row</p></td></tr><tr><td><p>Deletion Anomaly</p></td><td><p>Deleting a row accidentally removes unrelated data</p></td><td><p>Deleting last order loses customer info</p></td></tr><tr><td><p>Insertion Anomaly</p></td><td><p>Cannot store data without another unrelated record</p></td><td><p>Cannot add a product without an order</p></td></tr></table><p><strong>Key Concept — Functional Dependency: </strong>Column A determines Column B (written A -&gt; B). If you know A, you always know B. Example: customer_id -&gt; customer_email</p><h1><strong>2. First Normal Form (1NF)</strong></h1><p><strong>Rule: Every column must contain atomic (indivisible) values. No repeating groups. Every row must be unique.</strong></p><h2><strong>Violation Example</strong></h2><table><tr><td><p><strong>order_id</strong></p></td><td><p><strong>customer_name</strong></p></td><td><p><strong>products</strong></p></td></tr><tr><td><p>1</p></td><td><p>Ahmed</p></td><td><p>Laptop, Mouse, Keyboard</p></td></tr><tr><td><p>2</p></td><td><p>Sara</p></td><td><p>Monitor</p></td></tr></table><p><strong>Problem: </strong>The products column contains multiple values in one cell. Not atomic.</p><h2><strong>After 1NF</strong></h2><table><tr><td><p><strong>order_id</strong></p></td><td><p><strong>customer_name</strong></p></td><td><p><strong>product</strong></p></td></tr><tr><td><p>1</p></td><td><p>Ahmed</p></td><td><p>Laptop</p></td></tr><tr><td><p>1</p></td><td><p>Ahmed</p></td><td><p>Mouse</p></td></tr><tr><td><p>1</p></td><td><p>Ahmed</p></td><td><p>Keyboard</p></td></tr><tr><td><p>2</p></td><td><p>Sara</p></td><td><p>Monitor</p></td></tr></table><p><strong>Result: </strong>Each cell has exactly one value. Each row is unique.</p><p><strong>The 3 Rules of 1NF</strong></p><pre><code>1. Each column has a single atomic value.
+2. Each column stores the same type of data.
+3. Each row is unique (has a primary key).</code></pre><h1><strong>3. Second Normal Form (2NF)</strong></h1><p><strong>Rule: Must be in 1NF AND every non-key column must depend on the WHOLE primary key, not just part of it. Only applies when there is a composite primary key.</strong></p><h2><strong>Key Concept — Partial Dependency</strong></h2><p>A partial dependency occurs when a non-key column depends on only PART of a composite primary key, not the whole key.</p><h2><strong>Violation Example</strong></h2><p>Table: order_products — Composite Primary Key: (order_id, product_id)</p><table><tr><td><p><strong>order_id (PK)</strong></p></td><td><p><strong>product_id (PK)</strong></p></td><td><p><strong>quantity</strong></p></td><td><p><strong>product_name</strong></p></td><td><p><strong>product_price</strong></p></td></tr><tr><td><p>1</p></td><td><p>101</p></td><td><p>2</p></td><td><p>Laptop</p></td><td><p>1000</p></td></tr><tr><td><p>1</p></td><td><p>102</p></td><td><p>1</p></td><td><p>Mouse</p></td><td><p>50</p></td></tr><tr><td><p>2</p></td><td><p>101</p></td><td><p>1</p></td><td><p>Laptop</p></td><td><p>1000</p></td></tr></table><p><strong>Problem: </strong>quantity depends on (order_id + product_id) — correct. But product_name and product_price depend ONLY on product_id — partial dependency!</p><h2><strong>After 2NF — Split into 2 Tables</strong></h2><p>order_products table:</p><table><tr><td><p><strong>order_id (PK)</strong></p></td><td><p><strong>product_id (PK)</strong></p></td><td><p><strong>quantity</strong></p></td></tr><tr><td><p>1</p></td><td><p>101</p></td><td><p>2</p></td></tr><tr><td><p>1</p></td><td><p>102</p></td><td><p>1</p></td></tr><tr><td><p>2</p></td><td><p>101</p></td><td><p>1</p></td></tr></table><p>products table:</p><table><tr><td><p><strong>product_id (PK)</strong></p></td><td><p><strong>product_name</strong></p></td><td><p><strong>product_price</strong></p></td></tr><tr><td><p>101</p></td><td><p>Laptop</p></td><td><p>1000</p></td></tr><tr><td><p>102</p></td><td><p>Mouse</p></td><td><p>50</p></td></tr></table><p><strong>Result: </strong>product_name and product_price now live in their own table where product_id is the full primary key.</p><h1><strong>4. Third Normal Form (3NF)</strong></h1><p><strong>Rule: Must be in 2NF AND no non-key column should depend on another non-key column. Eliminate transitive dependencies.</strong></p><h2><strong>Key Concept — Transitive Dependency</strong></h2><p>A transitive dependency occurs when: A -&gt; B -&gt; C, where B is not a key. The non-key column C depends on another non-key column B instead of depending directly on the primary key.</p><h2><strong>Violation Example</strong></h2><table><tr><td><p><strong>employee_id (PK)</strong></p></td><td><p><strong>employee_name</strong></p></td><td><p><strong>department_id</strong></p></td><td><p><strong>department_name</strong></p></td></tr><tr><td><p>1</p></td><td><p>Ahmed</p></td><td><p>10</p></td><td><p>Engineering</p></td></tr><tr><td><p>2</p></td><td><p>Sara</p></td><td><p>20</p></td><td><p>Marketing</p></td></tr><tr><td><p>3</p></td><td><p>Omar</p></td><td><p>10</p></td><td><p>Engineering</p></td></tr></table><p><strong>Problem: </strong>employee_id -&gt; department_id -&gt; department_name. department_name depends on department_id (a non-key column), not directly on the primary key. Engineering is stored twice.</p><h2><strong>After 3NF — Split into 2 Tables</strong></h2><p>employees table:</p><table><tr><td><p><strong>employee_id (PK)</strong></p></td><td><p><strong>employee_name</strong></p></td><td><p><strong>department_id (FK)</strong></p></td></tr><tr><td><p>1</p></td><td><p>Ahmed</p></td><td><p>10</p></td></tr><tr><td><p>2</p></td><td><p>Sara</p></td><td><p>20</p></td></tr><tr><td><p>3</p></td><td><p>Omar</p></td><td><p>10</p></td></tr></table><p>departments table:</p><table><tr><td><p><strong>department_id (PK)</strong></p></td><td><p><strong>department_name</strong></p></td></tr><tr><td><p>10</p></td><td><p>Engineering</p></td></tr><tr><td><p>20</p></td><td><p>Marketing</p></td></tr></table><p><strong>Result: </strong>department_name now lives in one place only. No update anomaly.</p><h1><strong>5. BCNF — Boyce-Codd Normal Form (3.5NF)</strong></h1><p><strong>Rule: Must be in 3NF AND for every functional dependency A -&gt; B, A must be a superkey. Every determinant must be a candidate key.</strong></p><h2><strong>Why BCNF Exists</strong></h2><p>3NF has one edge case it does not cover — when there are multiple overlapping candidate keys. BCNF is a stricter version of 3NF that handles this scenario.</p><h2><strong>Key Concept — Candidate Key vs Superkey</strong></h2><pre><code>Candidate Key: A minimal set of columns that uniquely identifies every row.
+Superkey: Any set of columns that uniquely identifies a row (can include extra columns).
+BCNF Rule: Every column that determines another column must itself be a candidate key.</code></pre><h2><strong>Violation Example</strong></h2><p>Scenario: Each teacher teaches only one course. Each student can have multiple teachers.</p><table><tr><td><p><strong>student_id</strong></p></td><td><p><strong>course</strong></p></td><td><p><strong>teacher</strong></p></td></tr><tr><td><p>1</p></td><td><p>Math</p></td><td><p>Mr. Ali</p></td></tr><tr><td><p>1</p></td><td><p>Science</p></td><td><p>Ms. Nour</p></td></tr><tr><td><p>2</p></td><td><p>Math</p></td><td><p>Mr. Ali</p></td></tr><tr><td><p>3</p></td><td><p>Math</p></td><td><p>Mr. Kareem</p></td></tr></table><pre><code>Candidate Keys: (student_id, course) and (student_id, teacher) both uniquely identify rows.
+Problem: teacher -&gt; course (each teacher teaches one course). But teacher is NOT a superkey. This violates BCNF. If Mr. Ali changes course, multiple rows must be updated.</code></pre><h2><strong>After BCNF — Split into 2 Tables</strong></h2><p>teacher_courses table:</p><table><tr><td><p><strong>teacher (PK)</strong></p></td><td><p><strong>course</strong></p></td></tr><tr><td><p>Mr. Ali</p></td><td><p>Math</p></td></tr><tr><td><p>Ms. Nour</p></td><td><p>Science</p></td></tr><tr><td><p>Mr. Kareem</p></td><td><p>Math</p></td></tr></table><p>student_teachers table:</p><table><tr><td><p><strong>student_id</strong></p></td><td><p><strong>teacher</strong></p></td></tr><tr><td><p>1</p></td><td><p>Mr. Ali</p></td></tr><tr><td><p>1</p></td><td><p>Ms. Nour</p></td></tr><tr><td><p>2</p></td><td><p>Mr. Ali</p></td></tr><tr><td><p>3</p></td><td><p>Mr. Kareem</p></td></tr></table><p><strong>Result: </strong>teacher -&gt; course now lives in one place. No update anomaly.</p><h1><strong>6. All Normal Forms — Side by Side</strong></h1><table><tr><td><p><strong>Form</strong></p></td><td><p><strong>Builds On</strong></p></td><td><p><strong>Eliminates</strong></p></td><td><p><strong>Key Concept</strong></p></td></tr><tr><td><p>1NF</p></td><td><p>Nothing</p></td><td><p>Multi-valued cells, repeating groups</p></td><td><p>Atomic values + unique rows</p></td></tr><tr><td><p>2NF</p></td><td><p>1NF</p></td><td><p>Partial dependencies</p></td><td><p>Non-key depends on WHOLE composite key</p></td></tr><tr><td><p>3NF</p></td><td><p>2NF</p></td><td><p>Transitive dependencies</p></td><td><p>Non-key must not depend on another non-key</p></td></tr><tr><td><p>BCNF (3.5NF)</p></td><td><p>3NF</p></td><td><p>Anomalies from overlapping candidate keys</p></td><td><p>Every determinant must be a candidate key</p></td></tr></table><h1><strong>7. Real-World Engineering Tradeoff</strong></h1><p>Normalization is not always the right answer. Senior engineers choose based on use case.</p><table><tr><td><p><strong>Scenario</strong></p></td><td><p><strong>Recommendation</strong></p></td><td><p><strong>Reason</strong></p></td></tr><tr><td><p>OLTP (banking, e-commerce)</p></td><td><p>Normalize to 3NF or BCNF</p></td><td><p>Data integrity is critical</p></td></tr><tr><td><p>OLAP (analytics, reporting)</p></td><td><p>Denormalize intentionally</p></td><td><p>Read speed matters more than write integrity</p></td></tr><tr><td><p>High-read APIs</p></td><td><p>Partial denormalization</p></td><td><p>Avoid expensive JOINs on hot paths</p></td></tr></table><p><strong>Senior Insight: </strong><em>Normalization is for write integrity. Denormalization is for read performance. Knowing when to apply each is what separates senior engineers.</em></p><h1><strong>8. Top Interview Questions &amp; Answers</strong></h1><p>Master these 5 questions and you will handle any normalization topic in an interview.</p><h2><strong>Q1 — What is normalization and why do we use it?</strong></h2><p><strong>Q: What is normalization and why do we use it?</strong></p><pre><code>A: Normalization is the process of organizing database tables to eliminate data redundancy and prevent anomalies. We use it to avoid update anomalies (same data in multiple rows), deletion anomalies (losing unrelated data when deleting a row), and insertion anomalies (unable to store data without unrelated records). It ensures each piece of data lives in exactly one place.
+Senior Tip: Always mention the three anomalies by name. Interviewers love candidates who know the exact terminology.</code></pre><h2><strong>Q2 — What is the difference between 2NF and 3NF?</strong></h2><p><strong>Q: What is the difference between 2NF and 3NF?</strong></p><pre><code>A: 2NF eliminates partial dependencies — where a non-key column depends on only part of a composite primary key. 3NF eliminates transitive dependencies — where a non-key column depends on another non-key column instead of directly on the primary key. In short: 2NF is about the relationship between non-key columns and the primary key. 3NF is about relationships between non-key columns themselves.
+Senior Tip: This is the most commonly confused question. The one-liner to remember: 2NF fixes partial deps, 3NF fixes transitive deps.</code></pre><h2><strong>Q3 — What is a partial dependency? Give an example.</strong></h2><p><strong>Q: What is a partial dependency? Give an example.</strong></p><pre><code>A: A partial dependency occurs when a non-key column depends on only part of a composite primary key. For example, in an order_products table with composite key (order_id, product_id), the column product_name depends only on product_id, not on the full key. This is a partial dependency and violates 2NF. The fix is to move product_name to a separate products table where product_id is the sole primary key.
+Senior Tip: Always give a concrete example. Abstract definitions alone do not impress interviewers.</code></pre><h2><strong>Q4 — What is a transitive dependency? Give an example.</strong></h2><p><strong>Q: What is a transitive dependency? Give an example.</strong></p><pre><code>A: A transitive dependency occurs when a non-key column depends on another non-key column rather than directly on the primary key. For example, in an employees table: employee_id -&gt; department_id -&gt; department_name. The department_name depends on department_id which is itself a non-key column. This violates 3NF. The fix is to move department_id and department_name to a separate departments table.
+Senior Tip: Use the arrow notation A -&gt; B -&gt; C when explaining. It shows you understand the concept precisely.</code></pre><h2><strong>Q5 — When would you intentionally denormalize a database?</strong></h2><p><strong>Q: When would you intentionally denormalize a database?</strong></p><pre><code>A: I would denormalize when read performance is more critical than write integrity. For example, in analytics and reporting systems (OLAP), running many JOINs across normalized tables is expensive. Storing pre-joined or aggregated data in a denormalized table makes reads much faster. Also, in high-traffic APIs where certain queries run millions of times per day, avoiding a JOIN can significantly reduce latency. The tradeoff is accepting some data redundancy in exchange for speed.
+Senior Tip: This is a senior-level question. Showing you understand the tradeoff — not just the rule — is what gets you hired.</code></pre><h1><strong>9. Quick Reference — Key Terms</strong></h1><table><tr><td><p><strong>Term</strong></p></td><td><p><strong>Definition</strong></p></td></tr><tr><td><p>Normalization</p></td><td><p>Structuring tables to eliminate redundancy and prevent anomalies.</p></td></tr><tr><td><p>Functional Dependency</p></td><td><p>A -&gt; B means knowing A always determines B. Example: customer_id -&gt; email.</p></td></tr><tr><td><p>Atomic Value</p></td><td><p>A single indivisible value. No lists or multiple values in one cell.</p></td></tr><tr><td><p>Partial Dependency</p></td><td><p>Non-key column depends on only PART of a composite primary key. Violates 2NF.</p></td></tr><tr><td><p>Transitive Dependency</p></td><td><p>Non-key column depends on another non-key column (A-&gt;B-&gt;C). Violates 3NF.</p></td></tr><tr><td><p>Candidate Key</p></td><td><p>Minimal set of columns that uniquely identifies every row in a table.</p></td></tr><tr><td><p>Superkey</p></td><td><p>Any set of columns that uniquely identifies rows (may include extra columns).</p></td></tr><tr><td><p>Determinant</p></td><td><p>A column that determines another column in a functional dependency (the A in A-&gt;B).</p></td></tr><tr><td><p>Denormalization</p></td><td><p>Intentionally introducing redundancy to improve read performance. Used in OLAP systems.</p></td></tr><tr><td><p>Update Anomaly</p></td><td><p>Same data stored in multiple rows — updating one row misses others.</p></td></tr><tr><td><p>Deletion Anomaly</p></td><td><p>Deleting a row accidentally removes unrelated data.</p></td></tr><tr><td><p>Insertion Anomaly</p></td><td><p>Cannot store data without another unrelated record existing first.</p></td></tr></table>
+  </div>
+  <div class="footer">Study Docs Portal</div>
+</div>
+
+</body>
+</html>

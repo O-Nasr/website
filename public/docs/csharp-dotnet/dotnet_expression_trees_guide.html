@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Expression Trees</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0c10;
+      --surface: #111318;
+      --surface2: #181c24;
+      --surface3: #1f2530;
+      --border: rgba(255,255,255,0.06);
+      --border2: rgba(255,255,255,0.11);
+      --accent: #6ea1ff;
+      --accent2: #8b6cf6;
+      --green: #34d399;
+      --amber: #fbbf24;
+      --red: #f87171;
+      --teal: #2dd4bf;
+      --text: #dfe5ef;
+      --muted: #7e8a9e;
+      --code-bg: #080a0e;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Outfit', sans-serif;
+      font-size: 15px;
+      line-height: 1.78;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      padding: 56px 28px 44px;
+      max-width: 900px;
+      margin: 0 auto;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -80px;
+      right: -40px;
+      width: 360px;
+      height: 360px;
+      background: radial-gradient(circle, rgba(110,161,255,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-tag {
+      display: inline-block;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10.5px;
+      font-weight: 500;
+      color: var(--accent);
+      background: rgba(110,161,255,0.07);
+      border: 1px solid rgba(110,161,255,0.18);
+      padding: 4px 14px;
+      border-radius: 20px;
+      letter-spacing: 0.09em;
+      margin-bottom: 14px;
+      text-transform: uppercase;
+    }
+    .hero h1 {
+      font-size: clamp(26px, 4.2vw, 42px);
+      font-weight: 700;
+      line-height: 1.15;
+      letter-spacing: -0.03em;
+      margin-bottom: 0;
+      background: linear-gradient(135deg, #dfe5ef 0%, #6ea1ff 50%, #34d399 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* ── Page layout ── */
+    .page {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 28px 100px;
+    }
+
+    /* ── Sections ── */
+    .doc-content h1 {
+      font-size: 20px;
+      font-weight: 700;
+      color: #fff;
+      margin: 30px 0 0;
+      padding: 24px 0 14px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      -webkit-text-fill-color: #fff;
+      background-clip: padding-box;
+    }
+    .doc-content h1:first-child { margin-top: 10px; }
+
+    .doc-content h2 {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--accent);
+      margin: 22px 0 10px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+    }
+
+    .doc-content h3 {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--accent2);
+      margin: 18px 0 8px;
+    }
+
+    .doc-content h4, .doc-content h5, .doc-content h6 {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--teal);
+      margin: 14px 0 6px;
+    }
+
+    p {
+      margin: 0;
+      padding: 6px 0;
+      font-size: 14.5px;
+      line-height: 1.75;
+    }
+    strong, b { color: #fff; }
+    em { color: var(--muted); }
+
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ── Lists ── */
+    ul, ol {
+      padding-left: 20px;
+      margin: 4px 0 10px;
+    }
+    li {
+      margin: 3px 0;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+    li strong { color: #fff; }
+
+    /* ── Tables ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin: 12px 0;
+    }
+    th {
+      background: var(--surface2);
+      color: var(--accent);
+      font-weight: 600;
+      text-align: left;
+      padding: 9px 13px;
+      border: 1px solid var(--border);
+    }
+    td {
+      padding: 8px 13px;
+      border: 1px solid var(--border);
+    }
+    tr:nth-child(even) td {
+      background: rgba(255,255,255,0.012);
+    }
+
+    /* Single-cell tables = note/callout boxes */
+    table:has(tr:only-child td:only-child) {
+      background: rgba(110,161,255,0.05);
+      border: 1px solid rgba(110,161,255,0.14);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    table:has(tr:only-child td:only-child) td {
+      border: none;
+      padding: 13px 16px;
+      font-size: 13px;
+      line-height: 1.7;
+    }
+    table:has(tr:only-child td:only-child) td strong {
+      color: var(--accent);
+    }
+
+    /* ── Code ── */
+    code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12.5px;
+      color: var(--accent);
+      background: rgba(110,161,255,0.07);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    pre {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 18px;
+      overflow-x: auto;
+      margin: 12px 0;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12.5px;
+      line-height: 1.7;
+      color: #c4cdd9;
+      scrollbar-width: thin;
+      scrollbar-color: #333 transparent;
+    }
+    pre::-webkit-scrollbar { height: 4px; }
+    pre::-webkit-scrollbar-track { background: transparent; }
+    pre::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+    pre::-webkit-scrollbar-thumb:hover { background: #555; }
+    pre code {
+      background: none;
+      padding: 0;
+      color: inherit;
+      font-size: inherit;
+    }
+
+    /* ── Blockquote ── */
+    blockquote {
+      background: rgba(110,161,255,0.05);
+      border: 1px solid rgba(110,161,255,0.14);
+      border-left: 3px solid var(--accent);
+      border-radius: 0 10px 10px 0;
+      padding: 13px 16px;
+      margin: 10px 0;
+      font-size: 13px;
+      line-height: 1.7;
+    }
+    blockquote b, blockquote strong { color: var(--accent); }
+
+    /* ── Images ── */
+    img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 10px;
+      margin: 12px 0;
+      border: 1px solid var(--border);
+    }
+
+    /* ── HR ── */
+    hr {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 24px 0;
+    }
+
+    /* ── Footer ── */
+    .footer {
+      text-align: center;
+      padding: 36px 0 16px;
+      font-size: 11px;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      margin-top: 40px;
+    }
+
+    @media (max-width: 640px) {
+      .page { padding: 0 16px 60px; }
+      .hero { padding: 36px 16px 30px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-tag">C# & .NET</div>
+  <h1>Expression Trees</h1>
+</div>
+
+<div class="page">
+  <div class="doc-content">
+<p><strong>.NET Interview Study Guide</strong></p><p><em>Expression Trees — Complete Guide</em></p><h1><strong>1. The Fundamental Difference</strong></h1><pre><code>Both Func and Expression look identical as lambdas — but internally they are completely different things.
+// Func — compiled code — executable
+Func&lt;int, bool&gt; func = x =&gt; x &gt; 5;
+
+// Expression — data structure — inspectable and translatable
+Expression&lt;Func&lt;int, bool&gt;&gt; expr = x =&gt; x &gt; 5;</code></pre><table><tr><td></td><td><p><strong>Func&lt;T, bool&gt;</strong></p></td><td><p><strong>Expression&lt;Func&lt;T, bool&gt;&gt;</strong></p></td></tr><tr><td><p>What it is</p></td><td><p>Compiled executable code</p></td><td><p>Code stored as a data tree</p></td></tr><tr><td><p>Can execute?</p></td><td><p>✅ Yes — directly</p></td><td><p>✅ After .Compile()</p></td></tr><tr><td><p>Can inspect?</p></td><td><p>❌ No — binary code</p></td><td><p>✅ Yes — full tree</p></td></tr><tr><td><p>Can translate to SQL?</p></td><td><p>❌ No</p></td><td><p>✅ Yes — EF does this</p></td></tr><tr><td><p>Used with</p></td><td><p>IEnumerable — in memory</p></td><td><p>IQueryable — database</p></td></tr><tr><td><p>Build dynamically?</p></td><td><p>❌ Not easily</p></td><td><p>✅ Yes — at runtime</p></td></tr></table><table><tr><td><p><strong>⚠️ Important:  </strong>Think of Func like a cooked meal — ready to eat but you cannot see the recipe. Expression is the written recipe — you can read it, modify it, and translate it to any language.</p></td></tr></table><h1><strong>2. What is an Expression Tree?</strong></h1><pre><code>An Expression Tree is a tree data structure that represents code as data. The compiler does NOT compile the lambda to machine code — instead it builds a tree of nodes.
+Expression&lt;Func&lt;int, bool&gt;&gt; expr = x =&gt; x &gt; 5;
+
+// The compiler builds this tree internally:
+//
+//         GreaterThan (&gt;)
+//        /              \
+//   Parameter(x)     Constant(5)
+//</code></pre><p>// Every piece of the expression is a node — accessible as an object</p><h2><strong>Inspecting the Tree</strong></h2><pre><code>Expression&lt;Func&lt;int, bool&gt;&gt; expr = x =&gt; x &gt; 5;
+
+Console.WriteLine(expr.Body);     // (x &gt; 5)
+Console.WriteLine(expr.NodeType); // Lambda
+
+// Get the operation node
+BinaryExpression body = (BinaryExpression)expr.Body;
+Console.WriteLine(body.NodeType); // GreaterThan
+Console.WriteLine(body.Left);     // x
+Console.WriteLine(body.Right);    // 5</code></pre><p> </p><p>// You can read EVERY part of the expression as data!</p><h1><strong>3. Why This Matters — Entity Framework and SQL Translation</strong></h1><pre><code>This is where everything clicks. When you write a LINQ query with Entity Framework:
+var employees = dbContext.Employees
+    .Where(e =&gt; e.Salary &gt; 5000)
+    .ToList();</code></pre><p>Entity Framework receives the Expression tree and walks it to build SQL:</p><pre><code>// EF receives this expression tree:
+//
+//         GreaterThan (&gt;)
+//        /               \
+//  Property(Salary)   Constant(5000)
+//</code></pre><p>// EF walks the tree and translates each node:</p><pre><code>//   Property(Salary) → "Salary"
+//   GreaterThan      → "&gt;"
+//   Constant(5000)   → "5000"
+//
+// Builds SQL:
+//   WHERE Salary &gt; 5000
+//
+// Sends to database — only matching rows returned ✅</code></pre><h2><strong>Why IQueryable Takes Expression — Not Func</strong></h2><pre><code>// IEnumerable.Where — takes Func — executes in C# memory
+IEnumerable&lt;T&gt;.Where(Func&lt;T, bool&gt; predicate)
+// SQL: SELECT * FROM Employees  ← transfers ALL rows first!
+
+// IQueryable.Where — takes Expression — translates to SQL
+IQueryable&lt;T&gt;.Where(Expression&lt;Func&lt;T, bool&gt;&gt; predicate)
+// SQL: SELECT * FROM Employees WHERE Salary &gt; 5000  ← efficient!</code></pre><table><tr><td><p><strong>⚠️ Important:  </strong>This is the real reason IQueryable is more efficient than IEnumerable with Entity Framework. IQueryable uses Expression trees to translate filters to SQL. IEnumerable uses Func which runs in memory after all data is loaded.</p></td></tr></table><h1><strong>4. Func vs Expression — Side by Side</strong></h1><pre><code>// Func — filters in C# memory — pulls all data first
+Func&lt;Employee, bool&gt; func = e =&gt; e.Salary &gt; 5000;
+var result = employees.Where(func);
+// SQL: SELECT * FROM Employees  ← all 1M rows transferred 😱
+
+// Expression — filters in database — only matching data
+Expression&lt;Func&lt;Employee, bool&gt;&gt; expr = e =&gt; e.Salary &gt; 5000;
+var result = dbContext.Employees.Where(expr);
+// SQL: SELECT * FROM Employees WHERE Salary &gt; 5000  ← 10 rows ✅</code></pre><h1><strong>5. Building Expressions Dynamically</strong></h1><p>The most powerful feature — building queries at runtime when filter conditions are not known at compile time:</p><pre><code>// Build expression dynamically — equivalent to: e =&gt; e.Salary &gt; threshold
+int threshold = 5000; // could come from user input at runtime
+
+// Step 1 — parameter: e
+ParameterExpression param = Expression.Parameter(typeof(Employee), "e");
+
+// Step 2 — property access: e.Salary
+MemberExpression property = Expression.Property(param, "Salary");
+
+// Step 3 — constant: 5000
+ConstantExpression constant = Expression.Constant(threshold);
+
+// Step 4 — comparison: e.Salary &gt; 5000
+BinaryExpression comparison = Expression.GreaterThan(property, constant);
+
+// Step 5 — full lambda: e =&gt; e.Salary &gt; 5000</code></pre><p>Expression&lt;Func&lt;Employee, bool&gt;&gt; lambda =</p><pre><code>    Expression.Lambda&lt;Func&lt;Employee, bool&gt;&gt;(comparison, param);
+
+// Use it — translated to SQL automatically
+var result = dbContext.Employees.Where(lambda).ToList();
+// SQL: SELECT * FROM Employees WHERE Salary &gt; 5000</code></pre><h2><strong>Dynamic Filter — Real World Use</strong></h2><pre><code>// Build filter based on field name provided at runtime
+public IQueryable&lt;Employee&gt; Filter(string fieldName, int value)
+{
+    var param      = Expression.Parameter(typeof(Employee), "e");
+    var property   = Expression.Property(param, fieldName); // dynamic!
+    var constant   = Expression.Constant(value);
+    var comparison = Expression.GreaterThan(property, constant);
+    var lambda     = Expression.Lambda&lt;Func&lt;Employee, bool&gt;&gt;(comparison, param);
+
+    return dbContext.Employees.Where(lambda);
+}
+
+// Call with different fields at runtime — all translated to SQL
+Filter("Salary", 5000); // WHERE Salary &gt; 5000
+Filter("Age", 30);      // WHERE Age &gt; 30
+// Impossible to do with hardcoded LINQ ✅</code></pre><h1><strong>6. Generic Repository With Expressions</strong></h1><p>The most common real-world pattern you will see in backend projects:</p><pre><code>public interface IRepository&lt;T&gt; where T : class
+{
+    // Takes Expression — translates to SQL automatically
+    IQueryable&lt;T&gt; Find(Expression&lt;Func&lt;T, bool&gt;&gt; predicate);
+}
+
+public class Repository&lt;T&gt; : IRepository&lt;T&gt; where T : class
+{
+    private readonly DbSet&lt;T&gt; _dbSet;
+
+    public Repository(AppDbContext context)
+    {
+        _dbSet = context.Set&lt;T&gt;();
+    }
+
+    public IQueryable&lt;T&gt; Find(Expression&lt;Func&lt;T, bool&gt;&gt; predicate)
+    {
+        return _dbSet.Where(predicate); // translated to SQL ✅
+    }
+}
+
+// Usage — all SQL — nothing loaded into memory until ToList()
+var highEarners = repo.Find(e =&gt; e.Salary &gt; 5000);
+var seniors     = repo.Find(e =&gt; e.Age &gt; 40 &amp;&amp; e.Department == "IT");
+var recentOrders = repo.Find(o =&gt; o.CreatedAt &gt; DateTime.Today.AddDays(-7));</code></pre><h1><strong>7. Compiling an Expression to Execute It</strong></h1><p>You can also compile an Expression back to a Func and execute it — best of both worlds:</p><pre><code>Expression&lt;Func&lt;int, bool&gt;&gt; expr = x =&gt; x &gt; 5;
+
+// Inspect as Expression
+BinaryExpression body = (BinaryExpression)expr.Body;
+Console.WriteLine(body.NodeType); // GreaterThan
+
+// Compile to Func — now executable
+Func&lt;int, bool&gt; compiled = expr.Compile();
+
+// Execute it like any Func
+Console.WriteLine(compiled(6)); // true
+Console.WriteLine(compiled(3)); // false</code></pre><h1><strong>8. Expression Tree Node Types</strong></h1><table><tr><td><p><strong>Node Type</strong></p></td><td><p><strong>What It Represents</strong></p></td><td><p><strong>Example</strong></p></td></tr><tr><td><p>ParameterExpression</p></td><td><p>A variable or parameter</p></td><td><p>e in e =&gt; e.Salary &gt; 5000</p></td></tr><tr><td><p>ConstantExpression</p></td><td><p>A fixed value</p></td><td><p>5000 in e.Salary &gt; 5000</p></td></tr><tr><td><p>MemberExpression</p></td><td><p>Property or field access</p></td><td><p>e.Salary</p></td></tr><tr><td><p>BinaryExpression</p></td><td><p>Two-operand operation</p></td><td><p>e.Salary &gt; 5000 (GreaterThan)</p></td></tr><tr><td><p>MethodCallExpression</p></td><td><p>A method call</p></td><td><p>e.Name.Contains('Ali')</p></td></tr><tr><td><p>UnaryExpression</p></td><td><p>One-operand operation</p></td><td><p>!isActive (Not)</p></td></tr><tr><td><p>LambdaExpression</p></td><td><p>The full lambda expression</p></td><td><p>e =&gt; e.Salary &gt; 5000</p></td></tr></table><h1><strong>9. Interview Questions</strong></h1><p><strong>Q: What is the difference between Func and Expression?</strong></p><table><tr><td><p><strong>🎯 Interview Answer:  </strong>Func is compiled to executable machine code immediately — you can call it directly but cannot inspect or translate it. Expression stores the lambda as a data tree that represents the code structure — you can inspect every node, translate it to SQL or other languages, and build it dynamically at runtime. Expression is what allows Entity Framework to translate LINQ queries to SQL instead of executing them in C# memory.</p></td></tr></table><p><strong>Q: Why does IQueryable use Expression instead of Func?</strong></p><table><tr><td><p><strong>🎯 Interview Answer:  </strong>IQueryable needs to translate filter conditions to SQL to execute them in the database. This is only possible with Expression trees because the code is stored as data that can be inspected and translated. If IQueryable used Func like IEnumerable does, the filter would be compiled code that cannot be translated — all data would have to be loaded into memory first and filtered in C#, which is exactly what IEnumerable does.</p></td></tr></table><p><strong>Q: When would you build an Expression tree manually?</strong></p><table><tr><td><p><strong>🎯 Interview Answer:  </strong>You build Expression trees manually when filter conditions are not known at compile time — for example building a search query where the user selects which fields to filter by at runtime. Instead of writing dozens of if/else statements to build different LINQ queries, you build the expression tree dynamically based on the user input and pass it to IQueryable.Where() — it is still translated to SQL automatically.</p></td></tr></table><p><strong>Q: What is the connection between Expression trees and IQueryable vs IEnumerable?</strong></p><table><tr><td><p><strong>🎯 Interview Answer:  </strong>IEnumerable.Where takes Func — the predicate is compiled code that runs in C# memory after all data is loaded from the database. IQueryable.Where takes Expression — the predicate is a data tree that Entity Framework translates to a SQL WHERE clause so filtering happens in the database. This is why IQueryable is dramatically more efficient for large datasets — only matching rows are transferred instead of the entire table.</p></td></tr></table><p><em>Good luck with your interview! 🚀</em></p>
+  </div>
+  <div class="footer">Study Docs Portal</div>
+</div>
+
+</body>
+</html>

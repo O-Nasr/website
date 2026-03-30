@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SOLID Principles</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0c10;
+      --surface: #111318;
+      --surface2: #181c24;
+      --surface3: #1f2530;
+      --border: rgba(255,255,255,0.06);
+      --border2: rgba(255,255,255,0.11);
+      --accent: #6ea1ff;
+      --accent2: #8b6cf6;
+      --green: #34d399;
+      --amber: #fbbf24;
+      --red: #f87171;
+      --teal: #2dd4bf;
+      --text: #dfe5ef;
+      --muted: #7e8a9e;
+      --code-bg: #080a0e;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Outfit', sans-serif;
+      font-size: 15px;
+      line-height: 1.78;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      padding: 56px 28px 44px;
+      max-width: 900px;
+      margin: 0 auto;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -80px;
+      right: -40px;
+      width: 360px;
+      height: 360px;
+      background: radial-gradient(circle, rgba(110,161,255,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-tag {
+      display: inline-block;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10.5px;
+      font-weight: 500;
+      color: var(--accent);
+      background: rgba(110,161,255,0.07);
+      border: 1px solid rgba(110,161,255,0.18);
+      padding: 4px 14px;
+      border-radius: 20px;
+      letter-spacing: 0.09em;
+      margin-bottom: 14px;
+      text-transform: uppercase;
+    }
+    .hero h1 {
+      font-size: clamp(26px, 4.2vw, 42px);
+      font-weight: 700;
+      line-height: 1.15;
+      letter-spacing: -0.03em;
+      margin-bottom: 0;
+      background: linear-gradient(135deg, #dfe5ef 0%, #6ea1ff 50%, #34d399 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* ── Page layout ── */
+    .page {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 28px 100px;
+    }
+
+    /* ── Sections ── */
+    .doc-content h1 {
+      font-size: 20px;
+      font-weight: 700;
+      color: #fff;
+      margin: 30px 0 0;
+      padding: 24px 0 14px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      -webkit-text-fill-color: #fff;
+      background-clip: padding-box;
+    }
+    .doc-content h1:first-child { margin-top: 10px; }
+
+    .doc-content h2 {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--accent);
+      margin: 22px 0 10px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+    }
+
+    .doc-content h3 {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--accent2);
+      margin: 18px 0 8px;
+    }
+
+    .doc-content h4, .doc-content h5, .doc-content h6 {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--teal);
+      margin: 14px 0 6px;
+    }
+
+    p {
+      margin: 0;
+      padding: 6px 0;
+      font-size: 14.5px;
+      line-height: 1.75;
+    }
+    strong, b { color: #fff; }
+    em { color: var(--muted); }
+
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ── Lists ── */
+    ul, ol {
+      padding-left: 20px;
+      margin: 4px 0 10px;
+    }
+    li {
+      margin: 3px 0;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+    li strong { color: #fff; }
+
+    /* ── Tables ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin: 12px 0;
+    }
+    th {
+      background: var(--surface2);
+      color: var(--accent);
+      font-weight: 600;
+      text-align: left;
+      padding: 9px 13px;
+      border: 1px solid var(--border);
+    }
+    td {
+      padding: 8px 13px;
+      border: 1px solid var(--border);
+    }
+    tr:nth-child(even) td {
+      background: rgba(255,255,255,0.012);
+    }
+
+    /* Single-cell tables = note/callout boxes */
+    table:has(tr:only-child td:only-child) {
+      background: rgba(110,161,255,0.05);
+      border: 1px solid rgba(110,161,255,0.14);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    table:has(tr:only-child td:only-child) td {
+      border: none;
+      padding: 13px 16px;
+      font-size: 13px;
+      line-height: 1.7;
+    }
+    table:has(tr:only-child td:only-child) td strong {
+      color: var(--accent);
+    }
+
+    /* ── Code ── */
+    code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12.5px;
+      color: var(--accent);
+      background: rgba(110,161,255,0.07);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    pre {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 18px;
+      overflow-x: auto;
+      margin: 12px 0;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12.5px;
+      line-height: 1.7;
+      color: #c4cdd9;
+      scrollbar-width: thin;
+      scrollbar-color: #333 transparent;
+    }
+    pre::-webkit-scrollbar { height: 4px; }
+    pre::-webkit-scrollbar-track { background: transparent; }
+    pre::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+    pre::-webkit-scrollbar-thumb:hover { background: #555; }
+    pre code {
+      background: none;
+      padding: 0;
+      color: inherit;
+      font-size: inherit;
+    }
+
+    /* ── Blockquote ── */
+    blockquote {
+      background: rgba(110,161,255,0.05);
+      border: 1px solid rgba(110,161,255,0.14);
+      border-left: 3px solid var(--accent);
+      border-radius: 0 10px 10px 0;
+      padding: 13px 16px;
+      margin: 10px 0;
+      font-size: 13px;
+      line-height: 1.7;
+    }
+    blockquote b, blockquote strong { color: var(--accent); }
+
+    /* ── Images ── */
+    img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 10px;
+      margin: 12px 0;
+      border: 1px solid var(--border);
+    }
+
+    /* ── HR ── */
+    hr {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 24px 0;
+    }
+
+    /* ── Footer ── */
+    .footer {
+      text-align: center;
+      padding: 36px 0 16px;
+      font-size: 11px;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      margin-top: 40px;
+    }
+
+    @media (max-width: 640px) {
+      .page { padding: 0 16px 60px; }
+      .hero { padding: 36px 16px 30px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-tag">Design Patterns</div>
+  <h1>SOLID Principles</h1>
+</div>
+
+<div class="page">
+  <div class="doc-content">
+<table><tr><td><p>Design Patterns Study Guide  —  C#</p><p><strong>SOLID Principles</strong></p><p><em>Single Responsibility  •  Open/Closed  •  Liskov Substitution  •  Interface Segregation  •  Dependency Inversion</em></p></td></tr></table><p>SOLID is a set of five design principles introduced by Robert C. Martin (Uncle Bob). Together they guide you toward code that is easier to maintain, extend, and test. Interviewers don't just ask what each letter stands for — they ask you to spot violations, refactor bad code, and explain trade-offs.</p><table><tr><td></td><td><p><strong>Principle</strong></p></td><td><p><strong>Core Idea</strong></p></td><td><p><strong>Violation Signal</strong></p></td></tr><tr><td><p><strong>S</strong></p></td><td><p><strong>Single Responsibility</strong></p></td><td><p>One class, one responsibility</p></td><td><p><em>Class does too many unrelated things</em></p></td></tr><tr><td><p><strong>O</strong></p></td><td><p><strong>Open / Closed</strong></p></td><td><p>Extend without modifying</p></td><td><p><em>Edit existing classes to add new features</em></p></td></tr><tr><td><p><strong>L</strong></p></td><td><p><strong>Liskov Substitution</strong></p></td><td><p>Subtypes honor the parent contract</p></td><td><p><em>Subclass throws or silently breaks behavior</em></p></td></tr><tr><td><p><strong>I</strong></p></td><td><p><strong>Interface Segregation</strong></p></td><td><p>Small focused interfaces</p></td><td><p><em>Classes implement unused methods</em></p></td></tr><tr><td><p><strong>D</strong></p></td><td><p><strong>Dependency Inversion</strong></p></td><td><p>Depend on abstractions</p></td><td><p><em>new ConcreteClass() inside business logic</em></p></td></tr></table><table><tr><td><p><strong>S  —  Single Responsibility Principle</strong></p><p><em>"A class should have only one reason to change."</em></p></td></tr></table><h2><strong>What It Means</strong></h2><p>A class should do one thing and do it well. If a class handles multiple concerns, a change to one concern risks breaking another. The 'reason to change' is the key phrase — count how many different stakeholders could ask you to change this class.</p><h2><strong>Violation vs Fix</strong></h2><table><tr><td><p><strong>❌  Violation</strong></p><pre><code>public class Invoice
+{
+    // Business logic
+    public void CalculateTotal() { }
+    // UI / formatting logic
+    public void PrintInvoice() { }
+    // Data access logic
+    public void SaveToDatabase() { }
+}
+// 3 reasons to change:
+// 1. Business rules change
+// 2. Print format changes
+// 3. DB schema changes</code></pre></td><td><p><strong>✅  Fixed</strong></p><pre><code>// Each class has ONE responsibility
+public class Invoice
+{
+    public void CalculateTotal() { }
+}
+public class InvoicePrinter
+{
+    public void Print(Invoice i) { }
+}
+public class InvoiceRepository
+{
+    public void Save(Invoice i) { }
+}
+// Each has exactly one reason to change</code></pre></td></tr></table><h2><strong>Real-World Analogy</strong></h2><p>Think of a restaurant. The chef cooks, the waiter serves, the cashier handles payment. Each person has one responsibility. If the chef also handled billing, a change in tax law would disrupt the kitchen.</p><h2><strong>Interview Q&amp;A</strong></h2><p><strong>Q: How do you identify an SRP violation?</strong></p><p>Count the number of 'reasons to change'. If different stakeholders — a business analyst, a DBA, a UI designer — could all ask you to change the same class, it has too many responsibilities.</p><p><strong>Q: Does SRP mean every class should have exactly one method?</strong></p><p>No. A class can have many methods as long as they all serve the same single responsibility. An Invoice class can have CalculateTotal(), ApplyDiscount(), and GetLineItems() — they all relate to invoice business logic.</p><h2><strong>Use / Violation Signals</strong></h2><table><tr><td><p><strong>✅  Use When</strong></p></td><td><p><strong>❌  Violation Signal</strong></p></td></tr><tr><td><p>Class has one clear, focused purpose</p></td><td><p>Class name includes 'And' or 'Manager'</p></td></tr><tr><td><p>Different stakeholders each own one class</p></td><td><p>Class has imports from UI, DB, and business layers</p></td></tr><tr><td><p>Changing one feature does not risk breaking another</p></td><td><p>A change to print format breaks business logic</p></td></tr></table><table><tr><td><p><strong>O  —  Open / Closed Principle</strong></p><p><em>"A class should be open for extension, but closed for modification."</em></p></td></tr></table><h2><strong>What It Means</strong></h2><p>You should be able to add new behavior to a system without changing existing, tested code. You extend by adding new classes — not by editing old ones. This protects stable code from being broken by new requirements.</p><h2><strong>Violation vs Fix</strong></h2><table><tr><td><p><strong>❌  Violation</strong></p><pre><code>public class DiscountCalculator
+{
+    public double Calculate(
+        string customerType, double price)
+    {
+        if (customerType == "VIP")
+            return price * 0.8;
+        if (customerType == "Senior")
+            return price * 0.9;
+        // Adding new type = edit this class
+        return price;
+    }
+}</code></pre></td><td><p><strong>✅  Fixed</strong></p><pre><code>public interface IDiscount
+{
+    double Apply(double price);
+}
+public class VIPDiscount : IDiscount
+{ public double Apply(double p) =&gt; p * 0.8; }
+public class SeniorDiscount : IDiscount
+{ public double Apply(double p) =&gt; p * 0.9; }
+// New type = new class only, zero edits
+public class StudentDiscount : IDiscount
+{ public double Apply(double p) =&gt; p * 0.85; }</code></pre></td></tr></table><h2><strong>Real-World Analogy</strong></h2><p>A power strip is open for extension — you plug in new devices without modifying the strip itself. You never rewire the strip just because you bought a new appliance. New devices (extensions) plug into the existing interface.</p><h2><strong>Interview Q&amp;A</strong></h2><p><strong>Q: How do you achieve OCP in practice?</strong></p><p>Program to interfaces or abstract classes. When new behavior is needed, create a new class that implements the interface rather than modifying the existing implementation.</p><p><strong>Q: Is it realistic to never modify existing code?</strong></p><p>No — the goal is to minimize changes to stable, tested code. You use abstractions to isolate the parts most likely to change so that new requirements only require new classes, not edits to proven ones.</p><h2><strong>Use / Violation Signals</strong></h2><table><tr><td><p><strong>✅  Use When</strong></p></td><td><p><strong>❌  Violation Signal</strong></p></td></tr><tr><td><p>New features are added by creating new classes</p></td><td><p>Every new requirement forces edits to existing classes</p></td></tr><tr><td><p>Existing classes are stable and rarely edited</p></td><td><p>A class has long if/else or switch chains on type strings</p></td></tr><tr><td><p>The system uses interfaces or abstract classes for varying behavior</p></td><td><p>Adding a new case breaks existing tests</p></td></tr></table><table><tr><td><p><strong>L  —  Liskov Substitution Principle</strong></p><p><em>"Subtypes must be substitutable for their base types without breaking the program."</em></p></td></tr></table><h2><strong>What It Means</strong></h2><p>If class B extends class A, you must be able to replace A with B anywhere in the code and have everything still work correctly — no crashes, no wrong results, no surprises. The child must honor every promise the parent makes.</p><table><tr><td></td><td><p><strong>💡 Note:  </strong>The Swap Test: take any variable typed as the parent, replace it with a child, and ask — did anything break? If yes, LSP is violated.</p></td></tr></table><h2><strong>Example 1 — Rectangle / Square (Classic)</strong></h2><table><tr><td><p><strong>❌  Violation</strong></p><pre><code>public class Rectangle
+{
+    public virtual int Width  { get; set; }
+    public virtual int Height { get; set; }
+    public int Area() =&gt; Width * Height;
+}
+public class Square : Rectangle
+{
+    public override int Width
+    { set { base.Width = base.Height = value; } }
+    public override int Height
+    { set { base.Width = base.Height = value; } }
+}
+void ResizeAndPrint(Rectangle r)
+{
+    r.Width = 4; r.Height = 5;
+    Console.WriteLine(r.Area());
+    // Expects 20, gets 25 with Square
+}</code></pre></td><td><p><strong>✅  Fixed</strong></p><pre><code>// Don't force inheritance that breaks behavior
+// Use a shared abstraction instead
+public interface IShape { int Area(); }
+public class Rectangle : IShape
+{
+    public int Width  { get; set; }
+    public int Height { get; set; }
+    public int Area() =&gt; Width * Height;
+}
+public class Square : IShape
+{
+    public int Side { get; set; }
+    public int Area() =&gt; Side * Side;
+}
+// Neither breaks the other's contract</code></pre></td></tr></table><h2><strong>Example 2 — Bird / Penguin</strong></h2><table><tr><td><p><strong>❌  Violation</strong></p><pre><code>public class Bird
+{
+    public virtual void Fly()
+        =&gt; Console.WriteLine("Flying!");
+}
+// Penguin is a bird but cannot fly
+public class Penguin : Bird
+{
+    public override void Fly()
+        =&gt; throw new NotSupportedException();
+}
+void MakeBirdFly(Bird bird)
+{
+    bird.Fly(); // Crashes with Penguin
+}</code></pre></td><td><p><strong>✅  Fixed</strong></p><pre><code>public abstract class Bird
+{
+    public abstract void Eat();
+}
+public interface IFlyable { void Fly(); }
+public class Eagle : Bird, IFlyable
+{
+    public override void Eat() { }
+    public void Fly()
+        =&gt; Console.WriteLine("Soaring!");
+}
+public class Penguin : Bird
+{
+    public override void Eat() { }
+    // Never promised it could fly
+}</code></pre></td></tr></table><h2><strong>Example 3 — Read-Only Repository</strong></h2><table><tr><td><p><strong>❌  Violation</strong></p><pre><code>public class Repository
+{
+    public virtual void Add(string item) { }
+    public virtual void Delete(string item) { }
+}
+public class ReadOnlyRepository : Repository
+{
+    public override void Delete(string item)
+        =&gt; throw new NotSupportedException();
+        // Breaks the parent's contract
+}</code></pre></td><td><p><strong>✅  Fixed</strong></p><pre><code>public interface IReadRepository
+{
+    string Get(int id);
+}
+public interface IWriteRepository
+{
+    void Add(string item);
+    void Delete(string item);
+}
+public class FullRepository :
+    IReadRepository, IWriteRepository { }
+public class ReadOnlyRepository :
+    IReadRepository { }  // Only promises what it delivers</code></pre></td></tr></table><h2><strong>The LSP Quick Test</strong></h2><table><tr><td><p>// Before creating a subclass, ask yourself:</p><p>// 1. Can my subclass do everything the parent promises</p><p>//    without throwing or returning wrong results?</p><p>// 2. Can I secretly replace the parent with my subclass</p><p>//    anywhere in the code and have nobody notice?</p><pre><code>// If the answer to either is NO -&gt;
+//   Don't use inheritance.
+//   Use a separate interface or abstraction instead.</code></pre></td></tr></table><h2><strong>Interview Q&amp;A</strong></h2><p><strong>Q: What is the most common LSP violation pattern?</strong></p><p>A subclass that overrides a method and throws NotImplementedException or NotSupportedException. This is a clear sign the subclass does not honor the parent contract.</p><p><strong>Q: How does LSP relate to polymorphism?</strong></p><p>LSP is what makes polymorphism safe. Polymorphism lets you treat objects of different types uniformly through a base type — LSP ensures that doing so never produces unexpected behavior.</p><p><strong>Q: What is the swap test?</strong></p><p>Replace any variable of the parent type with a child object and check if the program still behaves correctly. If something breaks, the child violates LSP.</p><h2><strong>Use / Violation Signals</strong></h2><table><tr><td><p><strong>✅  Use When</strong></p></td><td><p><strong>❌  Violation Signal</strong></p></td></tr><tr><td><p>Child classes fully honor the parent's behavior contract</p></td><td><p>Subclass throws NotImplementedException or NotSupportedException</p></td></tr><tr><td><p>Substituting child for parent produces no surprises</p></td><td><p>Subclass weakens or ignores inherited method behavior</p></td></tr><tr><td><p>Inheritance reflects a true 'is-a' relationship in behavior</p></td><td><p>You need type checks like 'if (obj is Square)' before calling methods</p></td></tr></table><table><tr><td><p><strong>I  —  Interface Segregation Principle</strong></p><p><em>"No class should be forced to implement methods it does not use."</em></p></td></tr></table><h2><strong>What It Means</strong></h2><p>Prefer many small, focused interfaces over one large fat interface. A class should only implement methods that are relevant to it. Forcing a class to implement irrelevant methods creates dead code and misleads callers.</p><h2><strong>Violation vs Fix</strong></h2><table><tr><td><p><strong>❌  Violation</strong></p><pre><code>public interface IWorker
+{
+    void Work();
+    void Eat();
+    void Sleep();
+}
+// Robot works but doesn't eat or sleep
+public class Robot : IWorker
+{
+    public void Work()
+        =&gt; Console.WriteLine("Robot working.");
+    public void Eat()
+        =&gt; throw new NotImplementedException();
+    public void Sleep()
+        =&gt; throw new NotImplementedException();
+}</code></pre></td><td><p><strong>✅  Fixed</strong></p><pre><code>public interface IWorkable  { void Work(); }
+public interface IEatable   { void Eat(); }
+public interface ISleepable { void Sleep(); }
+public class Human :
+    IWorkable, IEatable, ISleepable
+{
+    public void Work()  { }
+    public void Eat()   { }
+    public void Sleep() { }
+}
+// Robot only implements what it needs
+public class Robot : IWorkable
+{
+    public void Work()
+        =&gt; Console.WriteLine("Robot working.");
+}</code></pre></td></tr></table><h2><strong>Real-World Analogy</strong></h2><p>A TV remote has buttons for volume, channel, and power. An air conditioner remote has buttons for temperature, fan speed, and timer. You would never hand a TV remote to someone trying to control an air conditioner and tell them to 'just ignore the buttons that don't apply'.</p><h2><strong>Interview Q&amp;A</strong></h2><p><strong>Q: How small should an interface be?</strong></p><p>An interface should represent one coherent capability or role. If you find yourself writing throw new NotImplementedException() in a class that implements an interface, the interface is too large and should be split.</p><p><strong>Q: How does ISP relate to SRP?</strong></p><p>SRP applies to classes — one reason to change. ISP applies to interfaces — one focused capability. Both push toward smaller, more focused units. Violating one often leads to violating the other.</p><h2><strong>Use / Violation Signals</strong></h2><table><tr><td><p><strong>✅  Use When</strong></p></td><td><p><strong>❌  Violation Signal</strong></p></td></tr><tr><td><p>Interfaces represent one focused capability or role</p></td><td><p>Interface has many unrelated methods</p></td></tr><tr><td><p>Classes only implement methods they actually use</p></td><td><p>Classes implement methods with empty bodies or NotImplementedException</p></td></tr><tr><td><p>Adding a new class does not require implementing irrelevant methods</p></td><td><p>Changing one method in an interface forces changes in many unrelated classes</p></td></tr></table><table><tr><td><p><strong>D  —  Dependency Inversion Principle</strong></p><p><em>"High-level modules should not depend on low-level modules. Both should depend on abstractions."</em></p></td></tr></table><h2><strong>What It Means</strong></h2><p>Your business logic (high-level) should not be directly tied to concrete implementations (low-level). Both should communicate through an interface. This makes it easy to swap implementations without touching business logic.</p><table><tr><td></td><td><p><strong>💡 Note:  </strong>DIP is the principle. Dependency Injection (DI) is the technique used to achieve it. They are related but not the same thing.</p></td></tr></table><h2><strong>Violation vs Fix</strong></h2><table><tr><td><p><strong>❌  Violation</strong></p><pre><code>public class OrderService
+{
+    // Directly depends on a concrete class
+    private SqlOrderRepository _repo
+        = new SqlOrderRepository();
+    public void PlaceOrder(Order order)
+        =&gt; _repo.Save(order);
+}
+// Switching to MongoDB means editing
+// OrderService — a business class.
+// That is wrong.</code></pre></td><td><p><strong>✅  Fixed</strong></p><pre><code>public interface IOrderRepository
+{
+    void Save(Order order);
+}
+public class SqlOrderRepository : IOrderRepository
+{ public void Save(Order o) { /* SQL */ } }
+public class MongoOrderRepository : IOrderRepository
+{ public void Save(Order o) { /* Mongo */ } }
+public class OrderService
+{
+    private readonly IOrderRepository _repo;
+    public OrderService(IOrderRepository repo)
+    { _repo = repo; }  // injected from outside
+    public void PlaceOrder(Order order)
+        =&gt; _repo.Save(order);
+}</code></pre></td></tr></table><h2><strong>DIP in ASP.NET Core</strong></h2><table><tr><td><pre><code>// Program.cs — register the abstraction and its implementation
+builder.Services.AddScoped&lt;IOrderRepository, SqlOrderRepository&gt;();
+// OrderService never knows if it's SQL or Mongo
+// The DI container injects the correct implementation at runtime
+public class OrderService
+{
+    private readonly IOrderRepository _repo;
+    public OrderService(IOrderRepository repo)
+    {
+        _repo = repo;
+    }
+    public void PlaceOrder(Order order) =&gt; _repo.Save(order);
+}
+// Switching to Mongo? Change one line in Program.cs:
+// builder.Services.AddScoped&lt;IOrderRepository, MongoOrderRepository&gt;();
+// OrderService code: zero changes.</code></pre></td></tr></table><table><tr><td></td><td><p><strong>💡 Note:  </strong>In unit tests, you can inject a mock IOrderRepository without touching a real database. This is only possible because of DIP — OrderService depends on the abstraction, not the concrete class.</p></td></tr></table><h2><strong>Interview Q&amp;A</strong></h2><p><strong>Q: What is the difference between DIP and Dependency Injection?</strong></p><p>DIP is the principle — high-level modules should depend on abstractions. Dependency Injection is the technique where dependencies are provided from outside (via constructor, property, or method) rather than created inside the class. DI is the most common way to achieve DIP.</p><p><strong>Q: What does 'inversion' mean in DIP?</strong></p><p>Traditionally, high-level modules depended on low-level modules — the direction of dependency flowed downward. DIP inverts this: both levels depend on an abstraction. The flow of dependency is inverted to point toward the abstraction, not the concrete implementation.</p><p><strong>Q: How does DIP make unit testing easier?</strong></p><p>Because the class depends on an interface, you can inject a mock or fake implementation in tests. Without DIP, the class creates its own dependencies internally — making it impossible to isolate for testing.</p><h2><strong>Use / Violation Signals</strong></h2><table><tr><td><p><strong>✅  Use When</strong></p></td><td><p><strong>❌  Violation Signal</strong></p></td></tr><tr><td><p>Business classes depend on interfaces, not concrete types</p></td><td><p>new ConcreteClass() appears inside business logic</p></td></tr><tr><td><p>Implementations are injected from outside via constructor</p></td><td><p>Business class imports from infrastructure or data access layers directly</p></td></tr><tr><td><p>Switching a database or service requires zero business logic changes</p></td><td><p>Unit testing the class requires a real database or external service</p></td></tr></table><table><tr><td><p>SOLID Principles — Summary</p><p><strong>Quick Reference</strong></p><p><em>All 5 principles at a glance</em></p></td></tr></table><table><tr><td></td><td><p><strong>Principle</strong></p></td><td><p><strong>Core Idea</strong></p></td><td><p><strong>Violation Signal</strong></p></td></tr><tr><td><p><strong>S</strong></p></td><td><p><strong>Single Responsibility</strong></p></td><td><p>One class, one responsibility</p></td><td><p><em>Class does too many unrelated things</em></p></td></tr><tr><td><p><strong>O</strong></p></td><td><p><strong>Open / Closed</strong></p></td><td><p>Extend without modifying</p></td><td><p><em>Edit existing classes to add new features</em></p></td></tr><tr><td><p><strong>L</strong></p></td><td><p><strong>Liskov Substitution</strong></p></td><td><p>Subtypes honor the parent contract</p></td><td><p><em>Subclass throws or silently breaks behavior</em></p></td></tr><tr><td><p><strong>I</strong></p></td><td><p><strong>Interface Segregation</strong></p></td><td><p>Small focused interfaces</p></td><td><p><em>Classes implement unused methods</em></p></td></tr><tr><td><p><strong>D</strong></p></td><td><p><strong>Dependency Inversion</strong></p></td><td><p>Depend on abstractions</p></td><td><p><em>new ConcreteClass() inside business logic</em></p></td></tr></table><h2><strong>How SOLID Principles Connect</strong></h2><table><tr><td><p>SRP  -&gt;  Each class has one job</p><p>          Makes classes smaller and focused</p><p>OCP  -&gt;  Extend with new classes, not edits</p><p>          Relies on SRP to keep existing classes stable</p><p>LSP  -&gt;  Subtypes behave like their parent</p><p>          Makes OCP safe — new subclasses won't break existing code</p><p>ISP  -&gt;  Small focused interfaces</p><p>          Makes LSP easier — classes only implement what they can honor</p><p>DIP  -&gt;  Depend on abstractions</p><pre><code>          Uses ISP interfaces as the abstractions to depend on
+          Enables OCP — swap implementations without changing callers</code></pre></td></tr></table><h2><strong>The One-Sentence Interview Answer</strong></h2><table><tr><td><p><strong>S</strong></p></td><td><p>Give every class one job so it has one reason to change.</p></td></tr><tr><td><p><strong>O</strong></p></td><td><p>Add new features by writing new code, not by editing existing code.</p></td></tr><tr><td><p><strong>L</strong></p></td><td><p>A child class must be a complete, trustworthy substitute for its parent.</p></td></tr><tr><td><p><strong>I</strong></p></td><td><p>Split large interfaces so classes only implement what they actually need.</p></td></tr><tr><td><p><strong>D</strong></p></td><td><p>Business logic should talk to interfaces, not to concrete implementations.</p></td></tr></table>
+  </div>
+  <div class="footer">Study Docs Portal</div>
+</div>
+
+</body>
+</html>

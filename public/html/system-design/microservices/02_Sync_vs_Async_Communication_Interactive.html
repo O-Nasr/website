@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sync vs Async Communication — Microservices Study Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0c10;--surface:#111318;--surface2:#181c24;--surface3:#1f2530;--border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.11);--accent:#6ea1ff;--accent2:#8b6cf6;--green:#34d399;--amber:#fbbf24;--red:#f87171;--teal:#2dd4bf;--coral:#fb923c;--text:#dfe5ef;--muted:#7e8a9e;--code-bg:#080a0e}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font-size:15px;line-height:1.78;-webkit-font-smoothing:antialiased}
+.page{max-width:900px;margin:0 auto;padding:0 28px 100px}
+.hero{padding:56px 28px 44px;max-width:900px;margin:0 auto;border-bottom:1px solid var(--border);position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-80px;right:-40px;width:360px;height:360px;background:radial-gradient(circle,rgba(110,161,255,0.08) 0%,transparent 70%);pointer-events:none}
+.hero-tag{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:10.5px;font-weight:500;color:var(--accent);background:rgba(110,161,255,0.07);border:1px solid rgba(110,161,255,0.18);padding:4px 14px;border-radius:20px;letter-spacing:0.09em;margin-bottom:14px;text-transform:uppercase}
+.hero h1{font-size:clamp(26px,4.2vw,42px);font-weight:700;line-height:1.15;letter-spacing:-0.03em;margin-bottom:10px;background:linear-gradient(135deg,#dfe5ef 0%,#6ea1ff 50%,#34d399 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero-sub{font-size:15px;color:var(--muted);line-height:1.65;max-width:600px}
+.section{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:30px;margin-top:30px}
+.section h2{font-size:20px;font-weight:700;color:#fff;margin-bottom:18px;display:flex;align-items:center;gap:10px}
+.section h2 .num{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--accent);background:rgba(110,161,255,0.1);padding:3px 10px;border-radius:6px;font-weight:500}
+.section h3{font-size:15px;font-weight:600;color:var(--accent);margin:22px 0 10px;padding-top:14px;border-top:1px solid var(--border)}
+.section h3:first-of-type{border-top:none;padding-top:0}
+p{margin-bottom:12px}strong{color:#fff}
+ul{padding-left:20px;margin:8px 0 14px}li{margin:4px 0;font-size:14px}
+pre{background:var(--code-bg);border:1px solid var(--border);border-radius:10px;padding:14px 18px;overflow-x:auto;margin:12px 0;font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.7;color:#c4cdd9}
+code{font-family:'JetBrains Mono',monospace;font-size:12.5px;color:var(--accent);background:rgba(110,161,255,0.07);padding:2px 6px;border-radius:4px}
+pre code{background:none;padding:0;color:inherit}
+table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13px}
+th{background:var(--surface2);color:var(--accent);font-weight:600;text-align:left;padding:9px 13px;border:1px solid var(--border)}
+td{padding:8px 13px;border:1px solid var(--border)}
+tr:nth-child(even) td{background:rgba(255,255,255,0.012)}
+.note{background:rgba(110,161,255,0.05);border:1px solid rgba(110,161,255,0.14);border-radius:10px;padding:13px 16px;margin:12px 0;font-size:13px;line-height:1.7}.note b{color:var(--accent)}
+.note-warn{background:rgba(251,191,36,0.05);border-color:rgba(251,191,36,0.14)}.note-warn b{color:var(--amber)}
+.note-red{background:rgba(248,113,113,0.05);border-color:rgba(248,113,113,0.14)}.note-red b{color:var(--red)}
+.note-green{background:rgba(52,211,153,0.05);border-color:rgba(52,211,153,0.14)}.note-green b{color:var(--green)}
+.qa{background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:14px 18px;margin:10px 0}
+.qa-q{font-weight:600;color:#fff;margin-bottom:5px;font-size:14px}
+.qa-a{color:var(--muted);font-size:13px;line-height:1.7}
+.tab-group{margin:16px 0}.tab-bar{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.tab-btn{padding:6px 14px;font-size:12px;font-weight:500;font-family:'Outfit',sans-serif;border:1px solid var(--border2);border-radius:6px;background:transparent;color:var(--muted);cursor:pointer;transition:all 0.15s}
+.tab-btn:hover{border-color:rgba(110,161,255,0.3);color:var(--text)}
+.tab-btn.active{background:rgba(110,161,255,0.1);color:var(--accent);border-color:rgba(110,161,255,0.3)}
+.tab-panel{display:none}.tab-panel.active{display:block}
+.flow{display:flex;align-items:center;gap:8px;margin:10px 0;flex-wrap:wrap}
+.flow-step{background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:8px 14px;font-size:13px;color:var(--text);font-weight:500}
+.flow-arrow{color:var(--muted);font-size:16px}
+.env-row{display:flex;gap:12px;margin:10px 0;align-items:stretch}
+.env-card{flex:1;border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:4px}
+.env-card .env-name{font-size:13px;font-weight:600}.env-card .env-status{font-size:11px;color:var(--muted)}
+.pod-row{display:flex;gap:8px;margin:12px 0;align-items:center;flex-wrap:wrap}
+.pod{width:90px;height:48px;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:12px;font-weight:500;gap:2px}
+.pod-v1{background:rgba(110,161,255,0.08);border:1px solid rgba(110,161,255,0.18);color:var(--accent)}
+.pod-v2{background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.18);color:var(--green)}
+.traffic{display:flex;height:32px;border-radius:8px;overflow:hidden;border:1px solid var(--border);margin:10px 0}
+.traffic-v1{background:rgba(110,161,255,0.1);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;color:var(--accent)}
+.traffic-v2{background:rgba(52,211,153,0.1);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;color:var(--green)}
+.toc{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px 24px;margin:30px 0}
+.toc h3{font-size:12px;font-weight:600;color:var(--accent);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.06em}
+.toc a{font-size:13px;color:var(--muted);text-decoration:none;display:block;padding:4px 0;transition:color 0.15s}
+.toc a:hover{color:var(--accent)}
+.footer{text-align:center;padding:36px 0 16px;font-size:11px;color:var(--muted);border-top:1px solid var(--border);margin-top:40px}
+@media(max-width:640px){.page{padding:0 16px 60px}.section{padding:20px 16px}.env-row{flex-direction:column}.hero{padding:36px 16px 30px}}
+</style>
+
+</head>
+<body>
+<div class="hero">
+  <div class="hero-tag">Microservices · Topic 02</div>
+  <h1>Sync vs Async Communication</h1>
+  <p class="hero-sub">REST, gRPC, Kafka, RabbitMQ, the hybrid pattern. Interactive diagrams and C# code from our conversation.</p>
+</div>
+<div class="page">
+
+<div class="section" id="s1">
+<h2><span class="num">01</span> Two Fundamental Approaches</h2>
+<p>In a monolith, calling another module is just a function call — no network. In microservices, that call crosses a network. You must choose: <strong>how should these services talk?</strong></p>
+
+<div class="tab-group" id="modes">
+<div class="tab-bar">
+<button class="tab-btn active" onclick="showTab('modes',0)">Synchronous</button>
+<button class="tab-btn" onclick="showTab('modes',1)">Asynchronous</button>
+<button class="tab-btn" onclick="showTab('modes',2)">The rule</button>
+</div>
+<div class="tab-panel active">
+<p style="font-weight:600;color:#fff;margin-bottom:8px">Synchronous — caller waits for response</p>
+<div class="flow"><div class="flow-step">Orders</div><span class="flow-arrow">→ request →</span><div class="flow-step">Payments</div><span class="flow-arrow">→ response →</span><div class="flow-step">Orders continues</div></div>
+<p>Like a phone call. Caller blocks until response arrives. Protocols: REST (HTTP/JSON), gRPC (HTTP/2 + Protobuf).</p>
+</div>
+<div class="tab-panel">
+<p style="font-weight:600;color:#fff;margin-bottom:8px">Asynchronous — caller fires and forgets</p>
+<div class="flow"><div class="flow-step">Orders</div><span class="flow-arrow">→ event →</span><div class="flow-step" style="border-color:rgba(251,191,36,0.3);color:var(--amber)">Message Queue</div><span class="flow-arrow">→ later →</span><div class="flow-step">Notifications</div></div>
+<p>Like sending an email. Orders publishes and moves on immediately. Consumer processes when ready. Tools: RabbitMQ, Kafka.</p>
+</div>
+<div class="tab-panel">
+<div class="note-green note"><b>The rule:</b> Sync when you need the answer NOW (stock check, payment charge). Async when you don't (send email, log analytics, award points). Most things don't need an immediate answer.</div>
+</div>
+</div>
+</div>
+
+<div class="section" id="s2">
+<h2><span class="num">02</span> REST vs gRPC</h2>
+
+<div class="tab-group" id="proto">
+<div class="tab-bar">
+<button class="tab-btn active" onclick="showTab('proto',0)">REST (C# code)</button>
+<button class="tab-btn" onclick="showTab('proto',1)">gRPC (C# code)</button>
+<button class="tab-btn" onclick="showTab('proto',2)">Comparison</button>
+</div>
+<div class="tab-panel active">
+<p style="font-weight:600;color:#fff;margin-bottom:8px">REST — HTTP/1.1 + JSON. Human-readable, universally supported.</p>
+<pre><code>public async Task&lt;PaymentResult&gt; ChargeAsync(Order order)
+{
+    var response = await _http.PostAsJsonAsync(
+        "http://payments-service/api/payments",
+        new { OrderId = order.Id, Amount = order.Total, Currency = "USD" }
+    );
+    response.EnsureSuccessStatusCode();
+    return await response.Content.ReadFromJsonAsync&lt;PaymentResult&gt;();
+}</code></pre>
+</div>
+<div class="tab-panel">
+<p style="font-weight:600;color:#fff;margin-bottom:8px">gRPC — HTTP/2 + Protobuf (binary). 5–10× faster, strict contract.</p>
+<pre><code>// payments.proto — shared contract
+syntax = "proto3";
+service PaymentsService {
+  rpc ChargeOrder (ChargeRequest) returns (ChargeResponse);
+}
+message ChargeRequest {
+  string order_id = 1;
+  double amount = 2;
+  string currency = 3;
+}</code></pre>
+<pre><code>// C# client — strongly typed, compiler catches contract mismatches
+return await _client.ChargeOrderAsync(new ChargeRequest
+{
+    OrderId = order.Id, Amount = order.Total, Currency = "USD"
+});</code></pre>
+</div>
+<div class="tab-panel">
+<table>
+<tr><th>Aspect</th><th>REST</th><th>gRPC</th></tr>
+<tr><td>Protocol</td><td>HTTP/1.1 + JSON (text)</td><td>HTTP/2 + Protobuf (binary)</td></tr>
+<tr><td>Speed</td><td>Baseline</td><td>5–10× faster</td></tr>
+<tr><td>Contract</td><td>Loose (OpenAPI optional)</td><td>Strict (.proto, compiler-enforced)</td></tr>
+<tr><td>Browser</td><td>Native</td><td>Needs grpc-web proxy</td></tr>
+<tr><td>Debugging</td><td>Easy — curl, Postman</td><td>Hard — needs tooling</td></tr>
+<tr><td>Streaming</td><td>No</td><td>Yes — bidirectional</td></tr>
+<tr><td>Best for</td><td>Public APIs, external clients</td><td>Internal service-to-service</td></tr>
+</table>
+</div>
+</div>
+</div>
+
+<div class="section" id="s3">
+<h2><span class="num">03</span> Kafka vs RabbitMQ</h2>
+<div class="tab-group" id="mq">
+<div class="tab-bar">
+<button class="tab-btn active" onclick="showTab('mq',0)">RabbitMQ</button>
+<button class="tab-btn" onclick="showTab('mq',1)">Kafka</button>
+<button class="tab-btn" onclick="showTab('mq',2)">Side by side</button>
+</div>
+<div class="tab-panel active">
+<p style="font-weight:600;color:#fff;margin-bottom:8px">RabbitMQ — message queue</p>
+<p>Messages pushed to consumers and <strong>deleted after acknowledged</strong>. Great for task distribution and work queues.</p>
+<pre><code>Orders → [Queue] → Payments reads it → message GONE</code></pre>
+</div>
+<div class="tab-panel">
+<p style="font-weight:600;color:#fff;margin-bottom:8px">Kafka — event log</p>
+<p>Events written to an <strong>append-only log</strong>. Consumers read at their own pace. Events retained (days/weeks/forever). Multiple consumer groups read independently.</p>
+<pre><code>Orders → [Log] → Payments reads at offset 1042
+                → Analytics reads at offset 1042
+                → Inventory reads at offset 1042
+                → All three independently, event PRESERVED</code></pre>
+</div>
+<div class="tab-panel">
+<table>
+<tr><th>Aspect</th><th>RabbitMQ</th><th>Kafka</th></tr>
+<tr><td>Model</td><td>Message queue</td><td>Event log</td></tr>
+<tr><td>After reading</td><td>Message deleted</td><td>Event preserved</td></tr>
+<tr><td>Multiple consumers</td><td>Competing (one gets it)</td><td>Each group reads independently</td></tr>
+<tr><td>Replay</td><td>No</td><td>Yes — read from any offset</td></tr>
+<tr><td>Best for</td><td>Task distribution, work queues</td><td>Event sourcing, audit trails, multi-consumer</td></tr>
+</table>
+</div>
+</div>
+</div>
+
+<div class="section" id="s4">
+<h2><span class="num">04</span> The Hybrid Pattern (Real-World)</h2>
+<pre><code>1. Client → Gateway         [sync REST]    validate JWT
+2. Gateway → Orders         [sync REST]    create order
+3. Orders → Inventory       [sync gRPC]    reserve stock (need answer NOW)
+4. Orders → Payments        [sync gRPC]    charge card (need success/fail NOW)
+5. Orders → Message Queue   [async event]  publish OrderPlaced
+6. Queue → Notifications    [async]        send email (don't need to wait)
+7. Queue → Analytics        [async]        log revenue event
+8. Queue → Loyalty          [async]        award points</code></pre>
+<p>Steps 3–4 must be synchronous. Steps 6–8 don't affect the user's experience — async.</p>
+<div class="note-red note"><b>The chaining problem:</b> 5 sync calls chained: total latency = sum of all hops. Availability compounds: 5 services at 99.9% = 99.5%. A downstream failure blocks everyone upstream.</div>
+</div>
+
+<div class="section" id="s5">
+<h2><span class="num">05</span> Interview Q&amp;A</h2>
+<div class="qa"><div class="qa-q">Q: When would you use gRPC over REST?</div><div class="qa-a">Internal high-frequency service-to-service calls where you control both ends. Binary serialization, streaming, strong typing from .proto. REST is better for external APIs or anything a browser talks to.</div></div>
+<div class="qa"><div class="qa-q">Q: What guarantees does a message queue give?</div><div class="qa-a">At-least-once delivery — may be duplicated on retries. Consumers must be idempotent. Exactly-once is possible (Kafka) but expensive. Design for at-least-once.</div></div>
+<div class="qa"><div class="qa-q">Q: What is eventual consistency?</div><div class="qa-a">When you go async, services are temporarily out of sync. Email sent 200ms after order confirmed. Inventory count lags by a second. System converges to correct state, but not immediately. Acceptable for side effects — not for "has payment been charged."</div></div>
+</div>
+<div class="footer">Sync vs Async Communication — Microservices Study Guide · C# / .NET · Interview Prep · 2026</div>
+</div>
+<script>
+function showTab(g,i){var p=document.getElementById(g).querySelectorAll('.tab-panel'),b=document.getElementById(g).querySelectorAll('.tab-btn');p.forEach(function(x,j){x.classList.toggle('active',j===i)});b.forEach(function(x,j){x.classList.remove('active');if(j===i)x.classList.add('active')})}
+</script>
+</body>
+</html>

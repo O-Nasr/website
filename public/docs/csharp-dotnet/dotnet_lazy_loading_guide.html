@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lazy Loading</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0c10;
+      --surface: #111318;
+      --surface2: #181c24;
+      --surface3: #1f2530;
+      --border: rgba(255,255,255,0.06);
+      --border2: rgba(255,255,255,0.11);
+      --accent: #6ea1ff;
+      --accent2: #8b6cf6;
+      --green: #34d399;
+      --amber: #fbbf24;
+      --red: #f87171;
+      --teal: #2dd4bf;
+      --text: #dfe5ef;
+      --muted: #7e8a9e;
+      --code-bg: #080a0e;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Outfit', sans-serif;
+      font-size: 15px;
+      line-height: 1.78;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      padding: 56px 28px 44px;
+      max-width: 900px;
+      margin: 0 auto;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -80px;
+      right: -40px;
+      width: 360px;
+      height: 360px;
+      background: radial-gradient(circle, rgba(110,161,255,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-tag {
+      display: inline-block;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10.5px;
+      font-weight: 500;
+      color: var(--accent);
+      background: rgba(110,161,255,0.07);
+      border: 1px solid rgba(110,161,255,0.18);
+      padding: 4px 14px;
+      border-radius: 20px;
+      letter-spacing: 0.09em;
+      margin-bottom: 14px;
+      text-transform: uppercase;
+    }
+    .hero h1 {
+      font-size: clamp(26px, 4.2vw, 42px);
+      font-weight: 700;
+      line-height: 1.15;
+      letter-spacing: -0.03em;
+      margin-bottom: 0;
+      background: linear-gradient(135deg, #dfe5ef 0%, #6ea1ff 50%, #34d399 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* ── Page layout ── */
+    .page {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 28px 100px;
+    }
+
+    /* ── Sections ── */
+    .doc-content h1 {
+      font-size: 20px;
+      font-weight: 700;
+      color: #fff;
+      margin: 30px 0 0;
+      padding: 24px 0 14px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      -webkit-text-fill-color: #fff;
+      background-clip: padding-box;
+    }
+    .doc-content h1:first-child { margin-top: 10px; }
+
+    .doc-content h2 {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--accent);
+      margin: 22px 0 10px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+    }
+
+    .doc-content h3 {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--accent2);
+      margin: 18px 0 8px;
+    }
+
+    .doc-content h4, .doc-content h5, .doc-content h6 {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--teal);
+      margin: 14px 0 6px;
+    }
+
+    p {
+      margin: 0;
+      padding: 6px 0;
+      font-size: 14.5px;
+      line-height: 1.75;
+    }
+    strong, b { color: #fff; }
+    em { color: var(--muted); }
+
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ── Lists ── */
+    ul, ol {
+      padding-left: 20px;
+      margin: 4px 0 10px;
+    }
+    li {
+      margin: 3px 0;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+    li strong { color: #fff; }
+
+    /* ── Tables ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin: 12px 0;
+    }
+    th {
+      background: var(--surface2);
+      color: var(--accent);
+      font-weight: 600;
+      text-align: left;
+      padding: 9px 13px;
+      border: 1px solid var(--border);
+    }
+    td {
+      padding: 8px 13px;
+      border: 1px solid var(--border);
+    }
+    tr:nth-child(even) td {
+      background: rgba(255,255,255,0.012);
+    }
+
+    /* Single-cell tables = note/callout boxes */
+    table:has(tr:only-child td:only-child) {
+      background: rgba(110,161,255,0.05);
+      border: 1px solid rgba(110,161,255,0.14);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    table:has(tr:only-child td:only-child) td {
+      border: none;
+      padding: 13px 16px;
+      font-size: 13px;
+      line-height: 1.7;
+    }
+    table:has(tr:only-child td:only-child) td strong {
+      color: var(--accent);
+    }
+
+    /* ── Code ── */
+    code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12.5px;
+      color: var(--accent);
+      background: rgba(110,161,255,0.07);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    pre {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 18px;
+      overflow-x: auto;
+      margin: 12px 0;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12.5px;
+      line-height: 1.7;
+      color: #c4cdd9;
+      scrollbar-width: thin;
+      scrollbar-color: #333 transparent;
+    }
+    pre::-webkit-scrollbar { height: 4px; }
+    pre::-webkit-scrollbar-track { background: transparent; }
+    pre::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+    pre::-webkit-scrollbar-thumb:hover { background: #555; }
+    pre code {
+      background: none;
+      padding: 0;
+      color: inherit;
+      font-size: inherit;
+    }
+
+    /* ── Blockquote ── */
+    blockquote {
+      background: rgba(110,161,255,0.05);
+      border: 1px solid rgba(110,161,255,0.14);
+      border-left: 3px solid var(--accent);
+      border-radius: 0 10px 10px 0;
+      padding: 13px 16px;
+      margin: 10px 0;
+      font-size: 13px;
+      line-height: 1.7;
+    }
+    blockquote b, blockquote strong { color: var(--accent); }
+
+    /* ── Images ── */
+    img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 10px;
+      margin: 12px 0;
+      border: 1px solid var(--border);
+    }
+
+    /* ── HR ── */
+    hr {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 24px 0;
+    }
+
+    /* ── Footer ── */
+    .footer {
+      text-align: center;
+      padding: 36px 0 16px;
+      font-size: 11px;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      margin-top: 40px;
+    }
+
+    @media (max-width: 640px) {
+      .page { padding: 0 16px 60px; }
+      .hero { padding: 36px 16px 30px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-tag">C# & .NET</div>
+  <h1>Lazy Loading</h1>
+</div>
+
+<div class="page">
+  <div class="doc-content">
+<p><strong>.NET Interview Study Guide</strong></p><p><em>Lazy Loading — Complete Guide</em></p><h1><strong>1. What is Lazy Loading?</strong></h1><pre><code>Lazy Loading is a design pattern where you delay the loading of an object until the exact moment you actually need it. Instead of loading everything upfront when the parent object is created, you load child data on demand.
+Simple rule: Don't load data until you actually need it.
+The opposite of Lazy Loading is Eager Loading — where everything loads immediately when the object is created, whether you need it or not.</code></pre><h2><strong>Real Life Analogy</strong></h2><p>Think of a restaurant menu. You don't cook every dish in the kitchen the moment a customer walks in. You wait until they actually order something. That's lazy loading — prepare only what is asked for.</p><h2><strong>Quick Code Example</strong></h2><pre><code>Customer o = new Customer();        // Orders NOT loaded yet
+Console.WriteLine(o.CustomerName);  // Orders still NOT loaded
+
+foreach (Order o1 in o.Orders)      // Orders load HERE — on demand
+{
+    Console.WriteLine(o1.OrderNumber);
+}</code></pre><h1><strong>2. Advantages ✅</strong></h1><h2><strong>1. Faster Application Startup</strong></h2><pre><code>When your app starts, it only loads essential data. Heavy or optional data waits until needed. This means users see the app faster.
+Real Example: An e-commerce app loads the customer's basic profile on login. Their 500 order history records only load when they click 'My Orders'.
+public Customer()
+{
+    _CustomerName = "Ali";  // loads immediately — lightweight
+    _Orders = new Lazy&lt;List&lt;Order&gt;&gt;(() =&gt; LoadOrders()); // NOT fired yet
+}</code></pre><h2><strong>2. Less Memory Usage</strong></h2><pre><code>Objects that are never accessed are never loaded into memory. Your application uses only what it actually needs at any given moment.
+Real Example: A user opens an article, reads it, and closes the app. Without lazy loading, ALL articles and comments would have been loaded. With lazy loading, only the one article was ever touched.</code></pre><h2><strong>3. Unnecessary Database Queries Are Avoided</strong></h2><pre><code>Every database call has a cost — network time, query execution, data transfer. Lazy loading means queries only fire when data is truly needed.
+// Without Lazy Loading — DB query fires immediately every time
+public Customer()
+{
+    _Orders = LoadOrders(); // always hits DB even if Orders never used
+}</code></pre><p> </p><p>// With Lazy Loading — DB query only fires when Orders is accessed</p><pre><code>_Orders = new Lazy&lt;List&lt;Order&gt;&gt;(() =&gt; LoadOrders());
+If you create 100 Customer objects but only access Orders for 10 of them, you saved 90 unnecessary database calls.</code></pre><h2><strong>4. Better Scalability</strong></h2><p>Because you use less memory and fewer database queries, your application can handle more concurrent users without performance degrading quickly.</p><h1><strong>3. Disadvantages ❌</strong></h1><h2><strong>1. Code Becomes More Complex</strong></h2><pre><code>You now have to check if data is loaded or not before using it. This adds extra logic to every lazy property.
+// Without Lazy Loading — simple and clean
+public List&lt;Order&gt; Orders { get; set; }
+
+// With Lazy Loading — extra null check needed everywhere
+public List&lt;Order&gt; Orders
+{
+    get
+    {
+        if (_Orders == null)
+        {
+            _Orders = LoadOrders();
+        }
+        return _Orders;
+    }
+}</code></pre><h2><strong>2. Slight Performance Overhead on First Access</strong></h2><p>Every time a lazy property is accessed for the first time, there is an extra check: "Is this loaded yet? No? Then load it now." That check adds a tiny delay on first access. In most cases it is negligible, but in performance-critical systems it matters.</p><h2><strong>3. The N+1 Problem — Most Dangerous Disadvantage</strong></h2><pre><code>This is the most dangerous disadvantage, especially with Entity Framework. When you loop through a collection and each item triggers its own lazy load, you end up with hundreds of hidden database queries.
+// Looks clean — but very dangerous
+var customers = db.Customers.ToList(); // 1 query — loads 100 customers
+
+foreach (var customer in customers)
+{
+    // Each access to Orders fires a SEPARATE DB query!
+    Console.WriteLine(customer.Orders.Count);
+}
+
+// Result:
+// 1 query to load 100 customers
+// + 100 separate queries for each customer's orders
+// = 101 total DB queries fired silently 😱</code></pre><table><tr><td><p><strong>⚠️ Important:  </strong>The N+1 problem is one of the most common performance killers in .NET applications. Always be aware of it when using lazy loading inside loops.</p></td></tr></table><h2><strong>4. Harder to Debug</strong></h2><p>Because data loads at unpredictable times, bugs appear in unexpected places. You might see a NullReferenceException or a database connection error deep inside a loop, far from where the object was originally created.</p><h1><strong>4. Advantages vs Disadvantages — Summary</strong></h1><table><tr><td></td><td><p><strong>Point</strong></p></td><td><p><strong>Details</strong></p></td></tr><tr><td><p>✅</p></td><td><p>Faster startup</p></td><td><p>Only essential data loads at launch</p></td></tr><tr><td><p>✅</p></td><td><p>Less memory</p></td><td><p>Unused data is never loaded into memory</p></td></tr><tr><td><p>✅</p></td><td><p>Fewer DB queries</p></td><td><p>Queries only run when data is needed</p></td></tr><tr><td><p>✅</p></td><td><p>Better scalability</p></td><td><p>Handles more users with same resources</p></td></tr><tr><td><p>❌</p></td><td><p>Complex code</p></td><td><p>Extra null checks and loading logic everywhere</p></td></tr><tr><td><p>❌</p></td><td><p>First access overhead</p></td><td><p>Small delay when data loads for the first time</p></td></tr><tr><td><p>❌</p></td><td><p>N+1 problem</p></td><td><p>Loops can trigger hundreds of hidden DB queries</p></td></tr><tr><td><p>❌</p></td><td><p>Harder to debug</p></td><td><p>Errors appear far from where object was created</p></td></tr></table><h1><strong>5. How to Implement Lazy Loading Manually</strong></h1><p>Two simple changes to your class:</p><ul><li>Remove the object loading from the constructor</li><li>Add a null check inside the property getter — load only on first access</li></ul><h2><strong>Before — Eager Loading (No Lazy)</strong></h2><pre><code>public class Customer
+{
+    private List&lt;Order&gt; _Orders = null;
+
+    public Customer()
+    {
+        _CustomerName = "Ali";
+        _Orders = LoadOrders(); // ❌ Always loads — even if never needed
+    }
+}</code></pre><h2><strong>After — Manual Lazy Loading</strong></h2><pre><code>public class Customer
+{
+    private List&lt;Order&gt; _Orders = null;
+
+    public Customer()
+    {
+        _CustomerName = "Ali";
+        // ✅ Nothing loaded here
+    }
+
+    public List&lt;Order&gt; Orders
+    {
+        get
+        {
+            if (_Orders == null)       // First access?
+            {
+                _Orders = LoadOrders(); // Load and cache
+            }
+            return _Orders;            // Return cached result every time after
+        }
+    }
+}
+First access triggers the load. Every access after that returns the cached result. No repeated database calls.</code></pre><h1><strong>6. The Lazy&lt;T&gt; Class — Built-in Solution</strong></h1><p>Writing the null-check pattern manually every time is repetitive. .NET provides the built-in Lazy&lt;T&gt; class which does everything automatically — and adds thread safety for free.</p><h2><strong>How to Use It — 3 Steps</strong></h2><p><strong>Step 1 — </strong>Declare using Lazy&lt;T&gt;:</p><p>private Lazy&lt;List&lt;Order&gt;&gt; _Orders = null;</p><p><strong>Step 2 — </strong>Attach to your loading method in the constructor:</p><pre><code>_Orders = new Lazy&lt;List&lt;Order&gt;&gt;(() =&gt; LoadOrders());
+Step 3 — Access data via the .Value property:
+public List&lt;Order&gt; Orders
+{
+    get { return _Orders.Value; } // Lazy&lt;T&gt; handles null check automatically
+}</code></pre><h2><strong>Full Clean Example with Lazy&lt;T&gt;</strong></h2><pre><code>public class Customer
+{
+    private Lazy&lt;List&lt;Order&gt;&gt; _Orders = null;
+    private string _CustomerName;
+
+    public string CustomerName
+    {
+        get { return _CustomerName; }
+    }
+
+    public List&lt;Order&gt; Orders
+    {
+        get { return _Orders.Value; } // clean — no null check needed
+    }
+
+    public Customer()
+    {
+        _CustomerName = "Ali";
+        _Orders = new Lazy&lt;List&lt;Order&gt;&gt;(() =&gt; LoadOrders()); // attached, not fired
+    }
+
+    private List&lt;Order&gt; LoadOrders()
+    {
+        return new List&lt;Order&gt;
+        {
+            new Order { OrderNumber = "ORD001" },
+            new Order { OrderNumber = "ORD002" }
+        };
+    }
+}</code></pre><h2><strong>Manual Pattern vs Lazy&lt;T&gt;</strong></h2><table><tr><td></td><td><p><strong>Manual Pattern</strong></p></td><td><p><strong>Lazy&lt;T&gt;</strong></p></td></tr><tr><td><p>Null check</p></td><td><p>You write it yourself</p></td><td><p>Handled automatically</p></td></tr><tr><td><p>Code amount</p></td><td><p>More code</p></td><td><p>Much cleaner</p></td></tr><tr><td><p>Thread safe?</p></td><td><p>❌ Not by default</p></td><td><p>✅ Yes by default</p></td></tr><tr><td><p>First access</p></td><td><p>Triggers load</p></td><td><p>Triggers load via .Value</p></td></tr><tr><td><p>Subsequent access</p></td><td><p>Returns cached result</p></td><td><p>Returns cached via .Value</p></td></tr></table><table><tr><td><p><strong>⚠️ Important:  </strong>Lazy&lt;T&gt; is thread safe by default. If two threads access the property at the same time, it will NOT load twice. The manual null-check pattern does not give you this protection.</p></td></tr></table><h1><strong>7. Eager Loading vs Lazy Loading</strong></h1><table><tr><td><p><strong>Situation</strong></p></td><td><p><strong>Use</strong></p></td></tr><tr><td><p>You know you will always need the data</p></td><td><p>Eager Loading</p></td></tr><tr><td><p>Data is small and cheap to load</p></td><td><p>Eager Loading</p></td></tr><tr><td><p>You might not always need the data</p></td><td><p>Lazy Loading</p></td></tr><tr><td><p>Data is expensive to load (big DB query)</p></td><td><p>Lazy Loading</p></td></tr><tr><td><p>Displaying a list with details (avoid N+1)</p></td><td><p>Eager Loading</p></td></tr><tr><td><p>Loading parent object with optional children</p></td><td><p>Lazy Loading</p></td></tr></table><h1><strong>8. Common Interview Questions</strong></h1><p><strong>Q: What is Lazy Loading?</strong></p><table><tr><td><p><strong>🎯 Interview Answer:  </strong>Lazy Loading is a pattern where data is not loaded until it is actually needed. Instead of loading everything when an object is created, child data loads on demand when first accessed. This improves startup performance and reduces unnecessary database queries.</p></td></tr></table><p><strong>Q: What are the advantages of Lazy Loading?</strong></p><table><tr><td><p><strong>🎯 Interview Answer:  </strong>Lazy loading improves startup performance by only loading essential data at launch, reduces memory usage by never loading data that isn't accessed, and avoids unnecessary database queries. This leads to better scalability as the application can handle more concurrent users with the same resources.</p></td></tr></table><p><strong>Q: What are the disadvantages of Lazy Loading?</strong></p><table><tr><td><p><strong>🎯 Interview Answer:  </strong>Lazy loading adds code complexity through null checks and loading logic. It can cause the N+1 problem where looping through a lazily loaded collection triggers a separate database query for each item, severely hurting performance. It also makes debugging harder because errors appear far from where the object was created.</p></td></tr></table><p><strong>Q: What is the difference between Lazy&lt;T&gt; and manual lazy loading?</strong></p><table><tr><td><p><strong>🎯 Interview Answer:  </strong>Both achieve the same goal — loading data on demand. The manual pattern uses a null check inside the property getter. Lazy&lt;T&gt; is the built-in .NET solution that eliminates the null check boilerplate and adds thread safety by default, ensuring data is only loaded once even when multiple threads access the property simultaneously.</p></td></tr></table><p><strong>Q: What is the N+1 problem?</strong></p><table><tr><td><p><strong>🎯 Interview Answer:  </strong>The N+1 problem occurs when you load a list of N objects and then loop through them accessing a lazily loaded property on each one, triggering N additional database queries — one per object. This results in N+1 total queries instead of just 1 or 2. The solution is to use eager loading when you know you will need child data for every item in the list.</p></td></tr></table><p><em>Good luck with your interview! 🚀</em></p>
+  </div>
+  <div class="footer">Study Docs Portal</div>
+</div>
+
+</body>
+</html>

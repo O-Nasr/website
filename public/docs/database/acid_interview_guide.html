@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ACID Interview Guide</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0c10;
+      --surface: #111318;
+      --surface2: #181c24;
+      --surface3: #1f2530;
+      --border: rgba(255,255,255,0.06);
+      --border2: rgba(255,255,255,0.11);
+      --accent: #6ea1ff;
+      --accent2: #8b6cf6;
+      --green: #34d399;
+      --amber: #fbbf24;
+      --red: #f87171;
+      --teal: #2dd4bf;
+      --text: #dfe5ef;
+      --muted: #7e8a9e;
+      --code-bg: #080a0e;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Outfit', sans-serif;
+      font-size: 15px;
+      line-height: 1.78;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      padding: 56px 28px 44px;
+      max-width: 900px;
+      margin: 0 auto;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -80px;
+      right: -40px;
+      width: 360px;
+      height: 360px;
+      background: radial-gradient(circle, rgba(110,161,255,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-tag {
+      display: inline-block;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10.5px;
+      font-weight: 500;
+      color: var(--accent);
+      background: rgba(110,161,255,0.07);
+      border: 1px solid rgba(110,161,255,0.18);
+      padding: 4px 14px;
+      border-radius: 20px;
+      letter-spacing: 0.09em;
+      margin-bottom: 14px;
+      text-transform: uppercase;
+    }
+    .hero h1 {
+      font-size: clamp(26px, 4.2vw, 42px);
+      font-weight: 700;
+      line-height: 1.15;
+      letter-spacing: -0.03em;
+      margin-bottom: 0;
+      background: linear-gradient(135deg, #dfe5ef 0%, #6ea1ff 50%, #34d399 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* ── Page layout ── */
+    .page {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 28px 100px;
+    }
+
+    /* ── Sections ── */
+    .doc-content h1 {
+      font-size: 20px;
+      font-weight: 700;
+      color: #fff;
+      margin: 30px 0 0;
+      padding: 24px 0 14px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      -webkit-text-fill-color: #fff;
+      background-clip: padding-box;
+    }
+    .doc-content h1:first-child { margin-top: 10px; }
+
+    .doc-content h2 {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--accent);
+      margin: 22px 0 10px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+    }
+
+    .doc-content h3 {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--accent2);
+      margin: 18px 0 8px;
+    }
+
+    .doc-content h4, .doc-content h5, .doc-content h6 {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--teal);
+      margin: 14px 0 6px;
+    }
+
+    p {
+      margin: 0;
+      padding: 6px 0;
+      font-size: 14.5px;
+      line-height: 1.75;
+    }
+    strong, b { color: #fff; }
+    em { color: var(--muted); }
+
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ── Lists ── */
+    ul, ol {
+      padding-left: 20px;
+      margin: 4px 0 10px;
+    }
+    li {
+      margin: 3px 0;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+    li strong { color: #fff; }
+
+    /* ── Tables ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin: 12px 0;
+    }
+    th {
+      background: var(--surface2);
+      color: var(--accent);
+      font-weight: 600;
+      text-align: left;
+      padding: 9px 13px;
+      border: 1px solid var(--border);
+    }
+    td {
+      padding: 8px 13px;
+      border: 1px solid var(--border);
+    }
+    tr:nth-child(even) td {
+      background: rgba(255,255,255,0.012);
+    }
+
+    /* Single-cell tables = note/callout boxes */
+    table:has(tr:only-child td:only-child) {
+      background: rgba(110,161,255,0.05);
+      border: 1px solid rgba(110,161,255,0.14);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    table:has(tr:only-child td:only-child) td {
+      border: none;
+      padding: 13px 16px;
+      font-size: 13px;
+      line-height: 1.7;
+    }
+    table:has(tr:only-child td:only-child) td strong {
+      color: var(--accent);
+    }
+
+    /* ── Code ── */
+    code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12.5px;
+      color: var(--accent);
+      background: rgba(110,161,255,0.07);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    pre {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 18px;
+      overflow-x: auto;
+      margin: 12px 0;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12.5px;
+      line-height: 1.7;
+      color: #c4cdd9;
+      scrollbar-width: thin;
+      scrollbar-color: #333 transparent;
+    }
+    pre::-webkit-scrollbar { height: 4px; }
+    pre::-webkit-scrollbar-track { background: transparent; }
+    pre::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+    pre::-webkit-scrollbar-thumb:hover { background: #555; }
+    pre code {
+      background: none;
+      padding: 0;
+      color: inherit;
+      font-size: inherit;
+    }
+
+    /* ── Blockquote ── */
+    blockquote {
+      background: rgba(110,161,255,0.05);
+      border: 1px solid rgba(110,161,255,0.14);
+      border-left: 3px solid var(--accent);
+      border-radius: 0 10px 10px 0;
+      padding: 13px 16px;
+      margin: 10px 0;
+      font-size: 13px;
+      line-height: 1.7;
+    }
+    blockquote b, blockquote strong { color: var(--accent); }
+
+    /* ── Images ── */
+    img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 10px;
+      margin: 12px 0;
+      border: 1px solid var(--border);
+    }
+
+    /* ── HR ── */
+    hr {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 24px 0;
+    }
+
+    /* ── Footer ── */
+    .footer {
+      text-align: center;
+      padding: 36px 0 16px;
+      font-size: 11px;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      margin-top: 40px;
+    }
+
+    @media (max-width: 640px) {
+      .page { padding: 0 16px 60px; }
+      .hero { padding: 36px 16px 30px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-tag">Database</div>
+  <h1>ACID Interview Guide</h1>
+</div>
+
+<div class="page">
+  <div class="doc-content">
+<p><strong>ACID in Databases</strong></p><p>Interview Preparation Guide</p><p><em>10-Year Senior Database Engineer Perspective</em></p><h1><strong>1. What is ACID?</strong></h1><p>ACID is a set of properties that guarantee database transactions are processed reliably.</p><p><strong>A — Atomicity</strong></p><p><strong>C — Consistency</strong></p><p><strong>I — Isolation</strong></p><p><strong>D — Durability</strong></p><h1><strong>2. Atomicity — All or Nothing</strong></h1><p>A transaction either fully completes or fully rolls back. There is no partial state.</p><p><strong>Real-World Example</strong></p><p>Bank transfer: Deduct 100 from Account A, Add 100 to Account B. If the system crashes mid-way, both operations are rolled back entirely.</p><p><strong>How Databases Implement It</strong></p><p>Write-Ahead Logging (WAL): Changes are written to a log before being applied. On crash, undo logs roll back incomplete transactions.</p><p><strong>Key Terms</strong></p><pre><code>WAL (Write-Ahead Log): Changes logged to disk before applying.
+Undo Logs: Used to reverse uncommitted changes on recovery.</code></pre><h1><strong>3. Consistency — Valid State to Valid State</strong></h1><p>A transaction must move the database from one valid state to another, respecting all constraints, triggers, and business rules.</p><p><strong>Example</strong></p><p>Constraint: balance &gt;= 0. If a transaction tries to set balance = -500, the database rejects and rolls back the transaction.</p><p><strong>Who Is Responsible?</strong></p><p>Both. The database enforces structural constraints. The developer enforces business logic correctness.</p><h1><strong>4. Isolation — Concurrency Control</strong></h1><p>Concurrent transactions must not see each other intermediate states. Isolation levels define how much interaction is allowed.</p><h2><strong>4.1 The 3 Core Anomalies</strong></h2><p><strong>Dirty Read</strong></p><p>Reading data that another transaction modified but has NOT committed yet. You may read something that gets rolled back later.</p><p><strong>Non-Repeatable Read</strong></p><p>Reading the same row twice in a transaction and getting different values because another transaction updated and committed that row in between.</p><p><strong>Phantom Read</strong></p><p>Running the same query twice and seeing a different set of rows because another transaction inserted or deleted matching rows. Key difference: Non-Repeatable = existing row changed. Phantom = row set changed.</p><h2><strong>4.2 The 4 Isolation Levels</strong></h2><table><tr><td><p><strong>Level</strong></p></td><td><p><strong>Dirty Read</strong></p></td><td><p><strong>Non-Repeatable</strong></p></td><td><p><strong>Phantom</strong></p></td><td><p><strong>Use Case</strong></p></td></tr><tr><td><p>Read Uncommitted</p></td><td><p>YES</p></td><td><p>YES</p></td><td><p>YES</p></td><td><p>Rough analytics</p></td></tr><tr><td><p>Read Committed</p></td><td><p>NO</p></td><td><p>YES</p></td><td><p>YES</p></td><td><p>Most web apps (PG default)</p></td></tr><tr><td><p>Repeatable Read</p></td><td><p>NO</p></td><td><p>NO</p></td><td><p>DB-dependent</p></td><td><p>Reports (MySQL default)</p></td></tr><tr><td><p>Serializable</p></td><td><p>NO</p></td><td><p>NO</p></td><td><p>NO</p></td><td><p>Banking, inventory</p></td></tr></table><p><strong>Database Defaults:  </strong>PostgreSQL = Read Committed   |   MySQL InnoDB = Repeatable Read</p><h2><strong>4.3 How Isolation Is Implemented</strong></h2><p><strong>Locking (Pessimistic)</strong></p><p>Locks rows or ranges. Others must wait. Safe but reduces concurrency.</p><p><strong>MVCC — Multi-Version Concurrency Control</strong></p><p>Keeps multiple versions of rows. Each transaction sees a snapshot from when it started. Writers do not block readers. Used by PostgreSQL and MySQL InnoDB.</p><h2><strong>4.4 Serializable — Deep Dive</strong></h2><p>Highest isolation level. Result is equivalent to some sequential execution. Prevents all anomalies including write skew.</p><p><strong>Write Skew</strong></p><p>Two doctors both check if the other is on call, then both go off duty. No row conflicted directly, but the invariant broke. Only Serializable prevents this.</p><p><strong>Implementation Strategies</strong></p><pre><code>1. Strict Two-Phase Locking (S2PL): Holds all locks until commit. Causes blocking and deadlocks.
+2. Serializable Snapshot Isolation (SSI): Used by PostgreSQL. Tracks dependencies and aborts conflicting transactions.
+3. Next-Key / Range Locking: Used by MySQL InnoDB. Locks rows and gaps to prevent phantom inserts.</code></pre><h1><strong>5. Durability — Committed = Permanent</strong></h1><p>Once a transaction commits, it remains committed even if the system crashes immediately after.</p><p><strong>How It Works</strong></p><pre><code>1. Changes are written to WAL on disk first.
+2. fsync forces the log to physical disk, not just OS cache.
+3. COMMIT is acknowledged to the client.
+4. On restart after crash, the database replays the WAL to restore all committed transactions.</code></pre><h1><strong>6. Interview Simulation — Q&amp;A</strong></h1><p>Real interview simulation with senior-level feedback. Pattern: What it is, Why it matters, How it works technically.</p><h2><strong>Q1 — Explain ACID</strong></h2><p><strong>Q: Can you explain what ACID means in databases?</strong></p><pre><code>A: ACID: Atomicity (all or nothing), Consistency (valid state to valid state), Isolation (no interference between concurrent TX), Durability (committed survives crashes).
+Feedback: Correct. Add a real-world bank transfer example and one sentence on why ACID matters.</code></pre><h2><strong>Q2 — Why do isolation levels exist?</strong></h2><p><strong>Q: What problem are isolation levels trying to solve?</strong></p><pre><code>A: To solve Dirty Read, Phantom Read, and Non-Repeatable Read anomalies.
+Feedback: Correct anomalies but missing context. Lead with: multiple transactions run concurrently and without control they can interfere. Then mention the anomalies.</code></pre><h2><strong>Q3 — Non-Repeatable vs Phantom Read</strong></h2><p><strong>Q: What is the difference between Non-Repeatable Read and Phantom Read?</strong></p><pre><code>A: Non-Repeatable: same row updated by another TX. Phantom: new rows added or deleted.
+Feedback: Correct but needs precision. Better: Non-Repeatable = existing row was modified. Phantom = set of rows matching a query changed.</code></pre><h2><strong>Q4 — Which level prevents which anomaly?</strong></h2><p><strong>Q: Which isolation level prevents Non-Repeatable Reads? Which prevents Phantom Reads?</strong></p><pre><code>A: Repeatable Read and Serializable prevent Non-Repeatable Reads. Serializable prevents Phantom Reads.
+Feedback: Correct. Bonus: MySQL InnoDB Repeatable Read also prevents Phantoms using next-key locking.</code></pre><h2><strong>Q5 — Crash mid-transaction</strong></h2><p><strong>Q: A bank transfer crashes after deducting from A but before adding to B. Which ACID property?</strong></p><pre><code>A: Atomicity. The database uses undo logs to roll back the incomplete transaction.
+Feedback: Correct. Add: DB writes to WAL before applying. On crash, undo logs roll back the incomplete transaction.</code></pre><h2><strong>Q6 — Constraint violation</strong></h2><p><strong>Q: Transaction tries to set balance = -200 with CHECK (balance &gt;= 0). What happens?</strong></p><pre><code>A: Consistency. The database rejects the transaction.
+Feedback: Correct. Complete it: DB rejects and rolls back because it violates the CHECK constraint, preserving consistent state.</code></pre><h2><strong>Q7 — Durability after power failure</strong></h2><p><strong>Q: Transaction commits. One second later power failure. Is the data still there?</strong></p><pre><code>A: Durability. Once committed, remains committed even after crashes.
+Feedback: Correct. Add the mechanism: DB uses WAL with fsync before acknowledging commit. On restart, replays WAL.</code></pre><h2><strong>Q8 — Choosing isolation level</strong></h2><p><strong>Q: 1000 concurrent users, good performance, minor inconsistencies acceptable. Which isolation level?</strong></p><pre><code>A: Read Committed. Prevents dirty reads, allows non-repeatable reads, good balance of safety and performance.
+Feedback: Strong. Add: Default in PostgreSQL for a reason — prevents dirty reads while avoiding long-term locks.</code></pre><h1><strong>7. Quick Reference</strong></h1><table><tr><td><p><strong>Term</strong></p></td><td><p><strong>Short Definition</strong></p></td></tr><tr><td><p>Atomicity</p></td><td><p>All operations succeed or all are rolled back. No partial state.</p></td></tr><tr><td><p>Consistency</p></td><td><p>Transaction moves DB from one valid state to another, respecting all constraints.</p></td></tr><tr><td><p>Isolation</p></td><td><p>Concurrent transactions do not see each other intermediate states.</p></td></tr><tr><td><p>Durability</p></td><td><p>Once committed, a transaction remains committed even after crashes.</p></td></tr><tr><td><p>Dirty Read</p></td><td><p>Reading uncommitted data from another transaction.</p></td></tr><tr><td><p>Non-Repeatable Read</p></td><td><p>Same row read twice returns different values because another TX updated it.</p></td></tr><tr><td><p>Phantom Read</p></td><td><p>Same query run twice returns different row set due to insert or delete by another TX.</p></td></tr><tr><td><p>WAL</p></td><td><p>Write-Ahead Log. Changes logged to disk before applying, enabling crash recovery.</p></td></tr><tr><td><p>MVCC</p></td><td><p>Multiple row versions so readers do not block writers.</p></td></tr><tr><td><p>SSI</p></td><td><p>Serializable Snapshot Isolation. Tracks dependencies and aborts conflicting transactions.</p></td></tr></table>
+  </div>
+  <div class="footer">Study Docs Portal</div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Service Discovery — Microservices Study Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0c10;--surface:#111318;--surface2:#181c24;--surface3:#1f2530;--border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.11);--accent:#6ea1ff;--accent2:#8b6cf6;--green:#34d399;--amber:#fbbf24;--red:#f87171;--teal:#2dd4bf;--coral:#fb923c;--text:#dfe5ef;--muted:#7e8a9e;--code-bg:#080a0e}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font-size:15px;line-height:1.78;-webkit-font-smoothing:antialiased}
+.page{max-width:900px;margin:0 auto;padding:0 28px 100px}
+.hero{padding:56px 28px 44px;max-width:900px;margin:0 auto;border-bottom:1px solid var(--border);position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-80px;right:-40px;width:360px;height:360px;background:radial-gradient(circle,rgba(110,161,255,0.08) 0%,transparent 70%);pointer-events:none}
+.hero-tag{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:10.5px;font-weight:500;color:var(--accent);background:rgba(110,161,255,0.07);border:1px solid rgba(110,161,255,0.18);padding:4px 14px;border-radius:20px;letter-spacing:0.09em;margin-bottom:14px;text-transform:uppercase}
+.hero h1{font-size:clamp(26px,4.2vw,42px);font-weight:700;line-height:1.15;letter-spacing:-0.03em;margin-bottom:10px;background:linear-gradient(135deg,#dfe5ef 0%,#6ea1ff 50%,#34d399 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero-sub{font-size:15px;color:var(--muted);line-height:1.65;max-width:600px}
+.section{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:30px;margin-top:30px}
+.section h2{font-size:20px;font-weight:700;color:#fff;margin-bottom:18px;display:flex;align-items:center;gap:10px}
+.section h2 .num{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--accent);background:rgba(110,161,255,0.1);padding:3px 10px;border-radius:6px;font-weight:500}
+.section h3{font-size:15px;font-weight:600;color:var(--accent);margin:22px 0 10px;padding-top:14px;border-top:1px solid var(--border)}
+.section h3:first-of-type{border-top:none;padding-top:0}
+p{margin-bottom:12px}strong{color:#fff}
+ul{padding-left:20px;margin:8px 0 14px}li{margin:4px 0;font-size:14px}
+pre{background:var(--code-bg);border:1px solid var(--border);border-radius:10px;padding:14px 18px;overflow-x:auto;margin:12px 0;font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.7;color:#c4cdd9}
+code{font-family:'JetBrains Mono',monospace;font-size:12.5px;color:var(--accent);background:rgba(110,161,255,0.07);padding:2px 6px;border-radius:4px}
+pre code{background:none;padding:0;color:inherit}
+table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13px}
+th{background:var(--surface2);color:var(--accent);font-weight:600;text-align:left;padding:9px 13px;border:1px solid var(--border)}
+td{padding:8px 13px;border:1px solid var(--border)}
+tr:nth-child(even) td{background:rgba(255,255,255,0.012)}
+.note{background:rgba(110,161,255,0.05);border:1px solid rgba(110,161,255,0.14);border-radius:10px;padding:13px 16px;margin:12px 0;font-size:13px;line-height:1.7}.note b{color:var(--accent)}
+.note-warn{background:rgba(251,191,36,0.05);border-color:rgba(251,191,36,0.14)}.note-warn b{color:var(--amber)}
+.note-red{background:rgba(248,113,113,0.05);border-color:rgba(248,113,113,0.14)}.note-red b{color:var(--red)}
+.note-green{background:rgba(52,211,153,0.05);border-color:rgba(52,211,153,0.14)}.note-green b{color:var(--green)}
+.qa{background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:14px 18px;margin:10px 0}
+.qa-q{font-weight:600;color:#fff;margin-bottom:5px;font-size:14px}
+.qa-a{color:var(--muted);font-size:13px;line-height:1.7}
+.tab-group{margin:16px 0}.tab-bar{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.tab-btn{padding:6px 14px;font-size:12px;font-weight:500;font-family:'Outfit',sans-serif;border:1px solid var(--border2);border-radius:6px;background:transparent;color:var(--muted);cursor:pointer;transition:all 0.15s}
+.tab-btn:hover{border-color:rgba(110,161,255,0.3);color:var(--text)}
+.tab-btn.active{background:rgba(110,161,255,0.1);color:var(--accent);border-color:rgba(110,161,255,0.3)}
+.tab-panel{display:none}.tab-panel.active{display:block}
+.flow{display:flex;align-items:center;gap:8px;margin:10px 0;flex-wrap:wrap}
+.flow-step{background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:8px 14px;font-size:13px;color:var(--text);font-weight:500}
+.flow-arrow{color:var(--muted);font-size:16px}
+.env-row{display:flex;gap:12px;margin:10px 0;align-items:stretch}
+.env-card{flex:1;border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:4px}
+.env-card .env-name{font-size:13px;font-weight:600}.env-card .env-status{font-size:11px;color:var(--muted)}
+.pod-row{display:flex;gap:8px;margin:12px 0;align-items:center;flex-wrap:wrap}
+.pod{width:90px;height:48px;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:12px;font-weight:500;gap:2px}
+.pod-v1{background:rgba(110,161,255,0.08);border:1px solid rgba(110,161,255,0.18);color:var(--accent)}
+.pod-v2{background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.18);color:var(--green)}
+.traffic{display:flex;height:32px;border-radius:8px;overflow:hidden;border:1px solid var(--border);margin:10px 0}
+.traffic-v1{background:rgba(110,161,255,0.1);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;color:var(--accent)}
+.traffic-v2{background:rgba(52,211,153,0.1);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;color:var(--green)}
+.toc{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px 24px;margin:30px 0}
+.toc h3{font-size:12px;font-weight:600;color:var(--accent);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.06em}
+.toc a{font-size:13px;color:var(--muted);text-decoration:none;display:block;padding:4px 0;transition:color 0.15s}
+.toc a:hover{color:var(--accent)}
+.footer{text-align:center;padding:36px 0 16px;font-size:11px;color:var(--muted);border-top:1px solid var(--border);margin-top:40px}
+@media(max-width:640px){.page{padding:0 16px 60px}.section{padding:20px 16px}.env-row{flex-direction:column}.hero{padding:36px 16px 30px}}
+</style>
+
+</head>
+<body>
+<div class="hero">
+  <div class="hero-tag">Microservices · Topic 05</div>
+  <h1>Service Discovery</h1>
+  <p class="hero-sub">Client-side vs server-side, Kubernetes DNS, Consul, health checks, liveness vs readiness probes.</p>
+</div>
+<div class="page">
+
+<div class="section" id="s1">
+<h2><span class="num">01</span> Why Hardcoded URLs Break</h2>
+<div class="tab-group" id="prob">
+<div class="tab-bar">
+<button class="tab-btn active" onclick="showTab('prob',0)">Scaling</button>
+<button class="tab-btn" onclick="showTab('prob',1)">Crashes</button>
+<button class="tab-btn" onclick="showTab('prob',2)">Deploys</button>
+</div>
+<div class="tab-panel active"><p>You spin up 3 Inventory instances. Config only knows one IP. Two instances sit <strong>idle</strong>.</p></div>
+<div class="tab-panel"><p>Inventory crashes, gets new IP. Config still points to dead address. <strong>All requests fail.</strong></p></div>
+<div class="tab-panel"><p>New deploy gets different IP. Nobody told the callers. <strong>Requests fail.</strong></p></div>
+</div>
+</div>
+
+<div class="section" id="s2">
+<h2><span class="num">02</span> Two Discovery Models</h2>
+<div class="tab-group" id="disc">
+<div class="tab-bar">
+<button class="tab-btn active" onclick="showTab('disc',0)">Client-side</button>
+<button class="tab-btn" onclick="showTab('disc',1)">Server-side (K8s)</button>
+<button class="tab-btn" onclick="showTab('disc',2)">Comparison</button>
+</div>
+<div class="tab-panel active">
+<p style="font-weight:600;color:#fff;margin-bottom:8px">Client-side: caller picks the instance</p>
+<div class="flow"><div class="flow-step">Orders</div><span class="flow-arrow">→ query →</span><div class="flow-step" style="border-color:rgba(52,211,153,0.3);color:var(--green)">Registry</div><span class="flow-arrow">→ returns list →</span><div class="flow-step">[:5001, :5002, :5003]</div></div>
+<p>Client gets full list of healthy IPs, picks one (round-robin). Examples: Netflix Ribbon, gRPC built-in. Pro: no extra hop. Con: every service needs discovery logic.</p>
+</div>
+<div class="tab-panel">
+<p style="font-weight:600;color:#fff;margin-bottom:8px">Server-side: load balancer picks for you (Kubernetes)</p>
+<div class="flow"><div class="flow-step">Orders calls http://inventory-service:5001</div><span class="flow-arrow">→</span><div class="flow-step" style="border-color:rgba(110,161,255,0.3);color:var(--accent)">K8s Service (DNS + kube-proxy)</div><span class="flow-arrow">→</span><div class="flow-step">healthy pod</div></div>
+<pre><code>// C# — nothing special! Just use the DNS name
+builder.Services.AddHttpClient("Inventory", client =>
+{
+    client.BaseAddress = new Uri("http://inventory-service:5001");
+});</code></pre>
+<p>K8s handles: CoreDNS resolution → kube-proxy iptables routing → Endpoints API auto-registration → readiness probes remove unhealthy pods.</p>
+</div>
+<div class="tab-panel">
+<table>
+<tr><th>Aspect</th><th>Client-Side</th><th>Server-Side (K8s)</th></tr>
+<tr><td>Who picks?</td><td>The caller</td><td>Load balancer / DNS</td></tr>
+<tr><td>Examples</td><td>Eureka, gRPC</td><td>K8s Services, AWS ALB</td></tr>
+<tr><td>Pro</td><td>No extra network hop</td><td>Simple for developers</td></tr>
+<tr><td>Con</td><td>Discovery logic in every service</td><td>Extra hop through LB</td></tr>
+</table>
+</div>
+</div>
+</div>
+
+<div class="section" id="s3">
+<h2><span class="num">03</span> Health Checks</h2>
+<div class="tab-group" id="health">
+<div class="tab-bar">
+<button class="tab-btn active" onclick="showTab('health',0)">ASP.NET Core code</button>
+<button class="tab-btn" onclick="showTab('health',1)">Liveness vs Readiness</button>
+<button class="tab-btn" onclick="showTab('health',2)">Consul registration</button>
+</div>
+<div class="tab-panel active">
+<pre><code>builder.Services.AddHealthChecks()
+    .AddDbContextCheck&lt;AppDbContext&gt;()
+    .AddRedis("redis-connection-string")
+    .AddCheck("custom", () =>
+    {
+        var isReady = CheckSomething();
+        return isReady ? HealthCheckResult.Healthy()
+                       : HealthCheckResult.Unhealthy("Not ready");
+    });
+
+app.MapHealthChecks("/health");          // liveness
+app.MapHealthChecks("/health/ready", ... // readiness</code></pre>
+</div>
+<div class="tab-panel">
+<table>
+<tr><th>Probe</th><th>Question</th><th>On failure</th></tr>
+<tr><td>Liveness <code>/health</code></td><td>Is the process alive?</td><td>K8s <strong>restarts</strong> the pod</td></tr>
+<tr><td>Readiness <code>/health/ready</code></td><td>Can it handle requests?</td><td>K8s <strong>stops routing</strong> (doesn't kill it)</td></tr>
+</table>
+<p>A service loading cache? Alive (liveness=healthy) but not ready (readiness=unhealthy). K8s keeps it running, doesn't send traffic until cache is warm.</p>
+</div>
+<div class="tab-panel">
+<p style="font-weight:600;color:#fff;margin-bottom:8px">Without K8s — Consul dynamic registration</p>
+<pre><code>// Service discovers its own IP dynamically at startup
+var address = Environment.GetEnvironmentVariable("HOST_IP")
+              ?? GetLocalIPAddress();
+var port = int.Parse(Environment.GetEnvironmentVariable("PORT") ?? "5001");
+
+await _consul.Agent.ServiceRegister(new AgentServiceRegistration
+{
+    ID = $"inventory-{Guid.NewGuid()}",
+    Name = "inventory-service",
+    Address = address,    // dynamic, not hardcoded!
+    Port = port,
+    Check = new AgentServiceCheck
+    {
+        HTTP = $"http://{address}:{port}/health",
+        Interval = TimeSpan.FromSeconds(10),
+        DeregisterCriticalServiceAfter = TimeSpan.FromSeconds(30)
+    }
+});</code></pre>
+</div>
+</div>
+</div>
+
+<div class="section" id="s4">
+<h2><span class="num">04</span> Interview Q&amp;A</h2>
+<div class="qa"><div class="qa-q">Q: How does K8s service discovery work?</div><div class="qa-a">K8s Service gets a stable DNS name + virtual IP. CoreDNS resolves. kube-proxy routes via iptables to healthy pod IPs. Pods auto-register via Endpoints API. Health monitored through liveness and readiness probes.</div></div>
+<div class="qa"><div class="qa-q">Q: Liveness vs readiness?</div><div class="qa-a">Liveness = "is the process alive?" Failure = restart. Readiness = "can it handle traffic?" Failure = remove from LB but keep running. A service loading cache is alive but not ready.</div></div>
+</div>
+<div class="footer">Service Discovery — Microservices Study Guide · C# / .NET · Interview Prep · 2026</div>
+</div>
+<script>
+function showTab(g,i){var p=document.getElementById(g).querySelectorAll('.tab-panel'),b=document.getElementById(g).querySelectorAll('.tab-btn');p.forEach(function(x,j){x.classList.toggle('active',j===i)});b.forEach(function(x,j){x.classList.remove('active');if(j===i)x.classList.add('active')})}
+</script>
+</body>
+</html>

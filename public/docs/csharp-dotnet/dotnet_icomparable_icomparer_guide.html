@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Icomparable Icomparer</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0c10;
+      --surface: #111318;
+      --surface2: #181c24;
+      --surface3: #1f2530;
+      --border: rgba(255,255,255,0.06);
+      --border2: rgba(255,255,255,0.11);
+      --accent: #6ea1ff;
+      --accent2: #8b6cf6;
+      --green: #34d399;
+      --amber: #fbbf24;
+      --red: #f87171;
+      --teal: #2dd4bf;
+      --text: #dfe5ef;
+      --muted: #7e8a9e;
+      --code-bg: #080a0e;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Outfit', sans-serif;
+      font-size: 15px;
+      line-height: 1.78;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      padding: 56px 28px 44px;
+      max-width: 900px;
+      margin: 0 auto;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -80px;
+      right: -40px;
+      width: 360px;
+      height: 360px;
+      background: radial-gradient(circle, rgba(110,161,255,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-tag {
+      display: inline-block;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10.5px;
+      font-weight: 500;
+      color: var(--accent);
+      background: rgba(110,161,255,0.07);
+      border: 1px solid rgba(110,161,255,0.18);
+      padding: 4px 14px;
+      border-radius: 20px;
+      letter-spacing: 0.09em;
+      margin-bottom: 14px;
+      text-transform: uppercase;
+    }
+    .hero h1 {
+      font-size: clamp(26px, 4.2vw, 42px);
+      font-weight: 700;
+      line-height: 1.15;
+      letter-spacing: -0.03em;
+      margin-bottom: 0;
+      background: linear-gradient(135deg, #dfe5ef 0%, #6ea1ff 50%, #34d399 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* ── Page layout ── */
+    .page {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 28px 100px;
+    }
+
+    /* ── Sections ── */
+    .doc-content h1 {
+      font-size: 20px;
+      font-weight: 700;
+      color: #fff;
+      margin: 30px 0 0;
+      padding: 24px 0 14px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      -webkit-text-fill-color: #fff;
+      background-clip: padding-box;
+    }
+    .doc-content h1:first-child { margin-top: 10px; }
+
+    .doc-content h2 {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--accent);
+      margin: 22px 0 10px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+    }
+
+    .doc-content h3 {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--accent2);
+      margin: 18px 0 8px;
+    }
+
+    .doc-content h4, .doc-content h5, .doc-content h6 {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--teal);
+      margin: 14px 0 6px;
+    }
+
+    p {
+      margin: 0;
+      padding: 6px 0;
+      font-size: 14.5px;
+      line-height: 1.75;
+    }
+    strong, b { color: #fff; }
+    em { color: var(--muted); }
+
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ── Lists ── */
+    ul, ol {
+      padding-left: 20px;
+      margin: 4px 0 10px;
+    }
+    li {
+      margin: 3px 0;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+    li strong { color: #fff; }
+
+    /* ── Tables ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin: 12px 0;
+    }
+    th {
+      background: var(--surface2);
+      color: var(--accent);
+      font-weight: 600;
+      text-align: left;
+      padding: 9px 13px;
+      border: 1px solid var(--border);
+    }
+    td {
+      padding: 8px 13px;
+      border: 1px solid var(--border);
+    }
+    tr:nth-child(even) td {
+      background: rgba(255,255,255,0.012);
+    }
+
+    /* Single-cell tables = note/callout boxes */
+    table:has(tr:only-child td:only-child) {
+      background: rgba(110,161,255,0.05);
+      border: 1px solid rgba(110,161,255,0.14);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    table:has(tr:only-child td:only-child) td {
+      border: none;
+      padding: 13px 16px;
+      font-size: 13px;
+      line-height: 1.7;
+    }
+    table:has(tr:only-child td:only-child) td strong {
+      color: var(--accent);
+    }
+
+    /* ── Code ── */
+    code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12.5px;
+      color: var(--accent);
+      background: rgba(110,161,255,0.07);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    pre {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 18px;
+      overflow-x: auto;
+      margin: 12px 0;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12.5px;
+      line-height: 1.7;
+      color: #c4cdd9;
+      scrollbar-width: thin;
+      scrollbar-color: #333 transparent;
+    }
+    pre::-webkit-scrollbar { height: 4px; }
+    pre::-webkit-scrollbar-track { background: transparent; }
+    pre::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+    pre::-webkit-scrollbar-thumb:hover { background: #555; }
+    pre code {
+      background: none;
+      padding: 0;
+      color: inherit;
+      font-size: inherit;
+    }
+
+    /* ── Blockquote ── */
+    blockquote {
+      background: rgba(110,161,255,0.05);
+      border: 1px solid rgba(110,161,255,0.14);
+      border-left: 3px solid var(--accent);
+      border-radius: 0 10px 10px 0;
+      padding: 13px 16px;
+      margin: 10px 0;
+      font-size: 13px;
+      line-height: 1.7;
+    }
+    blockquote b, blockquote strong { color: var(--accent); }
+
+    /* ── Images ── */
+    img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 10px;
+      margin: 12px 0;
+      border: 1px solid var(--border);
+    }
+
+    /* ── HR ── */
+    hr {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 24px 0;
+    }
+
+    /* ── Footer ── */
+    .footer {
+      text-align: center;
+      padding: 36px 0 16px;
+      font-size: 11px;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      margin-top: 40px;
+    }
+
+    @media (max-width: 640px) {
+      .page { padding: 0 16px 60px; }
+      .hero { padding: 36px 16px 30px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-tag">C# & .NET</div>
+  <h1>Icomparable Icomparer</h1>
+</div>
+
+<div class="page">
+  <div class="doc-content">
+<p><strong>.NET Interview Study Guide</strong></p><p><em>IComparable vs IComparer — Complete Guide</em></p><h1><strong>1. Quick Summary</strong></h1><pre><code>IComparable = The object knows how to sort itself. Sorting logic lives INSIDE the class.
+IComparer = A separate external class that knows how to sort from outside. Sorting logic lives OUTSIDE the class.</code></pre><table><tr><td><p><strong>⚠️ Important:  </strong>IComparable = one fixed default sort. IComparer = multiple flexible sort strategies. Think of IComparable as the object judging itself, and IComparer as hiring an external judge.</p></td></tr></table><h1><strong>2. IComparable — Internal Default Sorting</strong></h1><pre><code>The class implements sorting logic inside itself using CompareTo(). One default sort criteria.
+class Student : IComparable&lt;Student&gt;
+{
+    public string Name { get; set; }
+    public int Age { get; set; }
+
+    // Sorting logic lives INSIDE the class
+    public int CompareTo(Student other)
+    {
+        return this.Age.CompareTo(other.Age); // sort by Age — fixed default
+    }
+}</code></pre><p> </p><p>List&lt;Student&gt; students = new List&lt;Student&gt;</p><pre><code>{
+    new Student { Name = "Ali",   Age = 25 },
+    new Student { Name = "Omar",  Age = 20 },
+    new Student { Name = "Ahmed", Age = 22 },
+};
+
+students.Sort(); // uses CompareTo() internally — sorts by Age
+
+// Output:
+// Omar  — 20
+// Ahmed — 22
+// Ali   — 25</code></pre><h2><strong>The Problem with IComparable</strong></h2><pre><code>What if sometimes you want to sort by Name and other times by Age? With IComparable you are stuck — the logic is hardcoded inside the class.
+students.Sort(); // ALWAYS sorts by Age — no flexibility ❌
+// Cannot change sort criteria without modifying the class</code></pre><h1><strong>3. IComparer — External Flexible Sorting</strong></h1><pre><code>Create separate classes for each sort criteria. The logic lives outside the Student class. Zero modifications to original class.
+// Sort by Name — external class
+class SortByName : IComparer&lt;Student&gt;
+{
+    public int Compare(Student x, Student y)
+    {
+        return string.Compare(x.Name, y.Name); // alphabetical
+    }
+}
+
+// Sort by Age — external class
+class SortByAge : IComparer&lt;Student&gt;
+{
+    public int Compare(Student x, Student y)
+    {
+        if (x.Age &gt; y.Age) return 1;  // x is greater
+        if (x.Age &lt; y.Age) return -1; // x is smaller
+        return 0;                      // equal
+    }
+}
+
+// Now sort any way you want — zero changes to Student class
+students.Sort(new SortByName()); // alphabetical by name
+students.Sort(new SortByAge());  // ascending by age
+
+// Sort by Name output:
+// Ahmed — 22
+// Ali   — 25
+// Omar  — 20
+
+// Sort by Age output:
+// Omar  — 20
+// Ahmed — 22
+// Ali   — 25</code></pre><h1><strong>4. CompareTo Return Values</strong></h1><p>Both CompareTo and Compare follow the same return value convention:</p><table><tr><td><p><strong>Return Value</strong></p></td><td><p><strong>Meaning</strong></p></td></tr><tr><td><p>Negative number (e.g. -1)</p></td><td><p>Current object is LESS THAN the other</p></td></tr><tr><td><p>Zero (0)</p></td><td><p>Current object is EQUAL TO the other</p></td></tr><tr><td><p>Positive number (e.g. 1)</p></td><td><p>Current object is GREATER THAN the other</p></td></tr></table><h1><strong>5. Key Differences</strong></h1><table><tr><td></td><td><p><strong>IComparable</strong></p></td><td><p><strong>IComparer</strong></p></td></tr><tr><td><p>Where is logic?</p></td><td><p>Inside the class</p></td><td><p>Outside in a separate class</p></td></tr><tr><td><p>Sort criteria</p></td><td><p>One fixed default</p></td><td><p>As many as you want</p></td></tr><tr><td><p>How called?</p></td><td><p>list.Sort()</p></td><td><p>list.Sort(new SortByX())</p></td></tr><tr><td><p>Flexible?</p></td><td><p>❌ No</p></td><td><p>✅ Yes</p></td></tr><tr><td><p>Modifies original class?</p></td><td><p>✅ Yes</p></td><td><p>❌ No</p></td></tr><tr><td><p>Follows Open/Closed?</p></td><td><p>❌ No</p></td><td><p>✅ Yes</p></td></tr><tr><td><p>Best for</p></td><td><p>Simple default sort</p></td><td><p>Multiple sort scenarios</p></td></tr></table><table><tr><td><p><strong>⚠️ Important:  </strong>Open/Closed Principle — IComparer keeps the class closed for modification but open for extension. Mentioning this in interviews instantly shows mid-level thinking.</p></td></tr></table><h1><strong>6. Real World Example — Multiple Sort Strategies</strong></h1><pre><code>// Employees sorted different ways depending on context
+class SortByDepartment : IComparer&lt;Employee&gt;
+{
+    public int Compare(Employee x, Employee y)
+        =&gt; string.Compare(x.Department, y.Department);
+}
+
+class SortBySalaryDescending : IComparer&lt;Employee&gt;
+{
+    public int Compare(Employee x, Employee y)
+        =&gt; y.Salary.CompareTo(x.Salary); // descending — note y vs x
+}
+
+class SortByNameThenAge : IComparer&lt;Employee&gt;
+{
+    public int Compare(Employee x, Employee y)
+    {
+        int nameComp = string.Compare(x.Name, y.Name);
+        if (nameComp != 0) return nameComp;  // sort by name first
+        return x.Age.CompareTo(y.Age);       // then by age if names equal
+    }
+}
+
+// Usage
+employees.Sort(new SortByDepartment());
+employees.Sort(new SortBySalaryDescending());
+employees.Sort(new SortByNameThenAge());</code></pre><h1><strong>7. Modern Alternative — LINQ OrderBy</strong></h1><p>In modern C# code, LINQ is often used instead of IComparer for sorting — cleaner and more readable:</p><pre><code>// Instead of IComparer classes — use LINQ
+var byName = students.OrderBy(s =&gt; s.Name).ToList();
+var byAge  = students.OrderBy(s =&gt; s.Age).ToList();
+var byAgeThenName = students
+    .OrderBy(s =&gt; s.Age)
+    .ThenBy(s =&gt; s.Name)
+    .ToList();
+
+// IComparer is still important for:
+// - List.Sort() which sorts in-place (no new list created)
+// - Custom complex sorting logic
+// - Older codebases
+// - Interview questions 😄</code></pre><h1><strong>8. Interview Questions</strong></h1><p><strong>Q: What is the difference between IComparable and IComparer?</strong></p><table><tr><td><p><strong>🎯 Interview Answer:  </strong>IComparable defines a default sort implementation inside the class itself using CompareTo(). It is limited to one fixed sorting criteria and the sorting logic is coupled to the class. IComparer separates sorting logic into external classes using Compare(), allowing multiple different sort strategies without modifying the original class. IComparer is more flexible and follows the Open/Closed principle — the class is closed for modification but open for extension.</p></td></tr></table><p><strong>Q: When would you use IComparer over IComparable?</strong></p><table><tr><td><p><strong>🎯 Interview Answer:  </strong>Use IComparer when you need multiple sort strategies for the same class — for example sorting employees by name in one context and by salary in another. Use IComparable when there is one obvious natural default sort order for the class that will never change — for example sorting dates chronologically or numbers ascending. In modern code, LINQ OrderBy is often preferred over both for its readability.</p></td></tr></table><p><strong>Q: What do the return values of CompareTo mean?</strong></p><table><tr><td><p><strong>🎯 Interview Answer:  </strong>CompareTo returns a negative number when the current object is less than the compared object, zero when they are equal, and a positive number when the current object is greater. This convention is shared by both IComparable.CompareTo() and IComparer.Compare(). The Sort method uses these return values to determine the correct ordering.</p></td></tr></table><p><em>Good luck with your interview! 🚀</em></p>
+  </div>
+  <div class="footer">Study Docs Portal</div>
+</div>
+
+</body>
+</html>

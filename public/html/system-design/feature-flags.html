@@ -1,0 +1,1371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Feature Flags — Complete Study Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Sora:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f14;
+    --surface: #141720;
+    --surface2: #1c2030;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.13);
+    --accent: #4f8ef7;
+    --accent2: #7c5cbf;
+    --green: #34d399;
+    --amber: #fbbf24;
+    --red: #f87171;
+    --teal: #2dd4bf;
+    --text: #e2e8f0;
+    --muted: #8892a4;
+    --code-bg: #0a0c12;
+    --radius: 10px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Sora', sans-serif;
+    font-size: 15px;
+    line-height: 1.75;
+    padding: 0;
+  }
+
+  /* ── LAYOUT ── */
+  .page { max-width: 900px; margin: 0 auto; padding: 0 32px 80px; }
+
+  /* ── HERO ── */
+  .hero {
+    padding: 72px 32px 56px;
+    max-width: 900px;
+    margin: 0 auto;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -120px; right: -80px;
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(79,142,247,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-tag {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--accent);
+    background: rgba(79,142,247,0.1);
+    border: 1px solid rgba(79,142,247,0.25);
+    padding: 4px 12px;
+    border-radius: 20px;
+    letter-spacing: 0.08em;
+    margin-bottom: 20px;
+  }
+  .hero h1 {
+    font-size: clamp(32px, 5vw, 52px);
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.03em;
+    margin-bottom: 16px;
+    background: linear-gradient(135deg, #e2e8f0 0%, #94a3b8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .hero p {
+    font-size: 16px;
+    color: var(--muted);
+    max-width: 560px;
+    line-height: 1.7;
+  }
+  .hero-meta {
+    display: flex;
+    gap: 24px;
+    margin-top: 28px;
+    flex-wrap: wrap;
+  }
+  .hero-meta span {
+    font-size: 12px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .hero-meta .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--green);
+    display: inline-block;
+  }
+
+  /* ── TOC ── */
+  .toc {
+    margin: 40px 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px 28px;
+  }
+  .toc-title {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  .toc ol {
+    list-style: none;
+    counter-reset: toc;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px 24px;
+  }
+  .toc li {
+    counter-increment: toc;
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+  .toc li::before {
+    content: counter(toc, decimal-leading-zero);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--accent);
+    opacity: 0.6;
+    flex-shrink: 0;
+  }
+  .toc a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 13px;
+    transition: color 0.2s;
+  }
+  .toc a:hover { color: var(--text); }
+
+  /* ── SECTIONS ── */
+  .section { padding-top: 56px; }
+  .section-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+  h2 {
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    margin-bottom: 16px;
+    line-height: 1.3;
+  }
+  h3 {
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--text);
+    margin: 28px 0 12px;
+  }
+  h4 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin: 24px 0 10px;
+  }
+  p { color: var(--muted); margin-bottom: 14px; }
+  p strong { color: var(--text); font-weight: 600; }
+
+  /* ── CODE BLOCKS ── */
+  .code-block {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin: 20px 0;
+    font-size: 13px;
+  }
+  .code-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    background: rgba(255,255,255,0.03);
+    border-bottom: 1px solid var(--border);
+  }
+  .code-lang {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--accent);
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .code-dots { display: flex; gap: 5px; }
+  .code-dots span {
+    width: 9px; height: 9px; border-radius: 50%;
+  }
+  .code-dots span:nth-child(1) { background: #f87171; }
+  .code-dots span:nth-child(2) { background: #fbbf24; }
+  .code-dots span:nth-child(3) { background: #34d399; }
+  pre {
+    padding: 20px;
+    overflow-x: auto;
+    font-family: 'JetBrains Mono', monospace;
+    line-height: 1.7;
+  }
+  code { color: #c9d1e0; }
+  .kw  { color: #7c9ef5; }
+  .cm  { color: #4d5f77; font-style: italic; }
+  .str { color: #86e0a8; }
+  .typ { color: #e8a96e; }
+  .num { color: #c3a6e0; }
+  .ok  { color: #34d399; }
+  .bad { color: #f87171; }
+  .muted-code { color: #4d5f77; }
+
+  /* ── CALLOUT ── */
+  .callout {
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    margin: 20px 0;
+    border-left: 3px solid;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .callout-icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+  .callout-body { flex: 1; font-size: 13.5px; line-height: 1.65; }
+  .callout-body strong { font-weight: 600; }
+  .callout.info  { background: rgba(79,142,247,0.07);  border-color: var(--accent); }
+  .callout.info  .callout-body { color: #93b8f8; }
+  .callout.tip   { background: rgba(52,211,153,0.07);  border-color: var(--green); }
+  .callout.tip   .callout-body { color: #6ee7b7; }
+  .callout.warn  { background: rgba(251,191,36,0.07);  border-color: var(--amber); }
+  .callout.warn  .callout-body { color: #fcd34d; }
+  .callout.danger{ background: rgba(248,113,113,0.07); border-color: var(--red); }
+  .callout.danger .callout-body { color: #fca5a5; }
+
+  /* ── DIAGRAM CARDS ── */
+  .diagram-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+    margin: 24px 0;
+    overflow: hidden;
+  }
+  .diagram-card svg { width: 100%; display: block; }
+
+  /* ── COMPARISON TABLE ── */
+  .table-wrap { overflow-x: auto; margin: 20px 0; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    min-width: 480px;
+  }
+  th {
+    text-align: left;
+    padding: 10px 14px;
+    background: rgba(255,255,255,0.04);
+    color: var(--text);
+    font-weight: 600;
+    font-size: 12px;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid var(--border2);
+  }
+  td {
+    padding: 10px 14px;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+    line-height: 1.5;
+  }
+  tr:last-child td { border-bottom: none; }
+  td strong { color: var(--text); }
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+  }
+  .badge-green { background: rgba(52,211,153,0.15); color: var(--green); }
+  .badge-amber { background: rgba(251,191,36,0.15); color: var(--amber); }
+  .badge-red   { background: rgba(248,113,113,0.15); color: var(--red); }
+  .badge-blue  { background: rgba(79,142,247,0.15);  color: var(--accent); }
+
+  /* ── STEP GRID ── */
+  .steps {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin: 20px 0;
+    position: relative;
+  }
+  .steps::before {
+    content: '';
+    position: absolute;
+    left: 19px; top: 28px; bottom: 28px;
+    width: 1px;
+    background: var(--border2);
+  }
+  .step {
+    display: flex;
+    gap: 18px;
+    align-items: flex-start;
+    padding: 14px 0;
+  }
+  .step-num {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--accent);
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+  }
+  .step-content { padding-top: 6px; }
+  .step-content strong { color: var(--text); font-size: 14px; display: block; margin-bottom: 4px; }
+  .step-content p { margin: 0; font-size: 13px; }
+
+  /* ── DIVIDER ── */
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 52px 0 0;
+  }
+
+  /* ── QA SECTION ── */
+  .qa-list { display: flex; flex-direction: column; gap: 16px; margin: 20px 0; }
+  .qa-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .qa-q {
+    padding: 14px 20px;
+    font-size: 13.5px;
+    color: var(--text);
+    font-weight: 600;
+    background: rgba(255,255,255,0.02);
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .qa-q::before {
+    content: 'Q';
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--accent);
+    background: rgba(79,142,247,0.12);
+    border: 1px solid rgba(79,142,247,0.25);
+    padding: 2px 7px;
+    border-radius: 4px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .qa-a {
+    padding: 14px 20px;
+    font-size: 13.5px;
+    color: var(--muted);
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    line-height: 1.65;
+  }
+  .qa-a::before {
+    content: 'A';
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--green);
+    background: rgba(52,211,153,0.1);
+    border: 1px solid rgba(52,211,153,0.2);
+    padding: 2px 7px;
+    border-radius: 4px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  /* ── FOOTER ── */
+  .footer {
+    margin-top: 72px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    text-align: center;
+    font-size: 12px;
+    color: var(--muted);
+    opacity: 0.5;
+  }
+
+  /* ── SVG DIAGRAM STYLES (embedded) ── */
+  .diagram-card svg text { font-family: 'Sora', sans-serif; }
+
+  @media (max-width: 640px) {
+    .toc ol { grid-template-columns: 1fr; }
+    .page, .hero { padding-left: 20px; padding-right: 20px; }
+    h2 { font-size: 22px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════ HERO -->
+<div class="hero">
+  <div class="hero-tag">C# · .NET · Interview Prep</div>
+  <h1>Feature Flags</h1>
+  <p>A complete deep dive — from the core concept to production-grade C# implementations with EF Core, Microsoft.FeatureManagement, caching, and testing.</p>
+  <div class="hero-meta">
+    <span><span class="dot"></span> Interview Ready</span>
+    <span><span class="dot" style="background:var(--accent)"></span> C# / .NET</span>
+    <span><span class="dot" style="background:var(--amber)"></span> System Design</span>
+  </div>
+</div>
+
+<div class="page">
+
+  <!-- TOC -->
+  <div class="toc">
+    <div class="toc-title">Contents</div>
+    <ol>
+      <li><a href="#s1">What is a feature flag?</a></li>
+      <li><a href="#s2">The 4 types of flags</a></li>
+      <li><a href="#s3">Building it in C# — layer by layer</a></li>
+      <li><a href="#s4">Gradual rollout & hash bucketing</a></li>
+      <li><a href="#s5">Microsoft.FeatureManagement</a></li>
+      <li><a href="#s6">EF Core + database-backed flags</a></li>
+      <li><a href="#s7">Caching layer</a></li>
+      <li><a href="#s8">Testing feature flags</a></li>
+      <li><a href="#s9">Flag lifecycle</a></li>
+      <li><a href="#s10">Interview Q&amp;A</a></li>
+    </ol>
+  </div>
+
+  <!-- ═══════ SECTION 1 -->
+  <div class="section" id="s1">
+    <div class="section-label">01</div>
+    <h2>What is a Feature Flag?</h2>
+
+    <p>A <strong>feature flag</strong> (also called a feature toggle) is a conditional in your code that controls whether a piece of functionality is active — <strong>without deploying new code</strong>. Think of it as a light switch for your features: the code ships to production but stays dormant until you flip the switch.</p>
+
+    <div class="callout info">
+      <span class="callout-icon">💡</span>
+      <div class="callout-body"><strong>Core insight:</strong> The new code ships to production. It's dormant until you toggle the flag. You can enable it for 1 user, 10%, or everyone — whenever you're ready, with zero redeployment.</div>
+    </div>
+
+    <!-- Diagram 1: Core concept -->
+    <div class="diagram-card">
+      <svg viewBox="0 0 820 290" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="arr1" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M2 1L8 5L2 9" fill="none" stroke="#4f8ef7" stroke-width="1.5" stroke-linecap="round"/>
+          </marker>
+          <marker id="arr-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M2 1L8 5L2 9" fill="none" stroke="#34d399" stroke-width="1.5" stroke-linecap="round"/>
+          </marker>
+          <marker id="arr-red" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M2 1L8 5L2 9" fill="none" stroke="#f87171" stroke-width="1.5" stroke-linecap="round"/>
+          </marker>
+        </defs>
+
+        <!-- User Request -->
+        <rect x="30" y="110" width="150" height="60" rx="10" fill="#1c2030" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+        <text x="105" y="137" text-anchor="middle" fill="#e2e8f0" font-size="13" font-weight="600">User request</text>
+        <text x="105" y="156" text-anchor="middle" fill="#8892a4" font-size="11">hits your app</text>
+
+        <!-- Arrow -->
+        <line x1="180" y1="140" x2="228" y2="140" stroke="#4f8ef7" stroke-width="1.5" marker-end="url(#arr1)"/>
+
+        <!-- Feature Flag -->
+        <rect x="230" y="95" width="200" height="90" rx="10" fill="#1c2030" stroke="rgba(251,191,36,0.4)" stroke-width="1.5"/>
+        <text x="330" y="123" text-anchor="middle" fill="#fbbf24" font-size="13" font-weight="700">Feature Flag</text>
+        <text x="330" y="143" text-anchor="middle" fill="#8892a4" font-size="11.5" font-family="'JetBrains Mono',monospace">IsEnabled("new-ui")</text>
+        <text x="330" y="162" text-anchor="middle" fill="#8892a4" font-size="11">evaluates condition</text>
+
+        <!-- Arrow to ON -->
+        <line x1="430" y1="118" x2="498" y2="82" stroke="#34d399" stroke-width="1.5" marker-end="url(#arr-green)"/>
+        <!-- Arrow to OFF -->
+        <line x1="430" y1="162" x2="498" y2="196" stroke="#f87171" stroke-width="1.5" marker-end="url(#arr-red)"/>
+
+        <!-- ON box -->
+        <rect x="500" y="50" width="200" height="60" rx="10" fill="rgba(52,211,153,0.08)" stroke="rgba(52,211,153,0.3)" stroke-width="1"/>
+        <text x="600" y="76" text-anchor="middle" fill="#34d399" font-size="13" font-weight="600">New Feature</text>
+        <text x="600" y="95" text-anchor="middle" fill="#6ee7b7" font-size="11">Flag is ON — show it</text>
+
+        <!-- OFF box -->
+        <rect x="500" y="170" width="200" height="60" rx="10" fill="rgba(248,113,113,0.08)" stroke="rgba(248,113,113,0.3)" stroke-width="1"/>
+        <text x="600" y="196" text-anchor="middle" fill="#f87171" font-size="13" font-weight="600">Old Feature</text>
+        <text x="600" y="215" text-anchor="middle" fill="#fca5a5" font-size="11">Flag is OFF — skip it</text>
+
+        <!-- Labels -->
+        <text x="462" y="94" text-anchor="middle" fill="#34d399" font-size="11" font-weight="600">true</text>
+        <text x="462" y="195" text-anchor="middle" fill="#f87171" font-size="11" font-weight="600">false</text>
+
+        <!-- Bottom note -->
+        <text x="410" y="272" text-anchor="middle" fill="#4d5f77" font-size="11.5">No redeployment needed — just flip the flag at runtime</text>
+      </svg>
+    </div>
+
+    <h3>The Simplest Possible Example</h3>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">C#</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+      <pre><code><span class="cm">// ❌ Without a feature flag — hardcoded, requires redeployment to change</span>
+<span class="kw">public</span> <span class="typ">string</span> GetDashboard()
+{
+    <span class="kw">return</span> RenderNewDashboard();
+}
+
+<span class="cm">// ✅ With a feature flag — controlled at runtime, zero redeployment</span>
+<span class="kw">public</span> <span class="typ">string</span> GetDashboard()
+{
+    <span class="kw">if</span> (_featureFlags.IsEnabled(<span class="str">"new-dashboard"</span>))
+        <span class="kw">return</span> RenderNewDashboard();   <span class="cm">// New experience</span>
+    <span class="kw">else</span>
+        <span class="kw">return</span> RenderOldDashboard();   <span class="cm">// Safe fallback</span>
+}</code></pre>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ═══════ SECTION 2 -->
+  <div class="section" id="s2">
+    <div class="section-label">02</div>
+    <h2>The 4 Types of Feature Flags</h2>
+    <p>Not all flags are the same. They differ in <strong>how long they live</strong> and <strong>what they're used for</strong>.</p>
+
+    <!-- Diagram: 4 types -->
+    <div class="diagram-card">
+      <svg viewBox="0 0 820 310" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="arr2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M2 1L8 5L2 9" fill="none" stroke="#8892a4" stroke-width="1.5" stroke-linecap="round"/>
+          </marker>
+        </defs>
+
+        <!-- Release Toggle -->
+        <rect x="20" y="40" width="178" height="210" rx="10" fill="rgba(45,212,191,0.07)" stroke="rgba(45,212,191,0.3)" stroke-width="1"/>
+        <text x="109" y="68" text-anchor="middle" fill="#2dd4bf" font-size="13" font-weight="700">Release toggle</text>
+        <line x1="38" y1="82" x2="180" y2="82" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+        <text x="109" y="108" text-anchor="middle" fill="#8892a4" font-size="11.5">Deploy code early,</text>
+        <text x="109" y="125" text-anchor="middle" fill="#8892a4" font-size="11.5">release when ready</text>
+        <line x1="38" y1="148" x2="180" y2="148" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+        <text x="109" y="170" text-anchor="middle" fill="#4d5f77" font-size="11">Lifespan: days–weeks</text>
+        <text x="109" y="200" text-anchor="middle" fill="#2dd4bf" font-size="11.5" font-weight="600">Short-lived</text>
+        <rect x="62" y="220" width="94" height="20" rx="4" fill="rgba(45,212,191,0.15)"/>
+        <text x="109" y="234" text-anchor="middle" fill="#2dd4bf" font-size="10.5" font-weight="600">CI/CD pipeline</text>
+
+        <!-- Experiment Toggle -->
+        <rect x="216" y="40" width="178" height="210" rx="10" fill="rgba(124,92,191,0.08)" stroke="rgba(124,92,191,0.35)" stroke-width="1"/>
+        <text x="305" y="68" text-anchor="middle" fill="#a78bfa" font-size="13" font-weight="700">Experiment toggle</text>
+        <line x1="234" y1="82" x2="376" y2="82" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+        <text x="305" y="108" text-anchor="middle" fill="#8892a4" font-size="11.5">A/B testing — show</text>
+        <text x="305" y="125" text-anchor="middle" fill="#8892a4" font-size="11.5">variant to % of users</text>
+        <line x1="234" y1="148" x2="376" y2="148" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+        <text x="305" y="170" text-anchor="middle" fill="#4d5f77" font-size="11">Lifespan: days–months</text>
+        <text x="305" y="200" text-anchor="middle" fill="#a78bfa" font-size="11.5" font-weight="600">Medium-lived</text>
+        <rect x="252" y="220" width="106" height="20" rx="4" fill="rgba(124,92,191,0.15)"/>
+        <text x="305" y="234" text-anchor="middle" fill="#a78bfa" font-size="10.5" font-weight="600">Metrics-driven</text>
+
+        <!-- Ops Toggle -->
+        <rect x="412" y="40" width="178" height="210" rx="10" fill="rgba(251,191,36,0.07)" stroke="rgba(251,191,36,0.3)" stroke-width="1"/>
+        <text x="501" y="68" text-anchor="middle" fill="#fbbf24" font-size="13" font-weight="700">Ops toggle</text>
+        <line x1="430" y1="82" x2="572" y2="82" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+        <text x="501" y="108" text-anchor="middle" fill="#8892a4" font-size="11.5">Kill switch for</text>
+        <text x="501" y="125" text-anchor="middle" fill="#8892a4" font-size="11.5">expensive features</text>
+        <line x1="430" y1="148" x2="572" y2="148" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+        <text x="501" y="170" text-anchor="middle" fill="#4d5f77" font-size="11">Lifespan: long-term</text>
+        <text x="501" y="200" text-anchor="middle" fill="#fbbf24" font-size="11.5" font-weight="600">Permanent</text>
+        <rect x="454" y="220" width="94" height="20" rx="4" fill="rgba(251,191,36,0.13)"/>
+        <text x="501" y="234" text-anchor="middle" fill="#fbbf24" font-size="10.5" font-weight="600">Kill switch</text>
+
+        <!-- Permission Toggle -->
+        <rect x="608" y="40" width="188" height="210" rx="10" fill="rgba(79,142,247,0.07)" stroke="rgba(79,142,247,0.3)" stroke-width="1"/>
+        <text x="702" y="68" text-anchor="middle" fill="#4f8ef7" font-size="13" font-weight="700">Permission toggle</text>
+        <line x1="626" y1="82" x2="778" y2="82" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+        <text x="702" y="108" text-anchor="middle" fill="#8892a4" font-size="11.5">Premium features for</text>
+        <text x="702" y="125" text-anchor="middle" fill="#8892a4" font-size="11.5">specific users/groups</text>
+        <line x1="626" y1="148" x2="778" y2="148" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+        <text x="702" y="170" text-anchor="middle" fill="#4d5f77" font-size="11">Lifespan: permanent</text>
+        <text x="702" y="200" text-anchor="middle" fill="#4f8ef7" font-size="11.5" font-weight="600">Business logic</text>
+        <rect x="648" y="220" width="108" height="20" rx="4" fill="rgba(79,142,247,0.13)"/>
+        <text x="702" y="234" text-anchor="middle" fill="#4f8ef7" font-size="10.5" font-weight="600">Entitlements</text>
+
+        <!-- Timeline axis -->
+        <line x1="30" y1="278" x2="790" y2="278" stroke="#4d5f77" stroke-width="1" marker-end="url(#arr2)"/>
+        <text x="30"  y="294" fill="#4d5f77" font-size="11">Short-lived</text>
+        <text x="790" y="294" text-anchor="end" fill="#4d5f77" font-size="11">Long-lived / permanent</text>
+      </svg>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ═══════ SECTION 3 -->
+  <div class="section" id="s3">
+    <div class="section-label">03</div>
+    <h2>Building it in C# — Layer by Layer</h2>
+    <p>Let's build a production-style feature flag system from the ground up. Each layer adds a capability.</p>
+
+    <h3>Layer 1 — The Interface</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">C# — Contract</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+      <pre><code><span class="cm">// The contract: "Can this user see this feature?"</span>
+<span class="kw">public interface</span> <span class="typ">IFeatureFlagService</span>
+{
+    <span class="typ">bool</span> IsEnabled(<span class="typ">string</span> featureName);
+    <span class="typ">bool</span> IsEnabledForUser(<span class="typ">string</span> featureName, <span class="typ">string</span> userId);
+}</code></pre>
+    </div>
+
+    <h3>Layer 2 — The Configuration Model</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">C# — Model</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+      <pre><code><span class="kw">public class</span> <span class="typ">FeatureFlag</span>
+{
+    <span class="kw">public</span> <span class="typ">string</span> Name { <span class="kw">get</span>; <span class="kw">set</span>; }
+    <span class="kw">public</span> <span class="typ">bool</span> IsEnabled { <span class="kw">get</span>; <span class="kw">set</span>; }           <span class="cm">// Global on/off</span>
+    <span class="kw">public</span> <span class="typ">int</span> RolloutPercentage { <span class="kw">get</span>; <span class="kw">set</span>; }        <span class="cm">// 0–100 for gradual rollout</span>
+    <span class="kw">public</span> List&lt;<span class="typ">string</span>&gt; AllowedUserIds { <span class="kw">get</span>; <span class="kw">set</span>; } = <span class="kw">new</span>();
+}</code></pre>
+    </div>
+
+    <h3>Layer 3 — The Service</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">C# — Service Implementation</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+      <pre><code><span class="kw">public class</span> <span class="typ">FeatureFlagService</span> : <span class="typ">IFeatureFlagService</span>
+{
+    <span class="kw">private readonly</span> Dictionary&lt;<span class="typ">string</span>, <span class="typ">FeatureFlag</span>&gt; _flags;
+
+    <span class="kw">public</span> FeatureFlagService(IEnumerable&lt;<span class="typ">FeatureFlag</span>&gt; flags)
+    {
+        <span class="cm">// Index flags by name for O(1) lookup</span>
+        _flags = flags.ToDictionary(f =&gt; f.Name);
+    }
+
+    <span class="cm">// 1️⃣ Global check — is the flag on at all?</span>
+    <span class="kw">public</span> <span class="typ">bool</span> IsEnabled(<span class="typ">string</span> featureName)
+    {
+        <span class="kw">return</span> _flags.TryGetValue(featureName, <span class="kw">out var</span> flag) &amp;&amp; flag.IsEnabled;
+    }
+
+    <span class="cm">// 2️⃣ Per-user check — considers rollout % and allow-lists</span>
+    <span class="kw">public</span> <span class="typ">bool</span> IsEnabledForUser(<span class="typ">string</span> featureName, <span class="typ">string</span> userId)
+    {
+        <span class="kw">if</span> (!_flags.TryGetValue(featureName, <span class="kw">out var</span> flag)) <span class="kw">return false</span>;
+        <span class="kw">if</span> (!flag.IsEnabled) <span class="kw">return false</span>;
+
+        <span class="cm">// Explicitly allowed user</span>
+        <span class="kw">if</span> (flag.AllowedUserIds.Contains(userId)) <span class="kw">return true</span>;
+
+        <span class="cm">// Gradual rollout: hash userId to a stable 0–99 bucket</span>
+        <span class="typ">int</span> bucket = Math.Abs(userId.GetHashCode()) % <span class="num">100</span>;
+        <span class="kw">return</span> bucket &lt; flag.RolloutPercentage;
+    }
+}</code></pre>
+    </div>
+
+    <h3>Layer 4 — Dependency Injection</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">C# — Program.cs</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+      <pre><code>builder.Services.AddSingleton&lt;<span class="typ">IFeatureFlagService</span>&gt;(sp =&gt;
+{
+    <span class="kw">var</span> flags = <span class="kw">new</span> List&lt;<span class="typ">FeatureFlag</span>&gt;
+    {
+        <span class="kw">new</span>() { Name = <span class="str">"new-dashboard"</span>,  IsEnabled = <span class="kw">true</span>,  RolloutPercentage = <span class="num">20</span> },
+        <span class="kw">new</span>() { Name = <span class="str">"dark-mode"</span>,      IsEnabled = <span class="kw">true</span>,  RolloutPercentage = <span class="num">100</span> },
+        <span class="kw">new</span>() { Name = <span class="str">"ai-suggestions"</span>, IsEnabled = <span class="kw">false</span>, RolloutPercentage = <span class="num">0</span> },
+    };
+    <span class="kw">return new</span> <span class="typ">FeatureFlagService</span>(flags);
+});
+
+<span class="cm">// ✅ Best practice: centralize flag names as constants</span>
+<span class="kw">public static class</span> <span class="typ">FeatureFlags</span>
+{
+    <span class="kw">public const</span> <span class="typ">string</span> NewDashboard  = <span class="str">"new-dashboard"</span>;
+    <span class="kw">public const</span> <span class="typ">string</span> AiSuggestions = <span class="str">"ai-suggestions"</span>;
+    <span class="kw">public const</span> <span class="typ">string</span> DarkMode      = <span class="str">"dark-mode"</span>;
+}</code></pre>
+    </div>
+
+    <h3>Layer 5 — Using in a Controller</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">C# — Controller</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+      <pre><code>[ApiController]
+[Route(<span class="str">"api/[controller]"</span>)]
+<span class="kw">public class</span> <span class="typ">DashboardController</span> : <span class="typ">ControllerBase</span>
+{
+    <span class="kw">private readonly</span> <span class="typ">IFeatureFlagService</span> _flags;
+
+    <span class="kw">public</span> DashboardController(<span class="typ">IFeatureFlagService</span> flags)
+    {
+        _flags = flags;
+    }
+
+    [HttpGet]
+    <span class="kw">public</span> <span class="typ">IActionResult</span> GetDashboard()
+    {
+        <span class="kw">var</span> userId = User.FindFirst(<span class="str">"sub"</span>)?.Value ?? <span class="str">"anonymous"</span>;
+
+        <span class="kw">if</span> (_flags.IsEnabledForUser(<span class="typ">FeatureFlags</span>.NewDashboard, userId))
+            <span class="kw">return</span> Ok(<span class="kw">new</span> { version = <span class="str">"v2"</span>, layout = <span class="str">"redesigned"</span> });
+
+        <span class="kw">return</span> Ok(<span class="kw">new</span> { version = <span class="str">"v1"</span>, layout = <span class="str">"classic"</span> });
+    }
+}</code></pre>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ═══════ SECTION 4 -->
+  <div class="section" id="s4">
+    <div class="section-label">04</div>
+    <h2>Gradual Rollout &amp; Hash Bucketing</h2>
+    <p>The key to a stable rollout is <strong>deterministic bucketing</strong>. The same userId must always produce the same yes/no answer — on every server, every request, forever.</p>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body"><strong>Never use Random().</strong> <code>new Random().Next(100) &lt; 30</code> gives a different result on every request. The same user gets the feature on one request and loses it on the next. Their UI flickers. Their session breaks. Use hashing.</div>
+    </div>
+
+    <!-- Hash pipeline diagram -->
+    <div class="diagram-card">
+      <svg viewBox="0 0 820 160" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="arr3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M2 1L8 5L2 9" fill="none" stroke="#4f8ef7" stroke-width="1.5" stroke-linecap="round"/>
+          </marker>
+        </defs>
+
+        <!-- userId -->
+        <rect x="20" y="55" width="155" height="50" rx="8" fill="#1c2030" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+        <text x="97" y="78" text-anchor="middle" fill="#e2e8f0" font-size="12" font-weight="600" font-family="'JetBrains Mono',monospace">"user-042"</text>
+        <text x="97" y="96" text-anchor="middle" fill="#4d5f77" font-size="11">userId string</text>
+        <line x1="175" y1="80" x2="208" y2="80" stroke="#4f8ef7" stroke-width="1.5" marker-end="url(#arr3)"/>
+
+        <!-- GetHashCode -->
+        <rect x="210" y="55" width="165" height="50" rx="8" fill="rgba(124,92,191,0.1)" stroke="rgba(124,92,191,0.35)" stroke-width="1"/>
+        <text x="293" y="78" text-anchor="middle" fill="#a78bfa" font-size="12" font-weight="600" font-family="'JetBrains Mono',monospace">MD5.HashData()</text>
+        <text x="293" y="96" text-anchor="middle" fill="#4d5f77" font-size="11">any big integer</text>
+        <line x1="375" y1="80" x2="410" y2="80" stroke="#4f8ef7" stroke-width="1.5" marker-end="url(#arr3)"/>
+
+        <!-- Math.Abs -->
+        <rect x="412" y="55" width="155" height="50" rx="8" fill="rgba(79,142,247,0.08)" stroke="rgba(79,142,247,0.3)" stroke-width="1"/>
+        <text x="490" y="78" text-anchor="middle" fill="#4f8ef7" font-size="12" font-weight="600" font-family="'JetBrains Mono',monospace">Math.Abs()</text>
+        <text x="490" y="96" text-anchor="middle" fill="#4d5f77" font-size="11">remove negatives</text>
+        <line x1="567" y1="80" x2="602" y2="80" stroke="#4f8ef7" stroke-width="1.5" marker-end="url(#arr3)"/>
+
+        <!-- % 100 -->
+        <rect x="604" y="55" width="175" height="50" rx="8" fill="rgba(251,191,36,0.08)" stroke="rgba(251,191,36,0.3)" stroke-width="1"/>
+        <text x="692" y="78" text-anchor="middle" fill="#fbbf24" font-size="12" font-weight="600" font-family="'JetBrains Mono',monospace">% 100</text>
+        <text x="692" y="96" text-anchor="middle" fill="#4d5f77" font-size="11">bucket 0–99</text>
+
+        <!-- Bottom labels -->
+        <text x="97"  y="135" text-anchor="middle" fill="#4d5f77" font-size="10.5">input</text>
+        <text x="293" y="135" text-anchor="middle" fill="#4d5f77" font-size="10.5">e.g. -847263910</text>
+        <text x="490" y="135" text-anchor="middle" fill="#4d5f77" font-size="10.5">847263910</text>
+        <text x="692" y="135" text-anchor="middle" fill="#4d5f77" font-size="10.5">bucket = 10</text>
+      </svg>
+    </div>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body"><strong>In .NET 5+, <code>string.GetHashCode()</code> is randomized per process.</strong> Two separate app instances will produce different results for the same string. Use <code>MD5.HashData()</code> or SHA256 instead — they're deterministic across all machines and restarts.</div>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">C# — Stable Hash Bucket</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+      <pre><code><span class="cm">// ✅ MD5-based stable hash — consistent across all processes and machines</span>
+<span class="kw">private static</span> <span class="typ">int</span> StableBucket(<span class="typ">string</span> userId)
+{
+    <span class="typ">byte</span>[] bytes = MD5.HashData(Encoding.UTF8.GetBytes(userId));
+    <span class="typ">int</span> value = BitConverter.ToInt32(bytes, <span class="num">0</span>);  <span class="cm">// take first 4 bytes</span>
+    <span class="kw">return</span> Math.Abs(value) % <span class="num">100</span>;               <span class="cm">// map to bucket 0–99</span>
+}
+
+<span class="cm">// How the check works:</span>
+<span class="cm">// bucket = StableBucket("user-042")  →  e.g. 37</span>
+<span class="cm">// if rolloutPercentage = 40 and bucket (37) &lt; 40  →  flag is ON</span>
+<span class="cm">// Same user → same bucket → same result, always</span></code></pre>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ═══════ SECTION 5 -->
+  <div class="section" id="s5">
+    <div class="section-label">05</div>
+    <h2>Microsoft.FeatureManagement</h2>
+    <p>The official first-party .NET library. Zero boilerplate — reads from <code>appsettings.json</code>, has built-in filters, and integrates with ASP.NET Core DI.</p>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">bash — Install</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+      <pre><code>dotnet add package Microsoft.FeatureManagement.AspNetCore</code></pre>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">C# — Program.cs</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+      <pre><code>builder.Services.AddFeatureManagement()
+    .WithTargeting();  <span class="cm">// enables TargetingFilter (gradual rollout + groups)</span></code></pre>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">JSON — appsettings.json</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+      <pre><code>{
+  <span class="str">"FeatureManagement"</span>: {
+    <span class="str">"NewDashboard"</span>: {
+      <span class="str">"EnabledFor"</span>: [
+        {
+          <span class="str">"Name"</span>: <span class="str">"Microsoft.Targeting"</span>,
+          <span class="str">"Parameters"</span>: {
+            <span class="str">"Audience"</span>: {
+              <span class="str">"Users"</span>: [<span class="str">"omar"</span>, <span class="str">"alice"</span>],     <span class="cm">// always ON for these users</span>
+              <span class="str">"Groups"</span>: [
+                { <span class="str">"Name"</span>: <span class="str">"beta-testers"</span>, <span class="str">"RolloutPercentage"</span>: <span class="num">100</span> },
+                { <span class="str">"Name"</span>: <span class="str">"general"</span>,      <span class="str">"RolloutPercentage"</span>: <span class="num">20</span>  }
+              ],
+              <span class="str">"DefaultRolloutPercentage"</span>: <span class="num">5</span>  <span class="cm">// 5% of everyone else</span>
+            }
+          }
+        }
+      ]
+    }
+  }
+}</code></pre>
+    </div>
+
+    <h3>Built-in Filters</h3>
+
+    <div class="diagram-card">
+      <svg viewBox="0 0 820 290" xmlns="http://www.w3.org/2000/svg">
+        <!-- PercentageFilter -->
+        <rect x="20" y="20" width="245" height="245" rx="10" fill="rgba(45,212,191,0.07)" stroke="rgba(45,212,191,0.3)" stroke-width="1"/>
+        <text x="143" y="50" text-anchor="middle" fill="#2dd4bf" font-size="13" font-weight="700">PercentageFilter</text>
+        <line x1="38" y1="64" x2="247" y2="64" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+        <text x="143" y="88"  text-anchor="middle" fill="#8892a4" font-size="12">Enables flag for X%</text>
+        <text x="143" y="106" text-anchor="middle" fill="#8892a4" font-size="12">of all requests</text>
+        <text x="143" y="132" text-anchor="middle" fill="#f87171" font-size="11.5">⚠ Not user-sticky</text>
+        <text x="143" y="150" text-anchor="middle" fill="#8892a4" font-size="11.5">re-evaluated each</text>
+        <text x="143" y="167" text-anchor="middle" fill="#8892a4" font-size="11.5">request randomly</text>
+        <line x1="38" y1="184" x2="247" y2="184" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+        <text x="143" y="205" text-anchor="middle" fill="#4d5f77" font-size="11">Good for: load testing,</text>
+        <text x="143" y="220" text-anchor="middle" fill="#4d5f77" font-size="11">canary deployments</text>
+
+        <!-- TimeWindowFilter -->
+        <rect x="288" y="20" width="245" height="245" rx="10" fill="rgba(124,92,191,0.08)" stroke="rgba(124,92,191,0.35)" stroke-width="1"/>
+        <text x="411" y="50" text-anchor="middle" fill="#a78bfa" font-size="13" font-weight="700">TimeWindowFilter</text>
+        <line x1="306" y1="64" x2="515" y2="64" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+        <text x="411" y="88"  text-anchor="middle" fill="#8892a4" font-size="12">Enables flag between</text>
+        <text x="411" y="106" text-anchor="middle" fill="#8892a4" font-size="12">Start and End UTC dates</text>
+        <text x="411" y="132" text-anchor="middle" fill="#34d399" font-size="11.5">Automatic on/off</text>
+        <text x="411" y="150" text-anchor="middle" fill="#8892a4" font-size="11.5">based on clock time</text>
+        <line x1="306" y1="184" x2="515" y2="184" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+        <text x="411" y="205" text-anchor="middle" fill="#4d5f77" font-size="11">Good for: seasonal</text>
+        <text x="411" y="220" text-anchor="middle" fill="#4d5f77" font-size="11">promos, scheduled launches</text>
+
+        <!-- TargetingFilter -->
+        <rect x="556" y="20" width="244" height="245" rx="10" fill="rgba(79,142,247,0.08)" stroke="rgba(79,142,247,0.3)" stroke-width="1"/>
+        <text x="678" y="50" text-anchor="middle" fill="#4f8ef7" font-size="13" font-weight="700">TargetingFilter</text>
+        <line x1="574" y1="64" x2="782" y2="64" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+        <text x="678" y="88"  text-anchor="middle" fill="#8892a4" font-size="12">Per-user, per-group,</text>
+        <text x="678" y="106" text-anchor="middle" fill="#8892a4" font-size="12">or % rollout</text>
+        <text x="678" y="132" text-anchor="middle" fill="#34d399" font-size="11.5">User-sticky via</text>
+        <text x="678" y="150" text-anchor="middle" fill="#8892a4" font-size="11.5">deterministic hash</text>
+        <line x1="574" y1="184" x2="782" y2="184" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+        <text x="678" y="205" text-anchor="middle" fill="#4d5f77" font-size="11">Good for: A/B tests,</text>
+        <text x="678" y="220" text-anchor="middle" fill="#4d5f77" font-size="11">gradual rollout</text>
+      </svg>
+    </div>
+
+    <h3>ITargetingContextAccessor — Telling the Library Who the User Is</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">C# — Targeting Context</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+      <pre><code><span class="kw">public class</span> <span class="typ">HttpContextTargetingAccessor</span> : <span class="typ">ITargetingContextAccessor</span>
+{
+    <span class="kw">private readonly</span> <span class="typ">IHttpContextAccessor</span> _http;
+    <span class="kw">public</span> HttpContextTargetingAccessor(<span class="typ">IHttpContextAccessor</span> http) =&gt; _http = http;
+
+    <span class="kw">public</span> ValueTask&lt;<span class="typ">TargetingContext</span>&gt; GetContextAsync()
+    {
+        <span class="kw">var</span> user = _http.HttpContext?.User;
+        <span class="kw">return</span> ValueTask.FromResult(<span class="kw">new</span> <span class="typ">TargetingContext</span>
+        {
+            UserId = user?.FindFirst(<span class="str">"sub"</span>)?.Value ?? <span class="str">"anonymous"</span>,
+            Groups = user?.FindAll(<span class="str">"role"</span>).Select(c =&gt; <span class="kw">new</span> <span class="typ">GroupRolloutPercentage</span>
+            {
+                Name = c.Value,
+                RolloutPercentage = <span class="num">100</span>
+            }).ToList()
+        });
+    }
+}
+
+<span class="cm">// Register in Program.cs</span>
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddSingleton&lt;<span class="typ">ITargetingContextAccessor</span>, <span class="typ">HttpContextTargetingAccessor</span>&gt;();</code></pre>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ═══════ SECTION 6 -->
+  <div class="section" id="s6">
+    <div class="section-label">06</div>
+    <h2>EF Core + Database-Backed Flags</h2>
+    <p>Config files require redeployment to change. A database-backed store lets you toggle flags <strong>live at runtime</strong> — no code changes, no deploys.</p>
+
+    <h3>The Entity</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">C# — Entity</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+      <pre><code><span class="kw">public class</span> <span class="typ">FeatureFlagEntity</span>
+{
+    <span class="kw">public</span> <span class="typ">int</span>     Id                { <span class="kw">get</span>; <span class="kw">set</span>; }
+    <span class="kw">public</span> <span class="typ">string</span>  Name              { <span class="kw">get</span>; <span class="kw">set</span>; } = <span class="typ">string</span>.Empty;
+    <span class="kw">public</span> <span class="typ">bool</span>    IsEnabled         { <span class="kw">get</span>; <span class="kw">set</span>; }
+    <span class="kw">public</span> <span class="typ">int</span>     RolloutPercentage { <span class="kw">get</span>; <span class="kw">set</span>; }   <span class="cm">// 0–100</span>
+    <span class="kw">public</span> <span class="typ">string</span>? AllowedUserIds    { <span class="kw">get</span>; <span class="kw">set</span>; }   <span class="cm">// JSON: ["user1","user2"]</span>
+    <span class="kw">public</span> <span class="typ">DateTime</span> UpdatedAt        { <span class="kw">get</span>; <span class="kw">set</span>; }
+}</code></pre>
+    </div>
+
+    <h3>Database-Backed Service</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">C# — DbFeatureFlagService</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+      <pre><code><span class="kw">public class</span> <span class="typ">DbFeatureFlagService</span>
+{
+    <span class="kw">private readonly</span> <span class="typ">AppDbContext</span> _db;
+    <span class="kw">public</span> DbFeatureFlagService(<span class="typ">AppDbContext</span> db) =&gt; _db = db;
+
+    <span class="kw">public async</span> Task&lt;<span class="typ">bool</span>&gt; IsEnabledForUserAsync(<span class="typ">string</span> name, <span class="typ">string</span> userId)
+    {
+        <span class="kw">var</span> flag = <span class="kw">await</span> _db.FeatureFlags
+            .AsNoTracking()          <span class="cm">// read-only, no change tracking overhead</span>
+            .FirstOrDefaultAsync(f =&gt; f.Name == name);
+
+        <span class="kw">if</span> (flag <span class="kw">is null</span> || !flag.IsEnabled) <span class="kw">return false</span>;
+
+        <span class="cm">// Check allow-list (JSON array stored in DB column)</span>
+        <span class="kw">if</span> (flag.AllowedUserIds <span class="kw">is not null</span>)
+        {
+            <span class="kw">var</span> allowed = JsonSerializer.Deserialize&lt;List&lt;<span class="typ">string</span>&gt;&gt;(flag.AllowedUserIds);
+            <span class="kw">if</span> (allowed?.Contains(userId) == <span class="kw">true</span>) <span class="kw">return true</span>;
+        }
+
+        <span class="kw">return</span> StableBucket(userId) &lt; flag.RolloutPercentage;
+    }
+
+    <span class="kw">private static</span> <span class="typ">int</span> StableBucket(<span class="typ">string</span> userId)
+    {
+        <span class="typ">byte</span>[] bytes = MD5.HashData(Encoding.UTF8.GetBytes(userId));
+        <span class="kw">return</span> Math.Abs(BitConverter.ToInt32(bytes, <span class="num">0</span>)) % <span class="num">100</span>;
+    }
+}</code></pre>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ═══════ SECTION 7 -->
+  <div class="section" id="s7">
+    <div class="section-label">07</div>
+    <h2>Caching Layer</h2>
+    <p>Every flag check hitting the DB creates massive load at scale. A <strong>caching wrapper</strong> (Decorator pattern) solves this with no changes to the underlying service.</p>
+
+    <!-- Architecture diagram -->
+    <div class="diagram-card">
+      <svg viewBox="0 0 820 310" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="arr4" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M2 1L8 5L2 9" fill="none" stroke="#4f8ef7" stroke-width="1.5" stroke-linecap="round"/>
+          </marker>
+          <marker id="arr4g" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M2 1L8 5L2 9" fill="none" stroke="#34d399" stroke-width="1.5" stroke-linecap="round"/>
+          </marker>
+          <marker id="arr4m" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M2 1L8 5L2 9" fill="none" stroke="#8892a4" stroke-width="1.5" stroke-linecap="round"/>
+          </marker>
+        </defs>
+
+        <!-- Controller -->
+        <rect x="20" y="120" width="130" height="55" rx="8" fill="#1c2030" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+        <text x="85" y="144" text-anchor="middle" fill="#e2e8f0" font-size="12" font-weight="600">Controller</text>
+        <text x="85" y="162" text-anchor="middle" fill="#4d5f77" font-size="11">calls IsEnabled</text>
+        <line x1="150" y1="147" x2="185" y2="147" stroke="#4f8ef7" stroke-width="1.5" marker-end="url(#arr4)"/>
+
+        <!-- CachedService -->
+        <rect x="187" y="105" width="175" height="84" rx="8" fill="rgba(45,212,191,0.08)" stroke="rgba(45,212,191,0.3)" stroke-width="1"/>
+        <text x="275" y="130" text-anchor="middle" fill="#2dd4bf" font-size="12" font-weight="700">CachedService</text>
+        <text x="275" y="149" text-anchor="middle" fill="#8892a4" font-size="11.5">Check IMemoryCache</text>
+        <text x="275" y="166" text-anchor="middle" fill="#8892a4" font-size="11.5">first (~0.1ms)</text>
+
+        <!-- Cache HIT path -->
+        <path d="M275 105 Q275 52 370 52" fill="none" stroke="#34d399" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arr4g)"/>
+        <text x="290" y="44" fill="#34d399" font-size="11" font-weight="600">HIT → return cached</text>
+
+        <!-- MISS label + arrow -->
+        <text x="380" y="135" fill="#f87171" font-size="11" font-weight="600">MISS</text>
+        <line x1="362" y1="147" x2="398" y2="147" stroke="#f87171" stroke-width="1.5" marker-end="url(#arr4)"/>
+
+        <!-- DbService -->
+        <rect x="400" y="105" width="180" height="84" rx="8" fill="rgba(79,142,247,0.08)" stroke="rgba(79,142,247,0.3)" stroke-width="1"/>
+        <text x="490" y="130" text-anchor="middle" fill="#4f8ef7" font-size="12" font-weight="700">DbFlagService</text>
+        <text x="490" y="149" text-anchor="middle" fill="#8892a4" font-size="11.5">Query DB + run</text>
+        <text x="490" y="166" text-anchor="middle" fill="#8892a4" font-size="11.5">hash bucket logic</text>
+        <line x1="580" y1="147" x2="616" y2="147" stroke="#4f8ef7" stroke-width="1.5" marker-end="url(#arr4)"/>
+
+        <!-- DB -->
+        <rect x="618" y="120" width="155" height="55" rx="8" fill="rgba(124,92,191,0.08)" stroke="rgba(124,92,191,0.35)" stroke-width="1"/>
+        <text x="696" y="144" text-anchor="middle" fill="#a78bfa" font-size="12" font-weight="700">SQL Database</text>
+        <text x="696" y="162" text-anchor="middle" fill="#4d5f77" font-size="11">FeatureFlags table</text>
+
+        <!-- Return path -->
+        <path d="M696 175 Q696 260 275 260 Q275 192 275 189" fill="none" stroke="#8892a4" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arr4m)"/>
+        <text x="490" y="280" text-anchor="middle" fill="#4d5f77" font-size="11">result stored in cache for 1 min, then returned</text>
+
+        <!-- Timing labels -->
+        <text x="275" y="300" text-anchor="middle" fill="#34d399" font-size="11">cache hit: ~0.1ms</text>
+        <text x="650" y="300" text-anchor="middle" fill="#4f8ef7" font-size="11">DB query: 5–20ms</text>
+      </svg>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">C# — Cached Wrapper (Decorator Pattern)</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+      <pre><code><span class="kw">public class</span> <span class="typ">CachedFeatureFlagService</span> : <span class="typ">IFeatureFlagService</span>
+{
+    <span class="kw">private readonly</span> <span class="typ">DbFeatureFlagService</span> _inner;
+    <span class="kw">private readonly</span> <span class="typ">IMemoryCache</span> _cache;
+    <span class="kw">private static readonly</span> <span class="typ">TimeSpan</span> CacheDuration = TimeSpan.FromMinutes(<span class="num">1</span>);
+
+    <span class="kw">public</span> CachedFeatureFlagService(<span class="typ">DbFeatureFlagService</span> inner, <span class="typ">IMemoryCache</span> cache)
+    {
+        _inner = inner;
+        _cache = cache;
+    }
+
+    <span class="kw">public async</span> Task&lt;<span class="typ">bool</span>&gt; IsEnabledForUserAsync(<span class="typ">string</span> name, <span class="typ">string</span> userId)
+    {
+        <span class="cm">// Cache key: unique per flag + user combination</span>
+        <span class="typ">string</span> cacheKey = <span class="str">$"ff:{name}:{userId}"</span>;
+
+        <span class="kw">return await</span> _cache.GetOrCreateAsync(cacheKey, <span class="kw">async</span> entry =&gt;
+        {
+            entry.AbsoluteExpirationRelativeToNow = CacheDuration;
+            <span class="kw">return await</span> _inner.IsEnabledForUserAsync(name, userId);
+        });
+    }
+}</code></pre>
+    </div>
+
+    <div class="callout tip">
+      <span class="callout-icon">✅</span>
+      <div class="callout-body">This is the <strong>Decorator pattern</strong> in action — <code>CachedFeatureFlagService</code> wraps <code>DbFeatureFlagService</code> and adds caching behavior without modifying the underlying class. The controller code never changes.</div>
+    </div>
+
+    <h3>Comparison: Which approach should you use?</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Approach</th><th>Best for</th><th>Change without deploy?</th><th>Scale</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>appsettings.json</strong></td>
+            <td>Simple, static flags</td>
+            <td><span class="badge badge-red">No</span></td>
+            <td><span class="badge badge-green">Excellent</span></td>
+          </tr>
+          <tr>
+            <td><strong>Microsoft.FeatureManagement</strong></td>
+            <td>Standard .NET apps</td>
+            <td><span class="badge badge-amber">Via env vars</span></td>
+            <td><span class="badge badge-green">Excellent</span></td>
+          </tr>
+          <tr>
+            <td><strong>EF Core + DB + Cache</strong></td>
+            <td>Live toggling at runtime</td>
+            <td><span class="badge badge-green">Yes</span></td>
+            <td><span class="badge badge-green">Good with cache</span></td>
+          </tr>
+          <tr>
+            <td><strong>LaunchDarkly / Azure App Config</strong></td>
+            <td>Large teams, many flags</td>
+            <td><span class="badge badge-green">Yes</span></td>
+            <td><span class="badge badge-green">Excellent</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ═══════ SECTION 8 -->
+  <div class="section" id="s8">
+    <div class="section-label">08</div>
+    <h2>Testing Feature Flags</h2>
+    <p>Every feature-flagged code path has three test scenarios you must cover: flag ON, flag OFF, and flag missing/default.</p>
+
+    <h3>Mocking IFeatureManager with Moq</h3>
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">C# — Unit Tests with Moq</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+      <pre><code><span class="kw">public class</span> <span class="typ">DashboardServiceTests</span>
+{
+    <span class="kw">private readonly</span> Mock&lt;<span class="typ">IFeatureManager</span>&gt; _featureManagerMock;
+    <span class="kw">private readonly</span> <span class="typ">DashboardService</span> _sut;  <span class="cm">// System Under Test</span>
+
+    <span class="kw">public</span> DashboardServiceTests()
+    {
+        _featureManagerMock = <span class="kw">new</span> Mock&lt;<span class="typ">IFeatureManager</span>&gt;();
+        _sut = <span class="kw">new</span> <span class="typ">DashboardService</span>(_featureManagerMock.Object);
+    }
+
+    <span class="cm">// ✅ Test 1: Flag ON → new dashboard returned</span>
+    [Fact]
+    <span class="kw">public async</span> Task GetDashboard_WhenFlagOn_ReturnsNewDashboard()
+    {
+        _featureManagerMock
+            .Setup(fm =&gt; fm.IsEnabledAsync(<span class="str">"new-dashboard"</span>))
+            .ReturnsAsync(<span class="kw">true</span>);
+
+        <span class="kw">var</span> result = <span class="kw">await</span> _sut.GetDashboardAsync();
+
+        Assert.Equal(<span class="str">"v2"</span>, result.Version);
+    }
+
+    <span class="cm">// ✅ Test 2: Flag OFF → old dashboard returned</span>
+    [Fact]
+    <span class="kw">public async</span> Task GetDashboard_WhenFlagOff_ReturnsClassicDashboard()
+    {
+        _featureManagerMock
+            .Setup(fm =&gt; fm.IsEnabledAsync(<span class="str">"new-dashboard"</span>))
+            .ReturnsAsync(<span class="kw">false</span>);
+
+        <span class="kw">var</span> result = <span class="kw">await</span> _sut.GetDashboardAsync();
+
+        Assert.Equal(<span class="str">"v1"</span>, result.Version);
+    }
+
+    <span class="cm">// ✅ Test 3: Verify the flag was actually checked (not bypassed)</span>
+    [Fact]
+    <span class="kw">public async</span> Task GetDashboard_AlwaysChecksFlag()
+    {
+        _featureManagerMock
+            .Setup(fm =&gt; fm.IsEnabledAsync(It.IsAny&lt;<span class="typ">string</span>&gt;()))
+            .ReturnsAsync(<span class="kw">false</span>);
+
+        <span class="kw">await</span> _sut.GetDashboardAsync();
+
+        _featureManagerMock.Verify(
+            fm =&gt; fm.IsEnabledAsync(<span class="str">"new-dashboard"</span>),
+            Times.Once);
+    }
+}</code></pre>
+    </div>
+
+    <h3>Test Fake — Cleaner Than Mocking</h3>
+    <p>For your custom <code>IFeatureFlagService</code>, a <strong>test fake</strong> reads more clearly than a mock and is reusable across all test classes:</p>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">C# — Test Fake (In-Memory)</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+      <pre><code><span class="cm">// Reusable fake — full control, zero mock setup noise</span>
+<span class="kw">public class</span> <span class="typ">FakeFeatureFlagService</span> : <span class="typ">IFeatureFlagService</span>
+{
+    <span class="kw">private readonly</span> Dictionary&lt;<span class="typ">string</span>, <span class="typ">bool</span>&gt; _flags;
+
+    <span class="kw">public</span> FakeFeatureFlagService(Dictionary&lt;<span class="typ">string</span>, <span class="typ">bool</span>&gt; flags)
+    {
+        _flags = flags;
+    }
+
+    <span class="kw">public</span> Task&lt;<span class="typ">bool</span>&gt; IsEnabledAsync(<span class="typ">string</span> name) =&gt;
+        Task.FromResult(_flags.GetValueOrDefault(name, <span class="kw">false</span>));
+
+    <span class="kw">public</span> Task&lt;<span class="typ">bool</span>&gt; IsEnabledForUserAsync(<span class="typ">string</span> name, <span class="typ">string</span> userId) =&gt;
+        Task.FromResult(_flags.GetValueOrDefault(name, <span class="kw">false</span>));
+}
+
+<span class="cm">// Usage — reads like plain English</span>
+[Fact]
+<span class="kw">public async</span> Task PlaceOrder_WithNewCheckout_UsesStripeV2()
+{
+    <span class="kw">var</span> flags = <span class="kw">new</span> <span class="typ">FakeFeatureFlagService</span>(<span class="kw">new</span>()
+    {
+        [<span class="typ">FeatureFlags</span>.NewCheckout]  = <span class="kw">true</span>,   <span class="cm">// ON</span>
+        [<span class="typ">FeatureFlags</span>.LoyaltyPoints] = <span class="kw">false</span>  <span class="cm">// OFF</span>
+    });
+
+    <span class="kw">var</span> sut = <span class="kw">new</span> <span class="typ">OrderService</span>(flags);
+    <span class="kw">var</span> result = <span class="kw">await</span> sut.PlaceOrderAsync(testOrder);
+
+    Assert.Equal(<span class="str">"stripe-v2"</span>, result.PaymentProvider);
+}</code></pre>
+    </div>
+
+    <div class="callout danger">
+      <span class="callout-icon">🚫</span>
+      <div class="callout-body"><strong>Magic string anti-pattern.</strong> Never write <code>IsEnabledAsync("new-dashboard")</code> directly in 10 different files. A single typo silently disables the flag. Always use constants: <code>FeatureFlags.NewDashboard</code>. This also makes it easy to find all usages when it's time to delete a flag.</div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ═══════ SECTION 9 -->
+  <div class="section" id="s9">
+    <div class="section-label">09</div>
+    <h2>Flag Lifecycle</h2>
+    <p>A feature flag has a defined life — from the moment code is merged to the moment the flag is deleted. Skipping the cleanup step creates <strong>flag debt</strong>.</p>
+
+    <!-- Lifecycle diagram -->
+    <div class="diagram-card">
+      <svg viewBox="0 0 820 250" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="arr5" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M2 1L8 5L2 9" fill="none" stroke="#4f8ef7" stroke-width="1.5" stroke-linecap="round"/>
+          </marker>
+          <marker id="arr5r" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M2 1L8 5L2 9" fill="none" stroke="#f87171" stroke-width="1.5" stroke-linecap="round"/>
+          </marker>
+        </defs>
+
+        <!-- Steps -->
+        <rect x="20"  y="90" width="120" height="56" rx="8" fill="#1c2030" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+        <text x="80"  y="113" text-anchor="middle" fill="#e2e8f0" font-size="12" font-weight="600">Code ships</text>
+        <text x="80"  y="131" text-anchor="middle" fill="#4d5f77" font-size="11">Flag OFF in prod</text>
+
+        <line x1="140" y1="118" x2="172" y2="118" stroke="#4f8ef7" stroke-width="1.5" marker-end="url(#arr5)"/>
+
+        <rect x="174" y="90" width="120" height="56" rx="8" fill="rgba(79,142,247,0.08)" stroke="rgba(79,142,247,0.3)" stroke-width="1"/>
+        <text x="234" y="113" text-anchor="middle" fill="#4f8ef7" font-size="12" font-weight="600">Internal test</text>
+        <text x="234" y="131" text-anchor="middle" fill="#4d5f77" font-size="11">Team only, 0–5%</text>
+
+        <line x1="294" y1="118" x2="326" y2="118" stroke="#4f8ef7" stroke-width="1.5" marker-end="url(#arr5)"/>
+
+        <rect x="328" y="90" width="130" height="56" rx="8" fill="rgba(251,191,36,0.08)" stroke="rgba(251,191,36,0.3)" stroke-width="1"/>
+        <text x="393" y="113" text-anchor="middle" fill="#fbbf24" font-size="12" font-weight="600">Gradual rollout</text>
+        <text x="393" y="131" text-anchor="middle" fill="#4d5f77" font-size="11">10% → 50% → 100%</text>
+
+        <line x1="458" y1="118" x2="490" y2="118" stroke="#4f8ef7" stroke-width="1.5" marker-end="url(#arr5)"/>
+
+        <rect x="492" y="90" width="120" height="56" rx="8" fill="rgba(45,212,191,0.08)" stroke="rgba(45,212,191,0.3)" stroke-width="1"/>
+        <text x="552" y="113" text-anchor="middle" fill="#2dd4bf" font-size="12" font-weight="600">Full release</text>
+        <text x="552" y="131" text-anchor="middle" fill="#4d5f77" font-size="11">Flag ON, 100%</text>
+
+        <line x1="612" y1="118" x2="644" y2="118" stroke="#4f8ef7" stroke-width="1.5" marker-end="url(#arr5)"/>
+
+        <rect x="646" y="90" width="130" height="56" rx="8" fill="rgba(248,113,113,0.08)" stroke="rgba(248,113,113,0.3)" stroke-width="1"/>
+        <text x="711" y="113" text-anchor="middle" fill="#f87171" font-size="12" font-weight="600">Cleanup</text>
+        <text x="711" y="131" text-anchor="middle" fill="#4d5f77" font-size="11">Delete flag + code</text>
+
+        <!-- Rollback arc -->
+        <path d="M393 90 Q393 44 234 44 Q234 90 234 90" fill="none" stroke="#f87171" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arr5r)"/>
+        <text x="313" y="36" text-anchor="middle" fill="#f87171" font-size="11">rollback if issues detected</text>
+
+        <!-- Step labels -->
+        <text x="80"  y="175" text-anchor="middle" fill="#4d5f77" font-size="11">1. Deploy</text>
+        <text x="234" y="175" text-anchor="middle" fill="#4d5f77" font-size="11">2. Canary</text>
+        <text x="393" y="175" text-anchor="middle" fill="#4d5f77" font-size="11">3. Ramp up</text>
+        <text x="552" y="175" text-anchor="middle" fill="#4d5f77" font-size="11">4. GA</text>
+        <text x="711" y="175" text-anchor="middle" fill="#4d5f77" font-size="11">5. Remove</text>
+
+        <!-- Timeline -->
+        <line x1="40" y1="200" x2="780" y2="200" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+        <text x="410" y="225" text-anchor="middle" fill="#4d5f77" font-size="11">days to weeks — varies by flag type and risk</text>
+      </svg>
+    </div>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body"><strong>Flag debt is real.</strong> Flags that are never removed accumulate as dead conditional branches. They make code harder to read, test, and maintain — and can interact with each other in unexpected ways. Best practice: every flag gets a <strong>deletion date</strong> set at creation time.</div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ═══════ SECTION 10 -->
+  <div class="section" id="s10">
+    <div class="section-label">10</div>
+    <h2>Interview Q&amp;A</h2>
+
+    <div class="qa-list">
+      <div class="qa-item">
+        <div class="qa-q">What's the difference between a feature flag and an environment variable?</div>
+        <div class="qa-a">An env var is static — set at deploy time and needs a restart to change. A feature flag is evaluated at <strong>request time</strong> and can be toggled live, per user, with percentage rollouts — no restart or redeployment needed.</div>
+      </div>
+
+      <div class="qa-item">
+        <div class="qa-q">What is "flag debt" and why is it dangerous?</div>
+        <div class="qa-a">Flags never removed accumulate as dead conditional branches. They make code harder to read, test, and maintain — and can interact in unexpected ways. Best practice: every flag gets a deletion date at creation time.</div>
+      </div>
+
+      <div class="qa-item">
+        <div class="qa-q">How do you prevent inconsistent user experience with gradual rollouts?</div>
+        <div class="qa-a">Use <strong>deterministic hashing</strong> — hash the userId (with MD5 or SHA256, not <code>GetHashCode()</code>) to a bucket number 0–99. Same user → same bucket → same flag state every request, on every server, forever. Never use <code>Random()</code>.</div>
+      </div>
+
+      <div class="qa-item">
+        <div class="qa-q">Why can't you use string.GetHashCode() in production for bucketing?</div>
+        <div class="qa-a">In .NET 5+, <code>GetHashCode()</code> is randomized per process startup for security reasons. Two app instances will produce different hashes for the same string, meaning the same user could get different bucket assignments across servers. Use <code>MD5.HashData()</code> which is deterministic across all machines and restarts.</div>
+      </div>
+
+      <div class="qa-item">
+        <div class="qa-q">What is a kill switch?</div>
+        <div class="qa-a">An ops-type flag permanently wired to disable a costly or risky feature (like a heavy 3rd-party API call) in emergencies — without deploying. You flip it via config or a dashboard and the feature goes dark instantly across all instances.</div>
+      </div>
+
+      <div class="qa-item">
+        <div class="qa-q">How do you test code that uses feature flags?</div>
+        <div class="qa-a">Two approaches: (1) <strong>Mock</strong> <code>IFeatureManager</code> with Moq and call <code>Setup(...).ReturnsAsync(true/false)</code>; (2) build a <strong>FakeFeatureFlagService</strong> that takes a dictionary — reusable, cleaner to read. Always test both ON and OFF paths, and verify the flag is actually being checked.</div>
+      </div>
+
+      <div class="qa-item">
+        <div class="qa-q">Why wrap the DB service in a caching layer instead of caching inside it?</div>
+        <div class="qa-a">Separation of concerns — the DB service does one thing (query the database), the caching wrapper does another (memoize results). This is the Decorator pattern. It keeps both classes simple, independently testable, and lets you swap the caching strategy without touching DB logic.</div>
+      </div>
+
+      <div class="qa-item">
+        <div class="qa-q">What's the difference between PercentageFilter and TargetingFilter in Microsoft.FeatureManagement?</div>
+        <div class="qa-a"><code>PercentageFilter</code> re-evaluates randomly on every request — it's not user-sticky. The same user could see different results on consecutive requests. <code>TargetingFilter</code> uses deterministic hashing per userId, so a user always gets the same experience. For gradual rollouts to real users, always use <code>TargetingFilter</code>.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    Feature Flags — Complete Study Guide · C# / .NET · Interview Prep
+  </div>
+
+</div>
+</body>
+</html>

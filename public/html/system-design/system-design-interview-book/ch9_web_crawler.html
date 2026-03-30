@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chapter 9: Web Crawler — System Design Interview</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --teal: #0B7285; --teal-light: #E3FAFC; --teal-mid: #1098AD;
+    --gray: #f8f9fa; --gray2: #f1f3f5; --gray3: #dee2e6;
+    --text: #1a1a1a; --text2: #555; --text3: #888;
+    --success: #2f9e44; --success-bg: #ebfbee;
+    --warning: #e67700; --warning-bg: #fff3bf;
+    --danger: #c92a2a; --danger-bg: #ffe3e3;
+  }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif; background: #f4f6f8; color: var(--text); line-height: 1.7; }
+  .page { max-width: 900px; margin: 0 auto; padding: 40px 24px 80px; }
+  /* Header */
+  .doc-header { background: linear-gradient(135deg, #0B7285 0%, #1098AD 100%); color: white; border-radius: 16px; padding: 40px 48px; margin-bottom: 40px; }
+  .doc-header h1 { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+  .doc-header p { font-size: 14px; opacity: 0.8; }
+  .toc { background: white; border: 0.5px solid var(--gray3); border-radius: 12px; padding: 24px 28px; margin-bottom: 40px; }
+  .toc h3 { font-size: 14px; font-weight: 600; color: var(--teal); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .toc a { display: block; font-size: 14px; color: var(--teal-mid); text-decoration: none; padding: 4px 0; border-bottom: 0.5px solid var(--gray2); }
+  .toc a:last-child { border-bottom: none; }
+  .toc a:hover { color: var(--teal); }
+  /* Sections */
+  .section { background: white; border: 0.5px solid var(--gray3); border-radius: 12px; padding: 32px 36px; margin-bottom: 28px; }
+  .section-title { font-size: 22px; font-weight: 700; color: var(--teal); margin-bottom: 20px; padding-bottom: 12px; border-bottom: 2px solid var(--teal-light); display: flex; align-items: center; gap: 10px; }
+  .section-title .num { background: var(--teal); color: white; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; flex-shrink: 0; }
+  h3 { font-size: 16px; font-weight: 600; color: var(--teal-mid); margin: 20px 0 10px; }
+  p { font-size: 14px; color: var(--text2); margin-bottom: 12px; }
+  /* Note boxes */
+  .note { display: flex; border-radius: 8px; overflow: hidden; margin: 16px 0; font-size: 13px; }
+  .note-label { background: var(--teal); color: white; padding: 12px 14px; font-weight: 700; writing-mode: vertical-rl; text-orientation: mixed; transform: rotate(180deg); display: flex; align-items: center; justify-content: center; min-width: 44px; font-size: 12px; }
+  .note-body { background: var(--teal-light); padding: 12px 16px; color: var(--teal); flex: 1; }
+  .note.success .note-label { background: var(--success); }
+  .note.success .note-body { background: var(--success-bg); color: var(--success); }
+  .note.warning .note-label { background: var(--warning); }
+  .note.warning .note-body { background: var(--warning-bg); color: var(--warning); }
+  .note.danger .note-label { background: var(--danger); }
+  .note.danger .note-body { background: var(--danger-bg); color: var(--danger); }
+  /* Code blocks */
+  .code { background: #1e1e2e; color: #cdd6f4; font-family: "SF Mono","Fira Code",monospace; font-size: 12px; border-radius: 8px; padding: 16px 20px; margin: 12px 0; overflow-x: auto; line-height: 1.8; }
+  .code .kw { color: #89dceb; }
+  .code .str { color: #a6e3a1; }
+  .code .cm { color: #6c7086; }
+  .code .arrow { color: #f38ba8; }
+  /* Tables */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 16px 0; }
+  th { background: var(--teal); color: white; padding: 10px 14px; text-align: left; font-weight: 600; }
+  td { padding: 9px 14px; border-bottom: 0.5px solid var(--gray3); color: var(--text2); }
+  tr:nth-child(even) td { background: var(--teal-light); }
+  tr:last-child td { border-bottom: none; }
+  /* Badges */
+  .badge { font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: 600; display: inline-block; }
+  .b-high { background: var(--success-bg); color: var(--success); }
+  .b-med  { background: var(--warning-bg); color: var(--warning); }
+  .b-low  { background: var(--gray2); color: var(--text3); }
+  .b-danger { background: var(--danger-bg); color: var(--danger); }
+  /* Bullet list */
+  ul { margin: 8px 0 12px 24px; }
+  ul li { font-size: 14px; color: var(--text2); margin-bottom: 6px; }
+  /* Interactive widgets */
+  .widget { border: 0.5px solid var(--gray3); border-radius: 10px; padding: 20px; margin: 16px 0; background: var(--gray); }
+  .widget-title { font-size: 13px; font-weight: 600; color: var(--teal); margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+  .widget-title::before { content: ""; width: 8px; height: 8px; background: var(--teal); border-radius: 50%; display: inline-block; }
+  button { font-size: 13px; padding: 7px 16px; border-radius: 6px; cursor: pointer; border: 0.5px solid var(--gray3); background: white; color: var(--text); transition: background 0.15s; }
+  button:hover { background: var(--gray2); }
+  input[type=range] { flex: 1; accent-color: var(--teal); }
+  .step-btn { padding: 5px 12px; font-size: 12px; }
+  .step-btn.active { background: var(--teal); color: white; border-color: var(--teal); }
+  /* Flow step diagram */
+  .flow-steps { display: flex; align-items: center; gap: 0; margin: 16px 0; flex-wrap: wrap; }
+  .flow-step { background: var(--teal-light); border: 0.5px solid var(--teal-mid); border-radius: 8px; padding: 10px 14px; font-size: 12px; font-weight: 600; color: var(--teal); text-align: center; min-width: 100px; cursor: pointer; transition: all 0.2s; }
+  .flow-step:hover, .flow-step.active { background: var(--teal); color: white; }
+  .flow-arrow { font-size: 16px; color: var(--teal-mid); padding: 0 4px; }
+  .flow-desc { background: var(--teal-light); border-left: 3px solid var(--teal); border-radius: 0 8px 8px 0; padding: 12px 16px; font-size: 13px; color: var(--teal); margin-top: 10px; min-height: 44px; }
+  /* Domain queue cards */
+  .domain-card { border: 0.5px solid var(--gray3); border-radius: 8px; padding: 12px 14px; background: white; margin-bottom: 10px; }
+  .domain-name { font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+  .queue-item { font-size: 11px; font-family: "SF Mono","Fira Code",monospace; padding: 4px 8px; border-radius: 4px; background: var(--gray2); border: 0.5px solid var(--gray3); margin-bottom: 3px; color: var(--text2); display: flex; justify-content: space-between; }
+  /* Bloom filter bits */
+  .bit-array { display: flex; gap: 4px; flex-wrap: wrap; margin: 10px 0; }
+  .bit { width: 32px; height: 32px; border-radius: 6px; border: 1px solid var(--gray3); background: var(--gray2); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: var(--text3); transition: all 0.3s; font-family: monospace; }
+  .bit.on { background: var(--teal); color: white; border-color: var(--teal); }
+  .bit.check { background: #f39c12; color: white; border-color: #f39c12; }
+  /* Recrawl bars */
+  .site-stat { display: flex; justify-content: space-between; font-size: 12px; color: var(--text3); margin-bottom: 4px; }
+  .bar-track { height: 6px; background: var(--gray3); border-radius: 3px; overflow: hidden; margin-top: 6px; }
+  .bar-fill { height: 100%; border-radius: 3px; transition: width 0.5s, background 0.3s; }
+  /* Interview box */
+  .interview-box { background: linear-gradient(135deg, #0B7285 0%, #1098AD 100%); color: white; border-radius: 12px; padding: 24px 28px; margin: 16px 0; font-size: 14px; line-height: 1.8; font-style: italic; }
+  /* Quick ref */
+  .qr-table th { background: var(--teal); }
+  @keyframes slideOut { 0%{opacity:1;transform:translateX(0)} 100%{opacity:0;transform:translateX(30px)} }
+  .slide-out { animation: slideOut 0.4s ease forwards; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Header -->
+  <div class="doc-header">
+    <h1>Chapter 9: Design a Web Crawler</h1>
+    <p>System Design Interview — Alex Xu &nbsp;|&nbsp; Full study notes with interactive diagrams</p>
+  </div>
+
+  <!-- TOC -->
+  <div class="toc">
+    <h3>Contents</h3>
+    <a href="#s1">1. What Is a Web Crawler?</a>
+    <a href="#s2">2. The Exponential Queue Problem</a>
+    <a href="#s3">3. Core Components</a>
+    <a href="#s4">4. Politeness</a>
+    <a href="#s5">5. URL Frontier — Two Layers</a>
+    <a href="#s6">6. Deduplication — Two Types</a>
+    <a href="#s7">7. Adaptive Recrawl Scheduling</a>
+    <a href="#s8">8. Scale Considerations</a>
+    <a href="#s9">9. Interview Answer Template</a>
+    <a href="#s10">10. Quick Reference</a>
+  </div>
+
+  <!-- Section 1 -->
+  <div class="section" id="s1">
+    <div class="section-title"><span class="num">1</span> What Is a Web Crawler?</div>
+    <p>A web crawler is a program that automatically discovers and downloads web pages. It starts with a small set of seed URLs and expands by following every link it finds — forever. Google uses this to index the entire internet.</p>
+
+    <div class="widget">
+      <div class="widget-title">Interactive — Crawl flow (click each step)</div>
+      <div class="flow-steps">
+        <div class="flow-step active" onclick="showFlowStep(0)">Seed URLs</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step" onclick="showFlowStep(1)">URL Frontier</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step" onclick="showFlowStep(2)">Downloader</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step" onclick="showFlowStep(3)">Parser</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step" onclick="showFlowStep(4)">Storage + Dedupe</div>
+      </div>
+      <div class="flow-desc" id="flow-desc">Seed URLs are the starting points — a small set of trusted, well-known URLs given to the crawler on day one. Example: google.com, wikipedia.org, nytimes.com.</div>
+    </div>
+
+    <div class="code">
+<span class="cm">// Core crawl loop</span>
+Start with seed URLs (google.com, wikipedia.org...)
+      <span class="arrow">↓</span>
+Download the page HTML
+      <span class="arrow">↓</span>
+Extract all &lt;a href&gt; links from the page
+      <span class="arrow">↓</span>
+Add new links to the URL Frontier queue
+      <span class="arrow">↓</span>
+Repeat forever
+    </div>
+  </div>
+
+  <!-- Section 2 -->
+  <div class="section" id="s2">
+    <div class="section-title"><span class="num">2</span> The Exponential Queue Problem</div>
+    <p>The URL queue grows exponentially. Starting with 3 seed URLs where each page has 10 links:</p>
+
+    <table>
+      <tr><th>Level</th><th>New URLs</th><th>Cumulative Total</th></tr>
+      <tr><td>Level 0 — Seed URLs</td><td>3</td><td>3</td></tr>
+      <tr><td>Level 1 — Each seed has 10 links</td><td>30</td><td>33</td></tr>
+      <tr><td>Level 2 — Each of those has 10 links</td><td>300</td><td>333</td></tr>
+      <tr><td>Level 3</td><td>3,000</td><td>3,333</td></tr>
+      <tr><td>Level 5</td><td>300,000</td><td>333,333+</td></tr>
+    </table>
+
+    <div class="note">
+      <div class="note-label">Key Insight</div>
+      <div class="note-body">The queue explodes exponentially from just 3 seeds. Google crawls billions of pages. This is why crawlers need distributed workers, smart prioritization, deduplication, and massive storage.</div>
+    </div>
+
+    <div class="widget">
+      <div class="widget-title">Interactive — Queue growth calculator</div>
+      <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
+        <label style="font-size:13px; color:var(--text2);">Seed URLs</label>
+        <input type="range" min="1" max="10" value="3" id="seed-slider" oninput="calcGrowth()" style="width:120px;">
+        <span style="font-size:13px; font-weight:600; min-width:20px;" id="seed-val">3</span>
+        <label style="font-size:13px; color:var(--text2); margin-left:16px;">Links per page</label>
+        <input type="range" min="2" max="30" value="10" id="links-slider" oninput="calcGrowth()" style="width:120px;">
+        <span style="font-size:13px; font-weight:600; min-width:20px;" id="links-val">10</span>
+      </div>
+      <div id="growth-output" style="font-size:13px; color:var(--text2);"></div>
+    </div>
+  </div>
+
+  <!-- Section 3 -->
+  <div class="section" id="s3">
+    <div class="section-title"><span class="num">3</span> Core Components</div>
+    <table>
+      <tr><th>Component</th><th>Responsibility</th></tr>
+      <tr><td><strong>Seed URLs</strong></td><td>Starting points given to crawler on day one. Example: google.com, wikipedia.org</td></tr>
+      <tr><td><strong>URL Frontier</strong></td><td>Priority queue of URLs waiting to be crawled. Controls order and rate.</td></tr>
+      <tr><td><strong>Downloader</strong></td><td>Fetches HTML content. Respects robots.txt and rate limits per domain.</td></tr>
+      <tr><td><strong>Parser</strong></td><td>Extracts all hyperlinks and content from downloaded HTML.</td></tr>
+      <tr><td><strong>Dedupe Store</strong></td><td>Checks if URL or content was already seen. Prevents duplicate work.</td></tr>
+      <tr><td><strong>Storage</strong></td><td>Saves page content for indexing. Feeds new URLs back to frontier.</td></tr>
+    </table>
+  </div>
+
+  <!-- Section 4 -->
+  <div class="section" id="s4">
+    <div class="section-title"><span class="num">4</span> Politeness</div>
+    <p>Without rules, a crawler with 10,000 nytimes.com URLs would send all 10,000 requests in seconds — effectively a DDoS attack. Politeness rules prevent this.</p>
+
+    <ul>
+      <li>Never send more than N requests per second to the same domain</li>
+      <li>Maintain a delay between requests to the same host</li>
+      <li>Respect robots.txt — the file websites use to tell crawlers what not to visit</li>
+    </ul>
+
+    <div class="widget">
+      <div class="widget-title">Interactive — Drag slider to see server impact</div>
+      <div style="display:flex; align-items:center; gap:12px; margin-bottom:14px;">
+        <span style="font-size:13px; color:var(--text2);">Requests/sec to nytimes.com</span>
+        <input type="range" min="1" max="20" value="1" id="rps-slider" oninput="updateRPS(this.value)" style="flex:1; max-width:200px;">
+        <span style="font-size:13px; font-weight:600; min-width:24px;" id="rps-val">1</span>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+        <div style="background:white; border-radius:8px; padding:14px; border:0.5px solid var(--gray3);">
+          <div style="font-size:12px; color:var(--text3); margin-bottom:4px;">Server status</div>
+          <div style="font-size:16px; font-weight:600;" id="server-status">Healthy ✅</div>
+        </div>
+        <div style="background:white; border-radius:8px; padding:14px; border:0.5px solid var(--gray3);">
+          <div style="font-size:12px; color:var(--text3); margin-bottom:4px;">Verdict</div>
+          <div style="font-size:13px; font-weight:600;" id="rps-verdict">Polite crawl</div>
+        </div>
+      </div>
+      <div style="margin-top:10px; font-size:12px; padding:10px 14px; border-radius:6px;" id="rps-note">At 1 req/sec — polite. Server stays healthy.</div>
+    </div>
+
+    <div class="note warning">
+      <div class="note-label">robots.txt</div>
+      <div class="note-body">Every well-behaved crawler checks robots.txt first. "User-agent: * Disallow: /private/" means no crawler may visit /private/ URLs. Ignoring this gets your crawler banned.</div>
+    </div>
+  </div>
+
+  <!-- Section 5 -->
+  <div class="section" id="s5">
+    <div class="section-title"><span class="num">5</span> URL Frontier — Two Layers</div>
+    <p>The URL Frontier is not a simple FIFO queue. It has two layers working together:</p>
+
+    <h3>Layer 1 — Prioritizer</h3>
+    <p>Assigns a priority score to each URL based on PageRank, update frequency, and traffic. Higher score = crawl sooner.</p>
+
+    <h3>Layer 2 — Per-Domain Queues</h3>
+    <p>One dedicated queue per domain. Each queue has its own rate limiter. The crawler alternates between domain queues — enforcing politeness automatically.</p>
+
+    <div class="widget">
+      <div class="widget-title">Interactive — Click to crawl next URL</div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:14px;">
+        <div>
+          <div style="font-size:12px; font-weight:600; color:var(--text); margin-bottom:8px;">Layer 1 — Priority queue</div>
+          <div id="priority-q">
+            <div class="queue-item"><span>nasa.gov/mars</span><span class="badge b-danger">high</span></div>
+            <div class="queue-item"><span>nytimes.com/breaking</span><span class="badge b-danger">high</span></div>
+            <div class="queue-item"><span>wikipedia.org/python</span><span class="badge b-med">med</span></div>
+            <div class="queue-item"><span>github.com/react</span><span class="badge b-med">med</span></div>
+            <div class="queue-item"><span>random-blog.io</span><span class="badge b-low">low</span></div>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:12px; font-weight:600; color:var(--text); margin-bottom:8px;">Layer 2 — Per-domain queues</div>
+          <div class="domain-card">
+            <div class="domain-name">nytimes.com <span style="font-size:11px; color:var(--text3); font-weight:400;">max 1 req/sec</span></div>
+            <div id="q-nyt">
+              <div class="queue-item">nytimes.com/breaking</div>
+              <div class="queue-item">nytimes.com/sports</div>
+            </div>
+          </div>
+          <div class="domain-card">
+            <div class="domain-name">wikipedia.org <span style="font-size:11px; color:var(--text3); font-weight:400;">max 2 req/sec</span></div>
+            <div id="q-wiki">
+              <div class="queue-item">wikipedia.org/python</div>
+              <div class="queue-item">wikipedia.org/redis</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex; gap:10px; align-items:center;">
+        <button onclick="crawlNext()">Crawl next URL</button>
+        <span style="font-size:12px; font-family:monospace; color:var(--text2);" id="crawl-log"></span>
+      </div>
+      <div style="margin-top:10px; font-size:12px; color:var(--text3);" id="frontier-note">Priority queue picks highest-priority URL. Domain queues enforce politeness per domain.</div>
+    </div>
+
+    <div class="note">
+      <div class="note-label">Key Insight</div>
+      <div class="note-body">Layer 1 decides WHAT to crawl (by importance). Layer 2 decides HOW FAST per domain (by politeness). Together they give both priority and safety.</div>
+    </div>
+  </div>
+
+  <!-- Section 6 -->
+  <div class="section" id="s6">
+    <div class="section-title"><span class="num">6</span> Deduplication — Two Types</div>
+
+    <h3>Type 1 — URL Deduplication (Bloom Filter)</h3>
+    <p>A Bloom Filter uses multiple hash functions and a large bit array. It can say "definitely NOT seen" or "probably seen". False positives are acceptable — missing one URL is harmless at billion-page scale.</p>
+
+    <div class="widget">
+      <div class="widget-title">Interactive — Bloom Filter simulator</div>
+      <div style="margin-bottom:10px; font-size:13px; color:var(--text2);">Bit array (20 bits):</div>
+      <div class="bit-array" id="bloom-bits"></div>
+      <div style="display:flex; gap:8px; margin:12px 0; flex-wrap:wrap;">
+        <button onclick="bloomAdd('example.com')">Add example.com</button>
+        <button onclick="bloomAdd('google.com')">Add google.com</button>
+        <button onclick="bloomCheck('example.com')">Check example.com</button>
+        <button onclick="bloomCheck('other.com')">Check other.com</button>
+        <button onclick="bloomReset()">Reset</button>
+      </div>
+      <div style="font-size:13px; padding:10px 14px; border-radius:6px; min-height:40px;" id="bloom-result"></div>
+    </div>
+
+    <table>
+      <tr><th>Bloom Filter Result</th><th>Meaning</th><th>Action</th></tr>
+      <tr><td>All bits = 1 (probably seen)</td><td>URL was likely already crawled</td><td>Skip — don't add to frontier</td></tr>
+      <tr><td>Any bit = 0 (definitely new)</td><td>URL was definitely never seen</td><td>Add to frontier — crawl it</td></tr>
+    </table>
+
+    <div class="note success">
+      <div class="note-label">False Positives OK</div>
+      <div class="note-body">Missing one URL occasionally is far less harmful than crawling duplicates at billion-page scale. We always prefer false positives over false negatives here.</div>
+    </div>
+
+    <h3>Type 2 — Content Deduplication (Hash Store)</h3>
+    <p>Different URLs can have identical content. Bloom Filter won't catch this — it only checks URLs. We hash the page content itself and store it in an exact key-value store.</p>
+
+    <div class="code">
+Crawl nytimes.com/article/123:
+  MD5(page content) = <span class="str">"a1b2c3"</span>
+  Hash store: <span class="str">"a1b2c3"</span> not seen → store → index ✅
+
+Crawl msn.com/news/nytimes-article-123:
+  MD5(page content) = <span class="str">"a1b2c3"</span>  <span class="cm">← same hash!</span>
+  Hash store: <span class="str">"a1b2c3"</span> already seen → DISCARD ❌
+    </div>
+
+    <table>
+      <tr><th>Store</th><th>Purpose</th><th>Structure</th><th>False Positives OK?</th></tr>
+      <tr><td>Bloom Filter</td><td>URL deduplication</td><td>Probabilistic bit array</td><td>Yes ✅</td></tr>
+      <tr><td>Hash Store</td><td>Content deduplication</td><td>Exact key-value store</td><td>No ❌</td></tr>
+    </table>
+
+    <div class="note">
+      <div class="note-label">Elegant Reuse</div>
+      <div class="note-body">Content hashing is already used for change detection. The same hash store solves content deduplication too — one system, two problems solved.</div>
+    </div>
+  </div>
+
+  <!-- Section 7 -->
+  <div class="section" id="s7">
+    <div class="section-title"><span class="num">7</span> Adaptive Recrawl Scheduling</div>
+    <p>The Prioritizer learns from history. Pages that change often get recrawled frequently. Pages that never change get crawled rarely.</p>
+
+    <div class="widget">
+      <div class="widget-title">Interactive — Simulate crawl visits and watch frequency adapt</div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:12px;">
+        <div style="background:white; border-radius:8px; padding:14px; border:0.5px solid var(--gray3);">
+          <div style="font-weight:600; font-size:13px; margin-bottom:8px;">nytimes.com</div>
+          <div class="site-stat"><span>Change rate</span><span id="rate-nyt" style="color:var(--success); font-weight:600;">90%</span></div>
+          <div class="site-stat"><span>Recrawl every</span><span id="freq-nyt" style="font-weight:600;">1 hour</span></div>
+          <div class="bar-track"><div class="bar-fill" id="bar-nyt" style="width:90%; background:var(--success);"></div></div>
+          <button onclick="simulateVisit('nyt')" style="margin-top:10px; width:100%; font-size:12px;">Simulate visit</button>
+          <div style="font-size:11px; font-family:monospace; color:var(--text3); margin-top:6px; min-height:16px;" id="log-nyt"></div>
+        </div>
+        <div style="background:white; border-radius:8px; padding:14px; border:0.5px solid var(--gray3);">
+          <div style="font-weight:600; font-size:13px; margin-bottom:8px;">personal-blog.io</div>
+          <div class="site-stat"><span>Change rate</span><span id="rate-blog" style="color:var(--text3); font-weight:600;">5%</span></div>
+          <div class="site-stat"><span>Recrawl every</span><span id="freq-blog" style="font-weight:600;">30 days</span></div>
+          <div class="bar-track"><div class="bar-fill" id="bar-blog" style="width:5%; background:#aaa;"></div></div>
+          <button onclick="simulateVisit('blog')" style="margin-top:10px; width:100%; font-size:12px;">Simulate visit</button>
+          <div style="font-size:11px; font-family:monospace; color:var(--text3); margin-top:6px; min-height:16px;" id="log-blog"></div>
+        </div>
+      </div>
+    </div>
+
+    <h3>Two Change Detection Techniques</h3>
+    <table>
+      <tr><th>Technique</th><th>How It Works</th><th>Benefit</th></tr>
+      <tr><td>HTTP ETag / Last-Modified</td><td>Server returns header with version. Next visit sends If-None-Match. Server responds 304 Not Modified.</td><td>Saves bandwidth — no re-download needed</td></tr>
+      <tr><td>Content Hashing</td><td>MD5/SHA of page content stored after each visit. Compare hash on next visit.</td><td>Works even if server doesn't support ETags</td></tr>
+    </table>
+  </div>
+
+  <!-- Section 8 -->
+  <div class="section" id="s8">
+    <div class="section-title"><span class="num">8</span> Scale Considerations</div>
+    <table>
+      <tr><th>Challenge</th><th>Solution</th></tr>
+      <tr><td>Queue grows exponentially</td><td>Distributed workers + priority-based processing</td></tr>
+      <tr><td>Duplicate URLs</td><td>Bloom Filter — memory efficient, O(1) check</td></tr>
+      <tr><td>Duplicate content</td><td>Content hashing — exact match key-value store</td></tr>
+      <tr><td>Politeness enforcement</td><td>Per-domain queues with individual rate limiters</td></tr>
+      <tr><td>Prioritization</td><td>Two-layer frontier: prioritizer + per-domain queues</td></tr>
+      <tr><td>Wasted recrawl bandwidth</td><td>Adaptive scheduling + HTTP ETag / 304 responses</td></tr>
+      <tr><td>Storage at scale</td><td>Distributed object storage (like S3) for raw HTML</td></tr>
+    </table>
+  </div>
+
+  <!-- Section 9 -->
+  <div class="section" id="s9">
+    <div class="section-title"><span class="num">9</span> Interview Answer Template</div>
+    <div class="interview-box">
+      "A web crawler starts with seed URLs fed into a two-layer URL Frontier. Layer 1 is a prioritizer that scores URLs by PageRank, update frequency, and traffic. Layer 2 is per-domain queues that enforce politeness by rate-limiting requests per host. Workers download pages, parse links, and feed new URLs back. URL deduplication uses a Bloom Filter for memory-efficient O(1) checks — false positives are acceptable since missing one URL is harmless at scale. Content deduplication uses a hash store for exact matching — false positives here would silently discard unique content. Recrawl frequency is adaptive: pages with high change rates are revisited hourly, stale pages every 30+ days, using HTTP ETags and content hashing to detect changes efficiently."
+    </div>
+  </div>
+
+  <!-- Section 10 -->
+  <div class="section" id="s10">
+    <div class="section-title"><span class="num">10</span> Quick Reference</div>
+    <table class="qr-table">
+      <tr><th>Concept</th><th>One-Line Summary</th></tr>
+      <tr><td>Web Crawler flow</td><td>Seed URLs → Download → Parse → Extract links → Add to frontier → Repeat</td></tr>
+      <tr><td>Queue explosion</td><td>3 seeds × 10 links × 3 levels = 333+ URLs. Grows exponentially.</td></tr>
+      <tr><td>Politeness</td><td>Max N req/sec per domain. One queue per domain. Respects robots.txt.</td></tr>
+      <tr><td>robots.txt</td><td>File that tells crawlers which URLs to skip. Always check it first.</td></tr>
+      <tr><td>URL Frontier Layer 1</td><td>Prioritizer — scores URLs by PageRank, update rate, traffic</td></tr>
+      <tr><td>URL Frontier Layer 2</td><td>Per-domain queues — each with its own rate limiter</td></tr>
+      <tr><td>Bloom Filter</td><td>Probabilistic structure for URL dedup. False positives acceptable.</td></tr>
+      <tr><td>Content hashing</td><td>MD5/SHA of page content. Solves both change detection AND content dedup.</td></tr>
+      <tr><td>Hash Store</td><td>Exact KV store for content dedup. No false positives allowed here.</td></tr>
+      <tr><td>Adaptive recrawl</td><td>High change rate = crawl often. Low change rate = crawl rarely.</td></tr>
+      <tr><td>ETag / 304</td><td>HTTP: server says "not changed" → skip re-download → saves bandwidth</td></tr>
+    </table>
+  </div>
+
+</div>
+
+<script>
+// --- Flow steps ---
+const flowDescs = [
+  "Seed URLs are the starting points — a small set of trusted, well-known URLs given to the crawler on day one. Example: google.com, wikipedia.org, nytimes.com.",
+  "URL Frontier is a priority queue of URLs waiting to be crawled. It controls which URL gets crawled next — by priority, domain, and politeness rules.",
+  "The Downloader fetches the HTML content of the next URL in the frontier. It respects robots.txt and rate limits per domain.",
+  "The Parser extracts all hyperlinks from the HTML page. These new URLs are candidates to add back to the frontier.",
+  "Storage saves the page content. Dedupe checks if we've seen this URL or content before — if yes, skip it. New URLs loop back to the frontier."
+];
+function showFlowStep(i) {
+  document.querySelectorAll('.flow-step').forEach((el,j) => el.classList.toggle('active', i===j));
+  document.getElementById('flow-desc').textContent = flowDescs[i];
+}
+
+// --- Queue growth ---
+function calcGrowth() {
+  const seeds = parseInt(document.getElementById('seed-slider').value);
+  const links = parseInt(document.getElementById('links-slider').value);
+  document.getElementById('seed-val').textContent = seeds;
+  document.getElementById('links-val').textContent = links;
+  let rows = '', total = seeds;
+  let level = seeds;
+  rows += `<tr><td>Level 0 — Seeds</td><td>${seeds.toLocaleString()}</td><td>${total.toLocaleString()}</td></tr>`;
+  for(let i=1; i<=4; i++) {
+    level *= links; total += level;
+    rows += `<tr><td>Level ${i}</td><td>${level.toLocaleString()}</td><td>${total.toLocaleString()}</td></tr>`;
+  }
+  document.getElementById('growth-output').innerHTML = `<table><tr><th>Level</th><th>New URLs</th><th>Cumulative</th></tr>${rows}</table>`;
+}
+calcGrowth();
+
+// --- RPS slider ---
+function updateRPS(v) {
+  document.getElementById('rps-val').textContent = v;
+  const n = parseInt(v);
+  const status = document.getElementById('server-status');
+  const verdict = document.getElementById('rps-verdict');
+  const note = document.getElementById('rps-note');
+  if(n <= 3) {
+    status.textContent = 'Healthy ✅'; status.style.color = 'var(--success)';
+    verdict.textContent = 'Polite crawl'; verdict.style.color = 'var(--success)';
+    note.style.background = 'var(--success-bg)'; note.style.color = 'var(--success)';
+    note.textContent = `At ${v} req/sec — polite. Server stays healthy.`;
+  } else if(n <= 10) {
+    status.textContent = 'Stressed ⚠️'; status.style.color = 'var(--warning)';
+    verdict.textContent = 'Getting dangerous'; verdict.style.color = 'var(--warning)';
+    note.style.background = 'var(--warning-bg)'; note.style.color = 'var(--warning)';
+    note.textContent = `At ${v} req/sec — borderline. Server may slow down.`;
+  } else {
+    status.textContent = 'Overloaded! ❌'; status.style.color = 'var(--danger)';
+    verdict.textContent = 'DDoS territory!'; verdict.style.color = 'var(--danger)';
+    note.style.background = 'var(--danger-bg)'; note.style.color = 'var(--danger)';
+    note.textContent = `At ${v} req/sec — impolite! This is basically a DDoS attack.`;
+  }
+}
+
+// --- URL Frontier demo ---
+const qData = {
+  nyt:  ['nytimes.com/breaking','nytimes.com/sports','nytimes.com/tech','nytimes.com/world'],
+  wiki: ['wikipedia.org/python','wikipedia.org/redis','wikipedia.org/kafka','wikipedia.org/linux']
+};
+let qIdx = {nyt:0, wiki:0}, turn = 'nyt';
+function crawlNext() {
+  const d = turn, other = d==='nyt'?'wiki':'nyt';
+  if(qIdx[d] >= qData[d].length && qIdx[other] >= qData[other].length) {
+    document.getElementById('crawl-log').textContent = 'All URLs crawled!'; return;
+  }
+  if(qIdx[d] >= qData[d].length) { turn=other; crawlNext(); return; }
+  const url = qData[d][qIdx[d]++]; turn = other;
+  const qId = d==='nyt'?'q-nyt':'q-wiki';
+  const container = document.getElementById(qId);
+  const first = container.querySelector('.queue-item');
+  if(first) { first.classList.add('slide-out'); setTimeout(()=>{ try{container.removeChild(first)}catch(e){} },400); }
+  document.getElementById('crawl-log').textContent = '→ Crawling: ' + url;
+  document.getElementById('frontier-note').textContent = 'Crawling "'+url+'" — switching to '+(d==='nyt'?'wikipedia.org':'nytimes.com')+' next to stay polite.';
+}
+
+// --- Bloom Filter ---
+const bloomState = new Array(20).fill(0);
+function hashURL(url, seed) {
+  let h = seed * 31;
+  for(let i=0; i<url.length; i++) h = (h * 31 + url.charCodeAt(i)) % 20;
+  return Math.abs(h);
+}
+function renderBits(highlights=[]) {
+  const c = document.getElementById('bloom-bits');
+  c.innerHTML = bloomState.map((b,i) => {
+    const cls = highlights.includes(i) ? 'bit check' : b ? 'bit on' : 'bit';
+    return `<div class="${cls}">${b}</div>`;
+  }).join('');
+}
+function bloomAdd(url) {
+  const positions = [hashURL(url,7), hashURL(url,13), hashURL(url,31)];
+  positions.forEach(p => bloomState[p] = 1);
+  renderBits(positions);
+  const res = document.getElementById('bloom-result');
+  res.style.background='var(--success-bg)'; res.style.color='var(--success)';
+  res.textContent = `Added "${url}" — set bits at positions ${positions.join(', ')}`;
+}
+function bloomCheck(url) {
+  const positions = [hashURL(url,7), hashURL(url,13), hashURL(url,31)];
+  const seen = positions.every(p => bloomState[p]===1);
+  renderBits(positions);
+  const res = document.getElementById('bloom-result');
+  if(seen) {
+    res.style.background='var(--warning-bg)'; res.style.color='var(--warning)';
+    res.textContent = `"${url}" → bits at ${positions.join(', ')} all = 1 → PROBABLY SEEN BEFORE → Skip`;
+  } else {
+    res.style.background='var(--success-bg)'; res.style.color='var(--success)';
+    res.textContent = `"${url}" → at least one bit = 0 → DEFINITELY NEW → Add to frontier`;
+  }
+}
+function bloomReset() {
+  bloomState.fill(0); renderBits();
+  const res = document.getElementById('bloom-result');
+  res.style.background=''; res.style.color=''; res.textContent='';
+}
+renderBits();
+
+// --- Recrawl simulator ---
+const siteData = {
+  nyt:  { changes:9, visits:10 },
+  blog: { changes:1, visits:10 }
+};
+function simulateVisit(site) {
+  const weights = site==='nyt' ? [0,0,0,0,0,0,0,0,1,1] : [0,0,0,0,0,0,0,0,0,1];
+  const changed = weights[Math.floor(Math.random()*weights.length)]===1;
+  const s = siteData[site]; s.visits++; if(changed) s.changes++;
+  const rate = Math.round((s.changes/s.visits)*100);
+  const rateEl = document.getElementById('rate-'+site);
+  const barEl  = document.getElementById('bar-'+site);
+  const freqEl = document.getElementById('freq-'+site);
+  const logEl  = document.getElementById('log-'+site);
+  rateEl.textContent = rate+'%';
+  barEl.style.width = rate+'%';
+  if(rate > 60) { barEl.style.background='var(--success)'; rateEl.style.color='var(--success)'; freqEl.textContent='1 hour'; }
+  else if(rate > 20) { barEl.style.background='var(--warning)'; rateEl.style.color='var(--warning)'; freqEl.textContent='1 day'; }
+  else { barEl.style.background='#aaa'; rateEl.style.color='var(--text3)'; freqEl.textContent='30 days'; }
+  logEl.textContent = changed ? '→ Content changed! Re-indexing...' : '→ No change. Skipping.';
+  logEl.style.color = changed ? 'var(--success)' : 'var(--text3)';
+}
+</script>
+</body>
+</html>

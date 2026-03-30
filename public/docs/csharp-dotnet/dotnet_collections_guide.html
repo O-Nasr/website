@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Collections</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0c10;
+      --surface: #111318;
+      --surface2: #181c24;
+      --surface3: #1f2530;
+      --border: rgba(255,255,255,0.06);
+      --border2: rgba(255,255,255,0.11);
+      --accent: #6ea1ff;
+      --accent2: #8b6cf6;
+      --green: #34d399;
+      --amber: #fbbf24;
+      --red: #f87171;
+      --teal: #2dd4bf;
+      --text: #dfe5ef;
+      --muted: #7e8a9e;
+      --code-bg: #080a0e;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Outfit', sans-serif;
+      font-size: 15px;
+      line-height: 1.78;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      padding: 56px 28px 44px;
+      max-width: 900px;
+      margin: 0 auto;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -80px;
+      right: -40px;
+      width: 360px;
+      height: 360px;
+      background: radial-gradient(circle, rgba(110,161,255,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-tag {
+      display: inline-block;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10.5px;
+      font-weight: 500;
+      color: var(--accent);
+      background: rgba(110,161,255,0.07);
+      border: 1px solid rgba(110,161,255,0.18);
+      padding: 4px 14px;
+      border-radius: 20px;
+      letter-spacing: 0.09em;
+      margin-bottom: 14px;
+      text-transform: uppercase;
+    }
+    .hero h1 {
+      font-size: clamp(26px, 4.2vw, 42px);
+      font-weight: 700;
+      line-height: 1.15;
+      letter-spacing: -0.03em;
+      margin-bottom: 0;
+      background: linear-gradient(135deg, #dfe5ef 0%, #6ea1ff 50%, #34d399 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* ── Page layout ── */
+    .page {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 28px 100px;
+    }
+
+    /* ── Sections ── */
+    .doc-content h1 {
+      font-size: 20px;
+      font-weight: 700;
+      color: #fff;
+      margin: 30px 0 0;
+      padding: 24px 0 14px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      -webkit-text-fill-color: #fff;
+      background-clip: padding-box;
+    }
+    .doc-content h1:first-child { margin-top: 10px; }
+
+    .doc-content h2 {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--accent);
+      margin: 22px 0 10px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+    }
+
+    .doc-content h3 {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--accent2);
+      margin: 18px 0 8px;
+    }
+
+    .doc-content h4, .doc-content h5, .doc-content h6 {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--teal);
+      margin: 14px 0 6px;
+    }
+
+    p {
+      margin: 0;
+      padding: 6px 0;
+      font-size: 14.5px;
+      line-height: 1.75;
+    }
+    strong, b { color: #fff; }
+    em { color: var(--muted); }
+
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ── Lists ── */
+    ul, ol {
+      padding-left: 20px;
+      margin: 4px 0 10px;
+    }
+    li {
+      margin: 3px 0;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+    li strong { color: #fff; }
+
+    /* ── Tables ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin: 12px 0;
+    }
+    th {
+      background: var(--surface2);
+      color: var(--accent);
+      font-weight: 600;
+      text-align: left;
+      padding: 9px 13px;
+      border: 1px solid var(--border);
+    }
+    td {
+      padding: 8px 13px;
+      border: 1px solid var(--border);
+    }
+    tr:nth-child(even) td {
+      background: rgba(255,255,255,0.012);
+    }
+
+    /* Single-cell tables = note/callout boxes */
+    table:has(tr:only-child td:only-child) {
+      background: rgba(110,161,255,0.05);
+      border: 1px solid rgba(110,161,255,0.14);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    table:has(tr:only-child td:only-child) td {
+      border: none;
+      padding: 13px 16px;
+      font-size: 13px;
+      line-height: 1.7;
+    }
+    table:has(tr:only-child td:only-child) td strong {
+      color: var(--accent);
+    }
+
+    /* ── Code ── */
+    code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12.5px;
+      color: var(--accent);
+      background: rgba(110,161,255,0.07);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    pre {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 18px;
+      overflow-x: auto;
+      margin: 12px 0;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12.5px;
+      line-height: 1.7;
+      color: #c4cdd9;
+      scrollbar-width: thin;
+      scrollbar-color: #333 transparent;
+    }
+    pre::-webkit-scrollbar { height: 4px; }
+    pre::-webkit-scrollbar-track { background: transparent; }
+    pre::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+    pre::-webkit-scrollbar-thumb:hover { background: #555; }
+    pre code {
+      background: none;
+      padding: 0;
+      color: inherit;
+      font-size: inherit;
+    }
+
+    /* ── Blockquote ── */
+    blockquote {
+      background: rgba(110,161,255,0.05);
+      border: 1px solid rgba(110,161,255,0.14);
+      border-left: 3px solid var(--accent);
+      border-radius: 0 10px 10px 0;
+      padding: 13px 16px;
+      margin: 10px 0;
+      font-size: 13px;
+      line-height: 1.7;
+    }
+    blockquote b, blockquote strong { color: var(--accent); }
+
+    /* ── Images ── */
+    img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 10px;
+      margin: 12px 0;
+      border: 1px solid var(--border);
+    }
+
+    /* ── HR ── */
+    hr {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 24px 0;
+    }
+
+    /* ── Footer ── */
+    .footer {
+      text-align: center;
+      padding: 36px 0 16px;
+      font-size: 11px;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      margin-top: 40px;
+    }
+
+    @media (max-width: 640px) {
+      .page { padding: 0 16px 60px; }
+      .hero { padding: 36px 16px 30px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-tag">C# & .NET</div>
+  <h1>Collections</h1>
+</div>
+
+<div class="page">
+  <div class="doc-content">
+<p><strong>.NET Interview Study Guide</strong></p><p><em>Collections Deep Dive — Complete Guide</em></p><h1><strong>1. List&lt;T&gt; — Ordered Resizable Array</strong></h1><pre><code>List&lt;T&gt; is backed by an internal array. When it gets full it automatically doubles in capacity — this is called amortized growth.
+List&lt;int&gt; numbers = new List&lt;int&gt;();
+numbers.Add(1); // internal array: [1, _, _, _]  capacity: 4
+numbers.Add(4); // internal array: [1, 2, 3, 4]  capacity: 4
+numbers.Add(5); // FULL! → doubles to capacity 8 → copies all elements</code></pre><h2><strong>Performance Characteristics</strong></h2><pre><code>List&lt;int&gt; list = new List&lt;int&gt; { 1, 2, 3, 4, 5 };
+
+int item  = list[2];        // O(1) — direct index access — fast ✅
+bool ex   = list.Contains(4); // O(n) — scans every element — slow 😐
+list.Add(6);                // O(1) amortized — fast ✅
+list.Insert(2, 99);         // O(n) — shifts all elements after index — slow 😐
+list.Remove(3);             // O(n) — shifts all elements after removed — slow 😐</code></pre><h2><strong>When to Use List&lt;T&gt;</strong></h2><ul><li>You need an ordered collection</li><li>You access items by index</li><li>You need duplicate values</li><li>You iterate through all items frequently</li><li>❌ Avoid for frequent Contains checks — use HashSet instead</li><li>❌ Avoid for frequent middle insert/remove — use LinkedList instead</li></ul><h1><strong>2. Dictionary&lt;TKey, TValue&gt; — Hash Map</strong></h1><p>Dictionary uses hashing to achieve O(1) key lookups. Understanding why it's fast requires understanding how hashing works internally.</p><h2><strong>How Hashing Works Internally</strong></h2><pre><code>// Adding "Ali" → 25
+// Step 1: Calculate hash → "Ali".GetHashCode() → 12345678
+// Step 2: Map to bucket → 12345678 % bucketCount → bucket 3
+// Step 3: Store ("Ali", 25) in bucket 3
+
+// Reading ages["Ali"]
+// Step 1: Calculate hash → 12345678
+// Step 2: Go directly to bucket 3
+// Step 3: Return 25
+// No scanning. No looping. Direct jump. That's why O(1). ✅</code></pre><h2><strong>Performance Characteristics</strong></h2><pre><code>Dictionary&lt;string, int&gt; dict = new Dictionary&lt;string, int&gt;();
+
+dict["Ali"] = 25;              // O(1) — add
+int age = dict["Ali"];         // O(1) — read by key — fast ✅
+bool ex = dict.ContainsKey("Ali");   // O(1) — fast ✅
+bool ex = dict.ContainsValue(25);    // O(n) — scans all values — slow 😐
+dict.Remove("Ali");            // O(1) — remove</code></pre><h2><strong>Always Use TryGetValue for Safe Reading</strong></h2><pre><code>// ❌ Dangerous — throws KeyNotFoundException if key missing
+int age = dict["NonExistent"];
+
+// ✅ Safe — no exception
+if (dict.TryGetValue("Ali", out int age))
+{
+    Console.WriteLine("Age: " + age);
+}
+else
+{
+    Console.WriteLine("Key not found");
+}</code></pre><h2><strong>Iterating a Dictionary</strong></h2><pre><code>foreach (KeyValuePair&lt;string, int&gt; pair in dict)
+    Console.WriteLine($"{pair.Key}: {pair.Value}");
+
+// Modern deconstruction syntax
+foreach (var (key, value) in dict)
+    Console.WriteLine($"{key}: {value}");</code></pre><h1><strong>3. HashSet&lt;T&gt; — Unique Values with Fast Lookup</strong></h1><pre><code>HashSet&lt;T&gt; is essentially a Dictionary&lt;T, nothing&gt;. It uses the same hashing mechanism but only stores keys — no values. Duplicate adds are silently ignored.
+HashSet&lt;int&gt; ids = new HashSet&lt;int&gt;();
+ids.Add(1);  // ✅ added
+ids.Add(2);  // ✅ added
+ids.Add(1);  // ❌ duplicate — silently ignored, returns false
+ids.Add(3);  // ✅ added
+Console.WriteLine(ids.Count); // 3 — not 4</code></pre><h2><strong>HashSet vs List — Contains Performance</strong></h2><pre><code>// With 1 million items, checking Contains 1000 times:
+List&lt;int&gt; list = new List&lt;int&gt;(/* 1M items */);
+bool ex = list.Contains(999999); // O(n) — scans up to 1M elements 😱
+// Total: 1,000 × 1,000,000 = 1 billion checks
+
+HashSet&lt;int&gt; set = new HashSet&lt;int&gt;(/* 1M items */);
+bool ex = set.Contains(999999);  // O(1) — instant hash lookup ✅
+// Total: 1,000 × 1 = 1,000 checks</code></pre><h2><strong>Set Operations — Unique to HashSet</strong></h2><pre><code>HashSet&lt;int&gt; setA = new HashSet&lt;int&gt; { 1, 2, 3, 4, 5 };
+HashSet&lt;int&gt; setB = new HashSet&lt;int&gt; { 3, 4, 5, 6, 7 };
+
+setA.UnionWith(setB);      // all elements from both → 1,2,3,4,5,6,7
+setA.IntersectWith(setB);  // only in BOTH sets    → 3,4,5
+setA.ExceptWith(setB);     // in A but NOT in B    → 1,2
+bool sub = setA.IsSubsetOf(setB); // is A fully inside B?
+
+// Real world — finding common users between two lists (O(n) not O(n²))
+var commonIds = new HashSet&lt;int&gt;(listA);
+commonIds.IntersectWith(listB); // fast intersection ✅</code></pre><h1><strong>4. Queue&lt;T&gt; — First In First Out (FIFO)</strong></h1><pre><code>Queue works like a real queue at a ticket counter — first person to join is first to be served.
+Queue&lt;string&gt; printQueue = new Queue&lt;string&gt;();
+
+// Enqueue — add to the BACK
+printQueue.Enqueue("Document1.pdf");
+printQueue.Enqueue("Document2.pdf");
+printQueue.Enqueue("Document3.pdf");
+// State: [Document1 ← front ... Document3 ← back]
+
+// Dequeue — remove from the FRONT
+string next = printQueue.Dequeue(); // returns "Document1.pdf"
+// State: [Document2 ← front ... Document3 ← back]
+
+// Peek — see front WITHOUT removing
+string front = printQueue.Peek(); // returns "Document2.pdf"
+
+Console.WriteLine(printQueue.Count); // 2</code></pre><h2><strong>Real World Use Cases</strong></h2><ul><li>Print queues — first document sent = first printed</li><li>Message queues — first message sent = first processed</li><li>Task scheduling — process tasks in order received</li><li>BFS (Breadth First Search) — graph traversal algorithm</li></ul><h1><strong>5. Stack&lt;T&gt; — Last In First Out (LIFO)</strong></h1><pre><code>Stack works like a stack of plates — last plate placed on top is first to be taken off.
+Stack&lt;string&gt; browserHistory = new Stack&lt;string&gt;();
+
+// Push — add to the TOP
+browserHistory.Push("google.com");
+browserHistory.Push("github.com");
+browserHistory.Push("stackoverflow.com");
+// State: stackoverflow.com ← TOP
+//        github.com
+//        google.com        ← BOTTOM
+
+// Pop — remove from the TOP
+string lastPage = browserHistory.Pop(); // returns "stackoverflow.com"
+// State: github.com ← TOP
+//        google.com
+
+// Peek — see top WITHOUT removing
+string current = browserHistory.Peek(); // returns "github.com"</code></pre><h2><strong>Real World Use Cases</strong></h2><ul><li>Browser back button — last page visited = first to go back to</li><li>Undo/Redo operations — last action = first to undo</li><li>Call stack — last method called = first to return</li><li>DFS (Depth First Search) — graph traversal algorithm</li><li>Expression parsing — compilers use stacks</li></ul><h1><strong>6. LinkedList&lt;T&gt; — Frequent Middle Insert/Remove</strong></h1><pre><code>LinkedList stores elements as nodes — each node points to both the next and previous node. No index-based access but extremely fast insert/remove anywhere in the list.
+// Structure: null ← [1] ↔ [2] ↔ [3] ↔ [4] → null
+
+LinkedList&lt;int&gt; linked = new LinkedList&lt;int&gt;();
+linked.AddFirst(1);  // [1]
+linked.AddLast(2);   // [1, 2]
+linked.AddLast(3);   // [1, 2, 3]
+
+// Insert after specific node — O(1) — just change pointers
+LinkedListNode&lt;int&gt; node = linked.Find(2);
+linked.AddAfter(node, 99); // [1, 2, 99, 3]
+
+// Remove — O(1) if you have the node
+linked.Remove(node);  // [1, 99, 3]</code></pre><table><tr><td></td><td><p><strong>List&lt;T&gt;</strong></p></td><td><p><strong>LinkedList&lt;T&gt;</strong></p></td></tr><tr><td><p>Access by index</p></td><td><p>✅ O(1) — fast</p></td><td><p>❌ O(n) — must traverse</p></td></tr><tr><td><p>Insert at middle</p></td><td><p>❌ O(n) — must shift elements</p></td><td><p>✅ O(1) — just change pointers</p></td></tr><tr><td><p>Remove from middle</p></td><td><p>❌ O(n) — must shift elements</p></td><td><p>✅ O(1) — just change pointers</p></td></tr><tr><td><p>Memory</p></td><td><p>Contiguous array — efficient</p></td><td><p>Node objects — more overhead</p></td></tr><tr><td><p>Best for</p></td><td><p>Random access by index</p></td><td><p>Frequent middle insert/remove</p></td></tr></table><h1><strong>7. Thread-Safe Collections</strong></h1><table><tr><td><p><strong>⚠️ Important:  </strong>Standard collections are NOT thread-safe. If multiple threads access them simultaneously data corruption can occur. Use System.Collections.Concurrent for multi-threaded scenarios.</p></td></tr></table><pre><code>// ❌ Not thread-safe — data corruption in multi-threaded code
+Dictionary&lt;string, int&gt; dict = new Dictionary&lt;string, int&gt;();
+
+// ✅ Thread-safe alternatives
+ConcurrentDictionary&lt;string, int&gt; dict = new ConcurrentDictionary&lt;string, int&gt;();
+dict.TryAdd("key", 1);
+dict.TryGetValue("key", out int value);
+dict.AddOrUpdate("key", 1, (k, v) =&gt; v + 1);
+
+// Other thread-safe collections</code></pre><p>ConcurrentQueue&lt;T&gt;    // thread-safe Queue — FIFO</p><p>ConcurrentStack&lt;T&gt;    // thread-safe Stack — LIFO</p><p>ConcurrentBag&lt;T&gt;      // thread-safe unordered collection</p><p>BlockingCollection&lt;T&gt; // producer-consumer pattern</p><h1><strong>8. Complete Comparison Table</strong></h1><table><tr><td><p><strong>Collection</strong></p></td><td><p><strong>Order</strong></p></td><td><p><strong>Duplicates</strong></p></td><td><p><strong>Access Speed</strong></p></td><td><p><strong>Best For</strong></p></td></tr><tr><td><p>List&lt;T&gt;</p></td><td><p>✅ Ordered</p></td><td><p>✅ Yes</p></td><td><p>O(1) by index</p></td><td><p>General ordered collection</p></td></tr><tr><td><p>Dictionary&lt;K,V&gt;</p></td><td><p>❌ Not guaranteed</p></td><td><p>❌ No (keys)</p></td><td><p>O(1) by key</p></td><td><p>Fast key-value lookup</p></td></tr><tr><td><p>HashSet&lt;T&gt;</p></td><td><p>❌ Not guaranteed</p></td><td><p>❌ No</p></td><td><p>O(1) Contains</p></td><td><p>Unique values, set ops</p></td></tr><tr><td><p>Queue&lt;T&gt;</p></td><td><p>✅ FIFO</p></td><td><p>✅ Yes</p></td><td><p>Front only</p></td><td><p>Task/message processing</p></td></tr><tr><td><p>Stack&lt;T&gt;</p></td><td><p>✅ LIFO</p></td><td><p>✅ Yes</p></td><td><p>Top only</p></td><td><p>Undo/redo, DFS</p></td></tr><tr><td><p>LinkedList&lt;T&gt;</p></td><td><p>✅ Ordered</p></td><td><p>✅ Yes</p></td><td><p>O(n) by index</p></td><td><p>Frequent middle changes</p></td></tr><tr><td><p>SortedDictionary&lt;K,V&gt;</p></td><td><p>✅ Sorted by key</p></td><td><p>❌ No (keys)</p></td><td><p>O(log n)</p></td><td><p>Sorted key-value pairs</p></td></tr><tr><td><p>ConcurrentDictionary</p></td><td><p>❌ Not guaranteed</p></td><td><p>❌ No (keys)</p></td><td><p>O(1) by key</p></td><td><p>Thread-safe key-value</p></td></tr></table><h1><strong>9. Quick Decision Guide</strong></h1><p>Need key-value pairs with fast lookup?</p><p>    → Dictionary&lt;K, V&gt;</p><p> </p><p>Need unique values with fast existence check?</p><p>    → HashSet&lt;T&gt;</p><p> </p><p>Need ordered list with index access?</p><pre><code>    → List&lt;T&gt;
+
+Need FIFO processing (task queue)?
+    → Queue&lt;T&gt;
+
+Need LIFO processing (undo/redo)?
+    → Stack&lt;T&gt;</code></pre><p> </p><p>Need frequent insert/remove in the middle?</p><p>    → LinkedList&lt;T&gt;</p><p> </p><p>Need sorted key-value pairs?</p><p>    → SortedDictionary&lt;K, V&gt;</p><p> </p><p>Need thread-safe collection?</p><p>    → ConcurrentDictionary / ConcurrentQueue / ConcurrentStack</p><h1><strong>10. Common Interview Questions</strong></h1><p><strong>Q: What is the difference between List and Dictionary?</strong></p><table><tr><td><p><strong>🎯 Interview Answer:  </strong>List&lt;T&gt; is an ordered collection backed by an array — it provides O(1) index access but O(n) search by value. Dictionary&lt;K,V&gt; uses hashing to provide O(1) lookup by key — it is best when you need to quickly find items by a specific identifier. Use List when order matters and you iterate frequently, use Dictionary when fast key-based lookup is the priority.</p></td></tr></table><p><strong>Q: What is the difference between List and HashSet?</strong></p><table><tr><td><p><strong>🎯 Interview Answer:  </strong>List&lt;T&gt; allows duplicates and maintains order — Contains is O(n) because it scans every element. HashSet&lt;T&gt; stores only unique values using hashing — Contains is O(1) instant lookup. If you only need to check existence and don't need order or duplicates, HashSet is dramatically more efficient for large datasets.</p></td></tr></table><p><strong>Q: When would you use Queue vs Stack?</strong></p><table><tr><td><p><strong>🎯 Interview Answer:  </strong>Queue is FIFO — first item added is first to be processed. Use it for task queues, message processing, and BFS graph traversal where order of arrival matters. Stack is LIFO — last item added is first to be processed. Use it for undo/redo operations, browser history, call stack simulation, and DFS graph traversal.</p></td></tr></table><p><strong>Q: Why are standard collections not thread-safe?</strong></p><table><tr><td><p><strong>🎯 Interview Answer:  </strong>Standard collections like List and Dictionary are not synchronized — if multiple threads read and write simultaneously, operations like internal array resizing in List or bucket reorganization in Dictionary can leave the collection in a corrupted state. For multi-threaded scenarios, use the ConcurrentDictionary, ConcurrentQueue, and ConcurrentStack classes from System.Collections.Concurrent which are designed for safe concurrent access.</p></td></tr></table><p><strong>Q: How does Dictionary achieve O(1) lookup?</strong></p><table><tr><td><p><strong>🎯 Interview Answer:  </strong>Dictionary uses hashing — when you add a key it calls GetHashCode() on the key, maps the hash to a bucket index, and stores the value there. When you read, it performs the same hash calculation and jumps directly to the correct bucket without scanning. This makes lookups O(1) on average. Hash collisions where two keys map to the same bucket are handled with chaining and are rare in practice.</p></td></tr></table><p><em>Good luck with your interview! 🚀</em></p>
+  </div>
+  <div class="footer">Study Docs Portal</div>
+</div>
+
+</body>
+</html>

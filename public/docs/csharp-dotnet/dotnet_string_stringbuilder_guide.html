@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>String Stringbuilder</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0c10;
+      --surface: #111318;
+      --surface2: #181c24;
+      --surface3: #1f2530;
+      --border: rgba(255,255,255,0.06);
+      --border2: rgba(255,255,255,0.11);
+      --accent: #6ea1ff;
+      --accent2: #8b6cf6;
+      --green: #34d399;
+      --amber: #fbbf24;
+      --red: #f87171;
+      --teal: #2dd4bf;
+      --text: #dfe5ef;
+      --muted: #7e8a9e;
+      --code-bg: #080a0e;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Outfit', sans-serif;
+      font-size: 15px;
+      line-height: 1.78;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      padding: 56px 28px 44px;
+      max-width: 900px;
+      margin: 0 auto;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -80px;
+      right: -40px;
+      width: 360px;
+      height: 360px;
+      background: radial-gradient(circle, rgba(110,161,255,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-tag {
+      display: inline-block;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10.5px;
+      font-weight: 500;
+      color: var(--accent);
+      background: rgba(110,161,255,0.07);
+      border: 1px solid rgba(110,161,255,0.18);
+      padding: 4px 14px;
+      border-radius: 20px;
+      letter-spacing: 0.09em;
+      margin-bottom: 14px;
+      text-transform: uppercase;
+    }
+    .hero h1 {
+      font-size: clamp(26px, 4.2vw, 42px);
+      font-weight: 700;
+      line-height: 1.15;
+      letter-spacing: -0.03em;
+      margin-bottom: 0;
+      background: linear-gradient(135deg, #dfe5ef 0%, #6ea1ff 50%, #34d399 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* ── Page layout ── */
+    .page {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 28px 100px;
+    }
+
+    /* ── Sections ── */
+    .doc-content h1 {
+      font-size: 20px;
+      font-weight: 700;
+      color: #fff;
+      margin: 30px 0 0;
+      padding: 24px 0 14px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      -webkit-text-fill-color: #fff;
+      background-clip: padding-box;
+    }
+    .doc-content h1:first-child { margin-top: 10px; }
+
+    .doc-content h2 {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--accent);
+      margin: 22px 0 10px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+    }
+
+    .doc-content h3 {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--accent2);
+      margin: 18px 0 8px;
+    }
+
+    .doc-content h4, .doc-content h5, .doc-content h6 {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--teal);
+      margin: 14px 0 6px;
+    }
+
+    p {
+      margin: 0;
+      padding: 6px 0;
+      font-size: 14.5px;
+      line-height: 1.75;
+    }
+    strong, b { color: #fff; }
+    em { color: var(--muted); }
+
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ── Lists ── */
+    ul, ol {
+      padding-left: 20px;
+      margin: 4px 0 10px;
+    }
+    li {
+      margin: 3px 0;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+    li strong { color: #fff; }
+
+    /* ── Tables ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin: 12px 0;
+    }
+    th {
+      background: var(--surface2);
+      color: var(--accent);
+      font-weight: 600;
+      text-align: left;
+      padding: 9px 13px;
+      border: 1px solid var(--border);
+    }
+    td {
+      padding: 8px 13px;
+      border: 1px solid var(--border);
+    }
+    tr:nth-child(even) td {
+      background: rgba(255,255,255,0.012);
+    }
+
+    /* Single-cell tables = note/callout boxes */
+    table:has(tr:only-child td:only-child) {
+      background: rgba(110,161,255,0.05);
+      border: 1px solid rgba(110,161,255,0.14);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    table:has(tr:only-child td:only-child) td {
+      border: none;
+      padding: 13px 16px;
+      font-size: 13px;
+      line-height: 1.7;
+    }
+    table:has(tr:only-child td:only-child) td strong {
+      color: var(--accent);
+    }
+
+    /* ── Code ── */
+    code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12.5px;
+      color: var(--accent);
+      background: rgba(110,161,255,0.07);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    pre {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 18px;
+      overflow-x: auto;
+      margin: 12px 0;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12.5px;
+      line-height: 1.7;
+      color: #c4cdd9;
+      scrollbar-width: thin;
+      scrollbar-color: #333 transparent;
+    }
+    pre::-webkit-scrollbar { height: 4px; }
+    pre::-webkit-scrollbar-track { background: transparent; }
+    pre::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+    pre::-webkit-scrollbar-thumb:hover { background: #555; }
+    pre code {
+      background: none;
+      padding: 0;
+      color: inherit;
+      font-size: inherit;
+    }
+
+    /* ── Blockquote ── */
+    blockquote {
+      background: rgba(110,161,255,0.05);
+      border: 1px solid rgba(110,161,255,0.14);
+      border-left: 3px solid var(--accent);
+      border-radius: 0 10px 10px 0;
+      padding: 13px 16px;
+      margin: 10px 0;
+      font-size: 13px;
+      line-height: 1.7;
+    }
+    blockquote b, blockquote strong { color: var(--accent); }
+
+    /* ── Images ── */
+    img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 10px;
+      margin: 12px 0;
+      border: 1px solid var(--border);
+    }
+
+    /* ── HR ── */
+    hr {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 24px 0;
+    }
+
+    /* ── Footer ── */
+    .footer {
+      text-align: center;
+      padding: 36px 0 16px;
+      font-size: 11px;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      margin-top: 40px;
+    }
+
+    @media (max-width: 640px) {
+      .page { padding: 0 16px 60px; }
+      .hero { padding: 36px 16px 30px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-tag">C# & .NET</div>
+  <h1>String Stringbuilder</h1>
+</div>
+
+<div class="page">
+  <div class="doc-content">
+<p><strong>.NET Interview Study Guide</strong></p><p><em>String vs StringBuilder — Complete Guide</em></p><h1><strong>1. Why String is Immutable</strong></h1><pre><code>In C#, strings are immutable — every time you modify or concatenate a string, a brand new string object is created in memory. The old one becomes garbage for the GC to collect.
+string result = "";
+result = result + "A"; // allocates NEW string "A" at location #2 — location #1 abandoned
+result = result + "B"; // allocates NEW string "AB" at location #3 — location #2 abandoned
+result = result + "C"; // allocates NEW string "ABC" at location #4 — location #3 abandoned</code></pre><p>In a loop of 10,000 iterations:</p><ul><li>10,000 new string allocations in memory</li><li>10,000 old strings abandoned for GC to clean</li><li>Massive memory pressure + slow performance 😱</li></ul><h1><strong>2. StringBuilder — The Solution</strong></h1><pre><code>StringBuilder works completely differently. It maintains a single mutable buffer in memory and keeps appending to it directly — no new allocations on every change.
+StringBuilder sb = new StringBuilder();
+
+for (int i = 0; i &lt; 10000; i++)
+{
+    sb.Append(i.ToString()); // modifies the SAME buffer — no new allocation
+}
+
+string result = sb.ToString(); // convert to string ONCE at the end</code></pre><p>What happens in memory:</p><ul><li>Step 1 → sb created → ONE buffer allocated</li><li>Step 2 → sb.Append() → writes to SAME buffer</li><li>Step 10000 → sb.Append() → STILL the same buffer</li><li>Final → sb.ToString() → ONE string created at the end</li></ul><h1><strong>3. Performance Comparison</strong></h1><table><tr><td></td><td><p><strong>string</strong></p></td><td><p><strong>StringBuilder</strong></p></td></tr><tr><td><p>Memory allocations (10k ops)</p></td><td><p>10,000</p></td><td><p>1</p></td></tr><tr><td><p>GC pressure</p></td><td><p>Very High</p></td><td><p>Very Low</p></td></tr><tr><td><p>Speed</p></td><td><p>Slow</p></td><td><p>Fast (up to 100x)</p></td></tr><tr><td><p>CPU usage</p></td><td><p>High</p></td><td><p>Low</p></td></tr><tr><td><p>Thread safe?</p></td><td><p>✅ Yes — immutable</p></td><td><p>❌ No — use StringWriter for threads</p></td></tr></table><h1><strong>4. Common StringBuilder Methods</strong></h1><pre><code>StringBuilder sb = new StringBuilder();
+
+sb.Append("Hello");           // add text at the end
+sb.AppendLine("Hello");       // add text + new line
+sb.Insert(0, "Start: ");      // insert at specific position
+sb.Replace("Hello", "Hi");    // find and replace
+sb.Remove(0, 5);              // remove characters
+sb.Clear();                   // clear everything
+sb.Length;                    // current length
+
+string result = sb.ToString(); // convert to string when done</code></pre><h1><strong>5. When to Use Which</strong></h1><table><tr><td><p><strong>Situation</strong></p></td><td><p><strong>Use</strong></p></td></tr><tr><td><p>Simple assignment</p></td><td><p>string</p></td></tr><tr><td><p>Few concatenations (2-3)</p></td><td><p>string — fine</p></td></tr><tr><td><p>Concatenation inside a loop</p></td><td><p>StringBuilder</p></td></tr><tr><td><p>Building large strings dynamically</p></td><td><p>StringBuilder</p></td></tr><tr><td><p>String is fixed and never changes</p></td><td><p>string</p></td></tr><tr><td><p>Frequent modifications to text</p></td><td><p>StringBuilder</p></td></tr><tr><td><p>More than 3-4 concatenations</p></td><td><p>StringBuilder</p></td></tr></table><table><tr><td><p><strong>⚠️ Important:  </strong>Rule of thumb: If you are concatenating strings more than 3-4 times — especially inside a loop — always use StringBuilder.</p></td></tr></table><h1><strong>6. String Interning — Bonus Point</strong></h1><pre><code>.NET has a String Intern Pool. When you write string literals, .NET stores them only once in memory and multiple variables point to the same location.
+string a = "Hello";
+string b = "Hello";
+Console.WriteLine(object.ReferenceEquals(a, b)); // true — same memory location!
+
+// But dynamically built strings are NOT interned
+string c = new string(new char[]{'H','e','l','l','o'}); // NOT interned
+Console.WriteLine(object.ReferenceEquals(a, c)); // false — different locations</code></pre><h1><strong>7. Interview Questions</strong></h1><p><strong>Q: Why is string concatenation in a loop bad?</strong></p><table><tr><td><p><strong>🎯 Interview Answer:  </strong>In C#, strings are immutable — every concatenation creates a brand new string object in memory and the old one becomes garbage for the GC to collect. In a loop with thousands of iterations this causes massive memory pressure and performance degradation as thousands of string objects are created and abandoned.</p></td></tr></table><p><strong>Q: What is StringBuilder and when should you use it?</strong></p><table><tr><td><p><strong>🎯 Interview Answer:  </strong>StringBuilder maintains a single mutable buffer in memory and appends to it directly without creating new objects. It should be used whenever strings are concatenated multiple times — especially inside loops. StringBuilder can be up to 100x faster than string concatenation in a loop because it only creates one string allocation instead of thousands.</p></td></tr></table><p><strong>Q: What is string immutability?</strong></p><table><tr><td><p><strong>🎯 Interview Answer:  </strong>String immutability means that once a string object is created in memory it cannot be changed. Any operation that appears to modify a string — like concatenation or Replace — actually creates a brand new string object. This is why string is thread-safe by design but also why repeated modification is expensive.</p></td></tr></table><p><em>Good luck with your interview! 🚀</em></p>
+  </div>
+  <div class="footer">Study Docs Portal</div>
+</div>
+
+</body>
+</html>

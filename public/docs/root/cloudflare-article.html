@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cloudflare Article</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0c10;
+      --surface: #111318;
+      --surface2: #181c24;
+      --surface3: #1f2530;
+      --border: rgba(255,255,255,0.06);
+      --border2: rgba(255,255,255,0.11);
+      --accent: #6ea1ff;
+      --accent2: #8b6cf6;
+      --green: #34d399;
+      --amber: #fbbf24;
+      --red: #f87171;
+      --teal: #2dd4bf;
+      --text: #dfe5ef;
+      --muted: #7e8a9e;
+      --code-bg: #080a0e;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Outfit', sans-serif;
+      font-size: 15px;
+      line-height: 1.78;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      padding: 56px 28px 44px;
+      max-width: 900px;
+      margin: 0 auto;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -80px;
+      right: -40px;
+      width: 360px;
+      height: 360px;
+      background: radial-gradient(circle, rgba(110,161,255,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-tag {
+      display: inline-block;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10.5px;
+      font-weight: 500;
+      color: var(--accent);
+      background: rgba(110,161,255,0.07);
+      border: 1px solid rgba(110,161,255,0.18);
+      padding: 4px 14px;
+      border-radius: 20px;
+      letter-spacing: 0.09em;
+      margin-bottom: 14px;
+      text-transform: uppercase;
+    }
+    .hero h1 {
+      font-size: clamp(26px, 4.2vw, 42px);
+      font-weight: 700;
+      line-height: 1.15;
+      letter-spacing: -0.03em;
+      margin-bottom: 0;
+      background: linear-gradient(135deg, #dfe5ef 0%, #6ea1ff 50%, #34d399 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* ── Page layout ── */
+    .page {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 28px 100px;
+    }
+
+    /* ── Sections ── */
+    .doc-content h1 {
+      font-size: 20px;
+      font-weight: 700;
+      color: #fff;
+      margin: 30px 0 0;
+      padding: 24px 0 14px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      -webkit-text-fill-color: #fff;
+      background-clip: padding-box;
+    }
+    .doc-content h1:first-child { margin-top: 10px; }
+
+    .doc-content h2 {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--accent);
+      margin: 22px 0 10px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+    }
+
+    .doc-content h3 {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--accent2);
+      margin: 18px 0 8px;
+    }
+
+    .doc-content h4, .doc-content h5, .doc-content h6 {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--teal);
+      margin: 14px 0 6px;
+    }
+
+    p {
+      margin: 0;
+      padding: 6px 0;
+      font-size: 14.5px;
+      line-height: 1.75;
+    }
+    strong, b { color: #fff; }
+    em { color: var(--muted); }
+
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ── Lists ── */
+    ul, ol {
+      padding-left: 20px;
+      margin: 4px 0 10px;
+    }
+    li {
+      margin: 3px 0;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+    li strong { color: #fff; }
+
+    /* ── Tables ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin: 12px 0;
+    }
+    th {
+      background: var(--surface2);
+      color: var(--accent);
+      font-weight: 600;
+      text-align: left;
+      padding: 9px 13px;
+      border: 1px solid var(--border);
+    }
+    td {
+      padding: 8px 13px;
+      border: 1px solid var(--border);
+    }
+    tr:nth-child(even) td {
+      background: rgba(255,255,255,0.012);
+    }
+
+    /* Single-cell tables = note/callout boxes */
+    table:has(tr:only-child td:only-child) {
+      background: rgba(110,161,255,0.05);
+      border: 1px solid rgba(110,161,255,0.14);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    table:has(tr:only-child td:only-child) td {
+      border: none;
+      padding: 13px 16px;
+      font-size: 13px;
+      line-height: 1.7;
+    }
+    table:has(tr:only-child td:only-child) td strong {
+      color: var(--accent);
+    }
+
+    /* ── Code ── */
+    code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12.5px;
+      color: var(--accent);
+      background: rgba(110,161,255,0.07);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    pre {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 18px;
+      overflow-x: auto;
+      margin: 12px 0;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12.5px;
+      line-height: 1.7;
+      color: #c4cdd9;
+      scrollbar-width: thin;
+      scrollbar-color: #333 transparent;
+    }
+    pre::-webkit-scrollbar { height: 4px; }
+    pre::-webkit-scrollbar-track { background: transparent; }
+    pre::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+    pre::-webkit-scrollbar-thumb:hover { background: #555; }
+    pre code {
+      background: none;
+      padding: 0;
+      color: inherit;
+      font-size: inherit;
+    }
+
+    /* ── Blockquote ── */
+    blockquote {
+      background: rgba(110,161,255,0.05);
+      border: 1px solid rgba(110,161,255,0.14);
+      border-left: 3px solid var(--accent);
+      border-radius: 0 10px 10px 0;
+      padding: 13px 16px;
+      margin: 10px 0;
+      font-size: 13px;
+      line-height: 1.7;
+    }
+    blockquote b, blockquote strong { color: var(--accent); }
+
+    /* ── Images ── */
+    img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 10px;
+      margin: 12px 0;
+      border: 1px solid var(--border);
+    }
+
+    /* ── HR ── */
+    hr {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 24px 0;
+    }
+
+    /* ── Footer ── */
+    .footer {
+      text-align: center;
+      padding: 36px 0 16px;
+      font-size: 11px;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      margin-top: 40px;
+    }
+
+    @media (max-width: 640px) {
+      .page { padding: 0 16px 60px; }
+      .hero { padding: 36px 16px 30px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-tag">Study Guide</div>
+  <h1>Cloudflare Article</h1>
+</div>
+
+<div class="page">
+  <div class="doc-content">
+<p><strong>Cloudflare article</strong></p><p>Here’s a <strong>summary</strong> of the Cloudflare article <a href="https://blog.cloudflare.com/counting-things-a-lot-of-different-things/" target="_blank">“Counting Things: A Lot of Different Things”</a> — which is referenced in System Design Interview Vol. 2 to illustrate scalable rate limiting and distributed counting. <a href="https://blog.cloudflare.com/counting-things-a-lot-of-different-things/">[blog.cloudflare.com]</a></p><h2>🧠 Core Problem</h2><p>Cloudflare needed to build a <strong>rate limiter</strong> that could:</p><ul><li>Scale to <strong>millions of domains</strong></li><li>Handle <strong>billions of requests per day</strong></li><li>Operate <strong>at the edge</strong> of their global network</li><li>Be <strong>fast, accurate, and resilient</strong> under attack</li></ul><h2>🔧 Key Challenges</h2><ol><li><strong>Distributed Traffic</strong>: Requests are spread across many servers and data centers (PoPs).</li><li><strong>Latency Sensitivity</strong>: Centralized counting is too slow due to network delays.</li><li><strong>Availability</strong>: Central services are harder to keep online during high traffic or attacks.</li><li><strong>Efficiency</strong>: Counting must be lightweight and fast, even under load.</li></ol><h2>🛠️ Design Solutions</h2><h3>1. <strong>Local Counting in PoPs</strong></h3><ul><li>Each Point of Presence (PoP) maintains its own counters.</li><li>This reduces latency and improves fault tolerance.</li></ul><h3>2. <strong>Memcached-Based Sharded Counters</strong></h3><ul><li>Twemproxy clusters are used to shard counters across servers.</li><li>Consistent hashing ensures minimal disruption when resizing clusters.</li></ul><h3>3. <strong>Rate Limiting Algorithms</strong></h3><ul><li><strong>Fixed Window Counter</strong>: Simple but allows spikes at window boundaries.</li><li><strong>Sliding Window Approximation</strong>: Uses previous and current counters to smooth traffic and improve accuracy.</li><li><strong>Leaky Bucket</strong>: Accurate but harder to implement with Memcached due to atomicity limitations.</li></ul><h3>4. <strong>Asynchronous Mitigation</strong></h3><ul><li>Counting is done <strong>asynchronously</strong> to avoid slowing down legitimate requests.</li><li>Once a client exceeds the threshold, mitigation is triggered and cached locally.</li><li>Servers <strong>don’t re-check</strong> the counter for every request — they just enforce the mitigation.</li></ul><h2>📊 Performance Results</h2><ul><li>Handles <strong>billions of requests/day</strong></li><li>Mitigated attacks with <strong>400,000 requests/sec</strong> to a single domain</li><li>Achieved <strong>0.003% error rate</strong> in rate estimation across 400 million requests</li></ul><h2>✅ Key Takeaways</h2><table><thead><tr><th><p><strong>Insight</strong></p></th><th><p><strong>Explanation</strong></p></th></tr></thead><tbody><tr><td><p>🌍 Edge-based rate limiting</p></td><td><p>Reduces latency and improves scalability</p></td></tr><tr><td><p>🧠 Smart approximations</p></td><td><p>Sliding window gives near-accurate results with minimal overhead</p></td></tr><tr><td><p>⚡ Asynchronous enforcement</p></td><td><p>Keeps performance high even during attacks</p></td></tr><tr><td><p>🧩 Minimal memory footprint</p></td><td><p>Only two numbers per counter needed</p></td></tr></tbody></table><h2>Provide your feedback on BizChat</h2><h5>You said: </h5><p>this is a part of the article: "Doing this with possibly millions of domains and even more millions of rules immediately becomes a bit more complicated. This article is a look at how we implemented a rate limiter able to run quickly and accurately at the edge of the network which is able to cope with the colossal volume of traffic we see at Cloudflare." what is the edge of the network?</p><h6>Copilot said: </h6><p>Copilot</p><p>Great question, Omar! Let’s break down what <strong>“edge of the network”</strong> means in the context of the article and system design.</p><h2>🌍 What Is the Edge of the Network?</h2><p>The <strong>edge of the network</strong> refers to the <strong>geographically distributed servers or nodes</strong> that are <strong>closest to the end users</strong> — often part of a <strong>Content Delivery Network (CDN)</strong> or <strong>edge computing infrastructure</strong>.</p><h3>🧠 Think of it like:</h3><p>Instead of sending every request to a central data center, you handle it <strong>as close to the user as possible</strong> — at the “edge.”</p><h2>📌 Why Is This Important?</h2><p>In the article, Cloudflare talks about building a <strong>rate limiter</strong> that runs at the edge. This means:</p><ul><li>The rate limiter is deployed on <strong>edge servers</strong> around the world.</li><li>It can <strong>process and enforce limits locally</strong>, without needing to contact a central server.</li><li>This allows Cloudflare to handle <strong>millions of domains and billions of requests</strong> efficiently.</li></ul><h2>✅ Benefits of Running at the Edge</h2><table><tr><td><p><strong>Benefit</strong></p></td><td><p><strong>Explanation</strong></p></td></tr><tr><td><p>⚡ Low latency</p></td><td><p>Requests are processed closer to users</p></td></tr><tr><td><p>🌍 Scalability</p></td><td><p>Load is distributed across global edge nodes</p></td></tr><tr><td><p>🛡️ Faster protection</p></td><td><p>Rate limiting and security rules are enforced immediately</p></td></tr><tr><td><p>📉 Reduced central load</p></td><td><p>Less traffic to core data centers</p></td></tr></table><h2>🧪 Example</h2><p>Imagine a user in Italy sends a request to a website protected by Cloudflare:</p><ul><li>Instead of routing the request to a data center in the US,</li><li>Cloudflare’s <strong>edge server in Europe</strong> handles the request,</li><li>Applies rate limiting rules,</li><li>And serves the response — all <strong>locally</strong>.</li></ul><p>Would you like to see how edge computing compares to centralized architectures or how to design rate limiters for edge environments?</p><p>Sources</p><h2>Provide your feedback on BizChat</h2><h5>You said: </h5><p>in this example : "🧪 Example Imagine a user in Italy sends a request to a website protected by Cloudflare: Instead of routing the request to a data center in the US, Cloudflare’s edge server in Europe handles the request, Applies rate limiting rules, And serves the response — all locally." in this step "Cloudflare’s edge server in Europe handles the request" is it just handle request as rate limiter? and what do you mean it serves re response? that is mean is redirect to the data center in the us after validate it</p><h6>Copilot said: </h6><p>Copilot</p><p>Excellent clarification, Omar! Let’s break down that example and answer your question step by step.</p><h2>🧪 Example Recap:</h2><p>“Imagine a user in Italy sends a request to a website protected by Cloudflare:</p><ul><li>Instead of routing the request to a data center in the US,</li><li>Cloudflare’s edge server in Europe handles the request,</li><li>Applies rate limiting rules,</li><li>And serves the response — all locally.”</li></ul><h2>🔍 Your Questions:</h2><h3>1. <strong>Does the edge server only handle rate limiting?</strong></h3><p>Not just rate limiting — <strong>edge servers can do much more</strong>.</p><p>In Cloudflare’s architecture, edge servers:</p><ul><li><strong>Inspect and filter traffic</strong> (e.g., rate limiting, bot detection, firewall rules)</li><li><strong>Serve cached content</strong> (e.g., images, HTML, JS)</li><li><strong>Terminate TLS connections</strong></li><li><strong>Run edge logic</strong> (e.g., Cloudflare Workers)</li></ul><p>So yes, <strong>rate limiting is one task</strong>, but edge servers can also <strong>serve content directly</strong> if it's cached or processed locally.</p><h3>2. <strong>What does “serves the response” mean? Does it redirect to the data center?</strong></h3><p>No — <strong>it does not redirect</strong> unless necessary.</p><p>“Serves the response” means the <strong>edge server itself sends the final response back to the user</strong>.</p><h3>🔧 Two Possibilities:</h3><h4>✅ If the content is cached or handled at the edge:</h4><ul><li>The edge server <strong>responds directly</strong>.</li><li>No need to contact the origin server (e.g., in the US).</li></ul><h4>❌ If the content is not cached or needs origin data:</h4><ul><li>The edge server <strong>forwards the request</strong> to the origin (e.g., US data center).</li><li>Gets the response → <strong>caches it</strong> → sends it to the user.</li></ul><p>So, <strong>redirecting</strong> is not the right term — it’s more like <strong>proxying</strong> or <strong>fetching</strong> from the origin if needed.</p><h2>✅ Summary</h2><table><tr><td><p>Step</p></td><td><p>What Happens</p></td></tr><tr><td><p>1</p></td><td><p>User in Italy sends request</p></td></tr><tr><td><p>2</p></td><td><p>Cloudflare edge server in Europe receives it</p></td></tr><tr><td><p>3</p></td><td><p>Applies rate limiting and security rules</p></td></tr><tr><td><p>4</p></td><td><p>If content is cached → responds directly</p></td></tr><tr><td><p>5</p></td><td><p>If not cached → fetches from origin → responds</p></td></tr></table><p>Would you like a diagram showing this flow visually or a deeper dive into how Cloudflare Workers run logic at the edge?</p>
+  </div>
+  <div class="footer">Study Docs Portal</div>
+</div>
+
+</body>
+</html>

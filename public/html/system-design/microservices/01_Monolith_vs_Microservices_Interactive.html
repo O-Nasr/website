@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Monolith vs Microservices — Microservices Study Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0c10;--surface:#111318;--surface2:#181c24;--surface3:#1f2530;--border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.11);--accent:#6ea1ff;--accent2:#8b6cf6;--green:#34d399;--amber:#fbbf24;--red:#f87171;--teal:#2dd4bf;--coral:#fb923c;--text:#dfe5ef;--muted:#7e8a9e;--code-bg:#080a0e}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font-size:15px;line-height:1.78;-webkit-font-smoothing:antialiased}
+.page{max-width:900px;margin:0 auto;padding:0 28px 100px}
+.hero{padding:56px 28px 44px;max-width:900px;margin:0 auto;border-bottom:1px solid var(--border);position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-80px;right:-40px;width:360px;height:360px;background:radial-gradient(circle,rgba(110,161,255,0.08) 0%,transparent 70%);pointer-events:none}
+.hero-tag{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:10.5px;font-weight:500;color:var(--accent);background:rgba(110,161,255,0.07);border:1px solid rgba(110,161,255,0.18);padding:4px 14px;border-radius:20px;letter-spacing:0.09em;margin-bottom:14px;text-transform:uppercase}
+.hero h1{font-size:clamp(26px,4.2vw,42px);font-weight:700;line-height:1.15;letter-spacing:-0.03em;margin-bottom:10px;background:linear-gradient(135deg,#dfe5ef 0%,#6ea1ff 50%,#34d399 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero-sub{font-size:15px;color:var(--muted);line-height:1.65;max-width:600px}
+.section{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:30px;margin-top:30px}
+.section h2{font-size:20px;font-weight:700;color:#fff;margin-bottom:18px;display:flex;align-items:center;gap:10px}
+.section h2 .num{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--accent);background:rgba(110,161,255,0.1);padding:3px 10px;border-radius:6px;font-weight:500}
+.section h3{font-size:15px;font-weight:600;color:var(--accent);margin:22px 0 10px;padding-top:14px;border-top:1px solid var(--border)}
+.section h3:first-of-type{border-top:none;padding-top:0}
+p{margin-bottom:12px}strong{color:#fff}
+ul{padding-left:20px;margin:8px 0 14px}li{margin:4px 0;font-size:14px}
+pre{background:var(--code-bg);border:1px solid var(--border);border-radius:10px;padding:14px 18px;overflow-x:auto;margin:12px 0;font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.7;color:#c4cdd9}
+code{font-family:'JetBrains Mono',monospace;font-size:12.5px;color:var(--accent);background:rgba(110,161,255,0.07);padding:2px 6px;border-radius:4px}
+pre code{background:none;padding:0;color:inherit}
+table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13px}
+th{background:var(--surface2);color:var(--accent);font-weight:600;text-align:left;padding:9px 13px;border:1px solid var(--border)}
+td{padding:8px 13px;border:1px solid var(--border)}
+tr:nth-child(even) td{background:rgba(255,255,255,0.012)}
+.note{background:rgba(110,161,255,0.05);border:1px solid rgba(110,161,255,0.14);border-radius:10px;padding:13px 16px;margin:12px 0;font-size:13px;line-height:1.7}.note b{color:var(--accent)}
+.note-warn{background:rgba(251,191,36,0.05);border-color:rgba(251,191,36,0.14)}.note-warn b{color:var(--amber)}
+.note-red{background:rgba(248,113,113,0.05);border-color:rgba(248,113,113,0.14)}.note-red b{color:var(--red)}
+.note-green{background:rgba(52,211,153,0.05);border-color:rgba(52,211,153,0.14)}.note-green b{color:var(--green)}
+.qa{background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:14px 18px;margin:10px 0}
+.qa-q{font-weight:600;color:#fff;margin-bottom:5px;font-size:14px}
+.qa-a{color:var(--muted);font-size:13px;line-height:1.7}
+.tab-group{margin:16px 0}.tab-bar{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.tab-btn{padding:6px 14px;font-size:12px;font-weight:500;font-family:'Outfit',sans-serif;border:1px solid var(--border2);border-radius:6px;background:transparent;color:var(--muted);cursor:pointer;transition:all 0.15s}
+.tab-btn:hover{border-color:rgba(110,161,255,0.3);color:var(--text)}
+.tab-btn.active{background:rgba(110,161,255,0.1);color:var(--accent);border-color:rgba(110,161,255,0.3)}
+.tab-panel{display:none}.tab-panel.active{display:block}
+.flow{display:flex;align-items:center;gap:8px;margin:10px 0;flex-wrap:wrap}
+.flow-step{background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:8px 14px;font-size:13px;color:var(--text);font-weight:500}
+.flow-arrow{color:var(--muted);font-size:16px}
+.env-row{display:flex;gap:12px;margin:10px 0;align-items:stretch}
+.env-card{flex:1;border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:4px}
+.env-card .env-name{font-size:13px;font-weight:600}.env-card .env-status{font-size:11px;color:var(--muted)}
+.pod-row{display:flex;gap:8px;margin:12px 0;align-items:center;flex-wrap:wrap}
+.pod{width:90px;height:48px;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:12px;font-weight:500;gap:2px}
+.pod-v1{background:rgba(110,161,255,0.08);border:1px solid rgba(110,161,255,0.18);color:var(--accent)}
+.pod-v2{background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.18);color:var(--green)}
+.traffic{display:flex;height:32px;border-radius:8px;overflow:hidden;border:1px solid var(--border);margin:10px 0}
+.traffic-v1{background:rgba(110,161,255,0.1);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;color:var(--accent)}
+.traffic-v2{background:rgba(52,211,153,0.1);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;color:var(--green)}
+.toc{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px 24px;margin:30px 0}
+.toc h3{font-size:12px;font-weight:600;color:var(--accent);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.06em}
+.toc a{font-size:13px;color:var(--muted);text-decoration:none;display:block;padding:4px 0;transition:color 0.15s}
+.toc a:hover{color:var(--accent)}
+.footer{text-align:center;padding:36px 0 16px;font-size:11px;color:var(--muted);border-top:1px solid var(--border);margin-top:40px}
+@media(max-width:640px){.page{padding:0 16px 60px}.section{padding:20px 16px}.env-row{flex-direction:column}.hero{padding:36px 16px 30px}}
+</style>
+
+</head>
+<body>
+<div class="hero">
+  <div class="hero-tag">Microservices · Topic 01</div>
+  <h1>Monolith vs Microservices</h1>
+  <p class="hero-sub">Core tradeoff, DDD bounded contexts, decomposition strategies, data sharing between services. Interactive diagrams, all conversation depth.</p>
+</div>
+<div class="page">
+
+<div class="section" id="s1">
+<h2><span class="num">01</span> The Core Tradeoff</h2>
+<p>Microservices are <strong>not better</strong> than monoliths. They're a tradeoff: you gain independence and scale, you pay with complexity and distributed systems problems.</p>
+
+<div class="tab-group" id="core">
+<div class="tab-bar">
+<button class="tab-btn active" onclick="showTab('core',0)">Monolith</button>
+<button class="tab-btn" onclick="showTab('core',1)">Microservices</button>
+<button class="tab-btn" onclick="showTab('core',2)">When to break</button>
+</div>
+<div class="tab-panel active">
+<div class="env-card" style="background:rgba(139,92,246,0.05);border:1px solid rgba(139,92,246,0.12)">
+<div class="env-name" style="color:var(--accent2)">Monolith</div>
+<div class="env-status">One deployable unit. All modules share the same process, memory, and database.</div>
+<div class="env-status">Deploy everything together. Simple to develop, test, and debug.</div>
+<div class="env-status">A single stack trace shows the full chain. One grep through one log file.</div>
+</div>
+</div>
+<div class="tab-panel">
+<div class="env-card" style="background:rgba(52,211,153,0.05);border:1px solid rgba(52,211,153,0.12)">
+<div class="env-name" style="color:var(--green)">Microservices</div>
+<div class="env-status">Many small, independent services. Each owns its data, deploys separately.</div>
+<div class="env-status">Communicates over a network. Stack traces end at HTTP boundaries.</div>
+<div class="env-status">Complex but independently scalable. Each team owns their service.</div>
+</div>
+</div>
+<div class="tab-panel">
+<p style="font-weight:600;color:#fff;margin-bottom:8px">Break the monolith when you hit concrete pain:</p>
+<ul>
+<li><strong>Deployment bottleneck</strong> — one team's change blocks everyone else's release</li>
+<li><strong>Scaling mismatch</strong> — search gets 100× more traffic than admin, but you scale both together</li>
+<li><strong>Technology divergence</strong> — ML team needs Python, core team uses C#</li>
+<li><strong>Team ownership</strong> — at 200 engineers, nobody knows who owns what</li>
+</ul>
+<div class="note-green note"><b>Martin Fowler's MonolithFirst:</b> Start with a monolith. Migrate when you hit pain — not before. A distributed monolith (services that must deploy together) is the worst of both worlds.</div>
+</div>
+</div>
+</div>
+
+<div class="section" id="s2">
+<h2><span class="num">02</span> Decomposition Strategies</h2>
+
+<div class="tab-group" id="decomp">
+<div class="tab-bar">
+<button class="tab-btn active" onclick="showTab('decomp',0)">Wrong way (technical)</button>
+<button class="tab-btn" onclick="showTab('decomp',1)">Right way (DDD)</button>
+<button class="tab-btn" onclick="showTab('decomp',2)">Subdomain (fine-grained)</button>
+<button class="tab-btn" onclick="showTab('decomp',3)">Strangler Fig</button>
+</div>
+<div class="tab-panel active">
+<p style="font-weight:600;color:var(--red);margin-bottom:8px">Technical split — WRONG</p>
+<div class="pod-row">
+<div class="pod" style="background:rgba(248,113,113,0.06);border:1px solid rgba(248,113,113,0.12);color:var(--red);width:120px">UI service<span style="font-size:10px;opacity:0.7">all screens</span></div>
+<div class="pod" style="background:rgba(248,113,113,0.06);border:1px solid rgba(248,113,113,0.12);color:var(--red);width:120px">API service<span style="font-size:10px;opacity:0.7">all controllers</span></div>
+<div class="pod" style="background:rgba(248,113,113,0.06);border:1px solid rgba(248,113,113,0.12);color:var(--red);width:120px">DB service<span style="font-size:10px;opacity:0.7">all tables</span></div>
+</div>
+<p>Every feature change touches all 3 services. You gained nothing — this is a distributed monolith.</p>
+</div>
+<div class="tab-panel">
+<p style="font-weight:600;color:var(--green);margin-bottom:8px">Business domain split — RIGHT (DDD)</p>
+<div class="pod-row">
+<div class="pod pod-v2" style="width:120px">Orders<span style="font-size:10px;opacity:0.7">UI+logic+data</span></div>
+<div class="pod pod-v2" style="width:120px">Payments<span style="font-size:10px;opacity:0.7">UI+logic+data</span></div>
+<div class="pod pod-v2" style="width:120px">Users<span style="font-size:10px;opacity:0.7">UI+logic+data</span></div>
+<div class="pod pod-v2" style="width:120px">Inventory<span style="font-size:10px;opacity:0.7">UI+logic+data</span></div>
+</div>
+<p>"Add a discount to orders" lives entirely inside the Orders service. That's independence.</p>
+<h3>Bounded Context — the core DDD concept</h3>
+<p>The word "Order" means different things in different contexts:</p>
+<div class="env-row">
+<div class="env-card" style="background:rgba(52,211,153,0.04);border:1px solid rgba(52,211,153,0.1)"><div class="env-name" style="color:var(--green)">Orders context</div><div class="env-status">Order = items, quantity, status, customer</div></div>
+<div class="env-card" style="background:rgba(251,191,36,0.04);border:1px solid rgba(251,191,36,0.1)"><div class="env-name" style="color:var(--amber)">Payments context</div><div class="env-status">Order = amount, payment method, transaction ID</div></div>
+<div class="env-card" style="background:rgba(139,92,246,0.04);border:1px solid rgba(139,92,246,0.1)"><div class="env-name" style="color:var(--accent2)">Shipping context</div><div class="env-status">Order = weight, dimensions, address, carrier</div></div>
+</div>
+<p>Each service owns its bounded context. Same word, different models — they never share internal objects.</p>
+</div>
+<div class="tab-panel">
+<p style="font-weight:600;color:#fff;margin-bottom:8px">Subdomain decomposition — when a bounded context grows too large</p>
+<p>After 18 months, your Orders service handles: cart logic, checkout flow, order lifecycle, returns, promotions, fraud detection, order history, subscriptions. 3 teams, 8 subdomains. Time to split:</p>
+<div class="pod-row">
+<div class="pod pod-v1" style="width:100px">Cart<span style="font-size:10px;opacity:0.7">high reads</span></div>
+<div class="pod pod-v1" style="width:100px">Checkout<span style="font-size:10px;opacity:0.7">transactional</span></div>
+<div class="pod pod-v1" style="width:100px">Lifecycle<span style="font-size:10px;opacity:0.7">long-running</span></div>
+<div class="pod pod-v1" style="width:100px">Returns<span style="font-size:10px;opacity:0.7">diff team</span></div>
+</div>
+<p>Split signals: different scaling needs, different teams, different change frequency.</p>
+</div>
+<div class="tab-panel">
+<p style="font-weight:600;color:#fff;margin-bottom:8px">Strangler Fig — incremental migration</p>
+<p>Instead of rewriting the monolith, gradually route requests from old to new:</p>
+<div class="flow">
+<div class="flow-step">Route /api/users → new Users service</div>
+<span class="flow-arrow">→</span>
+<div class="flow-step">Route /api/orders → still monolith</div>
+</div>
+<div class="flow">
+<div class="flow-step">Route /api/orders → new Orders service</div>
+<span class="flow-arrow">→</span>
+<div class="flow-step">Monolith shrinks</div>
+</div>
+<div class="flow">
+<div class="flow-step">All routes migrated → monolith gone</div>
+</div>
+<p>Zero big-bang rewrite. Name comes from the strangler fig vine that grows around a tree until the tree dies.</p>
+</div>
+</div>
+</div>
+
+<div class="section" id="s3">
+<h2><span class="num">03</span> Data Sharing Between Services</h2>
+<p>When two services need the same data, they each keep <strong>their own copy</strong>:</p>
+<pre><code>// Catalogue publishes event when price changes
+await _bus.PublishAsync(new ProductPriceUpdated(productId, newPrice));
+
+// Orders service consumes and stores a local copy
+public async Task Handle(ProductPriceUpdated evt)
+{
+    var cache = await _db.ProductCache.FindAsync(evt.ProductId);
+    cache.Price = evt.NewPrice;
+    await _db.SaveChangesAsync();
+    // Orders reads from its own DB — zero coupling to Catalogue
+}</code></pre>
+<div class="note"><b>Data duplication is intentional</b> — it buys independence. Orders stores product name and price at time of order. Inventory stores stock levels and warehouse location. They sync via events, never via shared database access.</div>
+</div>
+
+<div class="section" id="s4">
+<h2><span class="num">04</span> Interview Q&amp;A</h2>
+<div class="qa"><div class="qa-q">Q: Would you start a new project with microservices?</div><div class="qa-a">Usually no. Start with a well-structured modular monolith. Migrate when you hit concrete pain: scaling mismatch, deployment bottleneck, or team growth. This is Martin Fowler's MonolithFirst pattern.</div></div>
+<div class="qa"><div class="qa-q">Q: What is a bounded context?</div><div class="qa-a">A DDD term — the explicit boundary within which a domain model applies. "Order" means one thing inside Orders service and something different inside Payments. Each service owns its bounded context and doesn't share its internal model.</div></div>
+<div class="qa"><div class="qa-q">Q: What's the biggest challenge in microservices?</div><div class="qa-a">Data consistency. In a monolith, one transaction wraps everything. In microservices, you handle partial failures, eventual consistency, and compensating transactions manually (Saga pattern).</div></div>
+<div class="qa"><div class="qa-q">Q: What's a distributed monolith?</div><div class="qa-a">A system that looks like microservices but behaves like a monolith — services must deploy together, share a database, or can't function independently. All the complexity, none of the independence.</div></div>
+<div class="qa"><div class="qa-q">Q: How do you decide service boundaries?</div><div class="qa-a">Follow three signals: team ownership (who changes the code together), change frequency (what changes at the same rate), and data affinity (what data is tightly coupled). Entity-based cuts (UserService, ProductService) are a trap — use capability-based cuts (Identity service, Catalogue service, Ordering service).</div></div>
+<div class="qa"><div class="qa-q">Q: What happens when two services need the same data?</div><div class="qa-a">They each keep their own copy. Orders stores product name/price at time of order. Inventory stores stock levels. They sync via events — ProductPriceUpdated published by Catalogue, consumed by whoever cares. Duplication is intentional.</div></div>
+</div>
+<div class="footer">Monolith vs Microservices — Microservices Study Guide · C# / .NET · Interview Prep · 2026</div>
+</div>
+<script>
+function showTab(g,i){var p=document.getElementById(g).querySelectorAll('.tab-panel'),b=document.getElementById(g).querySelectorAll('.tab-btn');p.forEach(function(x,j){x.classList.toggle('active',j===i)});b.forEach(function(x,j){x.classList.remove('active');if(j===i)x.classList.add('active')})}
+</script>
+</body>
+</html>

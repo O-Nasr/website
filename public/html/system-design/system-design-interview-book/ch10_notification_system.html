@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chapter 10: Notification System — System Design Interview</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --orange:#D9480F;--orange-l:#FFF4E6;--orange-m:#E8590C;
+  --g1:#f8f9fa;--g2:#f1f3f5;--g3:#dee2e6;
+  --t1:#1a1a1a;--t2:#555;--t3:#888;
+  --ok:#2f9e44;--ok-b:#ebfbee;
+  --warn:#e67700;--warn-b:#fff3bf;
+  --err:#c92a2a;--err-b:#ffe3e3;
+  --info:#1864ab;--info-b:#e7f5ff;
+  --pur:#7B2D8B;--pur-b:#F9F0FF;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;background:#f4f6f8;color:var(--t1);line-height:1.7}
+.page{max-width:900px;margin:0 auto;padding:40px 24px 80px}
+.hdr{background:linear-gradient(135deg,#D9480F,#F76707);color:#fff;border-radius:16px;padding:40px 48px;margin-bottom:40px}
+.hdr h1{font-size:28px;font-weight:700;margin-bottom:8px}
+.hdr p{font-size:14px;opacity:.8}
+.toc{background:#fff;border:.5px solid var(--g3);border-radius:12px;padding:24px 28px;margin-bottom:40px}
+.toc h3{font-size:13px;font-weight:600;color:var(--orange);margin-bottom:12px;text-transform:uppercase;letter-spacing:.05em}
+.toc a{display:block;font-size:14px;color:var(--orange-m);text-decoration:none;padding:4px 0;border-bottom:.5px solid var(--g2)}
+.toc a:last-child{border-bottom:none}
+.sec{background:#fff;border:.5px solid var(--g3);border-radius:12px;padding:32px 36px;margin-bottom:28px}
+.sec-title{font-size:22px;font-weight:700;color:var(--orange);margin-bottom:20px;padding-bottom:12px;border-bottom:2px solid var(--orange-l);display:flex;align-items:center;gap:10px}
+.num{background:var(--orange);color:#fff;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0}
+h3{font-size:16px;font-weight:600;color:var(--orange-m);margin:20px 0 10px}
+p{font-size:14px;color:var(--t2);margin-bottom:12px}
+ul{margin:8px 0 12px 24px}
+li{font-size:14px;color:var(--t2);margin-bottom:6px}
+.note{display:flex;border-radius:8px;overflow:hidden;margin:16px 0;font-size:13px}
+.nl{background:var(--orange);color:#fff;padding:12px 14px;font-weight:700;writing-mode:vertical-rl;transform:rotate(180deg);display:flex;align-items:center;justify-content:center;min-width:44px;font-size:12px}
+.nb{padding:12px 16px;flex:1}
+.note.ok .nl{background:var(--ok)}.note.ok .nb{background:var(--ok-b);color:var(--ok)}
+.note.warn .nl{background:var(--warn)}.note.warn .nb{background:var(--warn-b);color:var(--warn)}
+.note.err .nl{background:var(--err)}.note.err .nb{background:var(--err-b);color:var(--err)}
+.note.info .nl{background:var(--info)}.note.info .nb{background:var(--info-b);color:var(--info)}
+.note.pur .nl{background:var(--pur)}.note.pur .nb{background:var(--pur-b);color:var(--pur)}
+.nb{background:var(--orange-l);color:var(--orange)}
+pre{background:#1e1e2e;color:#cdd6f4;font-family:"SF Mono","Fira Code",monospace;font-size:12px;border-radius:8px;padding:16px 20px;margin:12px 0;overflow-x:auto;line-height:1.9;white-space:pre}
+.str{color:#a6e3a1}.cm{color:#6c7086}.kw{color:#89dceb}.ok-c{color:#a6e3a1}.err-c{color:#f38ba8}
+table{width:100%;border-collapse:collapse;font-size:13px;margin:16px 0}
+th{background:var(--orange);color:#fff;padding:10px 14px;text-align:left;font-weight:600}
+td{padding:9px 14px;border-bottom:.5px solid var(--g3);color:var(--t2);vertical-align:top}
+tr:nth-child(even) td{background:var(--orange-l)}
+tr:last-child td{border-bottom:none}
+.badge{font-size:11px;padding:2px 8px;border-radius:10px;font-weight:600;display:inline-block}
+.bg{background:var(--ok-b);color:var(--ok)}.br{background:var(--err-b);color:var(--err)}.by{background:var(--warn-b);color:var(--warn)}.bgr{background:var(--g2);color:var(--t3)}
+.wgt{border:.5px solid var(--g3);border-radius:10px;padding:20px;margin:16px 0;background:var(--g1)}
+.wgt-t{font-size:13px;font-weight:600;color:var(--orange);margin-bottom:14px;display:flex;align-items:center;gap:6px}
+.wgt-t::before{content:"";width:8px;height:8px;background:var(--orange);border-radius:50%;display:inline-block}
+button{font-size:13px;padding:7px 16px;border-radius:6px;cursor:pointer;border:.5px solid var(--g3);background:#fff;color:var(--t1);transition:background .15s}
+button:hover{background:var(--g2)}
+.sb{padding:5px 12px;font-size:12px}.sb.on{background:var(--orange);color:#fff;border-color:var(--orange)}
+.tb{padding:5px 14px;font-size:12px}.tb.on{background:var(--orange);color:#fff;border-color:var(--orange)}
+.ibox{background:linear-gradient(135deg,#D9480F,#F76707);color:#fff;border-radius:12px;padding:24px 28px;margin:16px 0;font-size:14px;line-height:1.8;font-style:italic}
+.sgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:16px 0}
+.scard{background:var(--g2);border-radius:8px;padding:14px;text-align:center}
+.sv{font-size:20px;font-weight:700;color:var(--orange)}.sl{font-size:12px;color:var(--t3);margin-top:4px}
+.ch{border:.5px solid var(--g3);border-radius:8px;padding:14px;background:#fff;cursor:pointer;transition:all .2s}
+.ch:hover,.ch.on{border-color:var(--orange);background:var(--orange-l)}
+.rs{border:.5px solid var(--g3);border-radius:8px;padding:10px 14px;background:#fff;font-size:13px;display:flex;align-items:center;gap:10px;transition:all .3s;margin-bottom:6px}
+.rs.act{border-color:var(--info);background:var(--info-b)}
+.rs.ok2{border-color:var(--ok);background:var(--ok-b)}
+.rs.fail{border-color:var(--err);background:var(--err-b)}
+.rs.dlq{border-color:var(--warn);background:var(--warn-b)}
+.dot{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;background:var(--g2);color:var(--t3);flex-shrink:0;transition:all .3s}
+.btr{height:6px;background:var(--g3);border-radius:3px;overflow:hidden;margin-top:6px}
+.bf{height:100%;border-radius:3px;transition:width .4s,background .3s}
+</style>
+</head>
+<body>
+<div class="page">
+
+<div class="hdr">
+  <h1>Chapter 10: Design a Notification System</h1>
+  <p>System Design Interview — Alex Xu &nbsp;|&nbsp; Full study notes with all interactive diagrams</p>
+</div>
+
+<div class="toc">
+  <h3>Contents</h3>
+  <a href="#s1">1. What Is a Notification System?</a>
+  <a href="#s2">2. The Three Channels</a>
+  <a href="#s3">3. Why Third-Party Providers?</a>
+  <a href="#s4">4. High-Level Architecture</a>
+  <a href="#s5">5. Why Separate Queues Per Channel?</a>
+  <a href="#s6">6. Notification Server Responsibilities</a>
+  <a href="#s7">7. Rate Limiting — Two Levels</a>
+  <a href="#s8">8. Notification Templates</a>
+  <a href="#s9">9. Reliability — Retry + Dead Letter Queue</a>
+  <a href="#s10">10. Dedupe + Idempotency</a>
+  <a href="#s11">11. Notification Log DB</a>
+  <a href="#s12">12. Full System Diagram (Corrected)</a>
+  <a href="#s13">13. Interview Answer Template</a>
+  <a href="#s14">14. Quick Reference</a>
+</div>
+
+<!-- 1 -->
+<div class="sec" id="s1">
+  <div class="sec-title"><span class="num">1</span>What Is a Notification System?</div>
+  <p>A notification system delivers messages to users across multiple channels when events happen in the backend. One event → multiple channels → potentially millions of users.</p>
+  <pre>Order placed    → <span class="str">"Your order is confirmed"</span>  → Push + Email
+Payment failed  → <span class="str">"Update your payment"</span>      → Push + SMS
+Friend request  → <span class="str">"Omar sent you a request"</span>  → Push
+Breaking news   → <span class="str">"Major earthquake reported"</span> → Push + SMS + Email</pre>
+  <div class="sgrid">
+    <div class="scard"><div class="sv">3</div><div class="sl">Delivery channels</div></div>
+    <div class="scard"><div class="sv">10M+</div><div class="sl">Notifications/day</div></div>
+    <div class="scard"><div class="sv">3rd party</div><div class="sl">Providers per channel</div></div>
+  </div>
+</div>
+
+<!-- 2 -->
+<div class="sec" id="s2">
+  <div class="sec-title"><span class="num">2</span>The Three Channels</div>
+  <div class="wgt">
+    <div class="wgt-t">Interactive — Click each channel</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:14px">
+      <div class="ch" onclick="showCh('push',this)"><div style="font-size:14px;font-weight:600;margin-bottom:4px">📱 Push</div><div style="font-size:12px;color:var(--t3)">Mobile app notifications</div></div>
+      <div class="ch" onclick="showCh('sms',this)"><div style="font-size:14px;font-weight:600;margin-bottom:4px">💬 SMS</div><div style="font-size:12px;color:var(--t3)">Text messages</div></div>
+      <div class="ch" onclick="showCh('email',this)"><div style="font-size:14px;font-weight:600;margin-bottom:4px">📧 Email</div><div style="font-size:12px;color:var(--t3)">Marketing + transactional</div></div>
+    </div>
+    <div id="ch-detail" style="background:#fff;border:.5px solid var(--g3);border-radius:8px;padding:14px;font-size:13px;color:var(--t2);min-height:80px">Click a channel above to see its providers and challenges.</div>
+  </div>
+  <table>
+    <tr><th>Channel</th><th>Providers</th><th>Key Challenge</th></tr>
+    <tr><td>Push (iOS)</td><td>APNs</td><td>Device must be online. Token can expire.</td></tr>
+    <tr><td>Push (Android)</td><td>FCM</td><td>Different API from APNs.</td></tr>
+    <tr><td>SMS</td><td>Twilio, Nexmo, AWS SNS</td><td>Carrier delivery not guaranteed.</td></tr>
+    <tr><td>Email</td><td>SendGrid, Mailchimp, SES</td><td>Spam filters, GDPR compliance.</td></tr>
+  </table>
+</div>
+
+<!-- 3 -->
+<div class="sec" id="s3">
+  <div class="sec-title"><span class="num">3</span>Why Third-Party Providers?</div>
+  <table>
+    <tr><th>Reason</th><th>Explanation</th></tr>
+    <tr><td>Battle-tested</td><td>APNs handles billions of iOS notifications daily. Building that takes years.</td></tr>
+    <tr><td>Carrier relationships</td><td>SMS requires direct contracts with every telecom carrier. Twilio already has all of them.</td></tr>
+    <tr><td>Platform rules</td><td>Apple REQUIRES APNs for iOS push. No workaround — enforced at OS level.</td></tr>
+    <tr><td>Compliance</td><td>Email providers handle GDPR, bounces, unsubscribes automatically.</td></tr>
+    <tr><td>Cost</td><td>Cheaper to pay per message than build global infrastructure.</td></tr>
+  </table>
+  <div class="note ok"><div class="nl">Key Insight</div><div class="nb">Don't reinvent the wheel. SMS requires carrier contracts — those are the provider's clients. You can't just send SMS directly without them.</div></div>
+</div>
+
+<!-- 4 -->
+<div class="sec" id="s4">
+  <div class="sec-title"><span class="num">4</span>High-Level Architecture</div>
+  <p>All trigger services feed into a Load Balancer → multiple Notification Servers → separate queues per channel → workers → providers.</p>
+  <div class="wgt">
+    <div class="wgt-t">Interactive — Walk through each layer</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+      <button class="sb on" onclick="showArch(0,this)">1. Triggers</button>
+      <button class="sb" onclick="showArch(1,this)">2. Load Balancer</button>
+      <button class="sb" onclick="showArch(2,this)">3. Notif Servers</button>
+      <button class="sb" onclick="showArch(3,this)">4. Queues</button>
+      <button class="sb" onclick="showArch(4,this)">5. Workers</button>
+      <button class="sb" onclick="showArch(5,this)">6. Providers</button>
+    </div>
+    <svg width="100%" viewBox="0 0 680 200">
+    <defs><marker id="a4" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+    <g id="at"><rect x="10" y="20" width="96" height="28" rx="5" fill="#E3FAFC" stroke="#1098AD" stroke-width="0.5"/><text font-family="Arial" font-size="10" font-weight="600" fill="#0B7285" x="58" y="34" text-anchor="middle" dominant-baseline="central">Order Svc</text>
+    <rect x="10" y="58" width="96" height="28" rx="5" fill="#E3FAFC" stroke="#1098AD" stroke-width="0.5"/><text font-family="Arial" font-size="10" font-weight="600" fill="#0B7285" x="58" y="72" text-anchor="middle" dominant-baseline="central">Payment Svc</text>
+    <rect x="10" y="96" width="96" height="28" rx="5" fill="#E3FAFC" stroke="#1098AD" stroke-width="0.5"/><text font-family="Arial" font-size="10" font-weight="600" fill="#0B7285" x="58" y="110" text-anchor="middle" dominant-baseline="central">Social Svc</text>
+    <rect x="10" y="134" width="96" height="28" rx="5" fill="#E3FAFC" stroke="#1098AD" stroke-width="0.5"/><text font-family="Arial" font-size="10" font-weight="600" fill="#0B7285" x="58" y="148" text-anchor="middle" dominant-baseline="central">Scheduler</text></g>
+    <g id="a-a01" opacity="0.15"><line x1="106" y1="34" x2="148" y2="85" stroke="#aaa" stroke-width="0.8" marker-end="url(#a4)"/><line x1="106" y1="72" x2="148" y2="92" stroke="#aaa" stroke-width="0.8" marker-end="url(#a4)"/><line x1="106" y1="110" x2="148" y2="100" stroke="#aaa" stroke-width="0.8" marker-end="url(#a4)"/><line x1="106" y1="148" x2="148" y2="108" stroke="#aaa" stroke-width="0.8" marker-end="url(#a4)"/></g>
+    <g id="alb" opacity="0.15"><rect x="150" y="70" width="70" height="52" rx="6" fill="#F1F3F5" stroke="#868E96" stroke-width="0.5"/><text font-family="Arial" font-size="10" font-weight="600" fill="#495057" x="185" y="90" text-anchor="middle" dominant-baseline="central">Load</text><text font-family="Arial" font-size="10" font-weight="600" fill="#495057" x="185" y="106" text-anchor="middle" dominant-baseline="central">Balancer</text></g>
+    <g id="a-a12" opacity="0.15"><line x1="220" y1="82" x2="244" y2="50" stroke="#aaa" stroke-width="0.8" marker-end="url(#a4)"/><line x1="220" y1="96" x2="244" y2="96" stroke="#aaa" stroke-width="0.8" marker-end="url(#a4)"/><line x1="220" y1="110" x2="244" y2="142" stroke="#aaa" stroke-width="0.8" marker-end="url(#a4)"/></g>
+    <g id="asv" opacity="0.15"><rect x="246" y="30" width="104" height="38" rx="6" fill="#F9F0FF" stroke="#9C36B5" stroke-width="0.5"/><text font-family="Arial" font-size="10" font-weight="600" fill="#7B2D8B" x="298" y="49" text-anchor="middle" dominant-baseline="central">Notif Server 1</text>
+    <rect x="246" y="76" width="104" height="38" rx="6" fill="#F9F0FF" stroke="#9C36B5" stroke-width="0.5"/><text font-family="Arial" font-size="10" font-weight="600" fill="#7B2D8B" x="298" y="95" text-anchor="middle" dominant-baseline="central">Notif Server 2</text>
+    <rect x="246" y="122" width="104" height="38" rx="6" fill="#F9F0FF" stroke="#9C36B5" stroke-width="0.5"/><text font-family="Arial" font-size="10" font-weight="600" fill="#7B2D8B" x="298" y="141" text-anchor="middle" dominant-baseline="central">Notif Server 3</text></g>
+    <g id="a-a23" opacity="0.15"><line x1="350" y1="49" x2="374" y2="49" stroke="#aaa" stroke-width="0.8" marker-end="url(#a4)"/><line x1="350" y1="95" x2="374" y2="95" stroke="#aaa" stroke-width="0.8" marker-end="url(#a4)"/><line x1="350" y1="141" x2="374" y2="141" stroke="#aaa" stroke-width="0.8" marker-end="url(#a4)"/></g>
+    <g id="aqu" opacity="0.15"><rect x="376" y="30" width="82" height="38" rx="6" fill="#FFF3BF" stroke="#E67700" stroke-width="0.5"/><text font-family="Arial" font-size="10" font-weight="600" fill="#864F0B" x="417" y="49" text-anchor="middle" dominant-baseline="central">Push Queue</text>
+    <rect x="376" y="76" width="82" height="38" rx="6" fill="#FFF3BF" stroke="#E67700" stroke-width="0.5"/><text font-family="Arial" font-size="10" font-weight="600" fill="#864F0B" x="417" y="95" text-anchor="middle" dominant-baseline="central">SMS Queue</text>
+    <rect x="376" y="122" width="82" height="38" rx="6" fill="#FFF3BF" stroke="#E67700" stroke-width="0.5"/><text font-family="Arial" font-size="10" font-weight="600" fill="#864F0B" x="417" y="141" text-anchor="middle" dominant-baseline="central">Email Queue</text></g>
+    <g id="a-a34" opacity="0.15"><line x1="458" y1="49" x2="478" y2="49" stroke="#aaa" stroke-width="0.8" marker-end="url(#a4)"/><line x1="458" y1="95" x2="478" y2="95" stroke="#aaa" stroke-width="0.8" marker-end="url(#a4)"/><line x1="458" y1="141" x2="478" y2="141" stroke="#aaa" stroke-width="0.8" marker-end="url(#a4)"/></g>
+    <g id="awk" opacity="0.15"><rect x="480" y="30" width="72" height="38" rx="6" fill="#FAECE7" stroke="#993C1D" stroke-width="0.5"/><text font-family="Arial" font-size="10" font-weight="600" fill="#4A1B0C" x="516" y="49" text-anchor="middle" dominant-baseline="central">Push Worker</text>
+    <rect x="480" y="76" width="72" height="38" rx="6" fill="#FAECE7" stroke="#993C1D" stroke-width="0.5"/><text font-family="Arial" font-size="10" font-weight="600" fill="#4A1B0C" x="516" y="95" text-anchor="middle" dominant-baseline="central">SMS Worker</text>
+    <rect x="480" y="122" width="72" height="38" rx="6" fill="#FAECE7" stroke="#993C1D" stroke-width="0.5"/><text font-family="Arial" font-size="10" font-weight="600" fill="#4A1B0C" x="516" y="141" text-anchor="middle" dominant-baseline="central">Email Worker</text></g>
+    <g id="a-a45" opacity="0.15"><line x1="552" y1="49" x2="574" y2="49" stroke="#aaa" stroke-width="0.8" marker-end="url(#a4)"/><line x1="552" y1="95" x2="574" y2="95" stroke="#aaa" stroke-width="0.8" marker-end="url(#a4)"/><line x1="552" y1="141" x2="574" y2="141" stroke="#aaa" stroke-width="0.8" marker-end="url(#a4)"/></g>
+    <g id="apr" opacity="0.15"><rect x="576" y="30" width="80" height="38" rx="6" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.5"/><text font-family="Arial" font-size="10" font-weight="600" fill="#042C53" x="616" y="44" text-anchor="middle" dominant-baseline="central">APNs</text><text font-family="Arial" font-size="9" fill="#042C53" x="616" y="59" text-anchor="middle">FCM</text>
+    <rect x="576" y="76" width="80" height="38" rx="6" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.5"/><text font-family="Arial" font-size="10" font-weight="600" fill="#042C53" x="616" y="95" text-anchor="middle" dominant-baseline="central">Twilio</text>
+    <rect x="576" y="122" width="80" height="38" rx="6" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.5"/><text font-family="Arial" font-size="10" font-weight="600" fill="#042C53" x="616" y="137" text-anchor="middle" dominant-baseline="central">SendGrid</text><text font-family="Arial" font-size="9" fill="#042C53" x="616" y="152" text-anchor="middle">SES</text></g>
+    </svg>
+    <div id="arch-note" style="background:#fff;border:.5px solid var(--g3);border-radius:8px;padding:12px 16px;font-size:13px;color:var(--t2);margin-top:10px;min-height:44px">Multiple services trigger notifications. All feed into the system via a Load Balancer.</div>
+  </div>
+</div>
+
+<!-- 5 -->
+<div class="sec" id="s5">
+  <div class="sec-title"><span class="num">5</span>Why Separate Queues Per Channel?</div>
+  <p>One queue = SPOF. If it goes down, all notifications stop. Separate queues = isolated failures. If email provider is down — push and SMS keep working perfectly.</p>
+  <div class="wgt">
+    <div class="wgt-t">Interactive — Failure isolation scenarios</div>
+    <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+      <button class="tb on" onclick="showIso('normal',this)">Normal operation</button>
+      <button class="tb" onclick="showIso('spof',this)">Single queue — all fail</button>
+      <button class="tb" onclick="showIso('email',this)">Email provider down</button>
+    </div>
+    <div id="iso-rows" style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px"></div>
+    <div id="iso-note" style="font-size:13px;padding:10px 14px;border-radius:6px;min-height:36px"></div>
+  </div>
+  <table>
+    <tr><th>Benefit</th><th>Explanation</th></tr>
+    <tr><td>Failure isolation</td><td>Email down → push and SMS keep working</td></tr>
+    <tr><td>Independent scaling</td><td>Push needs 100 workers, SMS needs 10 — scale each separately</td></tr>
+    <tr><td>Independent rate limiting</td><td>Each queue throttles to its provider's limit independently</td></tr>
+    <tr><td>No SPOF</td><td>One queue fails → only that channel affected</td></tr>
+  </table>
+</div>
+
+<!-- 6 -->
+<div class="sec" id="s6">
+  <div class="sec-title"><span class="num">6</span>Notification Server Responsibilities</div>
+  <p>Each Notification Server (behind the Load Balancer) has 5 responsibilities before routing to a queue:</p>
+  <div class="wgt">
+    <div class="wgt-t">Interactive — Click each responsibility</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+      <button class="sb on" onclick="showResp(0,this)">1. Validate</button>
+      <button class="sb" onclick="showResp(1,this)">2. Preferences</button>
+      <button class="sb" onclick="showResp(2,this)">3. Rate Limit</button>
+      <button class="sb" onclick="showResp(3,this)">4. Template</button>
+      <button class="sb" onclick="showResp(4,this)">5. Route</button>
+    </div>
+    <div id="resp-box" style="background:#fff;border:.5px solid var(--g3);border-radius:8px;padding:14px;font-size:13px;color:var(--t2);min-height:60px"></div>
+  </div>
+  <div class="note info"><div class="nl">Key Insight</div><div class="nb">Multiple Notification Servers sit behind a Load Balancer — no SPOF, horizontal scaling. Each server is stateless so any server can handle any request.</div></div>
+</div>
+
+<!-- 7 -->
+<div class="sec" id="s7">
+  <div class="sec-title"><span class="num">7</span>Rate Limiting — Two Levels</div>
+  <p>Rate limiting works at two levels — per user (prevents spam) and per provider (prevents API ban).</p>
+  <div class="wgt">
+    <div class="wgt-t">Interactive — Explore both levels</div>
+    <div style="display:flex;gap:8px;margin-bottom:14px">
+      <button class="tb on" onclick="showRateTab('user',this)">Level 1 — Per User</button>
+      <button class="tb" onclick="showRateTab('prov',this)">Level 2 — Per Provider</button>
+    </div>
+    <div id="rt-user">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:10px">
+        <div style="background:#fff;border:.5px solid var(--g3);border-radius:8px;padding:14px">
+          <div style="font-size:13px;font-weight:600;margin-bottom:8px">Omar's notification budget</div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--t3);margin-bottom:4px"><span>Max: 5/hour</span><span id="uc">0 / 5</span></div>
+          <div class="btr"><div class="bf" id="ub" style="width:0%;background:var(--ok)"></div></div>
+          <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap">
+            <button onclick="sendU('push')" style="font-size:11px;padding:4px 10px">Send push</button>
+            <button onclick="sendU('sms')" style="font-size:11px;padding:4px 10px">Send SMS</button>
+            <button onclick="resetU()" style="font-size:11px;padding:4px 10px">Reset hour</button>
+          </div>
+          <div id="ul" style="font-size:11px;font-family:monospace;margin-top:8px;min-height:16px;color:var(--t3)"></div>
+        </div>
+        <div style="background:#fff;border:.5px solid var(--g3);border-radius:8px;padding:14px;font-size:13px;color:var(--t2)">
+          <div style="font-weight:600;margin-bottom:8px">Why per-user?</div>
+          <div style="margin-bottom:5px">✅ Prevents spam</div>
+          <div style="margin-bottom:5px">✅ Protects user experience</div>
+          <div style="margin-bottom:5px">✅ Respects quiet hours</div>
+          <div>✅ Reduces notification fatigue</div>
+        </div>
+      </div>
+    </div>
+    <div id="rt-prov" style="display:none">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:12px">
+        <div style="background:#fff;border:.5px solid var(--g3);border-radius:8px;padding:12px">
+          <div style="font-size:12px;font-weight:600;margin-bottom:6px">APNs — 300/sec</div>
+          <div class="btr"><div class="bf" id="apb" style="width:0%;background:var(--ok)"></div></div>
+          <div style="font-size:11px;margin-top:4px" id="aps">0 / 300</div>
+        </div>
+        <div style="background:#fff;border:.5px solid var(--g3);border-radius:8px;padding:12px">
+          <div style="font-size:12px;font-weight:600;margin-bottom:6px">Twilio — 100/sec</div>
+          <div class="btr"><div class="bf" id="twb" style="width:0%;background:var(--ok)"></div></div>
+          <div style="font-size:11px;margin-top:4px" id="tws">0 / 100</div>
+        </div>
+        <div style="background:#fff;border:.5px solid var(--g3);border-radius:8px;padding:12px">
+          <div style="font-size:12px;font-weight:600;margin-bottom:6px">SendGrid — 600/sec</div>
+          <div class="btr"><div class="bf" id="sgb" style="width:0%;background:var(--ok)"></div></div>
+          <div style="font-size:11px;margin-top:4px" id="sgs">0 / 600</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+        <button onclick="simLoad(50)" style="font-size:11px;padding:4px 10px">Normal load</button>
+        <button onclick="simLoad(200)" style="font-size:11px;padding:4px 10px">High load</button>
+        <button onclick="simLoad(500)" style="font-size:11px;padding:4px 10px">Celebrity event 🔥</button>
+        <button onclick="simLoad(0)" style="font-size:11px;padding:4px 10px">Reset</button>
+      </div>
+      <div id="pn" style="font-size:12px;padding:10px 14px;border-radius:6px;background:var(--g2);color:var(--t2);min-height:36px"></div>
+    </div>
+  </div>
+  <table>
+    <tr><th>Level</th><th>Protects</th><th>From</th></tr>
+    <tr><td>Per user</td><td>User experience</td><td>Notification spam — max N/hour</td></tr>
+    <tr><td>Per provider</td><td>API access</td><td>Getting throttled or banned by provider</td></tr>
+  </table>
+</div>
+
+<!-- 8 -->
+<div class="sec" id="s8">
+  <div class="sec-title"><span class="num">8</span>Notification Templates</div>
+  <p>Templates are reusable message blueprints with placeholders. Workers — not queues — fetch and fill them at processing time. This keeps queue payloads lean.</p>
+  <pre><span class="cm">// Template stored in Template DB (accessed by workers)</span>
+Template: <span class="str">ORDER_SHIPPED</span>
+Title:    <span class="str">"Your order has shipped!"</span>
+Body:     <span class="str">"Hi {{first_name}}, order {{order_id}} arrives {{date}}"</span>
+
+<span class="cm">// Lean queue payload — NOT the full message</span>
+{
+  event_id:    <span class="str">"evt_847291"</span>,
+  user_id:     <span class="str">"usr_123"</span>,
+  template_id: <span class="str">"ORDER_SHIPPED"</span>,
+  data: { first_name: <span class="str">"Omar"</span>, order_id: <span class="str">"847291"</span>, date: <span class="str">"Jan 18"</span> }
+}
+
+<span class="cm">// Worker: fetch template → fill placeholders → send</span></pre>
+  <table>
+    <tr><th>Reason for Templates</th><th>Explanation</th></tr>
+    <tr><td>Centralized updates</td><td>Change template once — all future notifications use new version</td></tr>
+    <tr><td>A/B testing</td><td>Test two versions without changing event code</td></tr>
+    <tr><td>Localization</td><td>Same template ID, different language per user preference</td></tr>
+    <tr><td>Consistency</td><td>All notifications follow the same brand format</td></tr>
+    <tr><td>Reduced payload size</td><td>Queue carries IDs not 200-char messages — 4x storage saving</td></tr>
+  </table>
+  <div class="note ok"><div class="nl">Your Fix</div><div class="nb">Template DB sits with Workers — not Queues. Workers fetch at processing time. Queues carry lean payloads only. This also allows template updates without re-queuing messages already in the queue.</div></div>
+</div>
+
+<!-- 9 -->
+<div class="sec" id="s9">
+  <div class="sec-title"><span class="num">9</span>Reliability — Retry + Dead Letter Queue</div>
+  <p>Failed notifications are retried with exponential backoff. After all retries are exhausted, the message moves to a Dead Letter Queue for engineer investigation.</p>
+  <div class="wgt">
+    <div class="wgt-t">Interactive — Simulate retry scenarios</div>
+    <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+      <button onclick="runRetry('ok')">Success on attempt 1</button>
+      <button onclick="runRetry('retry')">Fail then succeed</button>
+      <button onclick="runRetry('dlq')">All retries fail → DLQ</button>
+    </div>
+    <div id="rsteps">
+      <div class="rs" id="rs0"><div class="dot" id="rd0">1</div><span><strong>Attempt 1</strong> — Worker calls provider API</span></div>
+      <div class="rs" id="rs1"><div class="dot" id="rd1">2</div><span><strong>Attempt 2</strong> — Retry after 10s backoff</span></div>
+      <div class="rs" id="rs2"><div class="dot" id="rd2">3</div><span><strong>Attempt 3</strong> — Retry after 30s backoff</span></div>
+      <div class="rs" id="rs3"><div class="dot" id="rd3">DLQ</div><span><strong>Dead Letter Queue</strong> — All retries exhausted. Engineers alerted.</span></div>
+    </div>
+    <div id="rn" style="margin-top:10px;padding:10px 14px;border-radius:6px;background:var(--g2);font-size:13px;color:var(--t2);min-height:40px">Click a scenario to simulate.</div>
+  </div>
+  <div class="note warn"><div class="nl">Why Backoff?</div><div class="nb">If provider is overloaded — hammering it with immediate retries makes it worse. Increasing waits (10s → 30s → 60s) gives the provider time to recover.</div></div>
+</div>
+
+<!-- 10 -->
+<div class="sec" id="s10">
+  <div class="sec-title"><span class="num">10</span>Dedupe + Idempotency</div>
+  <p>At-least-once delivery means the same notification may be processed more than once after retries. Dedupe logic prevents users receiving duplicate notifications.</p>
+  <pre><span class="cm">// Each event has a unique event_id</span>
+event_id: <span class="str">"evt_847291"</span>
+
+<span class="cm">// Fast path — check Redis before processing</span>
+<span class="kw">GET</span> <span class="str">"evt_847291"</span>  → nil    <span class="cm">→ not seen → process + store ✅</span>
+<span class="kw">GET</span> <span class="str">"evt_847291"</span>  → <span class="str">"1"</span>    <span class="cm">→ seen!   → discard duplicate ❌</span>
+
+<span class="cm">// Atomic set-if-not-exists with 24-hour TTL</span>
+<span class="kw">SET</span> <span class="str">"evt_847291"</span> <span class="str">"1"</span> NX EX 86400</pre>
+  <table>
+    <tr><th>Store</th><th>Purpose</th><th>Why</th></tr>
+    <tr><td>Redis (fast path)</td><td>Dedupe check before processing</td><td>O(1), SETNX atomic, TTL auto-cleanup</td></tr>
+    <tr><td>Notification Log DB (slow path)</td><td>Fallback if Redis is down</td><td>Durable, queryable, but slower</td></tr>
+  </table>
+  <div class="note info"><div class="nl">Why Not Exactly-Once?</div><div class="nb">True exactly-once delivery is impossible in distributed systems. Network failures make it impossible to distinguish a lost acknowledgment from a failed operation. We use at-least-once + idempotency to simulate exactly-once from the user's perspective.</div></div>
+</div>
+
+<!-- 11 -->
+<div class="sec" id="s11">
+  <div class="sec-title"><span class="num">11</span>Notification Log DB</div>
+  <p>Every notification processed is written to the Log DB — success or failure. Fast dedupe uses Redis; the Log DB is the durable slow path.</p>
+  <table>
+    <tr><th>Use</th><th>Explanation</th></tr>
+    <tr><td>Delivery tracking</td><td>Did notification reach the user? Provider response code?</td></tr>
+    <tr><td>Debugging</td><td>Engineer investigates why a notification failed or was delayed</td></tr>
+    <tr><td>Dedupe slow path</td><td>Fallback if Redis is down — slower but durable</td></tr>
+    <tr><td>Analytics</td><td>Open rate, delivery rate, failure rate per channel</td></tr>
+    <tr><td>Audit trail</td><td>Legal/compliance — prove notification was sent at specific time</td></tr>
+    <tr><td>Retry decisions</td><td>How many times attempted? DLQ threshold reached?</td></tr>
+  </table>
+  <div class="note pur"><div class="nl">Two-Layer Design</div><div class="nb">Fast path → Redis (O(1), in-memory, TTL). Slow path → Log DB (durable, queryable, audit). Together they give speed AND durability. Don't collapse them into one.</div></div>
+</div>
+
+<!-- 12 -->
+<div class="sec" id="s12">
+  <div class="sec-title"><span class="num">12</span>Full System Diagram (Corrected)</div>
+  <p>Two corrections from your review: <strong>multiple Notification Servers</strong> behind Load Balancer (no SPOF), and <strong>Template DB moved to Workers</strong> (lean queue payloads).</p>
+  <div style="overflow-x:auto">
+  <svg width="100%" viewBox="0 0 680 430">
+  <defs><marker id="a12" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+  <text font-family="Arial" font-size="9" fill="#aaa" x="12" y="12">Triggers</text>
+  <text font-family="Arial" font-size="9" fill="#aaa" x="120" y="12">LB</text>
+  <text font-family="Arial" font-size="9" fill="#aaa" x="200" y="12">Notif Servers</text>
+  <text font-family="Arial" font-size="9" fill="#aaa" x="348" y="12">Queues</text>
+  <text font-family="Arial" font-size="9" fill="#aaa" x="452" y="12">Workers</text>
+  <text font-family="Arial" font-size="9" fill="#aaa" x="558" y="12">Providers</text>
+  <!-- Triggers -->
+  <rect x="10" y="22" width="94" height="26" rx="5" fill="#E3FAFC" stroke="#1098AD" stroke-width="0.5"/><text font-family="Arial" font-size="10" font-weight="600" fill="#0B7285" x="57" y="35" text-anchor="middle" dominant-baseline="central">Order Svc</text>
+  <rect x="10" y="58" width="94" height="26" rx="5" fill="#E3FAFC" stroke="#1098AD" stroke-width="0.5"/><text font-family="Arial" font-size="10" font-weight="600" fill="#0B7285" x="57" y="71" text-anchor="middle" dominant-baseline="central">Payment Svc</text>
+  <rect x="10" y="94" width="94" height="26" rx="5" fill="#E3FAFC" stroke="#1098AD" stroke-width="0.5"/><text font-family="Arial" font-size="10" font-weight="600" fill="#0B7285" x="57" y="107" text-anchor="middle" dominant-baseline="central">Social Svc</text>
+  <rect x="10" y="130" width="94" height="26" rx="5" fill="#E3FAFC" stroke="#1098AD" stroke-width="0.5"/><text font-family="Arial" font-size="10" font-weight="600" fill="#0B7285" x="57" y="143" text-anchor="middle" dominant-baseline="central">Scheduler</text>
+  <line x1="104" y1="35"  x2="122" y2="80"  stroke="#ccc" stroke-width="0.8" marker-end="url(#a12)"/>
+  <line x1="104" y1="71"  x2="122" y2="88"  stroke="#ccc" stroke-width="0.8" marker-end="url(#a12)"/>
+  <line x1="104" y1="107" x2="122" y2="97"  stroke="#ccc" stroke-width="0.8" marker-end="url(#a12)"/>
+  <line x1="104" y1="143" x2="122" y2="106" stroke="#ccc" stroke-width="0.8" marker-end="url(#a12)"/>
+  <!-- LB -->
+  <rect x="124" y="68" width="64" height="50" rx="6" fill="#F1F3F5" stroke="#868E96" stroke-width="0.5"/>
+  <text font-family="Arial" font-size="10" font-weight="600" fill="#495057" x="156" y="87" text-anchor="middle" dominant-baseline="central">Load</text>
+  <text font-family="Arial" font-size="10" font-weight="600" fill="#495057" x="156" y="103" text-anchor="middle" dominant-baseline="central">Balancer</text>
+  <line x1="188" y1="80"  x2="202" y2="50"  stroke="#ccc" stroke-width="0.8" marker-end="url(#a12)"/>
+  <line x1="188" y1="93"  x2="202" y2="93"  stroke="#ccc" stroke-width="0.8" marker-end="url(#a12)"/>
+  <line x1="188" y1="106" x2="202" y2="136" stroke="#ccc" stroke-width="0.8" marker-end="url(#a12)"/>
+  <!-- Notif Servers -->
+  <rect x="204" y="32" width="112" height="36" rx="6" fill="#F9F0FF" stroke="#9C36B5" stroke-width="0.5"/>
+  <text font-family="Arial" font-size="10" font-weight="600" fill="#7B2D8B" x="260" y="50" text-anchor="middle" dominant-baseline="central">Notif Server 1</text>
+  <rect x="204" y="76" width="112" height="36" rx="6" fill="#F9F0FF" stroke="#9C36B5" stroke-width="0.5"/>
+  <text font-family="Arial" font-size="10" font-weight="600" fill="#7B2D8B" x="260" y="94" text-anchor="middle" dominant-baseline="central">Notif Server 2</text>
+  <rect x="204" y="120" width="112" height="36" rx="6" fill="#F9F0FF" stroke="#9C36B5" stroke-width="0.5"/>
+  <text font-family="Arial" font-size="10" font-weight="600" fill="#7B2D8B" x="260" y="138" text-anchor="middle" dominant-baseline="central">Notif Server 3</text>
+  <!-- User DB under servers -->
+  <rect x="210" y="174" width="100" height="30" rx="5" fill="#F1F3F5" stroke="#868E96" stroke-width="0.5"/>
+  <text font-family="Arial" font-size="9" font-weight="600" fill="#495057" x="260" y="189" text-anchor="middle" dominant-baseline="central">User DB (prefs)</text>
+  <line x1="260" y1="156" x2="260" y2="174" stroke="#aaa" stroke-width="0.7" stroke-dasharray="3 2" marker-end="url(#a12)"/>
+  <!-- Servers → Queues -->
+  <line x1="316" y1="50"  x2="340" y2="50"  stroke="#ccc" stroke-width="0.8" marker-end="url(#a12)"/>
+  <line x1="316" y1="94"  x2="340" y2="94"  stroke="#ccc" stroke-width="0.8" marker-end="url(#a12)"/>
+  <line x1="316" y1="138" x2="340" y2="138" stroke="#ccc" stroke-width="0.8" marker-end="url(#a12)"/>
+  <!-- Queues -->
+  <rect x="342" y="32" width="88" height="36" rx="5" fill="#FFF3BF" stroke="#E67700" stroke-width="0.5"/>
+  <text font-family="Arial" font-size="10" font-weight="600" fill="#864F0B" x="386" y="50" text-anchor="middle" dominant-baseline="central">Push Queue</text>
+  <rect x="342" y="76" width="88" height="36" rx="5" fill="#FFF3BF" stroke="#E67700" stroke-width="0.5"/>
+  <text font-family="Arial" font-size="10" font-weight="600" fill="#864F0B" x="386" y="94" text-anchor="middle" dominant-baseline="central">SMS Queue</text>
+  <rect x="342" y="120" width="88" height="36" rx="5" fill="#FFF3BF" stroke="#E67700" stroke-width="0.5"/>
+  <text font-family="Arial" font-size="10" font-weight="600" fill="#864F0B" x="386" y="138" text-anchor="middle" dominant-baseline="central">Email Queue</text>
+  <!-- Queues → Workers -->
+  <line x1="430" y1="50"  x2="448" y2="50"  stroke="#ccc" stroke-width="0.8" marker-end="url(#a12)"/>
+  <line x1="430" y1="94"  x2="448" y2="94"  stroke="#ccc" stroke-width="0.8" marker-end="url(#a12)"/>
+  <line x1="430" y1="138" x2="448" y2="138" stroke="#ccc" stroke-width="0.8" marker-end="url(#a12)"/>
+  <!-- Workers -->
+  <rect x="450" y="32" width="80" height="36" rx="5" fill="#FAECE7" stroke="#993C1D" stroke-width="0.5"/>
+  <text font-family="Arial" font-size="10" font-weight="600" fill="#4A1B0C" x="490" y="50" text-anchor="middle" dominant-baseline="central">Push Worker</text>
+  <rect x="450" y="76" width="80" height="36" rx="5" fill="#FAECE7" stroke="#993C1D" stroke-width="0.5"/>
+  <text font-family="Arial" font-size="10" font-weight="600" fill="#4A1B0C" x="490" y="94" text-anchor="middle" dominant-baseline="central">SMS Worker</text>
+  <rect x="450" y="120" width="80" height="36" rx="5" fill="#FAECE7" stroke="#993C1D" stroke-width="0.5"/>
+  <text font-family="Arial" font-size="10" font-weight="600" fill="#4A1B0C" x="490" y="138" text-anchor="middle" dominant-baseline="central">Email Worker</text>
+  <!-- Template DB — your fix, under workers -->
+  <rect x="450" y="174" width="80" height="30" rx="5" fill="#EBFBEE" stroke="#2f9e44" stroke-width="1"/>
+  <text font-family="Arial" font-size="9" font-weight="600" fill="#2f9e44" x="490" y="189" text-anchor="middle" dominant-baseline="central">Template DB</text>
+  <line x1="490" y1="156" x2="490" y2="174" stroke="#2f9e44" stroke-width="0.8" stroke-dasharray="3 2" marker-end="url(#a12)"/>
+  <text font-family="Arial" font-size="8" fill="#2f9e44" x="534" y="183">✅ your fix</text>
+  <!-- Workers → Providers -->
+  <line x1="530" y1="50"  x2="550" y2="50"  stroke="#ccc" stroke-width="0.8" marker-end="url(#a12)"/>
+  <line x1="530" y1="94"  x2="550" y2="94"  stroke="#ccc" stroke-width="0.8" marker-end="url(#a12)"/>
+  <line x1="530" y1="138" x2="550" y2="138" stroke="#ccc" stroke-width="0.8" marker-end="url(#a12)"/>
+  <!-- Providers -->
+  <rect x="552" y="32" width="80" height="36" rx="5" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.5"/>
+  <text font-family="Arial" font-size="10" font-weight="600" fill="#042C53" x="592" y="45" text-anchor="middle" dominant-baseline="central">APNs</text>
+  <text font-family="Arial" font-size="9" fill="#042C53" x="592" y="61" text-anchor="middle">FCM</text>
+  <rect x="552" y="76" width="80" height="36" rx="5" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.5"/>
+  <text font-family="Arial" font-size="10" font-weight="600" fill="#042C53" x="592" y="94" text-anchor="middle" dominant-baseline="central">Twilio</text>
+  <rect x="552" y="120" width="80" height="36" rx="5" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.5"/>
+  <text font-family="Arial" font-size="10" font-weight="600" fill="#042C53" x="592" y="133" text-anchor="middle" dominant-baseline="central">SendGrid</text>
+  <text font-family="Arial" font-size="9" fill="#042C53" x="592" y="149" text-anchor="middle">SES</text>
+  <!-- Reliability layer -->
+  <rect x="10" y="220" width="656" height="78" rx="8" fill="none" stroke="#dee2e6" stroke-width="1" stroke-dasharray="5 3"/>
+  <text font-family="Arial" font-size="9" font-weight="600" fill="#aaa" x="20" y="234">Reliability Layer</text>
+  <rect x="18"  y="240" width="148" height="48" rx="6" fill="#E3FAFC" stroke="#1098AD" stroke-width="0.5"/>
+  <text font-family="Arial" font-size="10" font-weight="600" fill="#0B7285" x="92"  y="258" text-anchor="middle" dominant-baseline="central">Redis Dedupe</text>
+  <text font-family="Arial" font-size="9" fill="#0B7285" x="92" y="275" text-anchor="middle">event_id + TTL · O(1)</text>
+  <rect x="176" y="240" width="148" height="48" rx="6" fill="#FFF3BF" stroke="#E67700" stroke-width="0.5"/>
+  <text font-family="Arial" font-size="10" font-weight="600" fill="#864F0B" x="250" y="258" text-anchor="middle" dominant-baseline="central">Retry Queue</text>
+  <text font-family="Arial" font-size="9" fill="#864F0B" x="250" y="275" text-anchor="middle">10s → 30s → 60s backoff</text>
+  <rect x="334" y="240" width="148" height="48" rx="6" fill="#FAECE7" stroke="#993C1D" stroke-width="0.5"/>
+  <text font-family="Arial" font-size="10" font-weight="600" fill="#4A1B0C" x="408" y="255" text-anchor="middle" dominant-baseline="central">Dead Letter Queue</text>
+  <text font-family="Arial" font-size="9" fill="#4A1B0C" x="408" y="272" text-anchor="middle">(DLQ) — after 3 failures</text>
+  <rect x="492" y="240" width="168" height="48" rx="6" fill="#F1F3F5" stroke="#868E96" stroke-width="0.5"/>
+  <text font-family="Arial" font-size="10" font-weight="600" fill="#495057" x="576" y="255" text-anchor="middle" dominant-baseline="central">Notification Log DB</text>
+  <text font-family="Arial" font-size="9" fill="#495057" x="576" y="272" text-anchor="middle">audit · analytics · debug</text>
+  <line x1="324" y1="264" x2="334" y2="264" stroke="#aaa" stroke-width="0.8" marker-end="url(#a12)"/>
+  <!-- Worker dashed lines to reliability -->
+  <path d="M490 156 L490 210 L92 210 L92 240" fill="none" stroke="#ccc" stroke-width="0.7" stroke-dasharray="4 3" marker-end="url(#a12)"/>
+  <path d="M490 156 L490 210 L250 210 L250 240" fill="none" stroke="#ccc" stroke-width="0.7" stroke-dasharray="4 3" marker-end="url(#a12)"/>
+  <path d="M530 94 L644 210 L576 210 L576 240" fill="none" stroke="#ccc" stroke-width="0.7" stroke-dasharray="4 3" marker-end="url(#a12)"/>
+  <!-- Rate limiting layer -->
+  <rect x="10" y="310" width="656" height="58" rx="8" fill="none" stroke="#dee2e6" stroke-width="1" stroke-dasharray="5 3"/>
+  <text font-family="Arial" font-size="9" font-weight="600" fill="#aaa" x="20" y="324">Rate Limiting Layer</text>
+  <rect x="18"  y="330" width="308" height="30" rx="6" fill="#F9F0FF" stroke="#9C36B5" stroke-width="0.5"/>
+  <text font-family="Arial" font-size="10" font-weight="600" fill="#7B2D8B" x="172" y="345" text-anchor="middle" dominant-baseline="central">Level 1 — Per User: max N/hour · protects experience</text>
+  <rect x="338" y="330" width="322" height="30" rx="6" fill="#EAF3DE" stroke="#3B6D11" stroke-width="0.5"/>
+  <text font-family="Arial" font-size="10" font-weight="600" fill="#173404" x="499" y="345" text-anchor="middle" dominant-baseline="central">Level 2 — Per Provider: APNs 300/s · Twilio 100/s · SG 600/s</text>
+  <!-- Correction callout -->
+  <rect x="140" y="380" width="400" height="36" rx="6" fill="none" stroke="#2f9e44" stroke-width="0.8"/>
+  <text font-family="Arial" font-size="9" fill="#2f9e44" x="340" y="394" text-anchor="middle" font-weight="600">✅ Your corrections applied</text>
+  <text font-family="Arial" font-size="9" fill="#2f9e44" x="340" y="410" text-anchor="middle">Multiple servers behind LB · Template DB at workers · Lean queue payloads</text>
+  </svg>
+  </div>
+</div>
+
+<!-- 13 -->
+<div class="sec" id="s13">
+  <div class="sec-title"><span class="num">13</span>Interview Answer Template</div>
+  <div class="ibox">"A notification system routes events from multiple services through a Load Balancer to multiple stateless Notification Servers. Each server validates requests, checks user preferences, applies per-user rate limiting, and routes lean payloads to separate queues per channel — Push, SMS, and Email. Separate queues isolate failures so one channel going down doesn't affect others. Workers consume from queues, check Redis for dedupe using event IDs, fetch and fill notification templates, then call third-party providers — APNs/FCM for push, Twilio for SMS, SendGrid for email — while respecting per-provider rate limits. Failed deliveries are retried with exponential backoff. After exhausting retries, messages move to a Dead Letter Queue for investigation. Every notification is logged to a Notification Log DB for debugging, analytics, and audit."</div>
+</div>
+
+<!-- 14 -->
+<div class="sec" id="s14">
+  <div class="sec-title"><span class="num">14</span>Quick Reference</div>
+  <table>
+    <tr><th>Concept</th><th>One-Line Summary</th></tr>
+    <tr><td>Three channels</td><td>Push (APNs/FCM), SMS (Twilio), Email (SendGrid) — each via third-party</td></tr>
+    <tr><td>Why third parties</td><td>Battle-tested, carrier contracts, platform rules, compliance, cost</td></tr>
+    <tr><td>Why separate queues</td><td>Failure isolation — email down doesn't stop push or SMS</td></tr>
+    <tr><td>Multiple Notif Servers</td><td>Load Balancer + N servers — no SPOF, horizontal scaling</td></tr>
+    <tr><td>Lean queue payload</td><td>event_id + template_id + data only — not full message text</td></tr>
+    <tr><td>Template DB at workers</td><td>Workers fetch at processing time — allows updates without re-queuing</td></tr>
+    <tr><td>Rate limiting L1</td><td>Per user — max N/hour — prevents spam + fatigue</td></tr>
+    <tr><td>Rate limiting L2</td><td>Per provider — respects API limits — prevents getting banned</td></tr>
+    <tr><td>At-least-once delivery</td><td>Messages may arrive more than once — handled by dedupe logic</td></tr>
+    <tr><td>Redis dedupe</td><td>event_id + SETNX + TTL — O(1) fast-path check</td></tr>
+    <tr><td>Log DB dedupe</td><td>Slow path fallback if Redis is down — durable but slower</td></tr>
+    <tr><td>Retry + backoff</td><td>10s → 30s → 60s — gives provider time to recover</td></tr>
+    <tr><td>Dead Letter Queue</td><td>After 3 failures — stored for engineer investigation + replay</td></tr>
+    <tr><td>Notification Log DB</td><td>Delivery tracking, debug, analytics, audit, retry decisions</td></tr>
+  </table>
+</div>
+
+</div>
+
+<script>
+// Channel data
+const chData={
+  push:{title:'Push Notifications',providers:'APNs (iOS), FCM (Android + Web)',how:'App registers device token. Server sends payload to provider. Provider delivers to device.',challenge:'Device must be online. Token can expire. APNs and FCM have different APIs.'},
+  sms:{title:'SMS',providers:'Twilio, Nexmo, AWS SNS',how:'Server sends message + phone number to provider API. Provider routes through telecom network.',challenge:'Carrier delivery not guaranteed. International expensive. No read receipts.'},
+  email:{title:'Email',providers:'SendGrid, Mailchimp, AWS SES',how:'Server sends HTML/text to provider API. Provider handles SMTP, bounces, unsubscribes.',challenge:'Spam filters, bounce rates, GDPR/CAN-SPAM compliance required.'}
+};
+function showCh(c,el){
+  document.querySelectorAll('.ch').forEach(x=>x.classList.remove('on'));
+  el.classList.add('on');
+  const d=chData[c];
+  document.getElementById('ch-detail').innerHTML=`<div style="font-weight:600;color:var(--t1);margin-bottom:8px">${d.title}</div><div style="margin-bottom:5px"><strong>Providers:</strong> ${d.providers}</div><div style="margin-bottom:5px"><strong>How it works:</strong> ${d.how}</div><div><strong style="color:var(--warn)">Challenge:</strong> ${d.challenge}</div>`;
+}
+
+// Architecture stepper
+const archD=[
+  'Multiple services trigger notifications — Order, Payment, Social, Scheduler. All feed into the Load Balancer.',
+  'Load Balancer distributes requests across multiple Notification Servers — no SPOF. If one server dies, others take over.',
+  'Multiple stateless Notification Servers: validate request, check User DB for preferences, apply rate limiting, attach template_id, route to correct queue.',
+  'Separate queues per channel — Push, SMS, Email. Each carries lean payloads (event_id + template_id + data). Not full message text.',
+  'Workers consume from queues, check Redis for dedupe, fetch template from Template DB, fill placeholders, then call providers with per-provider rate limiting.',
+  'Third-party providers handle actual delivery — APNs/FCM for push, Twilio for SMS, SendGrid for email. They have the infrastructure and carrier relationships.'
+];
+const archNodes=[['at'],['at','alb'],['at','alb','asv'],['at','alb','asv','aqu'],['at','alb','asv','aqu','awk'],['at','alb','asv','aqu','awk','apr']];
+const archArrows=[['a-a01'],['a-a01'],['a-a01','a-a12'],['a-a01','a-a12','a-a23'],['a-a01','a-a12','a-a23','a-a34'],['a-a01','a-a12','a-a23','a-a34','a-a45']];
+const allNodes=['at','alb','asv','aqu','awk','apr'];
+const allArrows=['a-a01','a-a12','a-a23','a-a34','a-a45'];
+function showArch(i,btn){
+  allNodes.forEach(id=>{const el=document.getElementById(id);if(el)el.style.opacity=archNodes[i].includes(id)?'1':'0.12';});
+  allArrows.forEach(id=>{const el=document.getElementById(id);if(el)el.style.opacity=archArrows[i].includes(id)?'1':'0.12';});
+  document.getElementById('arch-note').textContent=archD[i];
+  document.querySelectorAll('#s4 .sb').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+}
+
+// Isolation
+function showIso(s,btn){
+  document.querySelectorAll('#s5 .tb').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  const rows=document.getElementById('iso-rows');
+  const note=document.getElementById('iso-note');
+  const mkRow=(icon,text,bg,bc)=>`<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:6px;background:${bg};border:.5px solid ${bc}"><span style="font-size:14px">${icon}</span><span style="font-size:13px;color:${bc==='var(--ok)'?'var(--ok)':bc==='var(--err)'?'var(--err)':'var(--t2)'}">${text}</span></div>`;
+  if(s==='normal'){
+    rows.innerHTML=mkRow('✅','Push Queue → APNs/FCM → <strong>Delivered</strong>','var(--ok-b)','var(--ok)')+mkRow('✅','SMS Queue → Twilio → <strong>Delivered</strong>','var(--ok-b)','var(--ok)')+mkRow('✅','Email Queue → SendGrid → <strong>Delivered</strong>','var(--ok-b)','var(--ok)');
+    note.style.cssText='font-size:13px;padding:10px 14px;border-radius:6px;background:var(--ok-b);color:var(--ok)';
+    note.textContent='All three channels working independently.';
+  }else if(s==='spof'){
+    rows.innerHTML=mkRow('❌','Single queue fails → Push notifications DEAD','var(--err-b)','var(--err)')+mkRow('❌','Single queue fails → SMS DEAD','var(--err-b)','var(--err)')+mkRow('❌','Single queue fails → Email DEAD','var(--err-b)','var(--err)');
+    note.style.cssText='font-size:13px;padding:10px 14px;border-radius:6px;background:var(--err-b);color:var(--err)';
+    note.textContent='❌ One queue = SPOF. All notifications stop. This is exactly what you identified as the problem.';
+  }else{
+    rows.innerHTML=mkRow('✅','Push Queue → APNs/FCM → <strong>Delivered</strong>','var(--ok-b)','var(--ok)')+mkRow('✅','SMS Queue → Twilio → <strong>Delivered</strong>','var(--ok-b)','var(--ok)')+mkRow('❌','Email Queue → SendGrid → Provider DOWN — messages accumulate','var(--warn-b)','var(--warn)');
+    note.style.cssText='font-size:13px;padding:10px 14px;border-radius:6px;background:var(--ok-b);color:var(--ok)';
+    note.textContent='✅ Email goes down — push and SMS keep working perfectly. Email messages accumulate in queue and will retry automatically when provider recovers.';
+  }
+}
+showIso('normal',document.querySelector('#s5 .tb'));
+
+// Responsibilities
+const respD=[
+  'Validate the request — Is the payload valid? Does the user exist? Is the notification type supported? Reject malformed requests early.',
+  'Fetch user preferences from User DB — Does this user want push? SMS? Email? Have they opted out of marketing? Are they in quiet hours?',
+  'Apply per-user rate limiting — Has this user already received N notifications this hour? If yes, drop or delay. Protects user experience.',
+  'Fetch the template_id from the event — Attach it to the queue payload. Workers will fetch the actual template content later from Template DB.',
+  'Route to the correct queue — Push events → Push Queue, SMS events → SMS Queue, Email events → Email Queue. Separate queues for failure isolation.'
+];
+function showResp(i,btn){
+  document.querySelectorAll('#s6 .sb').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  document.getElementById('resp-box').textContent=respD[i];
+}
+showResp(0,document.querySelector('#s6 .sb'));
+
+// Rate limiting
+let uCount=0;
+function showRateTab(t,btn){
+  document.querySelectorAll('#s7 .tb').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  document.getElementById('rt-user').style.display=t==='user'?'block':'none';
+  document.getElementById('rt-prov').style.display=t==='prov'?'block':'none';
+}
+function sendU(type){
+  uCount++;
+  const pct=Math.min((uCount/5)*100,100);
+  document.getElementById('uc').textContent=uCount+' / 5';
+  const bar=document.getElementById('ub');
+  bar.style.width=pct+'%';
+  bar.style.background=pct>=100?'var(--err)':pct>=60?'var(--warn)':'var(--ok)';
+  const log=document.getElementById('ul');
+  if(uCount>5){log.textContent='❌ Rate limit hit! '+type+' DROPPED';log.style.color='var(--err)';}
+  else{log.textContent='✅ '+type+' sent ('+uCount+'/5 used)';log.style.color=uCount>=5?'var(--warn)':'var(--ok)';}
+}
+function resetU(){uCount=0;document.getElementById('uc').textContent='0 / 5';document.getElementById('ub').style.width='0%';document.getElementById('ub').style.background='var(--ok)';document.getElementById('ul').textContent='Hour reset ✅';}
+function simLoad(rps){
+  const ps=[{id:'apb',si:'aps',max:300,load:rps*1.5},{id:'twb',si:'tws',max:100,load:rps*0.8},{id:'sgb',si:'sgs',max:600,load:rps*2}];
+  ps.forEach(p=>{
+    const pct=Math.min((p.load/p.max)*100,110);
+    const bar=document.getElementById(p.id);
+    bar.style.width=Math.min(pct,100)+'%';
+    bar.style.background=pct>=100?'var(--err)':pct>=70?'var(--warn)':'var(--ok)';
+    const st=document.getElementById(p.si);
+    st.textContent=(pct>=100?'⚠️ ':'')+Math.round(p.load)+' / '+p.max+(pct>=100?' THROTTLED':'');
+    st.style.color=pct>=100?'var(--err)':'var(--t3)';
+  });
+  const n=document.getElementById('pn');
+  if(rps>=500){n.style.cssText='font-size:12px;padding:10px 14px;border-radius:6px;background:var(--err-b);color:var(--err)';n.textContent='🔥 Celebrity event — massive spike! Twilio throttled. Workers must back off. Without provider rate limiting your API key gets banned.';}
+  else if(rps>=200){n.style.cssText='font-size:12px;padding:10px 14px;border-radius:6px;background:var(--warn-b);color:var(--warn)';n.textContent='⚠️ High load — Twilio approaching limit. SMS workers slow down automatically.';}
+  else if(rps===0){n.style.cssText='font-size:12px;padding:10px 14px;border-radius:6px;background:var(--g2);color:var(--t2)';n.textContent='';['apb','twb','sgb'].forEach(id=>{document.getElementById(id).style.width='0%';document.getElementById(id).style.background='var(--ok)';});document.getElementById('aps').textContent='0 / 300';document.getElementById('tws').textContent='0 / 100';document.getElementById('sgs').textContent='0 / 600';}
+  else{n.style.cssText='font-size:12px;padding:10px 14px;border-radius:6px;background:var(--ok-b);color:var(--ok)';n.textContent='✅ Normal load — all providers within limits.';}
+}
+
+// Retry
+function resetRS(){[0,1,2,3].forEach(i=>{document.getElementById('rs'+i).className='rs';const d=document.getElementById('rd'+i);d.style.background='var(--g2)';d.style.color='var(--t3)';});}
+function runRetry(s){
+  resetRS();
+  const n=document.getElementById('rn');
+  if(s==='ok'){
+    setTimeout(()=>document.getElementById('rs0').classList.add('act'),0);
+    setTimeout(()=>{document.getElementById('rs0').className='rs ok2';document.getElementById('rd0').style.background='var(--ok)';document.getElementById('rd0').style.color='#fff';document.getElementById('rd0').textContent='✓';n.style.cssText='margin-top:10px;padding:10px 14px;border-radius:6px;background:var(--ok-b);font-size:13px;color:var(--ok)';n.textContent='✅ Delivered on attempt 1. Worker acknowledges message. Queue removes it.';},800);
+  }else if(s==='retry'){
+    setTimeout(()=>document.getElementById('rs0').classList.add('act'),0);
+    setTimeout(()=>{document.getElementById('rs0').className='rs fail';document.getElementById('rd0').style.background='var(--err)';document.getElementById('rd0').style.color='#fff';document.getElementById('rd0').textContent='✗';n.style.cssText='margin-top:10px;padding:10px 14px;border-radius:6px;background:var(--err-b);font-size:13px;color:var(--err)';n.textContent='❌ Attempt 1 failed. Back to queue. Waiting 10s...';},800);
+    setTimeout(()=>document.getElementById('rs1').classList.add('act'),1800);
+    setTimeout(()=>{document.getElementById('rs1').className='rs ok2';document.getElementById('rd1').style.background='var(--ok)';document.getElementById('rd1').style.color='#fff';document.getElementById('rd1').textContent='✓';n.style.cssText='margin-top:10px;padding:10px 14px;border-radius:6px;background:var(--ok-b);font-size:13px;color:var(--ok)';n.textContent='✅ Delivered on attempt 2. Dedupe logic prevents user seeing duplicate notification.';},2800);
+  }else{
+    [0,1,2].forEach((i,idx)=>{
+      setTimeout(()=>document.getElementById('rs'+i).classList.add('act'),idx*800);
+      setTimeout(()=>{document.getElementById('rs'+i).className='rs fail';document.getElementById('rd'+i).style.background='var(--err)';document.getElementById('rd'+i).style.color='#fff';document.getElementById('rd'+i).textContent='✗';n.style.cssText='margin-top:10px;padding:10px 14px;border-radius:6px;background:var(--err-b);font-size:13px;color:var(--err)';n.textContent='❌ Attempt '+(i+1)+' failed. Retrying...';},idx*800+700);
+    });
+    setTimeout(()=>{document.getElementById('rs3').className='rs dlq';document.getElementById('rd3').style.background='var(--warn)';document.getElementById('rd3').style.color='#fff';n.style.cssText='margin-top:10px;padding:10px 14px;border-radius:6px;background:var(--warn-b);font-size:13px;color:var(--warn)';n.innerHTML='⚠️ All 3 attempts failed → <strong>Dead Letter Queue</strong>. Engineers alerted. Message stored for manual investigation and replay.';},2800);
+  }
+}
+</script>
+</body>
+</html>

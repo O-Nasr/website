@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Security Across Services — Microservices Study Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0c10;--surface:#111318;--surface2:#181c24;--surface3:#1f2530;--border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.11);--accent:#6ea1ff;--accent2:#8b6cf6;--green:#34d399;--amber:#fbbf24;--red:#f87171;--teal:#2dd4bf;--coral:#fb923c;--text:#dfe5ef;--muted:#7e8a9e;--code-bg:#080a0e}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font-size:15px;line-height:1.78;-webkit-font-smoothing:antialiased}
+.page{max-width:900px;margin:0 auto;padding:0 28px 100px}
+.hero{padding:56px 28px 44px;max-width:900px;margin:0 auto;border-bottom:1px solid var(--border);position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-80px;right:-40px;width:360px;height:360px;background:radial-gradient(circle,rgba(139,92,246,0.08) 0%,transparent 70%);pointer-events:none}
+.hero-tag{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:10.5px;font-weight:500;color:var(--accent2);background:rgba(139,92,246,0.07);border:1px solid rgba(139,92,246,0.18);padding:4px 14px;border-radius:20px;letter-spacing:0.09em;margin-bottom:14px;text-transform:uppercase}
+.hero h1{font-size:clamp(26px,4.2vw,42px);font-weight:700;line-height:1.15;letter-spacing:-0.03em;margin-bottom:10px;background:linear-gradient(135deg,#dfe5ef 0%,#8b6cf6 50%,#f87171 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero-sub{font-size:15px;color:var(--muted);line-height:1.65;max-width:600px}
+.section{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:30px;margin-top:30px}
+.section h2{font-size:20px;font-weight:700;color:#fff;margin-bottom:18px;letter-spacing:-0.02em;display:flex;align-items:center;gap:10px}
+.section h2 .num{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--accent2);background:rgba(139,92,246,0.1);padding:3px 10px;border-radius:6px;font-weight:500}
+.section h3{font-size:15px;font-weight:600;color:var(--accent);margin:22px 0 10px;padding-top:14px;border-top:1px solid var(--border)}
+.section h3:first-of-type{border-top:none;padding-top:0}
+p{margin-bottom:12px}
+strong{color:#fff}
+ul{padding-left:20px;margin:8px 0 14px}
+li{margin:4px 0;font-size:14px}
+pre{background:var(--code-bg);border:1px solid var(--border);border-radius:10px;padding:14px 18px;overflow-x:auto;margin:12px 0;font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.7;color:#c4cdd9}
+code{font-family:'JetBrains Mono',monospace;font-size:12.5px;color:var(--accent);background:rgba(110,161,255,0.07);padding:2px 6px;border-radius:4px}
+pre code{background:none;padding:0;color:inherit}
+table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13px}
+th{background:var(--surface2);color:var(--accent);font-weight:600;text-align:left;padding:9px 13px;border:1px solid var(--border)}
+td{padding:8px 13px;border:1px solid var(--border)}
+tr:nth-child(even) td{background:rgba(255,255,255,0.012)}
+.note{background:rgba(110,161,255,0.05);border:1px solid rgba(110,161,255,0.14);border-radius:10px;padding:13px 16px;margin:12px 0;font-size:13px;line-height:1.7}
+.note b{color:var(--accent)}
+.note-warn{background:rgba(251,191,36,0.05);border-color:rgba(251,191,36,0.14)}.note-warn b{color:var(--amber)}
+.note-red{background:rgba(248,113,113,0.05);border-color:rgba(248,113,113,0.14)}.note-red b{color:var(--red)}
+.note-green{background:rgba(52,211,153,0.05);border-color:rgba(52,211,153,0.14)}.note-green b{color:var(--green)}
+.note-purple{background:rgba(139,92,246,0.05);border-color:rgba(139,92,246,0.14)}.note-purple b{color:var(--accent2)}
+.qa{background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:14px 18px;margin:10px 0}
+.qa-q{font-weight:600;color:#fff;margin-bottom:5px;font-size:14px}
+.qa-a{color:var(--muted);font-size:13px;line-height:1.7}
+.tab-group{margin:16px 0}
+.tab-bar{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.tab-btn{padding:6px 14px;font-size:12px;font-weight:500;font-family:'Outfit',sans-serif;border:1px solid var(--border2);border-radius:6px;background:transparent;color:var(--muted);cursor:pointer;transition:all 0.15s}
+.tab-btn:hover{border-color:rgba(139,92,246,0.3);color:var(--text)}
+.tab-btn.active{background:rgba(139,92,246,0.1);color:var(--accent2);border-color:rgba(139,92,246,0.3)}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+.jwt-token{font-family:'JetBrains Mono',monospace;font-size:12px;padding:12px 16px;border-radius:8px;background:var(--code-bg);border:1px solid var(--border);word-break:break-all;line-height:1.8;margin:10px 0}
+.jwt-header{color:#8b6cf6;font-weight:500}
+.jwt-payload{color:#34d399;font-weight:500}
+.jwt-sig{color:#fb923c;font-weight:500}
+.jwt-part{border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin:8px 0}
+.jwt-part-label{font-size:12px;font-weight:600;margin-bottom:6px}
+.jwt-part-code{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);background:var(--surface2);padding:8px 12px;border-radius:6px;white-space:pre-wrap;line-height:1.7}
+.flow{display:flex;align-items:center;gap:8px;margin:10px 0;flex-wrap:wrap}
+.flow-step{background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:8px 14px;font-size:13px;color:var(--text);font-weight:500}
+.flow-arrow{color:var(--muted);font-size:16px}
+.env-row{display:flex;gap:12px;margin:10px 0;align-items:stretch}
+.env-card{flex:1;border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:4px}
+.env-card .env-name{font-size:13px;font-weight:600}
+.env-card .env-status{font-size:11px;color:var(--muted)}
+.svc-box{border-radius:8px;padding:10px 14px;text-align:center;font-size:12px;font-weight:500}
+.toc{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px 24px;margin:30px 0}
+.toc h3{font-size:12px;font-weight:600;color:var(--accent2);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.06em}
+.toc a{font-size:13px;color:var(--muted);text-decoration:none;display:block;padding:4px 0;transition:color 0.15s}
+.toc a:hover{color:var(--accent2)}
+.footer{text-align:center;padding:36px 0 16px;font-size:11px;color:var(--muted);border-top:1px solid var(--border);margin-top:40px}
+@media(max-width:640px){.page{padding:0 16px 60px}.section{padding:20px 16px}.env-row{flex-direction:column}.hero{padding:36px 16px 30px}}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-tag">Microservices · Topic 10 · Interview Prep</div>
+  <h1>Security Across Services</h1>
+  <p class="hero-sub">JWT authentication, mTLS, zero-trust architecture, service mesh, authorization, and secrets management. Interactive diagrams, C# code, and interview Q&amp;A.</p>
+</div>
+
+<div class="page">
+
+<div class="toc">
+  <h3>Contents</h3>
+  <a href="#s1">1. The Security Map — 5 parts overview</a>
+  <a href="#s2">2. Part 1 — External Security: JWT + OAuth 2.0</a>
+  <a href="#s3">3. Part 2 — Internal Security: mTLS</a>
+  <a href="#s4">4. Part 3 — Authorization (RBAC vs Policy)</a>
+  <a href="#s5">5. Part 4 — Service Mesh</a>
+  <a href="#s6">6. Part 5 — Secrets Management</a>
+  <a href="#s7">7. Zero-Trust — Tying It All Together</a>
+  <a href="#s8">8. Interview Q&amp;A</a>
+</div>
+
+<!-- ═══════════════════════ SECTION 1: MAP ═══════════════════════ -->
+<div class="section" id="s1">
+<h2><span class="num">01</span> The Security Map</h2>
+<p>Security in microservices covers 5 areas. Click each to preview what it covers:</p>
+
+<div class="tab-group" id="map">
+<div class="tab-bar">
+<button class="tab-btn active" onclick="showTab('map',0)">External auth</button>
+<button class="tab-btn" onclick="showTab('map',1)">Internal auth</button>
+<button class="tab-btn" onclick="showTab('map',2)">Authorization</button>
+<button class="tab-btn" onclick="showTab('map',3)">Service mesh</button>
+<button class="tab-btn" onclick="showTab('map',4)">Secrets</button>
+</div>
+<div class="tab-panel active">
+<div class="env-card" style="background:rgba(110,161,255,0.05);border:1px solid rgba(110,161,255,0.12)">
+<div class="env-name" style="color:var(--accent)">Part 1 — External security</div>
+<div class="env-status">User → Gateway: how users prove who they are</div>
+<div class="env-status">JWT tokens, OAuth 2.0, Identity Server, stateless verification</div>
+</div>
+</div>
+<div class="tab-panel">
+<div class="env-card" style="background:rgba(139,92,246,0.05);border:1px solid rgba(139,92,246,0.12)">
+<div class="env-name" style="color:var(--accent2)">Part 2 — Internal security</div>
+<div class="env-status">Service → Service: how services trust each other</div>
+<div class="env-status">mTLS (mutual TLS), certificate verification, encrypted traffic</div>
+</div>
+</div>
+<div class="tab-panel">
+<div class="env-card" style="background:rgba(52,211,153,0.05);border:1px solid rgba(52,211,153,0.12)">
+<div class="env-name" style="color:var(--green)">Part 3 — Authorization</div>
+<div class="env-status">Who can do what? Role-based vs policy-based access control</div>
+<div class="env-status">[Authorize(Roles = "admin")] vs custom policy assertions</div>
+</div>
+</div>
+<div class="tab-panel">
+<div class="env-card" style="background:rgba(251,191,36,0.05);border:1px solid rgba(251,191,36,0.12)">
+<div class="env-name" style="color:var(--amber)">Part 4 — Service mesh</div>
+<div class="env-status">Istio / Linkerd: security as infrastructure, not code</div>
+<div class="env-status">Sidecar proxy handles mTLS, certs, auth policies automatically</div>
+</div>
+</div>
+<div class="tab-panel">
+<div class="env-card" style="background:rgba(251,146,60,0.05);border:1px solid rgba(251,146,60,0.12)">
+<div class="env-name" style="color:var(--coral)">Part 5 — Secrets management</div>
+<div class="env-status">API keys, DB passwords, certificates — where to store them</div>
+<div class="env-status">Vault, Azure Key Vault, K8s Secrets</div>
+</div>
+</div>
+</div>
+
+<div class="note-purple note">
+<b>One principle ties everything together: Zero-Trust.</b> Never trust, always verify — even inside your own network. Even internal traffic is authenticated and encrypted.
+</div>
+</div>
+
+<!-- ═══════════════════════ SECTION 2: JWT ═══════════════════════ -->
+<div class="section" id="s2">
+<h2><span class="num">02</span> Part 1 — External Security: JWT</h2>
+
+<h3>Why not sessions?</h3>
+<p>In a monolith, you store user sessions server-side (cookies + session store). In microservices: which service stores the session? They all need it. The answer: <strong>stateless tokens</strong> — the user carries their identity with every request as a JWT.</p>
+
+<h3>JWT Anatomy — 3 Parts</h3>
+<p>Click each part to see what's inside:</p>
+
+<div class="jwt-token">
+<span class="jwt-header">eyJhbGciOiJSUzI1NiJ9</span>.<span class="jwt-payload">eyJzdWIiOiJ1c2VyLTQ1NiIsInJvbGUiOiJhZG1pbiJ9</span>.<span class="jwt-sig">SflKxwRJSMeKKF2QT4fw...</span>
+</div>
+
+<div class="tab-group" id="jwt">
+<div class="tab-bar">
+<button class="tab-btn active" onclick="showTab('jwt',0)">Header</button>
+<button class="tab-btn" onclick="showTab('jwt',1)">Payload (claims)</button>
+<button class="tab-btn" onclick="showTab('jwt',2)">Signature</button>
+<button class="tab-btn" onclick="showTab('jwt',3)">Key insight</button>
+</div>
+<div class="tab-panel active">
+<div class="jwt-part">
+<div class="jwt-part-label" style="color:var(--accent2)">Part 1 — Header (algorithm + type)</div>
+<div class="jwt-part-code">{
+  "alg": "RS256",     // signing algorithm
+  "typ": "JWT"
+}</div>
+</div>
+</div>
+<div class="tab-panel">
+<div class="jwt-part">
+<div class="jwt-part-label" style="color:var(--green)">Part 2 — Payload (claims = the actual data)</div>
+<div class="jwt-part-code">{
+  "sub": "user-456",           // subject (who)
+  "role": "admin",             // authorization claim
+  "email": "omar@example.com",
+  "iat": 1711452000,           // issued at
+  "exp": 1711455600            // expires (1 hour)
+}</div>
+</div>
+</div>
+<div class="tab-panel">
+<div class="jwt-part">
+<div class="jwt-part-label" style="color:var(--coral)">Part 3 — Signature (proves it wasn't tampered)</div>
+<div class="jwt-part-code">RS256(
+  base64(header) + "." + base64(payload),
+  PRIVATE_KEY    // only the Identity Server has this
+)</div>
+</div>
+</div>
+<div class="tab-panel">
+<div class="note-green note">
+<b>The key insight:</b> The Identity Server signs with its PRIVATE key. Any service can verify the signature using the PUBLIC key — without calling the Identity Server. That's why it's stateless — no central session store needed. The payload is NOT encrypted — anyone can decode it with base64. The signature only proves it wasn't modified. Never put passwords or credit cards in a JWT.
+</div>
+</div>
+</div>
+
+<h3>The Full Auth Flow</h3>
+<p>Click through each step:</p>
+
+<div class="tab-group" id="authflow">
+<div class="tab-bar">
+<button class="tab-btn active" onclick="showTab('authflow',0)">Step 1: Login</button>
+<button class="tab-btn" onclick="showTab('authflow',1)">Step 2: Send JWT</button>
+<button class="tab-btn" onclick="showTab('authflow',2)">Step 3: Propagate</button>
+<button class="tab-btn" onclick="showTab('authflow',3)">Full picture</button>
+</div>
+<div class="tab-panel active">
+<p style="font-weight:600;color:#fff;margin-bottom:8px">Step 1: User logs in → gets a JWT</p>
+<div class="flow">
+<div class="flow-step">User sends email + password</div>
+<span class="flow-arrow">→</span>
+<div class="flow-step" style="border-color:rgba(110,161,255,0.3);color:var(--accent)">Identity Server validates</div>
+<span class="flow-arrow">→</span>
+<div class="flow-step" style="border-color:rgba(52,211,153,0.3);color:var(--green)">Returns signed JWT</div>
+</div>
+<p>Identity Server = Keycloak, Auth0, or IdentityServer. User stores the JWT (localStorage, cookie, or memory).</p>
+</div>
+<div class="tab-panel">
+<p style="font-weight:600;color:#fff;margin-bottom:8px">Step 2: User sends JWT with every request</p>
+<div class="flow">
+<div class="flow-step">User sends: Authorization: Bearer eyJhbG...</div>
+<span class="flow-arrow">→</span>
+<div class="flow-step" style="border-color:rgba(251,191,36,0.3);color:var(--amber)">API Gateway verifies signature</div>
+</div>
+<p><strong>Stateless verification!</strong> Gateway decodes JWT, verifies signature using Identity Server's PUBLIC key (cached locally). No network call to Identity Server needed.</p>
+<pre><code>// Gateway — verify JWT (auto-fetches + caches public key)
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.Authority = "https://identity-server.example.com";
+        options.Audience = "api-gateway";
+        // SDK fetches from .well-known/openid-configuration
+    });</code></pre>
+</div>
+<div class="tab-panel">
+<p style="font-weight:600;color:#fff;margin-bottom:8px">Step 3: JWT propagated to internal services</p>
+<p>Two strategies for passing identity internally:</p>
+<div class="env-row">
+<div class="env-card" style="background:rgba(110,161,255,0.05);border:1px solid rgba(110,161,255,0.12)">
+<div class="env-name" style="color:var(--accent)">Strategy A: Forward full JWT</div>
+<div class="env-status">Each service re-verifies the signature</div>
+<div class="env-status">More secure — every service validates</div>
+<div class="env-status">Adds verification overhead per service</div>
+</div>
+<div class="env-card" style="background:rgba(52,211,153,0.05);border:1px solid rgba(52,211,153,0.12)">
+<div class="env-name" style="color:var(--green)">Strategy B: Extract claims at Gateway</div>
+<div class="env-status">Gateway stamps X-User-Id, X-User-Role headers</div>
+<div class="env-status">Simpler — services just read headers</div>
+<div class="env-status">Requires trusted internal network</div>
+</div>
+</div>
+<pre><code>// Gateway stamps userId into header
+if (context.User.Identity?.IsAuthenticated == true)
+{
+    var userId = context.User.FindFirst("sub")?.Value;
+    context.Request.Headers["X-User-Id"] = userId;
+}
+
+// Orders service — trusts the header, never touches a JWT
+[HttpPost]
+public async Task&lt;IActionResult&gt; PlaceOrder()
+{
+    var userId = Request.Headers["X-User-Id"].ToString();
+    // ... use userId directly
+}</code></pre>
+</div>
+<div class="tab-panel">
+<p style="font-weight:600;color:#fff;margin-bottom:8px">Full picture: external + internal auth</p>
+<div class="flow">
+<div class="flow-step">User</div>
+<span class="flow-arrow">→</span>
+<div class="flow-step" style="border-color:rgba(251,191,36,0.3);color:var(--amber)">Gateway (verify JWT)</div>
+<span class="flow-arrow">→</span>
+<div class="flow-step" style="border-color:rgba(139,92,246,0.3);color:var(--accent2)">Orders</div>
+<span class="flow-arrow">→</span>
+<div class="flow-step" style="border-color:rgba(52,211,153,0.3);color:var(--green)">Inventory</div>
+</div>
+<div class="flow">
+<div class="flow-step" style="border-color:rgba(139,92,246,0.3);color:var(--accent2)">Orders</div>
+<span class="flow-arrow">→</span>
+<div class="flow-step" style="border-color:rgba(251,146,60,0.3);color:var(--coral)">Payments</div>
+</div>
+<p>Gateway verifies JWT once. Internal calls carry <code>X-User-Id</code> header. Identity Server only involved at login — not on every request.</p>
+<div class="note">
+<b>The Identity Server's public key</b> is cached at the Gateway on startup (fetched from <code>.well-known/openid-configuration</code>). So JWT verification is a local CPU operation — no network call. This is why it scales to millions of requests.
+</div>
+</div>
+</div>
+</div>
+
+<!-- ═══════════════════════ SECTION 3: mTLS ═══════════════════════ -->
+<div class="section" id="s3">
+<h2><span class="num">03</span> Part 2 — Internal Security: mTLS</h2>
+
+<p>You know regular TLS — when you visit <code>https://google.com</code>, your browser verifies Google's certificate. That's <strong>one-way</strong>. mTLS is <strong>two-way</strong>.</p>
+
+<div class="tab-group" id="mtls">
+<div class="tab-bar">
+<button class="tab-btn active" onclick="showTab('mtls',0)">Regular TLS (one-way)</button>
+<button class="tab-btn" onclick="showTab('mtls',1)">mTLS (two-way)</button>
+<button class="tab-btn" onclick="showTab('mtls',2)">Why it matters</button>
+</div>
+<div class="tab-panel active">
+<p style="font-weight:600;color:#fff;margin-bottom:8px">Regular TLS — client verifies server only</p>
+<div class="env-row">
+<div class="env-card" style="background:var(--surface2);border:1px solid var(--border2)">
+<div class="env-name" style="color:var(--muted)">Browser (client)</div>
+<div class="env-status">Identity: unknown</div>
+<div class="env-status">Anyone can be a client</div>
+</div>
+<div class="env-card" style="background:rgba(52,211,153,0.05);border:1px solid rgba(52,211,153,0.12)">
+<div class="env-name" style="color:var(--green)">Google (server)</div>
+<div class="env-status">Identity: verified by certificate</div>
+<div class="env-status">"I am who I say I am"</div>
+</div>
+</div>
+<p>Server proves who it is. Client is anonymous. Used for: HTTPS websites, public APIs.</p>
+</div>
+<div class="tab-panel">
+<p style="font-weight:600;color:#fff;margin-bottom:8px">mTLS — both sides verify each other</p>
+<div class="env-row">
+<div class="env-card" style="background:rgba(139,92,246,0.05);border:1px solid rgba(139,92,246,0.12)">
+<div class="env-name" style="color:var(--accent2)">Orders service</div>
+<div class="env-status">Identity: VERIFIED</div>
+<div class="env-status">"Show YOUR certificate"</div>
+</div>
+<div class="env-card" style="background:rgba(251,191,36,0.05);border:1px solid rgba(251,191,36,0.12)">
+<div class="env-name" style="color:var(--amber)">Payments service</div>
+<div class="env-status">Identity: VERIFIED</div>
+<div class="env-status">"Show YOUR certificate too"</div>
+</div>
+</div>
+<p>Both services prove identity before any data is exchanged. A rogue service without a valid certificate is <strong>rejected</strong>. All traffic is encrypted.</p>
+</div>
+<div class="tab-panel">
+<p style="font-weight:600;color:var(--red);margin-bottom:8px">The attacker scenario</p>
+<div class="env-row">
+<div class="env-card" style="background:rgba(248,113,113,0.05);border:1px solid rgba(248,113,113,0.12)">
+<div class="env-name" style="color:var(--red)">Without mTLS</div>
+<div class="env-status">Attacker gets into network</div>
+<div class="env-status">→ Deploys fake service</div>
+<div class="env-status">→ Calls Payments directly → steals money</div>
+<div class="env-status">→ Sniffs unencrypted traffic → reads credit cards</div>
+</div>
+<div class="env-card" style="background:rgba(52,211,153,0.05);border:1px solid rgba(52,211,153,0.12)">
+<div class="env-name" style="color:var(--green)">With mTLS</div>
+<div class="env-status">Fake service has no valid cert</div>
+<div class="env-status">→ Payments REJECTS the connection</div>
+<div class="env-status">→ All traffic encrypted</div>
+<div class="env-status">→ Sniffing captures only gibberish</div>
+</div>
+</div>
+<div class="note-green note">
+<b>This is the foundation of zero-trust:</b> don't trust the network, verify every caller. Even if an attacker compromises one service, mTLS limits the blast radius.
+</div>
+</div>
+</div>
+</div>
+
+<!-- ═══════════════════════ SECTION 4: AUTHZ ═══════════════════════ -->
+<div class="section" id="s4">
+<h2><span class="num">04</span> Part 3 — Authorization</h2>
+
+<p>Authentication = <strong>"who are you?"</strong> Authorization = <strong>"what are you allowed to do?"</strong></p>
+
+<div class="tab-group" id="authz">
+<div class="tab-bar">
+<button class="tab-btn active" onclick="showTab('authz',0)">RBAC (role-based)</button>
+<button class="tab-btn" onclick="showTab('authz',1)">Policy-based</button>
+<button class="tab-btn" onclick="showTab('authz',2)">Comparison</button>
+</div>
+<div class="tab-panel active">
+<p style="font-weight:600;color:#fff;margin-bottom:8px">Role-Based Access Control — simple, covers 80% of cases</p>
+<pre><code>// Check role from JWT claims
+[Authorize(Roles = "admin")]
+[HttpDelete("/api/products/{id}")]
+public async Task&lt;IActionResult&gt; DeleteProduct(string id)
+{
+    // Only users with role=admin in their JWT can reach this
+    await _productService.DeleteAsync(id);
+    return NoContent();
+}
+
+[Authorize(Roles = "admin,manager")]
+[HttpPut("/api/products/{id}/price")]
+public async Task&lt;IActionResult&gt; UpdatePrice(string id, UpdatePriceRequest req)
+{
+    // admin OR manager can update prices
+    await _productService.ChangePriceAsync(id, req.NewPrice);
+    return Ok();
+}</code></pre>
+</div>
+<div class="tab-panel">
+<p style="font-weight:600;color:#fff;margin-bottom:8px">Policy-Based — flexible, handles complex rules</p>
+<pre><code>// Program.cs — define custom policies
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("CanDeleteProducts", policy =>
+        policy.RequireRole("admin")
+              .RequireClaim("department", "catalog-team"));
+
+    options.AddPolicy("CanViewReports", policy =>
+        policy.RequireAssertion(context =>
+        {
+            var user = context.User;
+            var role = user.FindFirst("role")?.Value;
+            var tier = user.FindFirst("subscription_tier")?.Value;
+
+            // Admin always can, or premium users in analytics dept
+            return role == "admin" ||
+                   (tier == "premium" &amp;&amp;
+                    user.HasClaim("department", "analytics"));
+        }));
+});
+
+// Usage
+[Authorize(Policy = "CanDeleteProducts")]
+[HttpDelete("/api/products/{id}")]
+public async Task&lt;IActionResult&gt; DeleteProduct(string id) { ... }</code></pre>
+</div>
+<div class="tab-panel">
+<table>
+<tr><th>RBAC</th><th>Policy-Based</th></tr>
+<tr><td>Check role: admin, manager, user</td><td>Check any combination of claims</td></tr>
+<tr><td>"Only admins can delete"</td><td>"Only premium users in analytics dept during business hours"</td></tr>
+<tr><td>Simple, covers 80% of cases</td><td>Flexible, handles complex rules</td></tr>
+<tr><td>Built into ASP.NET Core</td><td>Custom <code>RequireAssertion</code> lambdas</td></tr>
+</table>
+</div>
+</div>
+</div>
+
+<!-- ═══════════════════════ SECTION 5: SERVICE MESH ═══════════════════════ -->
+<div class="section" id="s5">
+<h2><span class="num">05</span> Part 4 — Service Mesh</h2>
+
+<p>Managing mTLS certificates, authorization policies, and traffic encryption across 20 services is a lot of work in code. A service mesh handles all of it <strong>automatically</strong>.</p>
+
+<div class="tab-group" id="mesh">
+<div class="tab-bar">
+<button class="tab-btn active" onclick="showTab('mesh',0)">How it works</button>
+<button class="tab-btn" onclick="showTab('mesh',1)">What the mesh handles</button>
+<button class="tab-btn" onclick="showTab('mesh',2)">Your code vs proxy</button>
+</div>
+<div class="tab-panel active">
+<p style="font-weight:600;color:#fff;margin-bottom:8px">Sidecar proxy pattern</p>
+<p>A <strong>sidecar proxy</strong> (Envoy) is deployed alongside each service inside the same pod. All network traffic goes through the proxy — your app doesn't even know it's there.</p>
+<div class="env-row">
+<div class="env-card" style="background:var(--surface2);border:1px dashed var(--border2)">
+<div class="env-name" style="color:var(--muted)">Orders pod</div>
+<div class="env-status" style="margin:6px 0">
+<div class="svc-box" style="background:rgba(139,92,246,0.06);border:1px solid rgba(139,92,246,0.15);color:var(--accent2)">Orders app (your code)</div>
+</div>
+<div class="env-status" style="text-align:center;color:var(--muted);font-size:11px">↕ plain HTTP (localhost)</div>
+<div class="env-status">
+<div class="svc-box" style="background:rgba(110,161,255,0.06);border:1px solid rgba(110,161,255,0.15);color:var(--accent)">Envoy proxy (sidecar)</div>
+</div>
+</div>
+<div style="display:flex;align-items:center;color:var(--green);font-size:12px;font-weight:600;padding:0 8px">mTLS<br>encrypted</div>
+<div class="env-card" style="background:var(--surface2);border:1px dashed var(--border2)">
+<div class="env-name" style="color:var(--muted)">Payments pod</div>
+<div class="env-status" style="margin:6px 0">
+<div class="svc-box" style="background:rgba(251,146,60,0.06);border:1px solid rgba(251,146,60,0.15);color:var(--coral)">Payments app (your code)</div>
+</div>
+<div class="env-status" style="text-align:center;color:var(--muted);font-size:11px">↕ plain HTTP (localhost)</div>
+<div class="env-status">
+<div class="svc-box" style="background:rgba(110,161,255,0.06);border:1px solid rgba(110,161,255,0.15);color:var(--accent)">Envoy proxy (sidecar)</div>
+</div>
+</div>
+</div>
+</div>
+<div class="tab-panel">
+<p style="font-weight:600;color:#fff;margin-bottom:8px">What the mesh handles (zero code changes)</p>
+<ul>
+<li><strong>mTLS certificates</strong> — auto-generated, auto-rotated. You never touch a cert file.</li>
+<li><strong>Authorization policies</strong> — "Orders CAN call Payments, Search service CANNOT"</li>
+<li><strong>Traffic encryption</strong> — every byte encrypted between proxies</li>
+<li><strong>Observability</strong> — traces and metrics collected automatically</li>
+<li><strong>Traffic management</strong> — retries, timeouts, circuit breaking at the proxy level</li>
+</ul>
+</div>
+<div class="tab-panel">
+<p style="font-weight:600;color:#fff;margin-bottom:8px">Your code vs what the proxy does</p>
+<table>
+<tr><th>Your application code</th><th>Envoy sidecar proxy</th></tr>
+<tr><td>Sends plain HTTP to localhost</td><td>Intercepts, encrypts with mTLS</td></tr>
+<tr><td>No certificate management</td><td>Auto-generates + rotates certs</td></tr>
+<tr><td>No auth policy code</td><td>Enforces "who can call whom" rules</td></tr>
+<tr><td>Business logic only</td><td>All networking concerns</td></tr>
+</table>
+<p>Istio and Linkerd are the two most popular service meshes. In interviews, knowing they exist and what they do is enough.</p>
+</div>
+</div>
+</div>
+
+<!-- ═══════════════════════ SECTION 6: SECRETS ═══════════════════════ -->
+<div class="section" id="s6">
+<h2><span class="num">06</span> Part 5 — Secrets Management</h2>
+
+<p>API keys, DB passwords, Stripe secrets, JWT signing keys — where do you store them?</p>
+
+<div class="tab-group" id="secrets">
+<div class="tab-bar">
+<button class="tab-btn active" onclick="showTab('secrets',0)">Wrong ways</button>
+<button class="tab-btn" onclick="showTab('secrets',1)">Right ways</button>
+<button class="tab-btn" onclick="showTab('secrets',2)">C# implementation</button>
+</div>
+<div class="tab-panel active">
+<p style="font-weight:600;color:var(--red);margin-bottom:8px">Never do these</p>
+<pre><code>// ❌ NEVER — hardcoded in code
+var stripeKey = "sk_live_abc123";
+
+// ❌ NEVER — in appsettings.json committed to Git
+{
+  "Stripe": {
+    "SecretKey": "sk_live_abc123"
+  }
+}</code></pre>
+<p>Anyone with access to the Git repo sees your production secrets. Bots scan GitHub for these patterns and exploit them within minutes.</p>
+</div>
+<div class="tab-panel">
+<p style="font-weight:600;color:var(--green);margin-bottom:8px">Use these instead</p>
+<table>
+<tr><th>Approach</th><th>Security</th><th>When to use</th></tr>
+<tr><td>Environment variables</td><td style="color:var(--amber)">OK for dev</td><td>Docker Compose, simple deploys</td></tr>
+<tr><td>K8s Secrets</td><td style="color:var(--green)">Good</td><td>Kubernetes environments</td></tr>
+<tr><td>Azure Key Vault</td><td style="color:var(--green)">Best</td><td>Production (Azure)</td></tr>
+<tr><td>AWS Secrets Manager</td><td style="color:var(--green)">Best</td><td>Production (AWS)</td></tr>
+<tr><td>HashiCorp Vault</td><td style="color:var(--green)">Best</td><td>Production (multi-cloud)</td></tr>
+</table>
+</div>
+<div class="tab-panel">
+<p style="font-weight:600;color:#fff;margin-bottom:8px">C# — reading secrets from Azure Key Vault</p>
+<pre><code>// ✅ Environment variables (minimum viable for dev)
+var stripeKey = Environment.GetEnvironmentVariable("STRIPE_SECRET_KEY");
+
+// ✅ BEST — Azure Key Vault
+builder.Configuration.AddAzureKeyVault(
+    new Uri("https://my-vault.vault.azure.net/"),
+    new DefaultAzureCredential());
+
+// Access like any config value — no code change when switching providers
+var stripeKey = builder.Configuration["StripeSecretKey"];
+
+// ✅ Kubernetes Secrets (referenced in deployment YAML)
+env:
+  - name: ConnectionStrings__OrdersDb
+    valueFrom:
+      secretKeyRef:
+        name: orders-secrets
+        key: db-connection</code></pre>
+</div>
+</div>
+</div>
+
+<!-- ═══════════════════════ SECTION 7: ZERO-TRUST ═══════════════════════ -->
+<div class="section" id="s7">
+<h2><span class="num">07</span> Zero-Trust — Tying It All Together</h2>
+
+<div class="tab-group" id="zt">
+<div class="tab-bar">
+<button class="tab-btn active" onclick="showTab('zt',0)">Traditional security</button>
+<button class="tab-btn" onclick="showTab('zt',1)">Zero-trust security</button>
+</div>
+<div class="tab-panel active">
+<p style="font-weight:600;color:var(--red);margin-bottom:8px">Traditional: hard shell, soft interior</p>
+<div class="env-card" style="background:rgba(248,113,113,0.04);border:1px solid rgba(248,113,113,0.1)">
+<div class="env-name" style="color:var(--red)">Firewall protects the perimeter</div>
+<div class="env-status">Everything INSIDE the network is trusted</div>
+<div class="env-status">Services talk to each other freely — no auth, no encryption</div>
+<div class="env-status">Attacker gets past firewall → has access to EVERYTHING</div>
+</div>
+</div>
+<div class="tab-panel">
+<p style="font-weight:600;color:var(--green);margin-bottom:8px">Zero-trust: verify everything, everywhere</p>
+<div class="env-card" style="background:rgba(52,211,153,0.04);border:1px solid rgba(52,211,153,0.1)">
+<div class="env-name" style="color:var(--green)">Every call authenticated and authorized</div>
+<div class="env-status">mTLS between all services — identity verified on every call</div>
+<div class="env-status">All traffic encrypted — even internal</div>
+<div class="env-status">Least-privilege policies — Orders can call Payments, but Search cannot</div>
+<div class="env-status">Attacker compromises one service → blast radius is LIMITED</div>
+</div>
+</div>
+</div>
+
+<div class="note-green note">
+<b>Zero-trust in one sentence:</b> Never trust, always verify — even inside your own network. Implemented through JWT at the gateway, mTLS between services, least-privilege authorization policies, encrypted traffic everywhere, and secrets in a vault — not in code.
+</div>
+</div>
+
+<!-- ═══════════════════════ SECTION 8: Q&A ═══════════════════════ -->
+<div class="section" id="s8">
+<h2><span class="num">08</span> Interview Q&amp;A</h2>
+
+<div class="qa">
+<div class="qa-q">Q: How do you handle authentication in microservices?</div>
+<div class="qa-a">Users authenticate against an Identity Server (Keycloak, Auth0) and receive a JWT. The JWT is sent with every request. The API Gateway verifies the signature using the Identity Server's cached public key — no network call. Internally, either the full JWT is propagated, or the Gateway extracts claims and forwards them as trusted headers (X-User-Id, X-User-Role).</div>
+</div>
+<div class="qa">
+<div class="qa-q">Q: Why is JWT verification stateless?</div>
+<div class="qa-a">The Identity Server signs with a private key. The Gateway verifies using the public key, which is cached locally. No session store, no database lookup, no call to the Identity Server on each request. Just a CPU operation to verify the signature. This is why it scales to millions of requests.</div>
+</div>
+<div class="qa">
+<div class="qa-q">Q: What is mTLS and why do microservices need it?</div>
+<div class="qa-a">Mutual TLS — both client and server present certificates. Ensures only legitimate services can communicate — a rogue service without a valid cert is rejected. Also encrypts all internal traffic, preventing eavesdropping. Foundation of zero-trust: don't trust the network, verify every caller.</div>
+</div>
+<div class="qa">
+<div class="qa-q">Q: What is the difference between authentication and authorization?</div>
+<div class="qa-a">Authentication = "who are you?" (verify identity via JWT). Authorization = "what can you do?" (check permissions via roles or policies). A user can be authenticated (valid JWT) but not authorized (doesn't have the admin role to delete products).</div>
+</div>
+<div class="qa">
+<div class="qa-q">Q: What is a service mesh?</div>
+<div class="qa-a">An infrastructure layer (Istio, Linkerd) that handles service-to-service security, traffic management, and observability without changing application code. Deploys a sidecar proxy (Envoy) alongside each service. The proxy handles mTLS, cert rotation, auth policies, and encryption. Your app sends plain HTTP to localhost — the proxy handles everything.</div>
+</div>
+<div class="qa">
+<div class="qa-q">Q: Where should secrets be stored?</div>
+<div class="qa-a">Never in source code or config files committed to Git. In production: dedicated secrets manager (Azure Key Vault, AWS Secrets Manager, HashiCorp Vault). For K8s: K8s Secrets with encryption at rest. The application reads secrets at startup from the manager, never from hardcoded strings.</div>
+</div>
+<div class="qa">
+<div class="qa-q">Q: What is zero-trust?</div>
+<div class="qa-a">Assumes no implicit trust based on network location. Every request — even between internal services — must be authenticated and authorized. Implemented through mTLS (service identity), JWT at every boundary, least-privilege policies, encrypted traffic everywhere. If an attacker compromises one service, zero-trust limits the blast radius.</div>
+</div>
+<div class="qa">
+<div class="qa-q">Q: JWT payload is not encrypted — isn't that a security risk?</div>
+<div class="qa-a">The payload is base64-encoded, not encrypted — anyone can read it. But the signature proves it wasn't tampered with. This is by design: the token carries non-sensitive claims (userId, role, expiry). Never put passwords, credit cards, or sensitive data in a JWT. If you need encrypted tokens, use JWE (JSON Web Encryption) — but this is rare.</div>
+</div>
+</div>
+
+<div class="footer">
+  Security Across Services — Microservices Study Guide · Topic 10 · C# / .NET · 2026
+</div>
+</div>
+
+<script>
+function showTab(groupId, index) {
+  const group = document.getElementById(groupId);
+  const panels = group.querySelectorAll('.tab-panel');
+  const btns = group.querySelectorAll('.tab-btn');
+  panels.forEach((p, i) => p.classList.toggle('active', i === index));
+  btns.forEach((b, i) => {
+    b.classList.remove('active');
+    if (i === index) b.classList.add('active');
+  });
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,562 @@
+[
+  {
+    "id": "general",
+    "label": "General",
+    "type": "folder",
+    "children": [
+      {
+        "id": "cloudflare-article",
+        "label": "Cloudflare Article",
+        "type": "document",
+        "path": "docs/root/cloudflare-article.html",
+        "sourceType": "docx"
+      },
+      {
+        "id": "consistency-vs-reliability",
+        "label": "Consistency VS Reliability",
+        "type": "document",
+        "path": "docs/root/consistency-vs-reliability.html",
+        "sourceType": "docx"
+      },
+      {
+        "id": "milvus",
+        "label": "Milvus",
+        "type": "document",
+        "path": "docs/root/milvus.html",
+        "sourceType": "docx"
+      }
+    ]
+  },
+  {
+    "id": "csharp-dotnet",
+    "label": "C# & .NET",
+    "type": "folder",
+    "children": [
+      {
+        "id": "dotnet_async_await_guide",
+        "label": "Async Await",
+        "type": "document",
+        "path": "docs/csharp-dotnet/dotnet_async_await_guide.html",
+        "sourceType": "docx"
+      },
+      {
+        "id": "background-services",
+        "label": "Background Services",
+        "type": "document",
+        "path": "docs/csharp-dotnet/background-services.html",
+        "sourceType": "docx"
+      },
+      {
+        "id": "blockingcollection-vs-channel",
+        "label": "BlockingCollection VS Channel",
+        "type": "document",
+        "path": "docs/csharp-dotnet/blockingcollection-vs-channel.html",
+        "sourceType": "docx"
+      },
+      {
+        "id": "c-notes",
+        "label": "C# Notes",
+        "type": "document",
+        "path": "docs/csharp-dotnet/c-notes.html",
+        "sourceType": "docx"
+      },
+      {
+        "id": "dotnet_collections_guide",
+        "label": "Collections",
+        "type": "document",
+        "path": "docs/csharp-dotnet/dotnet_collections_guide.html",
+        "sourceType": "docx"
+      },
+      {
+        "id": "dotnet_delegates_events_guide",
+        "label": "Delegates Events",
+        "type": "document",
+        "path": "docs/csharp-dotnet/dotnet_delegates_events_guide.html",
+        "sourceType": "docx"
+      },
+      {
+        "id": "dotnet_dependency_injection_guide",
+        "label": "Dependency Injection",
+        "type": "document",
+        "path": "docs/csharp-dotnet/dotnet_dependency_injection_guide.html",
+        "sourceType": "docx"
+      },
+      {
+        "id": "dotnet_exception_handling_guide",
+        "label": "Exception Handling",
+        "type": "document",
+        "path": "docs/csharp-dotnet/dotnet_exception_handling_guide.html",
+        "sourceType": "docx"
+      },
+      {
+        "id": "dotnet_expression_trees_guide",
+        "label": "Expression Trees",
+        "type": "document",
+        "path": "docs/csharp-dotnet/dotnet_expression_trees_guide.html",
+        "sourceType": "docx"
+      },
+      {
+        "id": "dotnet_extension_methods_guide",
+        "label": "Extension Methods",
+        "type": "document",
+        "path": "docs/csharp-dotnet/dotnet_extension_methods_guide.html",
+        "sourceType": "docx"
+      },
+      {
+        "id": "dotnet_generics_guide",
+        "label": "Generics",
+        "type": "document",
+        "path": "docs/csharp-dotnet/dotnet_generics_guide.html",
+        "sourceType": "docx"
+      },
+      {
+        "id": "dotnet_icomparable_icomparer_guide",
+        "label": "Icomparable Icomparer",
+        "type": "document",
+        "path": "docs/csharp-dotnet/dotnet_icomparable_icomparer_guide.html",
+        "sourceType": "docx"
+      },
+      {
+        "id": "dotnet_interface_abstract_guide",
+        "label": "Interface Abstract",
+        "type": "document",
+        "path": "docs/csharp-dotnet/dotnet_interface_abstract_guide.html",
+        "sourceType": "docx"
+      },
+      {
+        "id": "dotnet_is_as_keywords_guide",
+        "label": "Is As Keywords",
+        "type": "document",
+        "path": "docs/csharp-dotnet/dotnet_is_as_keywords_guide.html",
+        "sourceType": "docx"
+      },
+      {
+        "id": "dotnet_lazy_loading_guide",
+        "label": "Lazy Loading",
+        "type": "document",
+        "path": "docs/csharp-dotnet/dotnet_lazy_loading_guide.html",
+        "sourceType": "docx"
+      },
+      {
+        "id": "dotnet_linq_guide",
+        "label": "LINQ",
+        "type": "document",
+        "path": "docs/csharp-dotnet/dotnet_linq_guide.html",
+        "sourceType": "docx"
+      },
+      {
+        "id": "dotnet_managed_unmanaged_guide",
+        "label": "Managed Unmanaged",
+        "type": "document",
+        "path": "docs/csharp-dotnet/dotnet_managed_unmanaged_guide.html",
+        "sourceType": "docx"
+      },
+      {
+        "id": "dotnet_memory_management_guide",
+        "label": "Memory Management",
+        "type": "document",
+        "path": "docs/csharp-dotnet/dotnet_memory_management_guide.html",
+        "sourceType": "docx"
+      },
+      {
+        "id": "dotnet_nullable_null_safety_guide",
+        "label": "Nullable Null Safety",
+        "type": "document",
+        "path": "docs/csharp-dotnet/dotnet_nullable_null_safety_guide.html",
+        "sourceType": "docx"
+      },
+      {
+        "id": "dotnet_records_classes_structs_guide",
+        "label": "Records Classes Structs",
+        "type": "document",
+        "path": "docs/csharp-dotnet/dotnet_records_classes_structs_guide.html",
+        "sourceType": "docx"
+      },
+      {
+        "id": "dotnet_string_stringbuilder_guide",
+        "label": "String Stringbuilder",
+        "type": "document",
+        "path": "docs/csharp-dotnet/dotnet_string_stringbuilder_guide.html",
+        "sourceType": "docx"
+      },
+      {
+        "id": "dotnet_yield_guide",
+        "label": "Yield",
+        "type": "document",
+        "path": "docs/csharp-dotnet/dotnet_yield_guide.html",
+        "sourceType": "docx"
+      }
+    ]
+  },
+  {
+    "id": "database",
+    "label": "Database",
+    "type": "folder",
+    "children": [
+      {
+        "id": "acid_interview_guide",
+        "label": "ACID Interview Guide",
+        "type": "document",
+        "path": "docs/database/acid_interview_guide.html",
+        "sourceType": "docx"
+      },
+      {
+        "id": "indexes_guide",
+        "label": "Indexes Guide",
+        "type": "document",
+        "path": "docs/database/indexes_guide.html",
+        "sourceType": "docx"
+      },
+      {
+        "id": "normalization_guide",
+        "label": "Normalization Guide",
+        "type": "document",
+        "path": "docs/database/normalization_guide.html",
+        "sourceType": "docx"
+      }
+    ]
+  },
+  {
+    "id": "design-pattern",
+    "label": "Design Patterns",
+    "type": "folder",
+    "children": [
+      {
+        "id": "behavioral-patterns",
+        "label": "Behavioral Patterns",
+        "type": "document",
+        "path": "docs/design-pattern/behavioral-patterns.html",
+        "sourceType": "docx"
+      },
+      {
+        "id": "creational-patterns",
+        "label": "Creational Patterns",
+        "type": "document",
+        "path": "docs/design-pattern/creational-patterns.html",
+        "sourceType": "docx"
+      },
+      {
+        "id": "relations-between-objects",
+        "label": "Relations Between Objects",
+        "type": "document",
+        "path": "docs/design-pattern/relations-between-objects.html",
+        "sourceType": "docx"
+      },
+      {
+        "id": "solid-principles",
+        "label": "SOLID Principles",
+        "type": "document",
+        "path": "docs/design-pattern/solid-principles.html",
+        "sourceType": "docx"
+      },
+      {
+        "id": "structural-patterns",
+        "label": "Structural Patterns",
+        "type": "document",
+        "path": "docs/design-pattern/structural-patterns.html",
+        "sourceType": "docx"
+      }
+    ]
+  },
+  {
+    "id": "system-design",
+    "label": "System Design",
+    "type": "folder",
+    "children": [
+      {
+        "id": "consistent-hashing",
+        "label": "Consistent Hashing",
+        "type": "document",
+        "path": "docs/system-design/consistent-hashing.html",
+        "sourceType": "docx"
+      },
+      {
+        "id": "dedupe-logic",
+        "label": "Dedupe Logic",
+        "type": "document",
+        "path": "docs/system-design/dedupe-logic.html",
+        "sourceType": "docx"
+      },
+      {
+        "id": "feature-flags",
+        "label": "Feature Flags",
+        "type": "document",
+        "path": "html/system-design/feature-flags.html",
+        "sourceType": "html"
+      },
+      {
+        "id": "geodns",
+        "label": "GeoDNS",
+        "type": "document",
+        "path": "docs/system-design/geodns.html",
+        "sourceType": "docx"
+      },
+      {
+        "id": "health_checks_interactive",
+        "label": "Health Checks Interactive",
+        "type": "document",
+        "path": "html/system-design/Health_Checks_Interactive.html",
+        "sourceType": "html"
+      },
+      {
+        "id": "rate-limiter",
+        "label": "Rate Limiter",
+        "type": "document",
+        "path": "docs/system-design/rate-limiter.html",
+        "sourceType": "docx"
+      },
+      {
+        "id": "sstable_bloom_fitler",
+        "label": "SSTable Bloom Fitler",
+        "type": "document",
+        "path": "docs/system-design/sstable_bloom_fitler.html",
+        "sourceType": "docx"
+      },
+      {
+        "id": "sticky-session",
+        "label": "Sticky Session",
+        "type": "document",
+        "path": "docs/system-design/sticky-session.html",
+        "sourceType": "docx"
+      },
+      {
+        "id": "systemdesign_cashing",
+        "label": "SystemDesign Cashing",
+        "type": "document",
+        "path": "docs/system-design/systemdesign_cashing.html",
+        "sourceType": "docx"
+      },
+      {
+        "id": "ddd",
+        "label": "DDD",
+        "type": "folder",
+        "children": [
+          {
+            "id": "strategic_ddd_interactive",
+            "label": "Strategic DDD Interactive",
+            "type": "document",
+            "path": "html/system-design/ddd/Strategic_DDD_Interactive.html",
+            "sourceType": "html"
+          },
+          {
+            "id": "tactical_ddd_interactive",
+            "label": "Tactical DDD Interactive",
+            "type": "document",
+            "path": "html/system-design/ddd/Tactical_DDD_Interactive.html",
+            "sourceType": "html"
+          }
+        ]
+      },
+      {
+        "id": "microservices",
+        "label": "Microservices",
+        "type": "folder",
+        "children": [
+          {
+            "id": "00_microservices_complete_study_guide",
+            "label": "00 Microservices Complete Study Guide",
+            "type": "document",
+            "path": "html/system-design/microservices/00_Microservices_Complete_Study_Guide.html",
+            "sourceType": "html"
+          },
+          {
+            "id": "01_monolith_vs_microservices",
+            "label": "01 Monolith vs Microservices",
+            "type": "document",
+            "path": "html/system-design/microservices/01_Monolith_vs_Microservices.html",
+            "sourceType": "html"
+          },
+          {
+            "id": "01_monolith_vs_microservices_interactive",
+            "label": "01 Monolith vs Microservices Interactive",
+            "type": "document",
+            "path": "html/system-design/microservices/01_Monolith_vs_Microservices_Interactive.html",
+            "sourceType": "html"
+          },
+          {
+            "id": "02_sync_vs_async_communication",
+            "label": "02 Sync vs Async Communication",
+            "type": "document",
+            "path": "html/system-design/microservices/02_Sync_vs_Async_Communication.html",
+            "sourceType": "html"
+          },
+          {
+            "id": "02_sync_vs_async_communication_interactive",
+            "label": "02 Sync vs Async Communication Interactive",
+            "type": "document",
+            "path": "html/system-design/microservices/02_Sync_vs_Async_Communication_Interactive.html",
+            "sourceType": "html"
+          },
+          {
+            "id": "03_api_gateway_and_bff",
+            "label": "03 API Gateway & BFF",
+            "type": "document",
+            "path": "html/system-design/microservices/03_API_Gateway_and_BFF.html",
+            "sourceType": "html"
+          },
+          {
+            "id": "03_api_gateway_and_bff_interactive",
+            "label": "03 API Gateway & BFF Interactive",
+            "type": "document",
+            "path": "html/system-design/microservices/03_API_Gateway_and_BFF_Interactive.html",
+            "sourceType": "html"
+          },
+          {
+            "id": "04_circuit_breaker_retry_timeout",
+            "label": "04 Circuit Breaker Retry Timeout",
+            "type": "document",
+            "path": "html/system-design/microservices/04_Circuit_Breaker_Retry_Timeout.html",
+            "sourceType": "html"
+          },
+          {
+            "id": "04_circuit_breaker_retry_timeout_interactive",
+            "label": "04 Circuit Breaker Retry Timeout Interactive",
+            "type": "document",
+            "path": "html/system-design/microservices/04_Circuit_Breaker_Retry_Timeout_Interactive.html",
+            "sourceType": "html"
+          },
+          {
+            "id": "05_service_discovery",
+            "label": "05 Service Discovery",
+            "type": "document",
+            "path": "html/system-design/microservices/05_Service_Discovery.html",
+            "sourceType": "html"
+          },
+          {
+            "id": "05_service_discovery_interactive",
+            "label": "05 Service Discovery Interactive",
+            "type": "document",
+            "path": "html/system-design/microservices/05_Service_Discovery_Interactive.html",
+            "sourceType": "html"
+          },
+          {
+            "id": "06_saga_pattern_deep",
+            "label": "06 Saga Pattern Deep",
+            "type": "document",
+            "path": "html/system-design/microservices/06_Saga_Pattern_Deep.html",
+            "sourceType": "html"
+          },
+          {
+            "id": "06_saga_pattern_interactive",
+            "label": "06 Saga Pattern Interactive",
+            "type": "document",
+            "path": "html/system-design/microservices/06_Saga_Pattern_Interactive.html",
+            "sourceType": "html"
+          },
+          {
+            "id": "07_database_per_service_cqrs",
+            "label": "07 Database Per Service CQRS",
+            "type": "document",
+            "path": "html/system-design/microservices/07_Database_per_Service_CQRS.html",
+            "sourceType": "html"
+          },
+          {
+            "id": "07_database_per_service_cqrs_interactive",
+            "label": "07 Database Per Service CQRS Interactive",
+            "type": "document",
+            "path": "html/system-design/microservices/07_Database_per_Service_CQRS_Interactive.html",
+            "sourceType": "html"
+          },
+          {
+            "id": "08_event_sourcing",
+            "label": "08 Event Sourcing",
+            "type": "document",
+            "path": "html/system-design/microservices/08_Event_Sourcing.html",
+            "sourceType": "html"
+          },
+          {
+            "id": "08_event_sourcing_interactive",
+            "label": "08 Event Sourcing Interactive",
+            "type": "document",
+            "path": "html/system-design/microservices/08_Event_Sourcing_Interactive.html",
+            "sourceType": "html"
+          },
+          {
+            "id": "09_observability",
+            "label": "09 Observability",
+            "type": "document",
+            "path": "html/system-design/microservices/09_Observability.html",
+            "sourceType": "html"
+          },
+          {
+            "id": "09_observability_interactive",
+            "label": "09 Observability Interactive",
+            "type": "document",
+            "path": "html/system-design/microservices/09_Observability_Interactive.html",
+            "sourceType": "html"
+          },
+          {
+            "id": "10_security",
+            "label": "10 Security",
+            "type": "document",
+            "path": "html/system-design/microservices/10_Security.html",
+            "sourceType": "html"
+          },
+          {
+            "id": "10_security_across_services_interactive",
+            "label": "10 Security Across Services Interactive",
+            "type": "document",
+            "path": "html/system-design/microservices/10_Security_Across_Services_Interactive.html",
+            "sourceType": "html"
+          },
+          {
+            "id": "11_deployment",
+            "label": "11 Deployment",
+            "type": "document",
+            "path": "html/system-design/microservices/11_Deployment.html",
+            "sourceType": "html"
+          },
+          {
+            "id": "11_deployment_and_containers_interactive",
+            "label": "11 Deployment & Containers Interactive",
+            "type": "document",
+            "path": "html/system-design/microservices/11_Deployment_and_Containers_Interactive.html",
+            "sourceType": "html"
+          }
+        ]
+      },
+      {
+        "id": "system-design-interview-book",
+        "label": "Interview Book",
+        "type": "folder",
+        "children": [
+          {
+            "id": "ch10_notification_system",
+            "label": "Ch10 Notification System",
+            "type": "document",
+            "path": "html/system-design/system-design-interview-book/ch10_notification_system.html",
+            "sourceType": "html"
+          },
+          {
+            "id": "ch6_key_value_store",
+            "label": "Ch6 Key Value Store",
+            "type": "document",
+            "path": "docs/system-design/system-design-interview-book/ch6_key_value_store.html",
+            "sourceType": "docx"
+          },
+          {
+            "id": "ch7_unique_id_generator",
+            "label": "Ch7 Unique Id Generator",
+            "type": "document",
+            "path": "docs/system-design/system-design-interview-book/ch7_unique_id_generator.html",
+            "sourceType": "docx"
+          },
+          {
+            "id": "ch8_url_shortener",
+            "label": "Ch8 Url Shortener",
+            "type": "document",
+            "path": "html/system-design/system-design-interview-book/ch8_url_shortener.html",
+            "sourceType": "html"
+          },
+          {
+            "id": "ch9_web_crawler",
+            "label": "Ch9 Web Crawler",
+            "type": "document",
+            "path": "html/system-design/system-design-interview-book/ch9_web_crawler.html",
+            "sourceType": "html"
+          }
+        ]
+      }
+    ]
+  }
+]

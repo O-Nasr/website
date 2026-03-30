@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Service Discovery — Complete Study Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:      #f8f7f4;
+  --surface: #ffffff;
+  --surface2:#f1efe9;
+  --border:  rgba(0,0,0,0.07);
+  --border2: rgba(0,0,0,0.13);
+  --accent:  #1a6ef5;
+  --teal:    #0f9f82;
+  --amber:   #c87600;
+  --red:     #d93636;
+  --purple:  #6b3fa0;
+  --green:   #1a8a4a;
+  --coral:   #c24040;
+  --text:    #1a1c20;
+  --muted:   #5c6270;
+  --hint:    #9099a8;
+  --code-bg: #1a1c24;
+  --r:       10px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;line-height:1.75}
+
+/* ── HERO ── */
+.hero{background:var(--text);color:#e8eaf0;padding:72px 40px 60px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:
+  radial-gradient(circle at 80% 20%, rgba(26,110,245,.18) 0%, transparent 55%),
+  radial-gradient(circle at 10% 80%, rgba(15,159,130,.12) 0%, transparent 50%);pointer-events:none}
+.hero-inner{max-width:960px;margin:0 auto;position:relative;z-index:1}
+.hero-tag{display:inline-flex;align-items:center;gap:7px;font-family:'JetBrains Mono',monospace;font-size:11px;color:rgba(26,110,245,.9);background:rgba(26,110,245,.12);border:1px solid rgba(26,110,245,.25);padding:4px 12px;border-radius:20px;letter-spacing:.06em;margin-bottom:22px}
+.hero-dot{width:6px;height:6px;border-radius:50%;background:#1a8a4a;animation:blink 2s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+h1{font-size:clamp(32px,5vw,54px);font-weight:700;line-height:1.1;letter-spacing:-.03em;margin-bottom:16px;color:#f0f2f7}
+.hero-sub{font-size:16px;color:rgba(240,242,247,.55);max-width:560px;line-height:1.7}
+.hero-meta{display:flex;gap:12px;margin-top:26px;flex-wrap:wrap}
+.hero-chip{font-size:11px;color:rgba(240,242,247,.45);background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);padding:3px 12px;border-radius:20px}
+
+/* ── PAGE ── */
+.page{max-width:960px;margin:0 auto;padding:0 32px 100px}
+
+/* ── TOC ── */
+.toc{margin:36px 0;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:24px 28px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.toc-lbl{font-size:10px;font-weight:700;color:var(--hint);letter-spacing:.14em;text-transform:uppercase;margin-bottom:14px}
+.toc ol{list-style:none;counter-reset:t;display:grid;grid-template-columns:1fr 1fr;gap:5px 28px}
+.toc li{counter-increment:t;display:flex;gap:10px;align-items:baseline}
+.toc li::before{content:counter(t,decimal-leading-zero);font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--accent);opacity:.6;flex-shrink:0}
+.toc a{color:var(--muted);text-decoration:none;font-size:13px;transition:color .15s}
+.toc a:hover{color:var(--accent)}
+
+/* ── SECTIONS ── */
+.section{padding-top:60px}
+.sec-label{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);margin-bottom:10px;display:flex;align-items:center;gap:10px}
+.sec-label::after{content:'';flex:1;height:1px;background:var(--border2)}
+h2{font-size:26px;font-weight:700;letter-spacing:-.025em;margin-bottom:14px;line-height:1.25;color:var(--text)}
+h3{font-size:17px;font-weight:600;margin:28px 0 12px;color:var(--text)}
+h4{font-size:12px;font-weight:700;color:var(--hint);text-transform:uppercase;letter-spacing:.1em;margin:24px 0 10px}
+p{color:var(--muted);margin-bottom:14px;line-height:1.75}
+p strong{color:var(--text);font-weight:600}
+
+/* ── CODE ── */
+.code-block{background:var(--code-bg);border-radius:var(--r);overflow:hidden;margin:18px 0;border:1px solid rgba(255,255,255,.06)}
+.code-header{display:flex;align-items:center;justify-content:space-between;padding:9px 16px;background:rgba(255,255,255,.03);border-bottom:1px solid rgba(255,255,255,.05)}
+.code-lang{font-family:'JetBrains Mono',monospace;font-size:10px;color:#5b9ef5;font-weight:600;letter-spacing:.1em;text-transform:uppercase}
+.code-dots{display:flex;gap:5px}
+.code-dots span{width:9px;height:9px;border-radius:50%}
+.code-dots span:nth-child(1){background:#ef4444}
+.code-dots span:nth-child(2){background:#f59e0b}
+.code-dots span:nth-child(3){background:#22c55e}
+pre{padding:20px;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.8}
+code{color:#c8d0e0}
+.kw{color:#7c9ef5}.cm{color:#3d5066;font-style:italic}.str{color:#7ec891}.typ{color:#e8a96e}.num{color:#c3a6e0}.ok{color:#5ec989}.bad{color:#e87070}.warn{color:#e8b450}.hi{background:rgba(248,197,69,.15);color:#e8b450;border-radius:2px;padding:0 2px}
+code.inline{font-family:'JetBrains Mono',monospace;font-size:12px;background:rgba(0,0,0,.07);color:var(--text);padding:1px 6px;border-radius:4px;border:1px solid var(--border)}
+
+/* ── CARDS ── */
+.callout{border-radius:var(--r);padding:14px 18px;margin:16px 0;border-left:3px solid;display:flex;gap:12px;align-items:flex-start}
+.callout-icon{font-size:14px;flex-shrink:0;margin-top:2px}
+.callout-body{flex:1;font-size:13px;line-height:1.65}
+.callout-body strong{font-weight:600}
+.callout.info{background:rgba(26,110,245,.06);border-color:var(--accent)}
+.callout.info .callout-body{color:#1a4ea0}
+.callout.tip{background:rgba(26,138,74,.06);border-color:var(--green)}
+.callout.tip .callout-body{color:#1a6040}
+.callout.warn{background:rgba(200,118,0,.06);border-color:var(--amber)}
+.callout.warn .callout-body{color:#8a5000}
+.callout.danger{background:rgba(217,54,54,.06);border-color:var(--red)}
+.callout.danger .callout-body{color:#9a2020}
+.callout.correction{background:rgba(107,63,160,.06);border-color:var(--purple)}
+.callout.correction .callout-body{color:#4a2880}
+
+/* ── DIAGRAM CARD ── */
+.diagram-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:28px;margin:20px 0;box-shadow:0 1px 4px rgba(0,0,0,.05);overflow:hidden}
+.diagram-card svg{width:100%;display:block}
+
+/* ── SPLIT GRID ── */
+.split{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:16px 0}
+.split-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.split-card-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px}
+.split-card-body{font-size:12.5px;color:var(--muted);line-height:1.6}
+.split-card .tag{display:inline-block;font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px;margin-top:8px}
+.tag-bad{background:rgba(217,54,54,.1);color:var(--red)}
+.tag-ok{background:rgba(26,138,74,.1);color:var(--green)}
+
+/* ── TABLE ── */
+.table-wrap{overflow-x:auto;margin:16px 0}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:500px;background:var(--surface);border-radius:var(--r);overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+th{text-align:left;padding:10px 14px;background:var(--surface2);color:var(--text);font-weight:600;font-size:11.5px;border-bottom:1px solid var(--border2)}
+td{padding:10px 14px;color:var(--muted);border-bottom:1px solid var(--border);vertical-align:top;line-height:1.5}
+tr:last-child td{border-bottom:none}
+td strong{color:var(--text)}
+.bdg{display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600;letter-spacing:.04em;white-space:nowrap}
+.bdg-g{background:rgba(26,138,74,.1);color:var(--green)}
+.bdg-r{background:rgba(217,54,54,.1);color:var(--red)}
+.bdg-b{background:rgba(26,110,245,.1);color:var(--accent)}
+.bdg-a{background:rgba(200,118,0,.1);color:var(--amber)}
+
+/* ── STEPS ── */
+.steps{display:flex;flex-direction:column;gap:0;margin:16px 0;position:relative}
+.steps::before{content:'';position:absolute;left:18px;top:28px;bottom:28px;width:1px;background:var(--border2)}
+.step-row{display:flex;gap:16px;padding:12px 0;align-items:flex-start}
+.step-num{width:36px;height:36px;border-radius:50%;background:var(--surface);border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;color:var(--accent);flex-shrink:0;position:relative;z-index:1}
+.step-body{padding-top:6px;flex:1}
+.step-title{font-size:13.5px;font-weight:600;color:var(--text);margin-bottom:3px}
+.step-desc{font-size:12.5px;color:var(--muted);line-height:1.55}
+
+/* ── QA ── */
+.qa-list{display:flex;flex-direction:column;gap:12px;margin:16px 0}
+.qa-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.qa-q{padding:14px 18px;font-size:13.5px;color:var(--text);font-weight:600;background:var(--surface2);display:flex;gap:12px;align-items:flex-start}
+.qa-q::before{content:'Q';font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;color:var(--accent);background:rgba(26,110,245,.1);border:1px solid rgba(26,110,245,.2);padding:2px 7px;border-radius:4px;flex-shrink:0;margin-top:1px}
+.qa-a{padding:14px 18px;font-size:13px;color:var(--muted);border-top:1px solid var(--border);display:flex;gap:12px;line-height:1.65}
+.qa-a::before{content:'A';font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;color:var(--green);background:rgba(26,138,74,.1);border:1px solid rgba(26,138,74,.2);padding:2px 7px;border-radius:4px;flex-shrink:0;margin-top:2px}
+.qa-a code{font-family:'JetBrains Mono',monospace;font-size:11.5px;background:rgba(0,0,0,.06);color:var(--text);padding:1px 5px;border-radius:3px}
+
+/* ── CORRECTION BOX ── */
+.correction-box{background:rgba(107,63,160,.05);border:1.5px solid rgba(107,63,160,.25);border-radius:var(--r);padding:16px 20px;margin:16px 0}
+.correction-title{font-size:12px;font-weight:700;color:var(--purple);letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.correction-body{font-size:13px;color:#3d2870;line-height:1.65}
+.correction-body strong{color:var(--purple);font-weight:700}
+.correction-body code{font-family:'JetBrains Mono',monospace;font-size:11.5px;background:rgba(107,63,160,.1);padding:1px 5px;border-radius:3px;color:#5a30a0}
+
+/* ── HEALTH CHECK GRID ── */
+.hc-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:16px 0}
+.hc-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.hc-type{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px}
+.hc-name{font-size:14px;font-weight:600;color:var(--text);margin-bottom:8px}
+.hc-body{font-size:12px;color:var(--muted);line-height:1.6}
+.hc-heartbeat .hc-type{color:var(--green)}
+.hc-active .hc-type{color:var(--amber)}
+.hc-heartbeat{border-top:2px solid var(--green)}
+.hc-active{border-top:2px solid var(--amber)}
+
+/* ── INTERACTIVE ── */
+button{font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;font-weight:500;padding:5px 14px;border-radius:20px;border:1px solid var(--border2);background:transparent;color:var(--muted);cursor:pointer;transition:all .15s}
+button:hover{background:var(--surface2);color:var(--text);border-color:var(--border2)}
+button.act-ok{background:rgba(26,138,74,.1)!important;color:var(--green)!important;border-color:rgba(26,138,74,.3)!important}
+button.act-info{background:rgba(26,110,245,.1)!important;color:var(--accent)!important;border-color:rgba(26,110,245,.25)!important}
+button.act-fail{background:rgba(217,54,54,.1)!important;color:var(--red)!important;border-color:rgba(217,54,54,.3)!important}
+.sim-note{font-size:13px;color:var(--muted);padding:10px 14px;border-radius:var(--r);background:var(--surface2);border:1px solid var(--border);margin-top:8px;min-height:44px;line-height:1.65}
+
+/* ── CB BAR ── */
+.cb-bar-wrap{display:flex;align-items:center;gap:12px;flex:1}
+.cb-bar-outer{flex:1;height:8px;background:var(--surface2);border-radius:4px;overflow:hidden;border:1px solid var(--border)}
+.cb-bar-fill{height:100%;border-radius:4px;transition:width .5s,background .5s;width:0%}
+
+/* ── DIVIDER ── */
+.divider{height:1px;background:var(--border2);margin:56px 0 0}
+
+/* ── FOOTER ── */
+.footer{margin-top:60px;padding-top:20px;border-top:1px solid var(--border);text-align:center;font-size:11px;color:var(--hint)}
+
+@keyframes hb{0%,100%{opacity:1}50%{opacity:.35}}
+@media(prefers-reduced-motion:no-preference){.hb-dot{animation:hb 1.4s ease-in-out infinite}}
+
+@media(max-width:640px){
+  .toc ol,.split,.hc-grid{grid-template-columns:1fr}
+  .page,.hero-inner{padding-left:16px;padding-right:16px}
+  h2{font-size:22px}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ HERO ═══ -->
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-tag"><span class="hero-dot"></span>Microservices · Topic 5 · C# / .NET</div>
+    <h1>Service Discovery</h1>
+    <p class="hero-sub">How services find each other in a world where IPs change constantly. Client-side vs server-side discovery, health checks, Consul, and Kubernetes DNS.</p>
+    <div class="hero-meta">
+      <span class="hero-chip">Consul</span>
+      <span class="hero-chip">Kubernetes DNS</span>
+      <span class="hero-chip">Health Checks</span>
+      <span class="hero-chip">Client-side vs Server-side</span>
+      <span class="hero-chip">Interview Ready</span>
+    </div>
+  </div>
+</div>
+
+<div class="page">
+
+  <!-- TOC -->
+  <div class="toc">
+    <div class="toc-lbl">Contents</div>
+    <ol>
+      <li><a href="#s1">Why service discovery exists</a></li>
+      <li><a href="#s2">The service registry</a></li>
+      <li><a href="#s3">Client-side discovery</a></li>
+      <li><a href="#s4">Server-side discovery</a></li>
+      <li><a href="#s5">Health checks — heartbeat vs active</a></li>
+      <li><a href="#s6">Kubernetes — built-in discovery</a></li>
+      <li><a href="#s7">C# — Consul implementation (corrected)</a></li>
+      <li><a href="#s8">Important corrections from discussion</a></li>
+      <li><a href="#s9">Full lifecycle — interactive</a></li>
+      <li><a href="#s10">Tool comparison table</a></li>
+      <li><a href="#s11">Interview Q&A</a></li>
+    </ol>
+  </div>
+
+  <!-- ═══ S1 ═══ -->
+  <div class="section" id="s1">
+    <div class="sec-label">01</div>
+    <h2>Why Service Discovery Exists</h2>
+
+    <p>In a monolith, one module calls another with a direct method call — no address needed. In microservices, every call crosses a network. And in a cloud environment, <strong>that network address is not stable</strong>.</p>
+
+    <div class="split">
+      <div class="split-card">
+        <div class="split-card-title">Why addresses keep changing</div>
+        <div class="split-card-body">Kubernetes restarts a crashed pod → new IP. Auto-scaler adds 3 more Payments instances → 3 new IPs. A deployment rolls out → old instances die, new ones appear with different addresses.</div>
+        <span class="tag tag-bad">Hardcoded IP = broken</span>
+      </div>
+      <div class="split-card">
+        <div class="split-card-title">The solution</div>
+        <div class="split-card-body">A Service Registry — a live directory that always knows which instances are running and where. Services register themselves on startup and deregister on shutdown.</div>
+        <span class="tag tag-ok">Dynamic lookup = always works</span>
+      </div>
+    </div>
+
+    <div class="callout danger">
+      <span class="callout-icon">⚡</span>
+      <div class="callout-body"><strong>Without service discovery:</strong> every service needs a config file listing every other service's current address. Updated manually every time anything changes. At 20 services, each running 5 instances, that's 100 addresses to manage — impossible at scale.</div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ═══ S2 ═══ -->
+  <div class="section" id="s2">
+    <div class="sec-label">02</div>
+    <h2>The Service Registry</h2>
+
+    <p>A central database that maintains a live list of every running service instance and its current address. Three things always happen:</p>
+
+    <div class="steps">
+      <div class="step-row">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <div class="step-title">Register on startup</div>
+          <div class="step-desc">When a service starts, it registers itself with its current IP, port, and a health check URL. Each instance registers independently.</div>
+        </div>
+      </div>
+      <div class="step-row">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <div class="step-title">Heartbeat / health check to stay listed</div>
+          <div class="step-desc">Either the service sends periodic heartbeats, or the registry actively polls the service's /health endpoint. If checks fail, the instance is marked unhealthy and removed from lookup results.</div>
+        </div>
+      </div>
+      <div class="step-row">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <div class="step-title">Lookup when you need to call someone</div>
+          <div class="step-desc">When Orders needs to call Payments, it asks the registry "give me healthy Payments instances." The registry returns current IPs. The registry is NOT in the call path — only used for discovery.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="diagram-card">
+      <svg viewBox="0 0 820 310" xmlns="http://www.w3.org/2000/svg">
+        <defs><marker id="a1" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#6b7280" stroke-width="1.5" stroke-linecap="round"/></marker>
+        <marker id="a1g" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#1a8a4a" stroke-width="1.5" stroke-linecap="round"/></marker>
+        <marker id="a1b" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#c87600" stroke-width="1.5" stroke-linecap="round"/></marker></defs>
+
+        <!-- Registry centre -->
+        <rect x="270" y="20" width="200" height="200" rx="12" fill="rgba(200,118,0,.06)" stroke="rgba(200,118,0,.3)" stroke-width="1.5"/>
+        <text x="370" y="48" text-anchor="middle" fill="#c87600" font-size="13" font-weight="700" font-family="Plus Jakarta Sans,sans-serif">Service Registry</text>
+        <text x="370" y="66" text-anchor="middle" fill="#c87600" font-size="10" font-family="JetBrains Mono,monospace">Consul / Eureka / k8s DNS</text>
+        <!-- Table inside registry -->
+        <rect x="284" y="78" width="172" height="124" rx="6" fill="white" stroke="rgba(0,0,0,0.1)" stroke-width="1"/>
+        <text x="296" y="97" fill="#6b7280" font-size="10" font-family="JetBrains Mono,monospace">service</text>
+        <text x="390" y="97" text-anchor="middle" fill="#6b7280" font-size="10" font-family="JetBrains Mono,monospace">address</text>
+        <text x="448" y="97" text-anchor="end" fill="#6b7280" font-size="10" font-family="JetBrains Mono,monospace">status</text>
+        <line x1="288" y1="104" x2="452" y2="104" stroke="rgba(0,0,0,0.08)" stroke-width="1"/>
+        <text x="296" y="120" fill="#374151" font-size="10" font-family="JetBrains Mono,monospace">payments</text>
+        <text x="390" y="120" text-anchor="middle" fill="#374151" font-size="10" font-family="JetBrains Mono,monospace">10.0.1.4:8002</text>
+        <text x="448" y="120" text-anchor="end" fill="#1a8a4a" font-size="10" font-family="JetBrains Mono,monospace">healthy</text>
+        <text x="296" y="138" fill="#374151" font-size="10" font-family="JetBrains Mono,monospace">payments</text>
+        <text x="390" y="138" text-anchor="middle" fill="#374151" font-size="10" font-family="JetBrains Mono,monospace">10.0.1.7:8002</text>
+        <text x="448" y="138" text-anchor="end" fill="#1a8a4a" font-size="10" font-family="JetBrains Mono,monospace">healthy</text>
+        <text x="296" y="156" fill="#374151" font-size="10" font-family="JetBrains Mono,monospace">orders</text>
+        <text x="390" y="156" text-anchor="middle" fill="#374151" font-size="10" font-family="JetBrains Mono,monospace">10.0.2.1:8001</text>
+        <text x="448" y="156" text-anchor="end" fill="#1a8a4a" font-size="10" font-family="JetBrains Mono,monospace">healthy</text>
+        <text x="296" y="174" fill="#374151" font-size="10" font-family="JetBrains Mono,monospace">orders</text>
+        <text x="390" y="174" text-anchor="middle" fill="#374151" font-size="10" font-family="JetBrains Mono,monospace">10.0.2.3:8001</text>
+        <text x="448" y="174" text-anchor="end" fill="#d93636" font-size="10" font-family="JetBrains Mono,monospace">unhealthy</text>
+
+        <!-- Left services (registering) -->
+        <rect x="20" y="50" width="120" height="46" rx="8" fill="rgba(26,138,74,.08)" stroke="rgba(26,138,74,.3)" stroke-width="1"/>
+        <text x="80" y="69" text-anchor="middle" fill="#1a6040" font-size="12" font-weight="600" font-family="Plus Jakarta Sans,sans-serif">Payments</text>
+        <text x="80" y="86" text-anchor="middle" fill="#1a8a4a" font-size="10" font-family="Plus Jakarta Sans,sans-serif">instance 1</text>
+
+        <rect x="20" y="120" width="120" height="46" rx="8" fill="rgba(26,138,74,.08)" stroke="rgba(26,138,74,.3)" stroke-width="1"/>
+        <text x="80" y="139" text-anchor="middle" fill="#1a6040" font-size="12" font-weight="600" font-family="Plus Jakarta Sans,sans-serif">Payments</text>
+        <text x="80" y="156" text-anchor="middle" fill="#1a8a4a" font-size="10" font-family="Plus Jakarta Sans,sans-serif">instance 2</text>
+
+        <rect x="20" y="190" width="120" height="46" rx="8" fill="rgba(26,110,245,.08)" stroke="rgba(26,110,245,.25)" stroke-width="1"/>
+        <text x="80" y="209" text-anchor="middle" fill="#1a3a80" font-size="12" font-weight="600" font-family="Plus Jakarta Sans,sans-serif">Orders</text>
+        <text x="80" y="226" text-anchor="middle" fill="#1a6ef5" font-size="10" font-family="Plus Jakarta Sans,sans-serif">instance 1</text>
+
+        <path d="M140 73 Q200 73 268 105" fill="none" stroke="#1a8a4a" stroke-width="1.5" marker-end="url(#a1g)"/>
+        <path d="M140 143 Q200 143 268 130" fill="none" stroke="#1a8a4a" stroke-width="1.5" marker-end="url(#a1g)"/>
+        <path d="M140 213 Q200 213 268 165" fill="none" stroke="#1a6ef5" stroke-width="1.5" marker-end="url(#a1)"/>
+        <text x="170" y="89" text-anchor="middle" fill="#1a8a4a" font-size="10" font-family="Plus Jakarta Sans,sans-serif">register</text>
+        <text x="170" y="224" text-anchor="middle" fill="#1a6ef5" font-size="10" font-family="Plus Jakarta Sans,sans-serif">heartbeat</text>
+
+        <!-- Right caller -->
+        <rect x="590" y="100" width="140" height="50" rx="8" fill="rgba(200,118,0,.08)" stroke="rgba(200,118,0,.3)" stroke-width="1"/>
+        <text x="660" y="120" text-anchor="middle" fill="#7a4800" font-size="12" font-weight="600" font-family="Plus Jakarta Sans,sans-serif">Orders service</text>
+        <text x="660" y="138" text-anchor="middle" fill="#c87600" font-size="10" font-family="Plus Jakarta Sans,sans-serif">wants Payments</text>
+
+        <path d="M590 125 Q510 125 472 135" fill="none" stroke="#c87600" stroke-width="1.5" marker-end="url(#a1b)"/>
+        <text x="530" y="113" text-anchor="middle" fill="#c87600" font-size="10" font-family="Plus Jakarta Sans,sans-serif">lookup "payments"</text>
+        <path d="M472 150 Q510 165 590 150" fill="none" stroke="#c87600" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#a1b)"/>
+        <text x="530" y="178" text-anchor="middle" fill="#c87600" font-size="10" font-family="Plus Jakarta Sans,sans-serif">returns healthy IPs</text>
+
+        <text x="410" y="265" text-anchor="middle" fill="#6b7280" font-size="12" font-family="Plus Jakarta Sans,sans-serif">Services register on startup. Heartbeat to stay listed. Unhealthy instances auto-removed.</text>
+        <text x="410" y="285" text-anchor="middle" fill="#6b7280" font-size="11" font-family="Plus Jakarta Sans,sans-serif">Registry is NOT in the call path — only used for address lookup.</text>
+      </svg>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ═══ S3 ═══ -->
+  <div class="section" id="s3">
+    <div class="sec-label">03</div>
+    <h2>Client-Side Discovery</h2>
+
+    <p>The calling service queries the registry itself, picks an instance using its own load-balancing logic, and calls that IP directly. <strong>The calling service contains the discovery logic.</strong></p>
+
+    <div class="diagram-card">
+      <svg viewBox="0 0 820 240" xmlns="http://www.w3.org/2000/svg">
+        <defs><marker id="a2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#6b7280" stroke-width="1.5" stroke-linecap="round"/></marker>
+        <marker id="a2b" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#c87600" stroke-width="1.5" stroke-linecap="round"/></marker>
+        <marker id="a2g" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#1a8a4a" stroke-width="1.5" stroke-linecap="round"/></marker></defs>
+
+        <!-- Orders (caller) -->
+        <rect x="20" y="90" width="145" height="60" rx="8" fill="rgba(26,110,245,.07)" stroke="rgba(26,110,245,.25)" stroke-width="1"/>
+        <text x="93" y="113" text-anchor="middle" fill="#1a3a80" font-size="12" font-weight="600" font-family="Plus Jakarta Sans,sans-serif">Orders service</text>
+        <text x="93" y="131" text-anchor="middle" fill="#1a6ef5" font-size="10" font-family="Plus Jakarta Sans,sans-serif">has Consul client lib</text>
+        <text x="93" y="144" text-anchor="middle" fill="#1a6ef5" font-size="10" font-family="Plus Jakarta Sans,sans-serif">does LB itself</text>
+
+        <!-- Step 1: lookup -->
+        <path d="M93 90 Q93 40 290 40" fill="none" stroke="#c87600" stroke-width="1.5" marker-end="url(#a2b)"/>
+        <text x="185" y="30" text-anchor="middle" fill="#c87600" font-size="10" font-family="Plus Jakarta Sans,sans-serif">① lookup "payments"</text>
+
+        <!-- Registry -->
+        <rect x="292" y="20" width="155" height="46" rx="8" fill="rgba(200,118,0,.07)" stroke="rgba(200,118,0,.3)" stroke-width="1"/>
+        <text x="370" y="38" text-anchor="middle" fill="#7a4800" font-size="12" font-weight="600" font-family="Plus Jakarta Sans,sans-serif">Consul registry</text>
+        <text x="370" y="54" text-anchor="middle" fill="#c87600" font-size="10" font-family="Plus Jakarta Sans,sans-serif">returns IP list</text>
+
+        <!-- Step 2: IPs returned -->
+        <path d="M370 66 Q370 88 265 110" fill="none" stroke="#c87600" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#a2b)"/>
+        <text x="300" y="100" text-anchor="middle" fill="#c87600" font-size="10" font-family="Plus Jakarta Sans,sans-serif">② IPs returned</text>
+
+        <!-- IP list -->
+        <rect x="140" y="115" width="70" height="30" rx="5" fill="white" stroke="rgba(0,0,0,.1)" stroke-width="1"/>
+        <text x="175" y="133" text-anchor="middle" fill="#374151" font-size="10" font-family="JetBrains Mono,monospace">10.0.1.4</text>
+        <rect x="218" y="115" width="70" height="30" rx="5" fill="white" stroke="rgba(0,0,0,.1)" stroke-width="1"/>
+        <text x="253" y="133" text-anchor="middle" fill="#374151" font-size="10" font-family="JetBrains Mono,monospace">10.0.1.7</text>
+
+        <!-- Step 3: pick one -->
+        <path d="M175 145 Q140 165 94 165" fill="none" stroke="#6b7280" stroke-width="1.2" stroke-dasharray="3 3" marker-end="url(#a2)"/>
+        <text x="100" y="178" text-anchor="middle" fill="#6b7280" font-size="10" font-family="Plus Jakarta Sans,sans-serif">③ pick one (round-robin)</text>
+
+        <!-- Step 4: direct call -->
+        <line x1="165" y1="120" x2="445" y2="120" stroke="#1a8a4a" stroke-width="1.5" marker-end="url(#a2g)"/>
+        <text x="310" y="112" text-anchor="middle" fill="#1a8a4a" font-size="10" font-family="Plus Jakarta Sans,sans-serif">④ direct call to chosen IP</text>
+
+        <!-- Payments instances -->
+        <rect x="447" y="90" width="130" height="46" rx="8" fill="rgba(107,63,160,.07)" stroke="rgba(107,63,160,.25)" stroke-width="1"/>
+        <text x="512" y="109" text-anchor="middle" fill="#4a2880" font-size="12" font-weight="600" font-family="Plus Jakarta Sans,sans-serif">Payments</text>
+        <text x="512" y="126" text-anchor="middle" fill="#6b3fa0" font-size="10" font-family="JetBrains Mono,monospace">10.0.1.4:8002</text>
+        <rect x="447" y="155" width="130" height="46" rx="8" fill="rgba(107,63,160,.07)" stroke="rgba(107,63,160,.25)" stroke-width="1"/>
+        <text x="512" y="174" text-anchor="middle" fill="#4a2880" font-size="12" font-weight="600" font-family="Plus Jakarta Sans,sans-serif">Payments</text>
+        <text x="512" y="191" text-anchor="middle" fill="#6b3fa0" font-size="10" font-family="JetBrains Mono,monospace">10.0.1.7:8002</text>
+
+        <!-- Pros/cons -->
+        <rect x="600" y="70" width="200" height="130" rx="8" fill="white" stroke="rgba(0,0,0,.08)" stroke-width="1"/>
+        <text x="700" y="92" text-anchor="middle" fill="#374151" font-size="12" font-weight="600" font-family="Plus Jakarta Sans,sans-serif">Pros / Cons</text>
+        <text x="614" y="115" fill="#1a8a4a" font-size="11" font-family="Plus Jakarta Sans,sans-serif">+ No extra network hop</text>
+        <text x="614" y="133" fill="#1a8a4a" font-size="11" font-family="Plus Jakarta Sans,sans-serif">+ Client controls LB logic</text>
+        <text x="614" y="157" fill="#d93636" font-size="11" font-family="Plus Jakarta Sans,sans-serif">− Each service needs lib</text>
+        <text x="614" y="175" fill="#d93636" font-size="11" font-family="Plus Jakarta Sans,sans-serif">− Logic in every service</text>
+      </svg>
+    </div>
+
+    <p>Used by: <strong>Netflix Eureka + Ribbon</strong>, <strong>Consul with client library</strong>. The caller must have the Consul client NuGet package, query the registry, and implement load balancing logic.</p>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ═══ S4 ═══ -->
+  <div class="section" id="s4">
+    <div class="sec-label">04</div>
+    <h2>Server-Side Discovery</h2>
+
+    <p>The calling service just uses a stable name (e.g. <code class="inline">http://payments</code>). A router, load balancer, or DNS in front of the services does the registry lookup and picks an instance. <strong>The caller knows nothing about instances.</strong></p>
+
+    <div class="diagram-card">
+      <svg viewBox="0 0 820 220" xmlns="http://www.w3.org/2000/svg">
+        <defs><marker id="a3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#6b7280" stroke-width="1.5" stroke-linecap="round"/></marker>
+        <marker id="a3g" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#1a8a4a" stroke-width="1.5" stroke-linecap="round"/></marker>
+        <marker id="a3b" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#c87600" stroke-width="1.5" stroke-linecap="round"/></marker></defs>
+
+        <!-- Orders -->
+        <rect x="20" y="85" width="145" height="50" rx="8" fill="rgba(26,110,245,.07)" stroke="rgba(26,110,245,.25)" stroke-width="1"/>
+        <text x="93" y="105" text-anchor="middle" fill="#1a3a80" font-size="12" font-weight="600" font-family="Plus Jakarta Sans,sans-serif">Orders service</text>
+        <text x="93" y="122" text-anchor="middle" fill="#1a6ef5" font-size="10" font-family="JetBrains Mono,monospace">http://payments</text>
+
+        <line x1="165" y1="110" x2="215" y2="110" stroke="#1a8a4a" stroke-width="1.5" marker-end="url(#a3g)"/>
+        <text x="190" y="100" text-anchor="middle" fill="#1a8a4a" font-size="10" font-family="Plus Jakarta Sans,sans-serif">① name only</text>
+
+        <!-- Load Balancer / Router -->
+        <rect x="217" y="72" width="170" height="76" rx="8" fill="rgba(200,118,0,.07)" stroke="rgba(200,118,0,.3)" stroke-width="1"/>
+        <text x="302" y="95" text-anchor="middle" fill="#7a4800" font-size="12" font-weight="600" font-family="Plus Jakarta Sans,sans-serif">Load Balancer</text>
+        <text x="302" y="112" text-anchor="middle" fill="#c87600" font-size="10" font-family="Plus Jakarta Sans,sans-serif">/ Router / k8s Service</text>
+        <text x="302" y="128" text-anchor="middle" fill="#c87600" font-size="10" font-family="Plus Jakarta Sans,sans-serif">queries registry internally</text>
+
+        <!-- Registry query (dashed) -->
+        <path d="M302 72 Q302 38 490 38" fill="none" stroke="#6b7280" stroke-width="1" stroke-dasharray="3 3" marker-end="url(#a3)"/>
+        <text x="395" y="26" text-anchor="middle" fill="#6b7280" font-size="10" font-family="Plus Jakarta Sans,sans-serif">queries registry</text>
+        <rect x="492" y="20" width="145" height="40" rx="8" fill="rgba(0,0,0,.03)" stroke="rgba(0,0,0,.1)" stroke-width="1"/>
+        <text x="565" y="36" text-anchor="middle" fill="#6b7280" font-size="12" font-weight="600" font-family="Plus Jakarta Sans,sans-serif">Service Registry</text>
+        <text x="565" y="50" text-anchor="middle" fill="#6b7280" font-size="10" font-family="Plus Jakarta Sans,sans-serif">Consul / k8s DNS</text>
+
+        <!-- Route to instances -->
+        <line x1="387" y1="100" x2="460" y2="80" stroke="#1a8a4a" stroke-width="1.5" marker-end="url(#a3g)"/>
+        <line x1="387" y1="120" x2="460" y2="150" stroke="#1a8a4a" stroke-width="1.5" marker-end="url(#a3g)"/>
+        <text x="424" y="95" text-anchor="middle" fill="#1a8a4a" font-size="10" font-family="Plus Jakarta Sans,sans-serif">② routes to healthy</text>
+
+        <rect x="462" y="60" width="130" height="42" rx="8" fill="rgba(107,63,160,.07)" stroke="rgba(107,63,160,.25)" stroke-width="1"/>
+        <text x="527" y="77" text-anchor="middle" fill="#4a2880" font-size="12" font-weight="600" font-family="Plus Jakarta Sans,sans-serif">Payments pod 1</text>
+        <text x="527" y="94" text-anchor="middle" fill="#6b3fa0" font-size="10" font-family="JetBrains Mono,monospace">10.0.1.4</text>
+        <rect x="462" y="130" width="130" height="42" rx="8" fill="rgba(107,63,160,.07)" stroke="rgba(107,63,160,.25)" stroke-width="1"/>
+        <text x="527" y="147" text-anchor="middle" fill="#4a2880" font-size="12" font-weight="600" font-family="Plus Jakarta Sans,sans-serif">Payments pod 2</text>
+        <text x="527" y="164" text-anchor="middle" fill="#6b3fa0" font-size="10" font-family="JetBrains Mono,monospace">10.0.1.7</text>
+
+        <!-- Pros/Cons -->
+        <rect x="615" y="60" width="185" height="120" rx="8" fill="white" stroke="rgba(0,0,0,.08)" stroke-width="1"/>
+        <text x="707" y="82" text-anchor="middle" fill="#374151" font-size="12" font-weight="600" font-family="Plus Jakarta Sans,sans-serif">Pros / Cons</text>
+        <text x="626" y="104" fill="#1a8a4a" font-size="11" font-family="Plus Jakarta Sans,sans-serif">+ Services stay simple</text>
+        <text x="626" y="122" fill="#1a8a4a" font-size="11" font-family="Plus Jakarta Sans,sans-serif">+ One place for LB logic</text>
+        <text x="626" y="146" fill="#d93636" font-size="11" font-family="Plus Jakarta Sans,sans-serif">− Extra network hop</text>
+        <text x="626" y="164" fill="#d93636" font-size="11" font-family="Plus Jakarta Sans,sans-serif">− Router = single PoF</text>
+
+        <text x="300" y="195" text-anchor="middle" fill="#6b7280" font-size="11" font-family="Plus Jakarta Sans,sans-serif">Orders sees only the name "payments" — never sees an IP. Used by: Kubernetes, AWS ALB, Nginx.</text>
+      </svg>
+    </div>
+
+    <div class="callout tip">
+      <span class="callout-icon">✅</span>
+      <div class="callout-body"><strong>Kubernetes uses server-side discovery.</strong> Your code just calls <code>http://payments</code>. CoreDNS resolves the name. kube-proxy routes to a healthy pod. You don't need any service discovery library in your code at all.</div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ═══ S5 ═══ -->
+  <div class="section" id="s5">
+    <div class="sec-label">05</div>
+    <h2>Health Checks — Heartbeat vs Active Check</h2>
+
+    <p>The registry doesn't trust that services stay healthy forever. It uses one of two mechanisms to verify. This distinction came up directly in our conversation.</p>
+
+    <div class="hc-grid">
+      <div class="hc-card hc-heartbeat">
+        <div class="hc-type">Heartbeat (push)</div>
+        <div class="hc-name">Service pushes to registry</div>
+        <div class="hc-body">
+          The <strong>service</strong> periodically sends a ping to the registry every N seconds to say "I'm still alive." If the registry stops receiving pings for 3+ intervals, it marks the instance unhealthy and removes it from lookup results.
+          <br><br>
+          <strong>Who calls who:</strong> Service → Registry<br>
+          <strong>Detection lag:</strong> ~15–30s after crash<br>
+          <strong>Used by:</strong> Eureka
+        </div>
+      </div>
+      <div class="hc-card hc-active">
+        <div class="hc-type">Active health check (pull)</div>
+        <div class="hc-name">Registry polls your /health endpoint</div>
+        <div class="hc-body">
+          The <strong>registry</strong> sends a GET request to your service's <code>/health</code> endpoint every N seconds. If it gets a 200 OK → healthy. If it gets a non-200 or the call times out → unhealthy, removed from lookups.
+          <br><br>
+          <strong>Who calls who:</strong> Registry → Service<br>
+          <strong>Detection lag:</strong> within one interval<br>
+          <strong>Used by:</strong> Consul, Kubernetes liveness probes
+        </div>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body"><strong>Common confusion:</strong> In the Consul C# example, the <code>HTTP</code> field in <code>AgentServiceCheck</code> is an <strong>active health check</strong> — you are telling Consul "call this URL every 10 seconds." Consul is the caller, not your service. This is different from a heartbeat where your service does the calling.</div>
+    </div>
+
+    <div class="diagram-card">
+      <svg viewBox="0 0 820 200" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+        <marker id="a5g" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#1a8a4a" stroke-width="1.5" stroke-linecap="round"/></marker>
+        <marker id="a5b" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#c87600" stroke-width="1.5" stroke-linecap="round"/></marker></defs>
+
+        <line x1="410" y1="20" x2="410" y2="185" stroke="rgba(0,0,0,.1)" stroke-width="1" stroke-dasharray="4 3"/>
+        <text x="205" y="18" text-anchor="middle" fill="#6b7280" font-size="11" font-weight="600" font-family="Plus Jakarta Sans,sans-serif">Heartbeat (push model)</text>
+        <text x="615" y="18" text-anchor="middle" fill="#6b7280" font-size="11" font-weight="600" font-family="Plus Jakarta Sans,sans-serif">Active health check (pull model)</text>
+
+        <rect x="20" y="38" width="130" height="42" rx="8" fill="rgba(26,138,74,.07)" stroke="rgba(26,138,74,.25)" stroke-width="1"/>
+        <text x="85" y="55" text-anchor="middle" fill="#1a6040" font-size="12" font-weight="600" font-family="Plus Jakarta Sans,sans-serif">Service</text>
+        <text x="85" y="71" text-anchor="middle" fill="#1a8a4a" font-size="10" font-family="Plus Jakarta Sans,sans-serif">sends ping every 5s</text>
+        <line x1="150" y1="59" x2="228" y2="59" stroke="#1a8a4a" stroke-width="1.5" marker-end="url(#a5g)"/>
+        <text x="189" y="50" text-anchor="middle" fill="#1a8a4a" font-size="10" font-family="Plus Jakarta Sans,sans-serif">alive!</text>
+        <rect x="230" y="38" width="130" height="42" rx="8" fill="rgba(200,118,0,.07)" stroke="rgba(200,118,0,.25)" stroke-width="1"/>
+        <text x="295" y="55" text-anchor="middle" fill="#7a4800" font-size="12" font-weight="600" font-family="Plus Jakarta Sans,sans-serif">Registry</text>
+        <text x="295" y="71" text-anchor="middle" fill="#c87600" font-size="10" font-family="Plus Jakarta Sans,sans-serif">receives heartbeat</text>
+
+        <rect x="20" y="120" width="360" height="56" rx="8" fill="white" stroke="rgba(0,0,0,.08)" stroke-width="1"/>
+        <text x="36" y="142" fill="#374151" font-size="11" font-family="Plus Jakarta Sans,sans-serif">Service sends ping every 5s to registry</text>
+        <text x="36" y="160" fill="#d93636" font-size="11" font-family="Plus Jakarta Sans,sans-serif">Crash detected if no ping for 3× intervals (15s)</text>
+
+        <rect x="460" y="38" width="130" height="42" rx="8" fill="rgba(200,118,0,.07)" stroke="rgba(200,118,0,.25)" stroke-width="1"/>
+        <text x="525" y="55" text-anchor="middle" fill="#7a4800" font-size="12" font-weight="600" font-family="Plus Jakarta Sans,sans-serif">Registry</text>
+        <text x="525" y="71" text-anchor="middle" fill="#c87600" font-size="10" font-family="Plus Jakarta Sans,sans-serif">polls service</text>
+        <line x1="590" y1="52" x2="668" y2="52" stroke="#c87600" stroke-width="1.5" marker-end="url(#a5b)"/>
+        <text x="629" y="43" text-anchor="middle" fill="#c87600" font-size="10" font-family="Plus Jakarta Sans,sans-serif">GET /health</text>
+        <line x1="668" y1="66" x2="590" y2="66" stroke="#1a8a4a" stroke-width="1.5" stroke-dasharray="3 3" marker-end="url(#a5g)"/>
+        <text x="629" y="82" text-anchor="middle" fill="#1a8a4a" font-size="10" font-family="Plus Jakarta Sans,sans-serif">200 OK</text>
+        <rect x="670" y="38" width="130" height="42" rx="8" fill="rgba(26,138,74,.07)" stroke="rgba(26,138,74,.25)" stroke-width="1"/>
+        <text x="735" y="55" text-anchor="middle" fill="#1a6040" font-size="12" font-weight="600" font-family="Plus Jakarta Sans,sans-serif">Service</text>
+        <text x="735" y="71" text-anchor="middle" fill="#1a8a4a" font-size="10" font-family="Plus Jakarta Sans,sans-serif">/health endpoint</text>
+
+        <rect x="460" y="120" width="340" height="56" rx="8" fill="white" stroke="rgba(0,0,0,.08)" stroke-width="1"/>
+        <text x="476" y="142" fill="#374151" font-size="11" font-family="Plus Jakarta Sans,sans-serif">Registry calls GET /health every 10s</text>
+        <text x="476" y="160" fill="#374151" font-size="11" font-family="Plus Jakarta Sans,sans-serif">Non-200 or timeout → unhealthy, removed</text>
+      </svg>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ═══ S6 ═══ -->
+  <div class="section" id="s6">
+    <div class="sec-label">06</div>
+    <h2>Kubernetes — Built-In Service Discovery</h2>
+
+    <p>In practice, most teams don't run Consul or Eureka separately. Kubernetes has service discovery built in via DNS and kube-proxy. This is server-side discovery — and it's completely invisible to your code.</p>
+
+    <div class="diagram-card">
+      <svg viewBox="0 0 820 310" xmlns="http://www.w3.org/2000/svg">
+        <defs><marker id="a6" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#6b7280" stroke-width="1.5" stroke-linecap="round"/></marker>
+        <marker id="a6b" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#c87600" stroke-width="1.5" stroke-linecap="round"/></marker>
+        <marker id="a6g" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#1a8a4a" stroke-width="1.5" stroke-linecap="round"/></marker>
+        <marker id="a6bl" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#1a6ef5" stroke-width="1.5" stroke-linecap="round"/></marker></defs>
+
+        <!-- Cluster container -->
+        <rect x="15" y="15" width="790" height="265" rx="14" fill="rgba(0,0,0,.02)" stroke="rgba(0,0,0,.12)" stroke-width="1.5" stroke-dasharray="6 4"/>
+        <text x="40" y="38" fill="#6b7280" font-size="12" font-weight="600" font-family="Plus Jakarta Sans,sans-serif">Kubernetes cluster</text>
+
+        <!-- Orders pod -->
+        <rect x="38" y="55" width="145" height="80" rx="8" fill="rgba(26,110,245,.07)" stroke="rgba(26,110,245,.25)" stroke-width="1"/>
+        <text x="111" y="78" text-anchor="middle" fill="#1a3a80" font-size="12" font-weight="600" font-family="Plus Jakarta Sans,sans-serif">Orders pod</text>
+        <text x="111" y="96" text-anchor="middle" fill="#6b7280" font-size="10" font-family="Plus Jakarta Sans,sans-serif">just calls:</text>
+        <text x="111" y="112" text-anchor="middle" fill="#1a6ef5" font-size="11" font-weight="600" font-family="JetBrains Mono,monospace">http://payments</text>
+        <text x="111" y="128" text-anchor="middle" fill="#6b7280" font-size="9" font-family="Plus Jakarta Sans,sans-serif">no IP needed</text>
+
+        <!-- Arrow 1: DNS lookup -->
+        <line x1="183" y1="95" x2="236" y2="95" stroke="#c87600" stroke-width="1.5" marker-end="url(#a6b)"/>
+        <text x="210" y="86" text-anchor="middle" fill="#c87600" font-size="10" font-family="Plus Jakarta Sans,sans-serif">DNS lookup</text>
+
+        <!-- k8s Service -->
+        <rect x="238" y="65" width="170" height="60" rx="8" fill="rgba(200,118,0,.07)" stroke="rgba(200,118,0,.3)" stroke-width="1"/>
+        <text x="323" y="86" text-anchor="middle" fill="#7a4800" font-size="12" font-weight="600" font-family="Plus Jakarta Sans,sans-serif">k8s Service</text>
+        <text x="323" y="103" text-anchor="middle" fill="#c87600" font-size="10" font-family="Plus Jakarta Sans,sans-serif">stable virtual IP (ClusterIP)</text>
+        <text x="323" y="118" text-anchor="middle" fill="#c87600" font-size="10" font-family="JetBrains Mono,monospace">ClusterIP: 10.96.0.5</text>
+
+        <!-- kube-proxy routes -->
+        <line x1="408" y1="85" x2="478" y2="68" stroke="#1a8a4a" stroke-width="1.5" marker-end="url(#a6g)"/>
+        <line x1="408" y1="105" x2="478" y2="148" stroke="#1a8a4a" stroke-width="1.5" marker-end="url(#a6g)"/>
+        <text x="440" y="76" text-anchor="middle" fill="#1a8a4a" font-size="10" font-family="Plus Jakarta Sans,sans-serif">routes</text>
+
+        <!-- Payments pods -->
+        <rect x="480" y="45" width="145" height="50" rx="8" fill="rgba(107,63,160,.07)" stroke="rgba(107,63,160,.25)" stroke-width="1"/>
+        <text x="553" y="65" text-anchor="middle" fill="#4a2880" font-size="12" font-weight="600" font-family="Plus Jakarta Sans,sans-serif">Payments pod 1</text>
+        <text x="553" y="82" text-anchor="middle" fill="#6b3fa0" font-size="10" font-family="JetBrains Mono,monospace">10.0.1.4:8002</text>
+        <rect x="480" y="130" width="145" height="50" rx="8" fill="rgba(107,63,160,.07)" stroke="rgba(107,63,160,.25)" stroke-width="1"/>
+        <text x="553" y="150" text-anchor="middle" fill="#4a2880" font-size="12" font-weight="600" font-family="Plus Jakarta Sans,sans-serif">Payments pod 2</text>
+        <text x="553" y="167" text-anchor="middle" fill="#6b3fa0" font-size="10" font-family="JetBrains Mono,monospace">10.0.1.7:8002</text>
+
+        <!-- CoreDNS -->
+        <rect x="660" y="55" width="120" height="80" rx="8" fill="rgba(26,110,245,.07)" stroke="rgba(26,110,245,.2)" stroke-width="1"/>
+        <text x="720" y="79" text-anchor="middle" fill="#1a3a80" font-size="12" font-weight="600" font-family="Plus Jakarta Sans,sans-serif">CoreDNS</text>
+        <text x="720" y="97" text-anchor="middle" fill="#1a6ef5" font-size="10" font-family="Plus Jakarta Sans,sans-serif">resolves name</text>
+        <text x="720" y="112" text-anchor="middle" fill="#1a6ef5" font-size="10" font-family="Plus Jakarta Sans,sans-serif">→ ClusterIP</text>
+        <text x="720" y="127" text-anchor="middle" fill="#1a6ef5" font-size="9" font-family="Plus Jakarta Sans,sans-serif">(kube-proxy updates)</text>
+        <path d="M408" cy="95" d="M408 95 Q560 95 658 95" fill="none" stroke="#1a6ef5" stroke-width="1" stroke-dasharray="3 3" marker-end="url(#a6bl)"/>
+
+        <!-- kube-proxy note -->
+        <rect x="38" y="190" width="750" height="68" rx="8" fill="white" stroke="rgba(0,0,0,.08)" stroke-width="1"/>
+        <text x="55" y="212" fill="#374151" font-size="12" font-weight="600" font-family="Plus Jakarta Sans,sans-serif">How it works in code:</text>
+        <text x="55" y="232" fill="#6b7280" font-size="11" font-family="JetBrains Mono,monospace">await _http.GetAsync("http://payments/api/orders");  // that's it — k8s handles the rest</text>
+        <text x="55" y="250" fill="#1a8a4a" font-size="11" font-family="Plus Jakarta Sans,sans-serif">kube-proxy watches pod health and updates routing table. Dead pods removed within seconds automatically.</text>
+      </svg>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ═══ S7 ═══ -->
+  <div class="section" id="s7">
+    <div class="sec-label">07</div>
+    <h2>C# — Consul Implementation (Corrected)</h2>
+
+    <p>This is a <strong>client-side discovery</strong> implementation. The key correction from our discussion: the service must <strong>not hardcode its own IP</strong>. It discovers its IP dynamically at runtime. Each running instance registers with its own actual current address.</p>
+
+    <div class="callout correction">
+      <span class="callout-icon">🔧</span>
+      <div class="callout-body"><strong>Correction from session:</strong> The original example showed <code>Address = "10.0.1.4"</code> — hardcoded. That defeats the entire purpose. In the real version, the service discovers its own IP dynamically using <code>Dns.GetHostEntry</code> or an environment variable injected by Kubernetes.</div>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">bash — Install</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+      <pre><code>dotnet add package Consul</code></pre>
+    </div>
+
+    <h3>Part 1 — The Service That Registers Itself</h3>
+    <p>This is the Payments service registering with Consul on startup. Each running instance discovers its own IP dynamically and registers independently.</p>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">C# — Program.cs (Payments service)</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+      <pre><code>builder.Services.AddSingleton&lt;<span class="typ">IConsulClient</span>&gt;(
+    <span class="kw">new</span> <span class="typ">ConsulClient</span>(cfg =&gt; cfg.Address = <span class="kw">new</span> Uri(<span class="str">"http://consul:8500"</span>)));
+
+<span class="kw">var</span> lifetime = app.Lifetime;
+<span class="kw">var</span> consul   = app.Services.GetRequiredService&lt;<span class="typ">IConsulClient</span>&gt;();
+
+lifetime.ApplicationStarted.Register(<span class="kw">async</span> () =&gt;
+{
+    <span class="cm">// ✅ Discover own IP dynamically — NOT hardcoded</span>
+    <span class="cm">// Option A: Kubernetes injects POD_IP environment variable</span>
+    <span class="kw">var</span> ip = Environment.GetEnvironmentVariable(<span class="str">"POD_IP"</span>)
+    <span class="cm">// Option B: Resolve hostname to IP (non-Kubernetes environments)</span>
+          ?? Dns.GetHostEntry(Dns.GetHostName())
+                .AddressList
+                .First(a =&gt; a.AddressFamily == AddressFamily.InterNetwork)
+                .ToString();
+
+    <span class="kw">var</span> port = <span class="kw">int</span>.Parse(Environment.GetEnvironmentVariable(<span class="str">"APP_PORT"</span>) ?? <span class="str">"8002"</span>);
+
+    <span class="kw">var</span> registration = <span class="kw">new</span> <span class="typ">AgentServiceRegistration</span>
+    {
+        <span class="cm">// Unique per instance — e.g. "payments-10.0.1.4-8002"</span>
+        ID      = <span class="str">$"payments-{ip}-{port}"</span>,
+        Name    = <span class="str">"payments"</span>,  <span class="cm">// stable name — what callers look up</span>
+        Address = ip,           <span class="cm">// dynamic — different for every pod</span>
+        Port    = port,
+        Check   = <span class="kw">new</span> <span class="typ">AgentServiceCheck</span>
+        {
+            <span class="cm">// ACTIVE HEALTH CHECK — Consul calls this URL every 10s</span>
+            <span class="cm">// Consul is the CALLER, not this service</span>
+            <span class="cm">// 200 OK = healthy, stays listed</span>
+            <span class="cm">// Non-200 or timeout = unhealthy, removed from lookups</span>
+            HTTP     = <span class="str">$"http://{ip}:{port}/health"</span>,
+            Interval = TimeSpan.FromSeconds(<span class="num">10</span>),
+            Timeout  = TimeSpan.FromSeconds(<span class="num">3</span>)
+        }
+    };
+
+    <span class="kw">await</span> consul.Agent.ServiceRegister(registration);
+});
+
+<span class="cm">// Graceful deregister on shutdown — don't wait for health check to fail</span>
+lifetime.ApplicationStopping.Register(<span class="kw">async</span> () =&gt;
+{
+    <span class="kw">await</span> consul.Agent.ServiceDeregister(<span class="str">$"payments-{ip}-{port}"</span>);
+});
+
+<span class="cm">// ── Your /health endpoint ──────────────────────────────────────────</span>
+app.MapGet(<span class="str">"/health"</span>, () =&gt; Results.Ok(<span class="kw">new</span> { status = <span class="str">"healthy"</span> }));</code></pre>
+    </div>
+
+    <h3>Part 2 — The Caller (Orders Service)</h3>
+    <p>This is the Orders service querying Consul to find a healthy Payments instance, then calling it directly. This is client-side discovery — the lookup logic lives in the calling service.</p>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">C# — PaymentsClient.cs (Orders service)</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+      <pre><code><span class="kw">public class</span> <span class="typ">PaymentsClient</span>
+{
+    <span class="kw">private readonly</span> <span class="typ">IConsulClient</span> _consul;
+    <span class="kw">private readonly</span> <span class="typ">HttpClient</span>    _http;
+
+    <span class="kw">public</span> PaymentsClient(<span class="typ">IConsulClient</span> consul, <span class="typ">HttpClient</span> http)
+    {
+        _consul = consul;
+        _http   = http;
+    }
+
+    <span class="kw">public async</span> Task&lt;<span class="typ">PaymentResult</span>&gt; ChargeAsync(<span class="typ">PaymentRequest</span> req)
+    {
+        <span class="cm">// Ask Consul: "give me healthy Payments instances right now"</span>
+        <span class="kw">var</span> services  = <span class="kw">await</span> _consul.Health.Service(<span class="str">"payments"</span>, passing: <span class="kw">true</span>);
+        <span class="kw">var</span> instances = services.Response;
+
+        <span class="kw">if</span> (!instances.Any())
+            <span class="kw">throw new</span> <span class="typ">ServiceUnavailableException</span>(<span class="str">"No healthy Payments instances found"</span>);
+
+        <span class="cm">// Simple random load balancing — pick one instance</span>
+        <span class="kw">var</span> instance = instances[Random.Shared.Next(instances.Length)];
+        <span class="kw">var</span> url      = <span class="str">$"http://{instance.Service.Address}:{instance.Service.Port}"</span>;
+
+        <span class="cm">// Call that specific IP directly — no registry in the call path</span>
+        <span class="kw">var</span> response = <span class="kw">await</span> _http.PostAsJsonAsync(<span class="str">$"{url}/api/payments"</span>, req);
+        response.EnsureSuccessStatusCode();
+        <span class="kw">return await</span> response.Content.ReadFromJsonAsync&lt;<span class="typ">PaymentResult</span>&gt;();
+    }
+}
+
+<span class="cm">// ⚠️ Performance note: cache lookup results for a few seconds</span>
+<span class="cm">// Calling Consul on EVERY request adds latency unnecessarily</span>
+<span class="cm">// Refresh the cached list in the background</span></code></pre>
+    </div>
+
+    <div class="callout info">
+      <span class="callout-icon">💡</span>
+      <div class="callout-body"><strong>Why this is client-side discovery:</strong> The Orders service contains the Consul client library, makes the registry lookup call, and performs the load balancing (picks an instance). The discovery logic lives inside the calling service — not in a separate router.</div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ═══ S8 ═══ -->
+  <div class="section" id="s8">
+    <div class="sec-label">08</div>
+    <h2>Important Corrections from Discussion</h2>
+
+    <div class="correction-box">
+      <div class="correction-title">🔧 Correction 1 — IP should be dynamic, not hardcoded</div>
+      <div class="correction-body">
+        <strong>What was wrong:</strong> The initial example showed <code>Address = "10.0.1.4"</code> hardcoded.
+        <br><br>
+        <strong>Why it's wrong:</strong> If the IP is hardcoded, you don't need service discovery at all. The whole point is that each instance discovers its own current IP at startup and registers it. When Kubernetes restarts a pod, the new pod gets a different IP and registers that automatically.
+        <br><br>
+        <strong>The fix:</strong> Use <code>Environment.GetEnvironmentVariable("POD_IP")</code> (Kubernetes injects this) or <code>Dns.GetHostEntry(Dns.GetHostName())</code> as a fallback.
+      </div>
+    </div>
+
+    <div class="correction-box">
+      <div class="correction-title">🔧 Correction 2 — The /health endpoint is an active check, called by Consul</div>
+      <div class="correction-body">
+        <strong>What was asked:</strong> Is <code>HTTP = "http://ip:port/health"</code> a heartbeat or active check, and who calls it?
+        <br><br>
+        <strong>Answer:</strong> It is an <strong>active health check</strong>. <strong>Consul</strong> calls this endpoint — not your service. You are telling Consul: "every 10 seconds, send a GET request to this URL. If you get 200, I'm healthy. Otherwise remove me."
+        <br><br>
+        The flow is: <code>Consul registry → GET /health → your Payments service → 200 OK → stays listed</code>
+      </div>
+    </div>
+
+    <div class="correction-box">
+      <div class="correction-title">🔧 Correction 3 — The Consul example is client-side, not server-side discovery</div>
+      <div class="correction-body">
+        <strong>Confirmed from discussion:</strong> The Consul C# example is indeed <strong>client-side discovery</strong>. The Orders service contains the Consul client library, explicitly queries the registry, picks an instance, and calls its IP directly.
+        <br><br>
+        <strong>Contrast with Kubernetes:</strong> In Kubernetes, your code just calls <code>http://payments</code> — no Consul library, no explicit lookup, no IP selection. That's server-side discovery. k8s handles everything invisibly.
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ═══ S9 ═══ -->
+  <div class="section" id="s9">
+    <div class="sec-label">09</div>
+    <h2>Full Lifecycle — Interactive</h2>
+
+    <p>Walk through the complete lifecycle: startup → register → heartbeat → lookup → call → crash → detection → removal.</p>
+
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin:16px 0">
+      <svg id="lc-svg" width="100%" viewBox="0 0 680 190">
+        <defs><marker id="alc" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#6b7280" stroke-width="1.5" stroke-linecap="round"/></marker>
+        <marker id="alcg" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#1a8a4a" stroke-width="1.5" stroke-linecap="round"/></marker>
+        <marker id="alcb" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#c87600" stroke-width="1.5" stroke-linecap="round"/></marker>
+        <marker id="alcr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#d93636" stroke-width="1.5" stroke-linecap="round"/></marker></defs>
+
+        <g id="lc-svc">
+          <rect x="18" y="72" width="120" height="50" rx="8" fill="rgba(26,138,74,.07)" stroke="rgba(26,138,74,.25)" stroke-width="1"/>
+          <text x="78" y="91" text-anchor="middle" fill="#1a6040" font-size="12" font-weight="600" font-family="Plus Jakarta Sans,sans-serif">Payments</text>
+          <text id="lc-svc-sub" x="78" y="109" text-anchor="middle" fill="#1a8a4a" font-size="10" font-family="Plus Jakarta Sans,sans-serif">starting...</text>
+        </g>
+        <g id="lc-reg">
+          <rect x="258" y="72" width="164" height="50" rx="8" fill="rgba(200,118,0,.07)" stroke="rgba(200,118,0,.25)" stroke-width="1"/>
+          <text x="340" y="91" text-anchor="middle" fill="#7a4800" font-size="12" font-weight="600" font-family="Plus Jakarta Sans,sans-serif">Service Registry</text>
+          <text id="lc-reg-sub" x="340" y="109" text-anchor="middle" fill="#c87600" font-size="10" font-family="Plus Jakarta Sans,sans-serif">empty</text>
+        </g>
+        <g id="lc-caller">
+          <rect x="530" y="72" width="130" height="50" rx="8" fill="rgba(107,63,160,.07)" stroke="rgba(107,63,160,.2)" stroke-width="1"/>
+          <text x="595" y="91" text-anchor="middle" fill="#4a2880" font-size="12" font-weight="600" font-family="Plus Jakarta Sans,sans-serif">Orders service</text>
+          <text id="lc-caller-sub" x="595" y="109" text-anchor="middle" fill="#6b3fa0" font-size="10" font-family="Plus Jakarta Sans,sans-serif">needs payments</text>
+        </g>
+
+        <line id="lc-a1" x1="138" y1="90" x2="256" y2="90" stroke="#1a8a4a" stroke-width="1.5" marker-end="url(#alcg)" opacity="0.1"/>
+        <line id="lc-a2" x1="256" y1="107" x2="138" y2="107" stroke="#1a8a4a" stroke-width="1.5" stroke-dasharray="3 3" marker-end="url(#alcg)" opacity="0.1"/>
+        <line id="lc-a3" x1="530" y1="90" x2="424" y2="90" stroke="#c87600" stroke-width="1.5" marker-end="url(#alcb)" opacity="0.1"/>
+        <line id="lc-a4" x1="424" y1="107" x2="530" y2="107" stroke="#c87600" stroke-width="1.5" stroke-dasharray="3 3" marker-end="url(#alcb)" opacity="0.1"/>
+        <line id="lc-a5" x1="138" y1="97" x2="528" y2="97" stroke="#6b3fa0" stroke-width="1.5" marker-end="url(#alc)" opacity="0.1"/>
+
+        <text id="lc-l1" x="197" y="82" text-anchor="middle" fill="#1a8a4a" font-size="10" font-family="Plus Jakarta Sans,sans-serif" opacity="0">register</text>
+        <text id="lc-l2" x="197" y="118" text-anchor="middle" fill="#1a8a4a" font-size="10" font-family="Plus Jakarta Sans,sans-serif" opacity="0">heartbeat</text>
+        <text id="lc-l3" x="477" y="82" text-anchor="middle" fill="#c87600" font-size="10" font-family="Plus Jakarta Sans,sans-serif" opacity="0">lookup</text>
+        <text id="lc-l4" x="477" y="118" text-anchor="middle" fill="#c87600" font-size="10" font-family="Plus Jakarta Sans,sans-serif" opacity="0">IPs returned</text>
+        <text id="lc-l5" x="333" y="158" text-anchor="middle" fill="#6b3fa0" font-size="10" font-family="Plus Jakarta Sans,sans-serif" opacity="0">direct call to IP</text>
+
+        <g id="lc-dead" style="opacity:0">
+          <rect x="18" y="72" width="120" height="50" rx="8" fill="rgba(217,54,54,.1)" stroke="rgba(217,54,54,.4)" stroke-width="1.5"/>
+          <text x="78" y="91" text-anchor="middle" fill="#9a2020" font-size="12" font-weight="600" font-family="Plus Jakarta Sans,sans-serif">Payments</text>
+          <text x="78" y="109" text-anchor="middle" fill="#d93636" font-size="10" font-family="Plus Jakarta Sans,sans-serif">CRASHED</text>
+        </g>
+      </svg>
+
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin:12px 0 8px" id="lc-btns">
+        <button id="lb0" onclick="lc(0)">Reset</button>
+        <button id="lb1" onclick="lc(1)">1 — startup + register</button>
+        <button id="lb2" onclick="lc(2)">2 — heartbeat running</button>
+        <button id="lb3" onclick="lc(3)">3 — caller looks up</button>
+        <button id="lb4" onclick="lc(4)">4 — direct call</button>
+        <button id="lb5" onclick="lc(5)">5 — service crashes</button>
+      </div>
+      <div class="sim-note" id="lc-note">Step through the complete lifecycle of a service in a registry.</div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ═══ S10 ═══ -->
+  <div class="section" id="s10">
+    <div class="sec-label">10</div>
+    <h2>Tool Comparison — Consul vs Eureka vs Kubernetes DNS</h2>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Feature</th><th>Consul</th><th>Eureka (Netflix)</th><th>Kubernetes DNS</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Discovery type</strong></td>
+            <td>Client-side or server-side</td>
+            <td>Client-side</td>
+            <td><span class="bdg bdg-g">Server-side</span></td>
+          </tr>
+          <tr>
+            <td><strong>Health checks</strong></td>
+            <td>Active (HTTP/TCP/script)</td>
+            <td>Heartbeat only</td>
+            <td>Liveness + Readiness probes</td>
+          </tr>
+          <tr>
+            <td><strong>Discovery in code</strong></td>
+            <td>Yes — explicit lookup</td>
+            <td>Yes — explicit lookup</td>
+            <td><span class="bdg bdg-g">No — just use DNS name</span></td>
+          </tr>
+          <tr>
+            <td><strong>Extra infra needed</strong></td>
+            <td><span class="bdg bdg-r">Yes — run Consul cluster</span></td>
+            <td><span class="bdg bdg-r">Yes — run Eureka server</span></td>
+            <td><span class="bdg bdg-g">No — built into k8s</span></td>
+          </tr>
+          <tr>
+            <td><strong>Best for</strong></td>
+            <td>Any environment, rich features, multi-DC</td>
+            <td>JVM / Spring Boot apps</td>
+            <td>Any app running on Kubernetes</td>
+          </tr>
+          <tr>
+            <td><strong>Multi-datacenter</strong></td>
+            <td><span class="bdg bdg-g">Yes — built-in</span></td>
+            <td>Complex, needs custom setup</td>
+            <td>Via federation / multi-cluster</td>
+          </tr>
+          <tr>
+            <td><strong>Service mesh support</strong></td>
+            <td>Yes — Consul Connect</td>
+            <td>No</td>
+            <td>Yes — via Istio/Linkerd</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout tip">
+      <span class="callout-icon">✅</span>
+      <div class="callout-body"><strong>Interview advice:</strong> If asked "which would you choose?", say: If you're on Kubernetes (which is most teams today), use Kubernetes DNS — it's free, built-in, and requires zero code changes. Use Consul if you need multi-datacenter, non-k8s environments, or rich health check types. Eureka is mainly a JVM/Spring ecosystem choice.</div>
+    </div>
+
+    <h3>What Happens if the Registry Goes Down?</h3>
+    <p>This is a common interview follow-up. The answer:</p>
+    <div class="steps">
+      <div class="step-row">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <div class="step-title">Cached addresses keep working temporarily</div>
+          <div class="step-desc">Services that already looked up addresses and cached them locally can keep making calls for a while — the registry isn't in the call path, only in the lookup path.</div>
+        </div>
+      </div>
+      <div class="step-row">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <div class="step-title">New lookups fail</div>
+          <div class="step-desc">Any service that tries to discover a new dependency it hasn't cached will fail. New instances trying to register also can't register.</div>
+        </div>
+      </div>
+      <div class="step-row">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <div class="step-title">Mitigation — run the registry as a cluster</div>
+          <div class="step-desc">Consul, Eureka, and Kubernetes etcd all run as clustered multi-node systems with replication. A single node going down doesn't take the registry offline. This is why you never run a single-node registry in production.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ═══ S11 ═══ -->
+  <div class="section" id="s11">
+    <div class="sec-label">11</div>
+    <h2>Interview Q&A</h2>
+
+    <div class="qa-list">
+      <div class="qa-item">
+        <div class="qa-q">What is service discovery and why do microservices need it?</div>
+        <div class="qa-a">Services in cloud environments have dynamic IPs that change constantly — pods restart, scale up, get replaced. Service discovery provides a registry that always has the current list of healthy instances. Without it you'd need to manually update config files every time an IP changes, which is impossible at scale.</div>
+      </div>
+      <div class="qa-item">
+        <div class="qa-q">What is the difference between client-side and server-side discovery?</div>
+        <div class="qa-a">Client-side: the calling service queries the registry itself, picks an instance, and calls it directly. The discovery logic lives in the calling service — it needs the registry client library. Server-side: a router or load balancer sits in front of services and does the registry lookup. The caller just uses a stable name. Kubernetes uses server-side — your code calls <code>http://payments</code> and k8s handles everything.</div>
+      </div>
+      <div class="qa-item">
+        <div class="qa-q">What is a health check, and what types exist?</div>
+        <div class="qa-a">A check the registry uses to verify a service is alive. Two types: <strong>heartbeat</strong> — the service pushes periodic pings to the registry (used by Eureka); <strong>active check</strong> — the registry calls the service's <code>/health</code> endpoint on an interval (used by Consul, Kubernetes liveness probes). Active checks give faster detection. Kubernetes also adds readiness probes specifically to stop routing traffic to a pod that's alive but not yet ready.</div>
+      </div>
+      <div class="qa-item">
+        <div class="qa-q">In Consul, who calls the /health endpoint?</div>
+        <div class="qa-a"><strong>Consul calls it</strong> — not your service. When you register with Consul and provide an HTTP check URL, you're telling Consul "call this endpoint every N seconds." If Consul gets a 200 OK, the service stays listed. If it gets a non-200 or a timeout, Consul marks it unhealthy and removes it from lookup results. This is an active health check (pull model), not a heartbeat (push model).</div>
+      </div>
+      <div class="qa-item">
+        <div class="qa-q">Should a service hardcode its own IP when registering with Consul?</div>
+        <div class="qa-a">Never. If the IP is hardcoded, service discovery has no value because IPs change on every pod restart. The service must discover its own current IP dynamically at startup — using the <code>POD_IP</code> environment variable (injected by Kubernetes) or <code>Dns.GetHostEntry(Dns.GetHostName())</code> as a fallback. Each running instance registers its own actual IP independently.</div>
+      </div>
+      <div class="qa-item">
+        <div class="qa-q">Is the registry in the critical call path between services?</div>
+        <div class="qa-a">No — and this is important. The registry is only used for <strong>discovery</strong> (lookup phase), not for routing. After Orders service gets the Payments IP from the registry, it calls that IP directly. The registry is not involved in the actual HTTP call. This is why a brief registry outage doesn't immediately break all service communication — cached addresses still work.</div>
+      </div>
+      <div class="qa-item">
+        <div class="qa-q">What happens if the service registry goes down?</div>
+        <div class="qa-a">Services with cached addresses can keep making calls temporarily (registry is not in the call path). New lookups fail. New instances can't register. Mitigation: run the registry as a replicated cluster (Consul Raft, Eureka peer replication, k8s etcd cluster) so a single node failure doesn't bring down the registry. Never run a single-node registry in production.</div>
+      </div>
+      <div class="qa-item">
+        <div class="qa-q">Do you need a service discovery library when running on Kubernetes?</div>
+        <div class="qa-a">No. Kubernetes provides server-side discovery built-in via CoreDNS and kube-proxy. Your code just calls <code>http://service-name</code> — the DNS name resolves to a stable ClusterIP, and kube-proxy routes that to a healthy pod. Dead pods are automatically removed from routing within seconds. Zero library code required.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    Service Discovery — Microservices Topic 5 · C# / .NET · Interview Prep
+  </div>
+
+</div>
+
+<script>
+// ── Lifecycle Interactive ──
+const lcData = [
+  { svcSub:'starting...', regSub:'empty', callerSub:'needs payments',
+    lines:[], lbls:[], dead:false,
+    note:'The registry is empty. The Payments service is starting up.' },
+  { svcSub:'registered!', regSub:'payments → 10.0.1.4:8002',  callerSub:'needs payments',
+    lines:['lc-a1'], lbls:['lc-l1'], dead:false,
+    note:'Step 1: Service discovers its own IP dynamically and calls AgentServiceRegister() on startup. The registry now has one Payments entry.' },
+  { svcSub:'sending heartbeats', regSub:'payments → healthy ✓', callerSub:'needs payments',
+    lines:['lc-a2'], lbls:['lc-l2'], dead:false,
+    note:'Step 2: Active health check running — Consul calls GET /health every 10s. If checks stop passing, service is marked unhealthy and removed from lookup results.' },
+  { svcSub:'healthy', regSub:'payments → 10.0.1.4:8002', callerSub:'looking up...',
+    lines:['lc-a3','lc-a4'], lbls:['lc-l3','lc-l4'], dead:false,
+    note:'Step 3: Orders service asks the registry "give me healthy Payments instances." Registry returns the current IP and port.' },
+  { svcSub:'handling request', regSub:'payments → healthy ✓', callerSub:'calling directly',
+    lines:['lc-a5'], lbls:['lc-l5'], dead:false,
+    note:'Step 4: Orders calls the Payments IP directly — the registry is NOT in this call. Only used for discovery, not routing. This is why registry downtime doesn\'t break existing calls.' },
+  { svcSub:'CRASHED', regSub:'payments → removed ✗', callerSub:'next lookup: empty',
+    lines:[], lbls:[], dead:true,
+    note:'Step 5: Service crashes. Active health check fails (no 200 response). Consul detects this within ~15 seconds and removes the instance. Next lookup returns empty or other healthy instances.' },
+];
+
+function lc(i) {
+  document.querySelectorAll('#lc-btns button').forEach((b,j) => {
+    b.classList.remove('act-ok','act-info','act-fail');
+    if (j===i) b.classList.add(i===5?'act-fail':'act-ok');
+  });
+  const s = lcData[i];
+  document.getElementById('lc-svc-sub').textContent    = s.svcSub;
+  document.getElementById('lc-reg-sub').textContent    = s.regSub;
+  document.getElementById('lc-caller-sub').textContent = s.callerSub;
+  document.getElementById('lc-note').textContent       = s.note;
+
+  const allLines = ['lc-a1','lc-a2','lc-a3','lc-a4','lc-a5'];
+  const allLbls  = ['lc-l1','lc-l2','lc-l3','lc-l4','lc-l5'];
+  allLines.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.opacity = s.lines.includes(id) ? '1' : '0.08';
+  });
+  allLbls.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.opacity = s.lbls.includes(id) ? '1' : '0';
+  });
+
+  document.getElementById('lc-dead').style.opacity = s.dead ? '1' : '0';
+  const svc = document.getElementById('lc-svc');
+  if (i===0) { svc.style.opacity='1'; }
+}
+lc(0);
+</script>
+</body>
+</html>

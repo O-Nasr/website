@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Circuit Breaker, Retry & Timeout — Complete Study Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:       #0b0d11;
+  --surface:  #121520;
+  --surface2: #181d28;
+  --border:   rgba(255,255,255,0.06);
+  --border2:  rgba(255,255,255,0.12);
+  --accent:   #3b82f6;
+  --green:    #22c55e;
+  --amber:    #f59e0b;
+  --red:      #ef4444;
+  --teal:     #14b8a6;
+  --purple:   #a855f7;
+  --text:     #e2e8f0;
+  --muted:    #7d8a9c;
+  --code-bg:  #080a0f;
+  --r:        10px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font-size:15px;line-height:1.75;padding:0}
+
+/* ── LAYOUT ── */
+.page{max-width:960px;margin:0 auto;padding:0 28px 100px}
+
+/* ── HERO ── */
+.hero{padding:72px 28px 60px;max-width:960px;margin:0 auto;position:relative;overflow:hidden;border-bottom:1px solid var(--border)}
+.hero::before{content:'';position:absolute;top:-80px;right:-60px;width:520px;height:520px;background:radial-gradient(circle,rgba(59,130,246,.09) 0%,transparent 65%);pointer-events:none}
+.hero::after{content:'';position:absolute;bottom:-40px;left:-40px;width:300px;height:300px;background:radial-gradient(circle,rgba(239,68,68,.06) 0%,transparent 65%);pointer-events:none}
+.badge{display:inline-flex;align-items:center;gap:6px;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:500;color:var(--accent);background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.25);padding:4px 12px;border-radius:20px;letter-spacing:.06em;margin-bottom:22px}
+.badge-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+h1{font-size:clamp(34px,5vw,58px);font-weight:700;line-height:1.1;letter-spacing:-.03em;margin-bottom:16px;background:linear-gradient(135deg,#e2e8f0 0%,#64748b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-sub{font-size:16px;color:var(--muted);max-width:540px;line-height:1.7}
+.hero-tags{display:flex;gap:10px;margin-top:24px;flex-wrap:wrap}
+.hero-tag{font-size:12px;color:var(--muted);background:var(--surface);border:1px solid var(--border);padding:3px 12px;border-radius:20px}
+
+/* ── TOC ── */
+.toc{margin:36px 0;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:24px 28px}
+.toc-title{font-size:10px;font-weight:600;color:var(--muted);letter-spacing:.14em;text-transform:uppercase;margin-bottom:14px}
+.toc ol{list-style:none;counter-reset:t;display:grid;grid-template-columns:1fr 1fr;gap:5px 24px}
+.toc li{counter-increment:t;display:flex;gap:10px;align-items:baseline}
+.toc li::before{content:counter(t,decimal-leading-zero);font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--accent);opacity:.55;flex-shrink:0}
+.toc a{color:var(--muted);text-decoration:none;font-size:13px;transition:color .15s}
+.toc a:hover{color:var(--text)}
+
+/* ── SECTIONS ── */
+.section{padding-top:64px}
+.sec-label{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);margin-bottom:10px;display:flex;align-items:center;gap:10px}
+.sec-label::after{content:'';flex:1;height:1px;background:var(--border)}
+h2{font-size:28px;font-weight:700;letter-spacing:-.025em;margin-bottom:14px;line-height:1.25}
+h3{font-size:18px;font-weight:600;margin:30px 0 12px;color:var(--text)}
+h4{font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin:24px 0 10px}
+p{color:var(--muted);margin-bottom:14px;line-height:1.75}
+p strong{color:var(--text);font-weight:600}
+
+/* ── CODE ── */
+.code-block{background:var(--code-bg);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin:20px 0}
+.code-header{display:flex;align-items:center;justify-content:space-between;padding:9px 16px;background:rgba(255,255,255,.02);border-bottom:1px solid var(--border)}
+.code-lang{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--accent);font-weight:600;letter-spacing:.1em;text-transform:uppercase}
+.code-dots{display:flex;gap:5px}
+.code-dots span{width:9px;height:9px;border-radius:50%}
+.code-dots span:nth-child(1){background:#ef4444}
+.code-dots span:nth-child(2){background:#f59e0b}
+.code-dots span:nth-child(3){background:#22c55e}
+pre{padding:20px;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.75}
+code{color:#c9d1e0}
+.kw{color:#7c9ef5}.cm{color:#3d4f66;font-style:italic}.str{color:#86e0a8}.typ{color:#e8a96e}.num{color:#c3a6e0}.ok{color:#22c55e}.bad{color:#ef4444}.warn{color:#f59e0b}.hi{color:#f59e0b;font-weight:700}
+
+/* ── CALLOUTS ── */
+.callout{border-radius:var(--r);padding:14px 18px;margin:18px 0;border-left:3px solid;display:flex;gap:12px;align-items:flex-start}
+.callout-icon{font-size:14px;flex-shrink:0;margin-top:2px}
+.callout-body{flex:1;font-size:13px;line-height:1.65}
+.callout-body strong{font-weight:600}
+.callout.info{background:rgba(59,130,246,.07);border-color:var(--accent)}
+.callout.info .callout-body{color:#93b8f8}
+.callout.tip{background:rgba(34,197,94,.07);border-color:var(--green)}
+.callout.tip .callout-body{color:#86efac}
+.callout.warn{background:rgba(245,158,11,.07);border-color:var(--amber)}
+.callout.warn .callout-body{color:#fcd34d}
+.callout.danger{background:rgba(239,68,68,.07);border-color:var(--red)}
+.callout.danger .callout-body{color:#fca5a5}
+
+/* ── DIAGRAM CARDS ── */
+.diagram-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:28px;margin:22px 0;overflow:hidden}
+.diagram-card svg{width:100%;display:block}
+
+/* ── TABLES ── */
+.table-wrap{overflow-x:auto;margin:18px 0}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:480px}
+th{text-align:left;padding:10px 14px;background:rgba(255,255,255,.03);color:var(--text);font-weight:600;font-size:11px;letter-spacing:.06em;border-bottom:1px solid var(--border2)}
+td{padding:10px 14px;color:var(--muted);border-bottom:1px solid var(--border);vertical-align:top;line-height:1.5}
+tr:last-child td{border-bottom:none}
+td strong{color:var(--text)}
+.bdg{display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600;letter-spacing:.04em;white-space:nowrap}
+.bdg-g{background:rgba(34,197,94,.15);color:var(--green)}
+.bdg-r{background:rgba(239,68,68,.15);color:var(--red)}
+.bdg-a{background:rgba(245,158,11,.15);color:var(--amber)}
+.bdg-b{background:rgba(59,130,246,.15);color:var(--accent)}
+
+/* ── STATE CARDS ── */
+.states-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin:18px 0}
+.state-card{border-radius:var(--r);padding:18px;border:1px solid var(--border2);position:relative;overflow:hidden}
+.state-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.state-card.closed::before{background:var(--green)}
+.state-card.open::before{background:var(--red)}
+.state-card.half::before{background:var(--amber)}
+.state-name{font-size:15px;font-weight:600;color:var(--text);margin-bottom:4px}
+.state-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:8px;vertical-align:middle}
+.state-body{font-size:12px;color:var(--muted);line-height:1.6;margin-top:10px}
+.state-trans{margin-top:10px;font-size:11px;padding:6px 10px;border-radius:6px;line-height:1.5}
+.closed .state-trans{background:rgba(34,197,94,.1);color:var(--green)}
+.open .state-trans{background:rgba(245,158,11,.1);color:var(--amber)}
+.half .state-trans{background:rgba(59,130,246,.1);color:var(--accent)}
+
+/* ── TWO TIMEOUT CARDS ── */
+.timeout-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:18px 0}
+.to-card{border-radius:var(--r);padding:18px;border:1px solid}
+.to-attempt{border-color:rgba(245,158,11,.3);background:rgba(245,158,11,.05)}
+.to-total{border-color:rgba(239,68,68,.3);background:rgba(239,68,68,.05)}
+.to-type{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px}
+.to-name{font-size:14px;font-weight:600;color:var(--text);margin-bottom:8px}
+.to-body{font-size:12px;line-height:1.65}
+.to-attempt .to-type{color:var(--amber)}
+.to-total .to-type{color:var(--red)}
+.to-attempt .to-body{color:rgba(245,158,11,.8)}
+.to-total .to-body{color:rgba(239,68,68,.8)}
+
+/* ── RULE CARDS ── */
+.rules{display:flex;flex-direction:column;gap:10px;margin:18px 0}
+.rule{display:flex;gap:14px;align-items:flex-start;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px}
+.rule-num{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;color:var(--accent);background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.2);padding:2px 8px;border-radius:4px;flex-shrink:0;margin-top:2px}
+.rule-body{font-size:13px;color:var(--muted);line-height:1.6}
+.rule-body strong{color:var(--text);font-weight:600}
+
+/* ── SCENARIO TIMELINE ── */
+.sc-wrap{display:flex;flex-direction:column;gap:0;margin:18px 0}
+.sc-row{display:flex;align-items:flex-start;gap:0;padding:14px 0;border-bottom:.5px solid var(--border);position:relative}
+.sc-row:last-child{border-bottom:none}
+.sc-lbl{width:140px;flex-shrink:0}
+.sc-title{font-size:13px;font-weight:500;color:var(--text)}
+.sc-sub{font-size:11px;color:var(--muted);margin-top:2px;line-height:1.4}
+.sc-tl{flex:1;display:flex;align-items:center;gap:0;flex-wrap:wrap;min-height:36px}
+.pill{display:flex;align-items:center;justify-content:center;height:34px;border-radius:6px;font-size:11px;font-weight:500;white-space:nowrap;flex-shrink:0;border:1px solid transparent;padding:0 10px;font-family:'JetBrains Mono',monospace}
+.pill-fail{background:rgba(239,68,68,.12);color:var(--red);border-color:rgba(239,68,68,.3)}
+.pill-hang{background:rgba(245,158,11,.12);color:var(--amber);border-color:rgba(245,158,11,.3)}
+.pill-kill{background:rgba(239,68,68,.18);color:var(--red);border-color:rgba(239,68,68,.4);font-size:12px}
+.pill-broken{background:rgba(239,68,68,.18);color:var(--red);border-color:rgba(239,68,68,.4);font-size:12px}
+.wait-w{font-size:10px;font-weight:500;color:var(--amber);padding:0 5px;white-space:nowrap;flex-shrink:0}
+.arr-r{width:14px;height:2px;background:rgba(255,255,255,.15);position:relative;flex-shrink:0;margin:0 2px}
+.arr-r::after{content:'';position:absolute;right:-4px;top:-3px;border-left:5px solid rgba(255,255,255,.15);border-top:3px solid transparent;border-bottom:3px solid transparent}
+.budget{font-size:10px;font-weight:500;white-space:nowrap;margin-left:8px;flex-shrink:0}
+.budget-ok{color:var(--green)}
+.budget-fail{color:var(--red)}
+.sc-note{font-size:12px;color:var(--muted);padding:6px 0 0 140px;line-height:1.5}
+
+/* ── QA ── */
+.qa-list{display:flex;flex-direction:column;gap:14px;margin:18px 0}
+.qa-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.qa-q{padding:14px 18px;font-size:13.5px;color:var(--text);font-weight:600;background:rgba(255,255,255,.02);display:flex;gap:12px;align-items:flex-start}
+.qa-q::before{content:'Q';font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;color:var(--accent);background:rgba(59,130,246,.12);border:1px solid rgba(59,130,246,.25);padding:2px 7px;border-radius:4px;flex-shrink:0;margin-top:1px}
+.qa-a{padding:14px 18px;font-size:13px;color:var(--muted);border-top:1px solid var(--border);display:flex;gap:12px;align-items:flex-start;line-height:1.65}
+.qa-a::before{content:'A';font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;color:var(--green);background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.2);padding:2px 7px;border-radius:4px;flex-shrink:0;margin-top:2px}
+.qa-a code{font-family:'JetBrains Mono',monospace;font-size:11.5px;background:rgba(255,255,255,.06);padding:1px 5px;border-radius:3px;color:var(--text)}
+
+/* ── DIVIDER ── */
+.divider{height:1px;background:var(--border);margin:56px 0 0}
+
+/* ── FOOTER ── */
+.footer{margin-top:64px;padding-top:20px;border-top:1px solid var(--border);text-align:center;font-size:11px;color:var(--muted);opacity:.4}
+
+/* ── INTERACTIVE ELEMENTS ── */
+button{font-family:'Outfit',sans-serif;font-size:12px;font-weight:500;padding:5px 14px;border-radius:20px;border:1px solid var(--border2);background:transparent;color:var(--muted);cursor:pointer;transition:all .15s}
+button:hover{background:var(--surface2);color:var(--text)}
+button.active-ok{background:rgba(34,197,94,.12)!important;color:var(--green)!important;border-color:rgba(34,197,94,.3)!important}
+button.active-fail{background:rgba(239,68,68,.12)!important;color:var(--red)!important;border-color:rgba(239,68,68,.3)!important}
+button.active-info{background:rgba(59,130,246,.12)!important;color:var(--accent)!important;border-color:rgba(59,130,246,.3)!important}
+.sim-note{font-size:13px;color:var(--muted);padding:10px 14px;border-radius:var(--r);background:var(--surface2);border:1px solid var(--border);margin-top:8px;min-height:44px;line-height:1.65}
+.sim-log{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--muted);background:var(--code-bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px;max-height:140px;overflow-y:auto;line-height:1.8}
+.log-ok{color:var(--green)}.log-fail{color:var(--red)}.log-open{color:var(--amber)}.log-info{color:var(--accent)}
+input[type=range]{accent-color:var(--accent);flex:1}
+input[type=checkbox]{accent-color:var(--accent)}
+
+@keyframes fl-fail{0%,100%{opacity:1}45%{opacity:.3}}
+@keyframes fl-hang{0%,100%{opacity:1}55%{opacity:.5}}
+@media(prefers-reduced-motion:no-preference){
+  .anim-fail{animation:fl-fail 1.4s ease-in-out infinite}
+  .anim-hang{animation:fl-hang 1.8s ease-in-out infinite}
+}
+@media(max-width:640px){
+  .toc ol,.states-grid,.timeout-grid{grid-template-columns:1fr}
+  .page,.hero{padding-left:16px;padding-right:16px}
+  h2{font-size:22px}
+}
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="badge"><span class="badge-dot"></span>Microservices · Topic 4 · C# / .NET</div>
+  <h1>Circuit Breaker,<br>Retry & Timeout</h1>
+  <p class="hero-sub">A complete deep dive — from cascading failure to Polly pipeline layers, exception routing, and the two-timeout mental model.</p>
+  <div class="hero-tags">
+    <span class="hero-tag">Resilience patterns</span>
+    <span class="hero-tag">Polly v8</span>
+    <span class="hero-tag">Microsoft.Extensions.Resilience</span>
+    <span class="hero-tag">Interview ready</span>
+  </div>
+</div>
+
+<div class="page">
+
+  <!-- TOC -->
+  <div class="toc">
+    <div class="toc-title">Contents</div>
+    <ol>
+      <li><a href="#s1">The problem — cascading failure</a></li>
+      <li><a href="#s2">Pattern 1 — Timeout</a></li>
+      <li><a href="#s3">Pattern 2 — Retry</a></li>
+      <li><a href="#s4">Pattern 3 — Circuit Breaker</a></li>
+      <li><a href="#s5">The two types of timeout</a></li>
+      <li><a href="#s6">Polly pipeline — layers & exceptions</a></li>
+      <li><a href="#s7">What CB counts (per attempt)</a></li>
+      <li><a href="#s8">Scenario timelines</a></li>
+      <li><a href="#s9">Full C# implementation</a></li>
+      <li><a href="#s10">Interactive simulators</a></li>
+      <li><a href="#s11">Interview Q&A</a></li>
+    </ol>
+  </div>
+
+  <!-- ═══ S1 ═══ -->
+  <div class="section" id="s1">
+    <div class="sec-label">01</div>
+    <h2>The Problem — Cascading Failure</h2>
+    <p>Without these patterns, one slow service can bring down the entire system. Threads pile up waiting for a dead dependency, memory fills, and the failure spreads upstream until everything is down.</p>
+
+    <div class="diagram-card">
+      <svg viewBox="0 0 820 190" xmlns="http://www.w3.org/2000/svg">
+        <defs><marker id="a1" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round"/></marker></defs>
+        <text x="410" y="18" text-anchor="middle" fill="#7d8a9c" font-size="12" font-family="Outfit,sans-serif">One slow database → entire chain collapses</text>
+        <rect x="20" y="70" width="100" height="46" rx="8" fill="#121520" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+        <text x="70" y="89" text-anchor="middle" fill="#e2e8f0" font-size="12" font-weight="600" font-family="Outfit,sans-serif">Client</text>
+        <text x="70" y="106" text-anchor="middle" fill="#7d8a9c" font-size="10" font-family="Outfit,sans-serif">1000 req/s</text>
+        <line x1="120" y1="93" x2="150" y2="93" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#a1)"/>
+        <rect x="152" y="70" width="110" height="46" rx="8" fill="#121520" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+        <text x="207" y="89" text-anchor="middle" fill="#e2e8f0" font-size="12" font-weight="600" font-family="Outfit,sans-serif">Orders</text>
+        <text x="207" y="106" text-anchor="middle" fill="#22c55e" font-size="10" font-family="Outfit,sans-serif">healthy</text>
+        <line x1="262" y1="93" x2="292" y2="93" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#a1)"/>
+        <rect x="294" y="70" width="120" height="46" rx="8" fill="#121520" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+        <text x="354" y="89" text-anchor="middle" fill="#e2e8f0" font-size="12" font-weight="600" font-family="Outfit,sans-serif">Inventory</text>
+        <text x="354" y="106" text-anchor="middle" fill="#22c55e" font-size="10" font-family="Outfit,sans-serif">healthy</text>
+        <line x1="414" y1="93" x2="444" y2="93" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#a1)"/>
+        <rect x="446" y="70" width="120" height="46" rx="8" fill="#121520" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+        <text x="506" y="89" text-anchor="middle" fill="#e2e8f0" font-size="12" font-weight="600" font-family="Outfit,sans-serif">Payments</text>
+        <text x="506" y="106" text-anchor="middle" fill="#22c55e" font-size="10" font-family="Outfit,sans-serif">healthy</text>
+        <line x1="566" y1="93" x2="596" y2="93" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#a1)"/>
+        <rect x="598" y="70" width="110" height="46" rx="8" fill="rgba(239,68,68,0.15)" stroke="rgba(239,68,68,0.5)" stroke-width="1"/>
+        <text x="653" y="89" text-anchor="middle" fill="#fca5a5" font-size="12" font-weight="600" font-family="Outfit,sans-serif">Database</text>
+        <text x="653" y="106" text-anchor="middle" fill="#ef4444" font-size="10" font-family="Outfit,sans-serif">SLOW / DOWN</text>
+        <text x="410" y="155" text-anchor="middle" fill="#ef4444" font-size="12" font-family="Outfit,sans-serif">Threads pile up → Payments blocked → Inventory blocked → Orders blocked → Client 100% errors</text>
+        <text x="410" y="173" text-anchor="middle" fill="#7d8a9c" font-size="11" font-family="Outfit,sans-serif">These three patterns exist to stop this chain reaction</text>
+      </svg>
+    </div>
+
+    <div class="callout danger">
+      <span class="callout-icon">⚡</span>
+      <div class="callout-body"><strong>The chain reaction:</strong> Database slows → Payments threads fill waiting → Inventory threads fill waiting for Payments → Orders saturates → Client gets 100% errors. One dependency took down four healthy services.</div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ═══ S2 ═══ -->
+  <div class="section" id="s2">
+    <div class="sec-label">02</div>
+    <h2>Pattern 1 — Timeout</h2>
+    <p>The simplest defence. Never wait forever. If a service doesn't respond within N milliseconds, cancel and fail fast. This prevents threads from being held indefinitely.</p>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">C#</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+      <pre><code><span class="cm">// ❌ Without timeout — thread blocks forever if Payments hangs</span>
+<span class="kw">var</span> result = <span class="kw">await</span> _http.PostAsJsonAsync(<span class="str">"/api/payments"</span>, request);
+
+<span class="cm">// ✅ With timeout — fail after 3 seconds</span>
+<span class="kw">using var</span> cts = <span class="kw">new</span> CancellationTokenSource(TimeSpan.FromSeconds(<span class="num">3</span>));
+<span class="kw">try</span>
+{
+    <span class="kw">var</span> result = <span class="kw">await</span> _http.PostAsJsonAsync(<span class="str">"/api/payments"</span>, request, cts.Token);
+}
+<span class="kw">catch</span> (OperationCanceledException)
+{
+    <span class="kw">return</span> PaymentResult.TimedOut(); <span class="cm">// fail fast, free the thread</span>
+}</code></pre>
+    </div>
+
+    <div class="callout tip">
+      <span class="callout-icon">✅</span>
+      <div class="callout-body"><strong>Setting the right timeout:</strong> 99th percentile response time × 2 under normal load. Too short → false failures on legitimate slow calls. Too long → threads still pile up.</div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ═══ S3 ═══ -->
+  <div class="section" id="s3">
+    <div class="sec-label">03</div>
+    <h2>Pattern 2 — Retry with Exponential Backoff</h2>
+    <p>A failure might be transient — a brief network blip, a service restarting. Retry automatically, but wait progressively longer between attempts so you don't hammer a struggling service.</p>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">C# — Manual retry (conceptual)</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+      <pre><code><span class="kw">int</span> maxAttempts = <span class="num">3</span>;
+<span class="kw">int</span> delayMs     = <span class="num">200</span>; <span class="cm">// start at 200ms</span>
+
+<span class="kw">for</span> (<span class="kw">int</span> attempt = <span class="num">1</span>; attempt &lt;= maxAttempts; attempt++)
+{
+    <span class="kw">try</span> { <span class="kw">return await</span> _paymentsClient.ChargeAsync(request); }
+    <span class="kw">catch</span> (HttpRequestException ex) <span class="kw">when</span> (IsTransient(ex))
+    {
+        <span class="kw">if</span> (attempt == maxAttempts) <span class="kw">throw</span>; <span class="cm">// give up</span>
+
+        <span class="cm">// 200ms → 400ms → 800ms  +  jitter</span>
+        <span class="kw">int</span> jitter = Random.Shared.Next(<span class="num">0</span>, <span class="num">50</span>);
+        <span class="kw">await</span> Task.Delay(delayMs + jitter);
+        delayMs *= <span class="num">2</span>; <span class="cm">// exponential</span>
+    }
+}
+
+<span class="cm">// ✅ What to retry — transient errors only</span>
+<span class="kw">private bool</span> IsTransient(HttpRequestException ex) =>
+    ex.StatusCode <span class="kw">is</span>
+        HttpStatusCode.ServiceUnavailable  <span class="cm">// 503 ✓</span>
+     <span class="kw">or</span> HttpStatusCode.TooManyRequests    <span class="cm">// 429 ✓</span>
+     <span class="kw">or</span> HttpStatusCode.GatewayTimeout;   <span class="cm">// 504 ✓</span>
+     <span class="cm">// 400 Bad Request  → NOT transient ✗ (your payload is wrong)</span>
+     <span class="cm">// 401 Unauthorized → NOT transient ✗ (your token is invalid)</span></code></pre>
+    </div>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body"><strong>Jitter is required.</strong> Without it, all service instances retry at exactly the same millisecond after a failure spike — a synchronized storm that can take a recovering service straight back down. Random ±50ms spreads the load across time.</div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ═══ S4 ═══ -->
+  <div class="section" id="s4">
+    <div class="sec-label">04</div>
+    <h2>Pattern 3 — Circuit Breaker</h2>
+    <p>The most important pattern. When a downstream service keeps failing, stop calling it entirely — give it time to recover. The circuit breaker has three states.</p>
+
+    <div class="states-grid">
+      <div class="state-card closed">
+        <div class="state-name"><span class="state-dot" style="background:var(--green)"></span>Closed</div>
+        <div class="state-body">Normal operation. All requests pass through. The breaker counts failures in a sliding window silently.</div>
+        <div class="state-trans">Transitions OPEN when failure ratio exceeds threshold (e.g. 50% of last 10 calls)</div>
+      </div>
+      <div class="state-card open">
+        <div class="state-name"><span class="state-dot" style="background:var(--red)"></span>Open</div>
+        <div class="state-body">All requests fail immediately — no network call made at all. Returns a cached response or error instantly.</div>
+        <div class="state-trans" style="background:rgba(245,158,11,.1);color:var(--amber)">After BreakDuration (e.g. 30s) transitions to HALF-OPEN</div>
+      </div>
+      <div class="state-card half">
+        <div class="state-name"><span class="state-dot" style="background:var(--amber)"></span>Half-Open</div>
+        <div class="state-body">Lets ONE probe request through to test if the service recovered.</div>
+        <div class="state-trans">Probe success → CLOSED. Probe fail → OPEN again for another BreakDuration.</div>
+      </div>
+    </div>
+
+    <div class="diagram-card">
+      <svg viewBox="0 0 820 120" xmlns="http://www.w3.org/2000/svg">
+        <defs><marker id="a2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round"/></marker>
+        <marker id="a2r" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#ef4444" stroke-width="1.5" stroke-linecap="round"/></marker>
+        <marker id="a2g" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#22c55e" stroke-width="1.5" stroke-linecap="round"/></marker></defs>
+        <rect x="40" y="34" width="160" height="50" rx="8" fill="rgba(34,197,94,0.1)" stroke="rgba(34,197,94,0.4)" stroke-width="1"/>
+        <text x="120" y="55" text-anchor="middle" fill="#22c55e" font-size="13" font-weight="600" font-family="Outfit,sans-serif">CLOSED</text>
+        <text x="120" y="74" text-anchor="middle" fill="rgba(34,197,94,0.7)" font-size="10" font-family="Outfit,sans-serif">calls pass through</text>
+        <line x1="200" y1="59" x2="308" y2="59" stroke="#ef4444" stroke-width="1.5" marker-end="url(#a2r)"/>
+        <text x="254" y="52" text-anchor="middle" fill="#ef4444" font-size="10" font-family="Outfit,sans-serif">threshold exceeded</text>
+        <rect x="310" y="34" width="160" height="50" rx="8" fill="rgba(239,68,68,0.1)" stroke="rgba(239,68,68,0.4)" stroke-width="1"/>
+        <text x="390" y="55" text-anchor="middle" fill="#ef4444" font-size="13" font-weight="600" font-family="Outfit,sans-serif">OPEN</text>
+        <text x="390" y="74" text-anchor="middle" fill="rgba(239,68,68,0.7)" font-size="10" font-family="Outfit,sans-serif">blocks all requests</text>
+        <line x1="470" y1="59" x2="578" y2="59" stroke="#f59e0b" stroke-width="1.5" marker-end="url(#a2)"/>
+        <text x="524" y="52" text-anchor="middle" fill="#f59e0b" font-size="10" font-family="Outfit,sans-serif">BreakDuration elapsed</text>
+        <rect x="580" y="34" width="160" height="50" rx="8" fill="rgba(245,158,11,0.1)" stroke="rgba(245,158,11,0.4)" stroke-width="1"/>
+        <text x="660" y="55" text-anchor="middle" fill="#f59e0b" font-size="13" font-weight="600" font-family="Outfit,sans-serif">HALF-OPEN</text>
+        <text x="660" y="74" text-anchor="middle" fill="rgba(245,158,11,0.7)" font-size="10" font-family="Outfit,sans-serif">one probe request</text>
+        <path d="M660 34 Q660 12 390 12 Q390 34 390 34" fill="none" stroke="#22c55e" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#a2g)"/>
+        <text x="524" y="10" text-anchor="middle" fill="#22c55e" font-size="10" font-family="Outfit,sans-serif">probe success → CLOSED</text>
+        <path d="M740 59 Q780 59 780 95 Q780 110 660 110 Q580 110 580 84" fill="none" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#a2r)"/>
+        <text x="730" y="108" text-anchor="middle" fill="#ef4444" font-size="10" font-family="Outfit,sans-serif">probe fail → OPEN again</text>
+      </svg>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ═══ S5 ═══ -->
+  <div class="section" id="s5">
+    <div class="sec-label">05</div>
+    <h2>The Two Types of Timeout</h2>
+    <p>This is the most commonly missed concept. In Polly there are <strong>two separate timeouts</strong> with completely different jobs. Confusing them is the root of most misunderstandings about how exceptions fire.</p>
+
+    <div class="timeout-grid">
+      <div class="to-card to-attempt">
+        <div class="to-type">Attempt Timeout</div>
+        <div class="to-name">Per-attempt timeout</div>
+        <div class="to-body">Limits how long ONE single HTTP call can take. If attempt 1 hangs for more than e.g. 2s, kill that attempt only. Retry can still fire and try again with a fresh 2s budget.</div>
+      </div>
+      <div class="to-card to-total">
+        <div class="to-type">Total Timeout</div>
+        <div class="to-name">Whole-operation timeout</div>
+        <div class="to-body">Limits the TOTAL time for ALL attempts combined. When this fires, everything stops — no more retries, no more attempts, game over. Throws TimeoutRejectedException to your catch block.</div>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body">Both throw <code>TimeoutRejectedException</code> — but they have very different meanings. Attempt timeout = "this one call was too slow, retry it." Total timeout = "we've spent too long overall, give up entirely."</div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ═══ S6 ═══ -->
+  <div class="section" id="s6">
+    <div class="sec-label">06</div>
+    <h2>Polly Pipeline — Layers & Exception Routing</h2>
+    <p>The pipeline is registered in this order, but each layer <strong>wraps</strong> the next. Reading from outside in:</p>
+
+    <div class="diagram-card">
+      <svg viewBox="0 0 820 290" xmlns="http://www.w3.org/2000/svg">
+        <rect x="10" y="10" width="800" height="270" rx="12" fill="rgba(239,68,68,0.06)" stroke="rgba(239,68,68,0.25)" stroke-width="1"/>
+        <text x="28" y="34" fill="#ef4444" font-size="12" font-weight="600" font-family="JetBrains Mono,monospace">TOTAL TIMEOUT (10s)</text>
+        <text x="28" y="50" fill="rgba(239,68,68,0.6)" font-size="10" font-family="Outfit,sans-serif">kills everything if total time exceeded → throws TimeoutRejectedException (your catch)</text>
+        <rect x="26" y="62" width="768" height="200" rx="10" fill="rgba(59,130,246,0.06)" stroke="rgba(59,130,246,0.25)" stroke-width="1"/>
+        <text x="44" y="84" fill="#3b82f6" font-size="12" font-weight="600" font-family="JetBrains Mono,monospace">RETRY (up to 3 attempts)</text>
+        <text x="44" y="100" fill="rgba(59,130,246,0.6)" font-size="10" font-family="Outfit,sans-serif">loops the inner layers. Only catches HttpRequestException + TimeoutRejectedException. Ignores BrokenCircuitException.</text>
+        <rect x="42" y="112" width="736" height="130" rx="10" fill="rgba(245,158,11,0.06)" stroke="rgba(245,158,11,0.25)" stroke-width="1"/>
+        <text x="60" y="134" fill="#f59e0b" font-size="12" font-weight="600" font-family="JetBrains Mono,monospace">ATTEMPT TIMEOUT (2s per attempt)</text>
+        <text x="60" y="150" fill="rgba(245,158,11,0.6)" font-size="10" font-family="Outfit,sans-serif">kills ONE attempt if it hangs → retry catches this and loops again</text>
+        <rect x="58" y="162" width="704" height="66" rx="10" fill="rgba(168,85,247,0.06)" stroke="rgba(168,85,247,0.25)" stroke-width="1"/>
+        <text x="76" y="182" fill="#a855f7" font-size="12" font-weight="600" font-family="JetBrains Mono,monospace">CIRCUIT BREAKER</text>
+        <text x="76" y="198" fill="rgba(168,85,247,0.6)" font-size="10" font-family="Outfit,sans-serif">always watching silently. If OPEN → throws BrokenCircuitException immediately (bypass retry)</text>
+        <rect x="76" y="210" width="668" height="10" rx="4" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+        <text x="410" y="219" text-anchor="middle" fill="rgba(255,255,255,0.3)" font-size="9" font-family="Outfit,sans-serif">actual HTTP call</text>
+      </svg>
+    </div>
+
+    <h3>Exception Routing — Which Catch Block Fires When</h3>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Exception</th><th>Circuit state</th><th>Network call made?</th><th>Retry fires?</th><th>What triggered it</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>BrokenCircuitException</strong></td>
+            <td><span class="bdg bdg-r">OPEN</span></td>
+            <td><span class="bdg bdg-r">No — blocked</span></td>
+            <td><span class="bdg bdg-r">No — not in ShouldHandle</span></td>
+            <td>Previous calls crossed the failure threshold</td>
+          </tr>
+          <tr>
+            <td><strong>TimeoutRejectedException</strong></td>
+            <td><span class="bdg bdg-g">CLOSED</span></td>
+            <td><span class="bdg bdg-g">Yes — calls were made</span></td>
+            <td><span class="bdg bdg-r">No — total budget gone</span></td>
+            <td>Total 10s budget ran out across all retries</td>
+          </tr>
+          <tr>
+            <td><strong>HttpRequestException</strong></td>
+            <td><span class="bdg bdg-g">CLOSED</span></td>
+            <td><span class="bdg bdg-g">Yes — all retries made</span></td>
+            <td><span class="bdg bdg-g">Yes — 3× before giving up</span></td>
+            <td>All 3 retry attempts failed (fast failures)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout info">
+      <span class="callout-icon">💡</span>
+      <div class="callout-body"><strong>TimeoutRejectedException fires when circuit is CLOSED</strong> — the service is being called, just too slowly. The circuit hasn't opened yet because failures haven't accumulated to the threshold. It represents "currently slow", not "known broken".</div>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">C# — The three catch blocks with precise annotations</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+      <pre><code><span class="kw">public async</span> Task&lt;<span class="typ">PaymentResult</span>&gt; ChargeAsync(<span class="typ">PaymentRequest</span> request)
+{
+    <span class="kw">try</span>
+    {
+        <span class="cm">// This single await triggers the ENTIRE Polly pipeline:</span>
+        <span class="cm">// CB checks state → attempt 1 (2s budget) → retry wait → attempt 2 → ...</span>
+        <span class="cm">// Your code only resumes when Polly is completely done</span>
+        <span class="kw">return await</span> _paymentsClient.ChargeAsync(request);
+    }
+    <span class="kw">catch</span> (<span class="typ">BrokenCircuitException</span>)
+    {
+        <span class="cm">// Fires when: circuit OPEN — previous requests already broke it</span>
+        <span class="cm">// No network call was made. Retry did NOT fire (not in ShouldHandle)</span>
+        <span class="kw">return</span> PaymentResult.ServiceUnavailable();
+    }
+    <span class="kw">catch</span> (<span class="typ">TimeoutRejectedException</span>)
+    {
+        <span class="cm">// Fires when: total 10s budget expired (circuit was CLOSED)</span>
+        <span class="cm">// Calls WERE made — just too slow. Retry cannot help, budget is gone.</span>
+        <span class="kw">return</span> PaymentResult.TimedOut();
+    }
+    <span class="kw">catch</span> (<span class="typ">HttpRequestException</span>)
+    {
+        <span class="cm">// Fires when: all 3 retry attempts exhausted, each failed fast</span>
+        <span class="cm">// By now 3 network calls have already been made by Polly</span>
+        <span class="kw">return</span> PaymentResult.Failed();
+    }
+}</code></pre>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ═══ S7 ═══ -->
+  <div class="section" id="s7">
+    <div class="sec-label">07</div>
+    <h2>What the Circuit Breaker Counts</h2>
+    <p>Critical distinction — the CB counts <strong>each individual attempt</strong> that passes through it, not each retry group.</p>
+
+    <div class="diagram-card">
+      <svg viewBox="0 0 820 200" xmlns="http://www.w3.org/2000/svg">
+        <text x="410" y="20" text-anchor="middle" fill="#7d8a9c" font-size="12" font-family="Outfit,sans-serif">One logical request with 3 retries = 3 data points in CB's failure window</text>
+        <rect x="20" y="36" width="110" height="120" rx="8" fill="#121520" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+        <text x="75" y="60" text-anchor="middle" fill="#e2e8f0" font-size="12" font-weight="500" font-family="Outfit,sans-serif">Your code</text>
+        <text x="75" y="78" text-anchor="middle" fill="#7d8a9c" font-size="10" font-family="Outfit,sans-serif">calls once</text>
+        <text x="75" y="130" text-anchor="middle" fill="#7d8a9c" font-size="10" font-family="Outfit,sans-serif">sees 1</text>
+        <text x="75" y="146" text-anchor="middle" fill="#ef4444" font-size="10" font-family="Outfit,sans-serif">HttpRequest</text>
+        <text x="75" y="160" text-anchor="middle" fill="#ef4444" font-size="10" font-family="Outfit,sans-serif">Exception</text>
+        <rect x="160" y="36" width="620" height="120" rx="8" fill="rgba(59,130,246,0.05)" stroke="rgba(59,130,246,0.2)" stroke-width="1"/>
+        <text x="450" y="58" text-anchor="middle" fill="#3b82f6" font-size="11" font-weight="600" font-family="Outfit,sans-serif">Polly Retry loop (invisible to your code)</text>
+        <rect x="180" y="70" width="140" height="50" rx="6" fill="rgba(239,68,68,0.1)" stroke="rgba(239,68,68,0.3)" stroke-width="1"/>
+        <text x="250" y="89" text-anchor="middle" fill="#fca5a5" font-size="11" font-family="Outfit,sans-serif">Attempt 1 — fail</text>
+        <text x="250" y="107" text-anchor="middle" fill="#ef4444" font-size="10" font-family="JetBrains Mono,monospace">CB: +1 failure</text>
+        <rect x="360" y="70" width="140" height="50" rx="6" fill="rgba(239,68,68,0.1)" stroke="rgba(239,68,68,0.3)" stroke-width="1"/>
+        <text x="430" y="89" text-anchor="middle" fill="#fca5a5" font-size="11" font-family="Outfit,sans-serif">Attempt 2 — fail</text>
+        <text x="430" y="107" text-anchor="middle" fill="#ef4444" font-size="10" font-family="JetBrains Mono,monospace">CB: +1 failure</text>
+        <rect x="540" y="70" width="140" height="50" rx="6" fill="rgba(239,68,68,0.1)" stroke="rgba(239,68,68,0.3)" stroke-width="1"/>
+        <text x="610" y="89" text-anchor="middle" fill="#fca5a5" font-size="11" font-family="Outfit,sans-serif">Attempt 3 — fail</text>
+        <text x="610" y="107" text-anchor="middle" fill="#ef4444" font-size="10" font-family="JetBrains Mono,monospace">CB: +1 failure</text>
+        <text x="450" y="148" text-anchor="middle" fill="#7d8a9c" font-size="10" font-family="Outfit,sans-serif">= 3 failures recorded in CB window (not 1)</text>
+      </svg>
+    </div>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div class="callout-body"><strong>The count that matters:</strong> CB's threshold is based on a failure ratio over a sampling window (e.g. 50% of last 20 data points). 3 retry attempts from one logical request contribute 3 separate data points to that window — not 1.</div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ═══ S8 ═══ -->
+  <div class="section" id="s8">
+    <div class="sec-label">08</div>
+    <h2>Scenario Timelines</h2>
+    <p>Four concrete scenarios showing exactly what fires and when, given a pipeline configured with: Total Timeout 10s, Retry 3×, Attempt Timeout 2s, CB threshold 50%.</p>
+
+    <div class="sc-wrap">
+      <div class="sc-row">
+        <div class="sc-lbl">
+          <div class="sc-title">Scenario A</div>
+          <div class="sc-sub">Fast failures<br>(503 each call)</div>
+        </div>
+        <div style="flex:1">
+          <div class="sc-tl">
+            <div class="pill pill-fail anim-fail" style="width:76px">fail 0.1s</div>
+            <div class="wait-w">300ms</div><div class="arr-r"></div>
+            <div class="pill pill-fail anim-fail" style="width:76px;animation-delay:.5s">fail 0.1s</div>
+            <div class="wait-w">600ms</div><div class="arr-r"></div>
+            <div class="pill pill-fail anim-fail" style="width:76px;animation-delay:1s">fail 0.1s</div>
+            <div class="arr-r"></div>
+            <div class="pill pill-kill" style="flex:1">HttpRequestException → your catch</div>
+            <div class="budget budget-ok">~1.1s ✓</div>
+          </div>
+          <div class="sc-note">Retry exhausted 3 attempts. Each was fast. Well under 10s total budget. CB recorded 3 failures silently.</div>
+        </div>
+      </div>
+
+      <div class="sc-row">
+        <div class="sc-lbl">
+          <div class="sc-title">Scenario B</div>
+          <div class="sc-sub">Slow calls<br>(hang → 2s kill)</div>
+        </div>
+        <div style="flex:1">
+          <div class="sc-tl">
+            <div class="pill pill-hang anim-hang" style="width:96px">hang→2s kill</div>
+            <div class="wait-w">300ms</div><div class="arr-r"></div>
+            <div class="pill pill-hang anim-hang" style="width:96px;animation-delay:.6s">hang→2s kill</div>
+            <div class="wait-w">600ms</div><div class="arr-r"></div>
+            <div class="pill pill-hang anim-hang" style="width:96px;animation-delay:1.2s">hang→2s kill</div>
+            <div class="arr-r"></div>
+            <div class="pill pill-kill" style="flex:1">HttpRequestException → your catch</div>
+            <div class="budget budget-ok">~8.9s ✓</div>
+          </div>
+          <div class="sc-note">Attempt timeout (2s) fires on each hang → retry catches TimeoutRejectedException and loops again. 3×2s + 0.9s backoffs = 8.9s. Still under 10s total budget.</div>
+        </div>
+      </div>
+
+      <div class="sc-row">
+        <div class="sc-lbl">
+          <div class="sc-title">Scenario C</div>
+          <div class="sc-sub">Total timeout<br>fires mid-retry</div>
+        </div>
+        <div style="flex:1">
+          <div class="sc-tl" style="flex-wrap:wrap;gap:3px">
+            <div class="pill pill-hang anim-hang" style="width:96px">hang→2s kill</div>
+            <div class="wait-w">300ms</div><div class="arr-r"></div>
+            <div class="pill pill-hang anim-hang" style="width:96px;animation-delay:.6s">hang→2s kill</div>
+            <div class="wait-w">600ms</div><div class="arr-r"></div>
+            <div class="pill pill-hang anim-hang" style="width:96px;animation-delay:1.2s">hang→2s kill</div>
+            <div class="wait-w">1200ms</div><div class="arr-r"></div>
+            <div class="pill pill-hang" style="width:72px">hang...</div>
+            <div style="display:flex;align-items:center;gap:6px;margin-top:4px;width:100%">
+              <div style="width:2px;height:26px;background:var(--red);border-radius:2px;flex-shrink:0;margin-left:140px"></div>
+              <div class="pill pill-kill" style="flex:1">TimeoutRejectedException → your catch (total budget gone)</div>
+              <div class="budget budget-fail">10s ✗</div>
+            </div>
+          </div>
+          <div class="sc-note">Total timeout (10s) fires while attempt 4 is still running. Retry cannot help — the outer budget is exhausted. Fires TimeoutRejectedException (NOT HttpRequestException).</div>
+        </div>
+      </div>
+
+      <div class="sc-row">
+        <div class="sc-lbl">
+          <div class="sc-title">Scenario D</div>
+          <div class="sc-sub">CB opens on<br>next request</div>
+        </div>
+        <div style="flex:1">
+          <div style="font-size:12px;color:var(--muted);padding:6px 0">Requests 1–N: failures accumulate inside CB silently (you just see HttpRequestException per request)</div>
+          <div class="pill pill-broken" style="width:100%;margin-top:6px;height:36px;justify-content:center;font-size:12px">NEXT request → BrokenCircuitException immediately — no call made, retry skips it</div>
+          <div class="sc-note">Circuit opens when failure ratio crosses threshold. Next request: CB checks state first (innermost layer) → throws BrokenCircuitException. Retry sees it but it's not in ShouldHandle → passes straight to your catch.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ═══ S9 ═══ -->
+  <div class="section" id="s9">
+    <div class="sec-label">09</div>
+    <h2>Full C# Implementation — Polly v8</h2>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">bash — Install</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+      <pre><code>dotnet add package Microsoft.Extensions.Http.Resilience</code></pre>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">C# — Program.cs — full pipeline registration</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+      <pre><code>builder.Services
+    .AddHttpClient&lt;<span class="typ">IPaymentsClient</span>, <span class="typ">PaymentsClient</span>&gt;()
+    .AddResilienceHandler(<span class="str">"payments-pipeline"</span>, pipeline =&gt;
+    {
+        <span class="cm">// ─── LAYER 1: Total Timeout (outermost) ──────────────────────</span>
+        <span class="cm">// Kills EVERYTHING after 10s — no more retries allowed</span>
+        <span class="cm">// Throws: TimeoutRejectedException → your catch</span>
+        pipeline.AddTimeout(TimeSpan.FromSeconds(<span class="num">10</span>));
+
+        <span class="cm">// ─── LAYER 2: Retry ──────────────────────────────────────────</span>
+        <span class="cm">// Loops inner layers up to 3×. Gives up when max hit OR total timeout fires.</span>
+        pipeline.AddRetry(<span class="kw">new</span> <span class="typ">HttpRetryStrategyOptions</span>
+        {
+            MaxRetryAttempts = <span class="num">3</span>,
+            Delay       = TimeSpan.FromMilliseconds(<span class="num">300</span>),
+            BackoffType = DelayBackoffType.Exponential, <span class="cm">// 300→600→1200ms</span>
+            UseJitter   = <span class="kw">true</span>,
+            ShouldHandle = args =&gt; ValueTask.FromResult(
+                args.Outcome.Exception <span class="kw">is</span> HttpRequestException ||
+                <span class="hi">args.Outcome.Exception is TimeoutRejectedException</span> || <span class="cm">// ← attempt timeout</span>
+                args.Outcome.Result?.StatusCode <span class="kw">is</span>
+                    HttpStatusCode.ServiceUnavailable <span class="kw">or</span>
+                    HttpStatusCode.TooManyRequests
+                <span class="cm">// BrokenCircuitException is NOT here → retry skips it</span>
+            )
+        });
+
+        <span class="cm">// ─── LAYER 3: Attempt Timeout ────────────────────────────────</span>
+        <span class="cm">// Kills ONE slow attempt after 2s → retry catches and loops again</span>
+        <span class="cm">// Throws: TimeoutRejectedException (caught by Retry above)</span>
+        pipeline.AddTimeout(TimeSpan.FromSeconds(<span class="num">2</span>));
+
+        <span class="cm">// ─── LAYER 4: Circuit Breaker (innermost) ────────────────────</span>
+        <span class="cm">// Always watching. When OPEN → throws BrokenCircuitException</span>
+        <span class="cm">// Retry does NOT catch BrokenCircuitException</span>
+        pipeline.AddCircuitBreaker(<span class="kw">new</span> <span class="typ">HttpCircuitBreakerStrategyOptions</span>
+        {
+            FailureRatio      = <span class="num">0.5</span>,                      <span class="cm">// 50% threshold</span>
+            SamplingDuration  = TimeSpan.FromSeconds(<span class="num">30</span>), <span class="cm">// sliding window</span>
+            MinimumThroughput = <span class="num">8</span>,                       <span class="cm">// need ≥8 calls first</span>
+            BreakDuration     = TimeSpan.FromSeconds(<span class="num">30</span>)  <span class="cm">// stay open 30s</span>
+        });
+    });</code></pre>
+    </div>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">C# — Service usage with all catch blocks</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+      <pre><code><span class="kw">public async</span> Task&lt;<span class="typ">PaymentResult</span>&gt; ChargeAsync(<span class="typ">PaymentRequest</span> request)
+{
+    <span class="kw">try</span>
+    {
+        <span class="cm">// One await — Polly handles all retries internally</span>
+        <span class="cm">// Your code runs exactly ONCE. Retry loop is inside Polly.</span>
+        <span class="kw">return await</span> _paymentsClient.ChargeAsync(request);
+    }
+    <span class="kw">catch</span> (<span class="typ">BrokenCircuitException</span>)
+    {
+        <span class="cm">// When: circuit OPEN from previous failures</span>
+        <span class="cm">// No network call made. Instant fail.</span>
+        _logger.LogWarning(<span class="str">"Payments circuit open — failing fast"</span>);
+        <span class="kw">return</span> PaymentResult.ServiceUnavailable(
+            <span class="str">"Payment service temporarily unavailable. Your cart is saved."</span>);
+    }
+    <span class="kw">catch</span> (<span class="typ">TimeoutRejectedException</span>)
+    {
+        <span class="cm">// When: total 10s budget expired (circuit was CLOSED)</span>
+        <span class="cm">// Calls were made — just too slow for too long</span>
+        _logger.LogWarning(<span class="str">"Payments timed out — total budget exceeded"</span>);
+        <span class="kw">return</span> PaymentResult.TimedOut();
+    }
+    <span class="kw">catch</span> (<span class="typ">HttpRequestException</span> ex)
+    {
+        <span class="cm">// When: all 3 retries exhausted within the time budget</span>
+        <span class="cm">// 3 actual network calls were made before reaching here</span>
+        _logger.LogError(ex, <span class="str">"Payments failed after all retries"</span>);
+        <span class="kw">return</span> PaymentResult.Failed();
+    }
+}</code></pre>
+    </div>
+
+    <h3>The Bulkhead Pattern — Bonus</h3>
+    <p>Isolates thread pools per downstream dependency so one slow service can't starve calls to all other services.</p>
+
+    <div class="code-block">
+      <div class="code-header"><span class="code-lang">C# — Bulkhead (concurrency limiter)</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+      <pre><code><span class="cm">// Max 10 concurrent calls to Payments — has its own isolated pool</span>
+<span class="cm">// Inventory has its own separate limit — they can't starve each other</span>
+pipeline.AddConcurrencyLimiter(<span class="num">10</span>);</code></pre>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ═══ S10 ═══ -->
+  <div class="section" id="s10">
+    <div class="sec-label">10</div>
+    <h2>Interactive Simulators</h2>
+
+    <h3>Circuit Breaker State Simulator</h3>
+    <p>Click "Send failing call" until the circuit opens. Watch the half-open probe logic after the recovery countdown.</p>
+
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin:18px 0">
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px">
+        <div id="badge-state" style="font-size:13px;font-weight:600;padding:5px 18px;border-radius:20px;min-width:100px;text-align:center;background:rgba(34,197,94,.12);color:var(--green);border:1px solid rgba(34,197,94,.3);transition:all .3s">CLOSED</div>
+        <div style="flex:1">
+          <div style="font-size:11px;color:var(--muted);margin-bottom:5px">Failure rate (last 5 calls)</div>
+          <div style="height:8px;background:var(--surface2);border-radius:4px;overflow:hidden">
+            <div id="sim-fill" style="height:100%;width:0%;background:var(--green);border-radius:4px;transition:width .4s,background .4s"></div>
+          </div>
+        </div>
+        <div style="font-size:12px;color:var(--muted)">Threshold: <strong style="color:var(--text)">60%</strong></div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+        <button onclick="simCall(true)">Send successful call</button>
+        <button onclick="simCall(false)">Send failing call</button>
+        <button onclick="simReset()">Reset</button>
+        <div id="sim-cd" style="display:none;font-size:12px;color:var(--amber);padding:5px 0">Recovery in: <span id="sim-cd-n">8</span>s</div>
+      </div>
+      <div class="sim-log" id="sim-log"><span class="log-info">Simulator ready. Circuit is CLOSED.</span></div>
+    </div>
+
+    <h3>Polly Pipeline — Layer Explainer</h3>
+
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin:18px 0">
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px" id="layer-btns">
+        <button id="lb0" onclick="layerStep(0)">Overview</button>
+        <button id="lb1" onclick="layerStep(1)">Max retries hit</button>
+        <button id="lb2" onclick="layerStep(2)">CB always watching</button>
+        <button id="lb3" onclick="layerStep(3)">Total timeout fires</button>
+        <button id="lb4" onclick="layerStep(4)">CB opens next request</button>
+      </div>
+      <div class="sim-note" id="layer-note">Select a scenario to understand exactly what happens inside the pipeline.</div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ═══ S11 ═══ -->
+  <div class="section" id="s11">
+    <div class="sec-label">11</div>
+    <h2>Interview Q&A</h2>
+
+    <div class="qa-list">
+      <div class="qa-item">
+        <div class="qa-q">What is a circuit breaker and what problem does it solve?</div>
+        <div class="qa-a">A circuit breaker monitors failure rates to a downstream service and stops making calls when failures exceed a threshold — instead failing immediately with a cached or degraded response. It solves cascading failure: without it, threads pile up waiting for a dead service, exhausting resources and taking down healthy services too.</div>
+      </div>
+      <div class="qa-item">
+        <div class="qa-q">What are the three states and what triggers each transition?</div>
+        <div class="qa-a">Closed → Open: failure ratio exceeds threshold over the sampling window. Open → Half-Open: BreakDuration elapses. Half-Open → Closed: probe request succeeds. Half-Open → Open: probe request fails (back to Open for another BreakDuration).</div>
+      </div>
+      <div class="qa-item">
+        <div class="qa-q">When retry reaches max attempts, does it move to the circuit breaker?</div>
+        <div class="qa-a">No. When retry hits max attempts it simply throws the exception upward and stops. It does NOT "move to" the circuit breaker. The CB is not a next step — it has been watching silently the entire time, counting every individual attempt that passed through it. They are independent layers.</div>
+      </div>
+      <div class="qa-item">
+        <div class="qa-q">What's the difference between attempt timeout and total timeout?</div>
+        <div class="qa-a">Attempt timeout kills ONE slow call after e.g. 2s — retry can still fire and try again with a fresh budget. Total timeout kills the ENTIRE operation (all retries combined) after e.g. 10s — retry cannot help. Both throw <code>TimeoutRejectedException</code> but mean very different things.</div>
+      </div>
+      <div class="qa-item">
+        <div class="qa-q">Why does TimeoutRejectedException fire when the circuit is CLOSED?</div>
+        <div class="qa-a">Because it fires when the total budget runs out while the service is still being called (just slowly). The circuit is CLOSED because failures haven't accumulated to the threshold yet. It represents "currently slow", not "known broken." BrokenCircuitException represents "known broken from previous requests."</div>
+      </div>
+      <div class="qa-item">
+        <div class="qa-q">Does one retry group (3 attempts) count as 1 or 3 failures in the circuit breaker?</div>
+        <div class="qa-a">3 failures. The circuit breaker counts each individual attempt that passes through it — not each retry group. So 3 retry attempts = 3 data points in the CB's failure ratio window. This matters because the threshold is based on a ratio (e.g. 50% of the last 20 calls).</div>
+      </div>
+      <div class="qa-item">
+        <div class="qa-q">Why is retry's jitter required?</div>
+        <div class="qa-a">Without jitter, all service instances retry at identical intervals after a failure spike — a synchronized storm that hits the recovering service at the same millisecond. Random ±50ms spreads retry load across time, giving the service room to recover instead of being immediately overwhelmed again.</div>
+      </div>
+      <div class="qa-item">
+        <div class="qa-q">What should you NOT retry?</div>
+        <div class="qa-a">Non-transient errors: 400 Bad Request (your payload is wrong — retrying won't fix it), 401 Unauthorized (your token is invalid), 404 Not Found. Only retry errors indicating temporary unavailability: 503 Service Unavailable, 429 Too Many Requests, 504 Gateway Timeout, and network-level failures.</div>
+      </div>
+    </div>
+
+    <h3>The Three Rules — Memorize These</h3>
+    <div class="rules">
+      <div class="rule">
+        <div class="rule-num">Rule 1</div>
+        <div class="rule-body"><strong>Retry max attempts hit →</strong> throws exception upward and stops. Does NOT loop again. Does NOT "move to" circuit breaker. CB was watching the whole time.</div>
+      </div>
+      <div class="rule">
+        <div class="rule-num">Rule 2</div>
+        <div class="rule-body"><strong>Circuit Breaker is NOT a next step →</strong> it is always running, always counting. When it opens, it affects the NEXT request — not the current one that triggered the opening.</div>
+      </div>
+      <div class="rule">
+        <div class="rule-num">Rule 3</div>
+        <div class="rule-body"><strong>Two timeouts — two jobs →</strong> Attempt Timeout kills one slow attempt (retry can still fire). Total Timeout kills everything (retry cannot fire anymore).</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    Circuit Breaker, Retry & Timeout · Microservices Topic 4 · C# / .NET · Interview Prep
+  </div>
+
+</div>
+
+<script>
+// ── Circuit Breaker Simulator ──
+let cbState='CLOSED',cbHistory=[],cbHalfUsed=false,cbCdInt=null;
+const WINDOW=5,THRESH=0.6,RECOVER=8;
+
+function simLog(msg,cls){
+  const el=document.getElementById('sim-log');
+  el.innerHTML+=`<span class="${cls}">${msg}</span><br>`;
+  el.scrollTop=el.scrollHeight;
+}
+
+function setBadge(s){
+  const b=document.getElementById('badge-state');
+  const m={CLOSED:{bg:'rgba(34,197,94,.12)',c:'#22c55e',bc:'rgba(34,197,94,.3)'},
+            OPEN:{bg:'rgba(239,68,68,.12)',c:'#ef4444',bc:'rgba(239,68,68,.3)'},
+            HALF_OPEN:{bg:'rgba(245,158,11,.12)',c:'#f59e0b',bc:'rgba(245,158,11,.3)'}};
+  const cfg=m[s];
+  b.style.background=cfg.bg; b.style.color=cfg.c; b.style.borderColor=cfg.bc;
+  b.textContent=s.replace('_','-');
+}
+
+function updateBar(){
+  const fill=document.getElementById('sim-fill');
+  const rate=cbHistory.length===0?0:cbHistory.filter(h=>!h).length/cbHistory.length;
+  fill.style.width=Math.round(rate*100)+'%';
+  fill.style.background=rate>=THRESH?'#ef4444':rate>0.3?'#f59e0b':'#22c55e';
+}
+
+function startRecovery(){
+  let cd=RECOVER;
+  document.getElementById('sim-cd').style.display='flex';
+  document.getElementById('sim-cd-n').textContent=cd;
+  cbCdInt=setInterval(()=>{
+    cd--;
+    document.getElementById('sim-cd-n').textContent=cd;
+    if(cd<=0){
+      clearInterval(cbCdInt);
+      document.getElementById('sim-cd').style.display='none';
+      cbState='HALF_OPEN'; cbHalfUsed=false;
+      setBadge('HALF_OPEN');
+      simLog('Recovery elapsed → HALF-OPEN. Next call is a probe.','log-open');
+    }
+  },1000);
+}
+
+function simCall(success){
+  if(cbState==='OPEN'){simLog('✗ Blocked — circuit OPEN. Failing fast.','log-fail');return;}
+  if(cbState==='HALF_OPEN'){
+    if(cbHalfUsed){simLog('✗ Waiting for probe result.','log-fail');return;}
+    cbHalfUsed=true;
+    if(success){simLog('✓ Probe succeeded → circuit CLOSED.','log-ok');cbState='CLOSED';cbHistory=[];setBadge('CLOSED');updateBar();}
+    else{simLog('✗ Probe failed → back to OPEN.','log-fail');cbState='OPEN';setBadge('OPEN');startRecovery();}
+    return;
+  }
+  cbHistory.push(success);
+  if(cbHistory.length>WINDOW)cbHistory.shift();
+  const rate=cbHistory.filter(h=>!h).length/cbHistory.length;
+  simLog(success?`✓ Success  [${cbHistory.filter(h=>!h).length}/${cbHistory.length} failed = ${Math.round(rate*100)}%]`:`✗ Failed   [${cbHistory.filter(h=>!h).length}/${cbHistory.length} failed = ${Math.round(rate*100)}%]`,success?'log-ok':'log-fail');
+  updateBar();
+  if(cbHistory.length>=3&&rate>=THRESH){
+    cbState='OPEN';setBadge('OPEN');
+    simLog(`⚡ ${Math.round(rate*100)}% ≥ 60% threshold → OPEN. Blocking all requests.`,'log-open');
+    startRecovery();
+  }
+}
+
+function simReset(){
+  cbState='CLOSED';cbHistory=[];cbHalfUsed=false;
+  if(cbCdInt)clearInterval(cbCdInt);
+  document.getElementById('sim-cd').style.display='none';
+  setBadge('CLOSED');updateBar();
+  document.getElementById('sim-log').innerHTML='<span class="log-info">Reset. Circuit is CLOSED.</span>';
+}
+
+// ── Layer Explainer ──
+const layerNotes=[
+  'The pipeline has 4 layers wrapping each other. Execution order outside→in: Total Timeout → Retry → Attempt Timeout → Circuit Breaker → actual HTTP call. Results bubble back out through all layers.',
+  'When retry hits max attempts (3): it STOPS and re-throws the exception. It does NOT retry again. It does NOT "move to" the circuit breaker. The CB has been watching silently the whole time. The exception passes through CB, Attempt Timeout, and Total Timeout unchanged, arriving in your catch block.',
+  'The Circuit Breaker NEVER "receives" calls — it wraps them. Every attempt that passes through is recorded. Fail → +1. Success → +1 success. When ratio crosses threshold after MinimumThroughput calls, CB opens. This happens to future requests, not the current one.',
+  'Total Timeout is the outermost layer. If total time (all retries combined) exceeds 10s, it fires TimeoutRejectedException and cancels everything. Retry cannot help — the budget is gone. This is why the catches for TimeoutRejectedException and HttpRequestException are separate.',
+  'After failures accumulate and CB opens, on the NEXT request: CB is innermost, checks state FIRST — before any call. Throws BrokenCircuitException immediately. Retry sees this exception but it\'s NOT in ShouldHandle → does NOT loop. Exception goes straight to your catch block. No network call made.'
+];
+function layerStep(i){
+  document.querySelectorAll('#layer-btns button').forEach((b,j)=>{
+    b.classList.remove('active-ok','active-fail','active-info');
+    if(j===i) b.classList.add(i>=3?'active-fail':'active-info');
+  });
+  document.getElementById('layer-note').textContent=layerNotes[i];
+}
+layerStep(0);
+</script>
+</body>
+</html>

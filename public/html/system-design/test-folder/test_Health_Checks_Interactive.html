@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Health Checks in Kubernetes — Microservices Study Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0c10;--surface:#111318;--surface2:#181c24;--surface3:#1f2530;--border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.11);--accent:#6ea1ff;--accent2:#8b6cf6;--green:#34d399;--amber:#fbbf24;--red:#f87171;--teal:#2dd4bf;--coral:#fb923c;--text:#dfe5ef;--muted:#7e8a9e;--code-bg:#080a0e}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font-size:15px;line-height:1.78;-webkit-font-smoothing:antialiased}
+.page{max-width:900px;margin:0 auto;padding:0 28px 100px}
+.hero{padding:56px 28px 44px;max-width:900px;margin:0 auto;border-bottom:1px solid var(--border);position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-80px;right:-40px;width:360px;height:360px;background:radial-gradient(circle,rgba(52,211,153,0.08) 0%,transparent 70%);pointer-events:none}
+.hero-tag{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:10.5px;font-weight:500;color:var(--teal);background:rgba(45,212,191,0.07);border:1px solid rgba(45,212,191,0.18);padding:4px 14px;border-radius:20px;letter-spacing:0.09em;margin-bottom:14px;text-transform:uppercase}
+.hero h1{font-size:clamp(26px,4.2vw,42px);font-weight:700;line-height:1.15;letter-spacing:-0.03em;margin-bottom:10px;background:linear-gradient(135deg,#dfe5ef 0%,#2dd4bf 50%,#6ea1ff 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero-sub{font-size:15px;color:var(--muted);line-height:1.65;max-width:600px}
+.section{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:30px;margin-top:30px}
+.section h2{font-size:20px;font-weight:700;color:#fff;margin-bottom:18px;display:flex;align-items:center;gap:10px}
+.section h2 .num{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--teal);background:rgba(45,212,191,0.1);padding:3px 10px;border-radius:6px;font-weight:500}
+.section h3{font-size:15px;font-weight:600;color:var(--accent);margin:22px 0 10px;padding-top:14px;border-top:1px solid var(--border)}
+.section h3:first-of-type{border-top:none;padding-top:0}
+p{margin-bottom:12px}strong{color:#fff}
+ul{padding-left:20px;margin:8px 0 14px}li{margin:4px 0;font-size:14px}
+pre{background:var(--code-bg);border:1px solid var(--border);border-radius:10px;padding:14px 18px;overflow-x:auto;margin:12px 0;font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.7;color:#c4cdd9}
+code{font-family:'JetBrains Mono',monospace;font-size:12.5px;color:var(--accent);background:rgba(110,161,255,0.07);padding:2px 6px;border-radius:4px}
+pre code{background:none;padding:0;color:inherit}
+table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13px}
+th{background:var(--surface2);color:var(--accent);font-weight:600;text-align:left;padding:9px 13px;border:1px solid var(--border)}
+td{padding:8px 13px;border:1px solid var(--border)}
+tr:nth-child(even) td{background:rgba(255,255,255,0.012)}
+.note{background:rgba(110,161,255,0.05);border:1px solid rgba(110,161,255,0.14);border-radius:10px;padding:13px 16px;margin:12px 0;font-size:13px;line-height:1.7}.note b{color:var(--accent)}
+.note-warn{background:rgba(251,191,36,0.05);border-color:rgba(251,191,36,0.14)}.note-warn b{color:var(--amber)}
+.note-red{background:rgba(248,113,113,0.05);border-color:rgba(248,113,113,0.14)}.note-red b{color:var(--red)}
+.note-green{background:rgba(52,211,153,0.05);border-color:rgba(52,211,153,0.14)}.note-green b{color:var(--green)}
+.qa{background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:14px 18px;margin:10px 0}
+.qa-q{font-weight:600;color:#fff;margin-bottom:5px;font-size:14px}
+.qa-a{color:var(--muted);font-size:13px;line-height:1.7}
+.tab-group{margin:16px 0}.tab-bar{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.tab-btn{padding:6px 14px;font-size:12px;font-weight:500;font-family:'Outfit',sans-serif;border:1px solid var(--border2);border-radius:6px;background:transparent;color:var(--muted);cursor:pointer;transition:all 0.15s}
+.tab-btn:hover{border-color:rgba(45,212,191,0.3);color:var(--text)}
+.tab-btn.active{background:rgba(45,212,191,0.1);color:var(--teal);border-color:rgba(45,212,191,0.3)}
+.tab-panel{display:none}.tab-panel.active{display:block}
+.env-row{display:flex;gap:12px;margin:10px 0;align-items:stretch}
+.env-card{flex:1;border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:4px}
+.env-card .env-name{font-size:13px;font-weight:600}.env-card .env-status{font-size:11px;color:var(--muted)}
+.toc{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px 24px;margin:30px 0}
+.toc h3{font-size:12px;font-weight:600;color:var(--teal);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.06em}
+.toc a{font-size:13px;color:var(--muted);text-decoration:none;display:block;padding:4px 0;transition:color 0.15s}.toc a:hover{color:var(--teal)}
+.footer{text-align:center;padding:36px 0 16px;font-size:11px;color:var(--muted);border-top:1px solid var(--border);margin-top:40px}
+@media(max-width:640px){.page{padding:0 16px 60px}.section{padding:20px 16px}.env-row{flex-direction:column}.hero{padding:36px 16px 30px}}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-tag">Microservices · Health Checks Deep Dive · Interview Prep</div>
+  <h1>Health Checks in Kubernetes</h1>
+  <p class="hero-sub">Liveness, readiness, and startup probes. Why they exist, how to implement them in ASP.NET Core, Kubernetes YAML configuration, and the 4 production mistakes that cause outages.</p>
+</div>
+
+<div class="page">
+
+<div class="toc">
+  <h3>Contents</h3>
+  <a href="#s1">1. Why health checks exist — the 5 pod states</a>
+  <a href="#s2">2. The 3 probe types — liveness, readiness, startup</a>
+  <a href="#s3">3. All three working together — timeline</a>
+  <a href="#s4">4. Full ASP.NET Core implementation</a>
+  <a href="#s5">5. Detailed response writer — JSON output</a>
+  <a href="#s6">6. Kubernetes YAML — probe configuration</a>
+  <a href="#s7">7. Who calls these endpoints?</a>
+  <a href="#s8">8. The 4 production mistakes</a>
+  <a href="#s9">9. The golden rule — what to check where</a>
+  <a href="#s10">10. Interview Q&amp;A</a>
+</div>
+
+<!-- ═══════════════════ SECTION 1 ═══════════════════ -->
+<div class="section" id="s1">
+<h2><span class="num">01</span> Why Health Checks Exist</h2>
+<p>In a monolith, your service is either running or it's not. In microservices with Kubernetes, a pod can be in many states between "fully dead" and "fully ready":</p>
+
+<div class="tab-group" id="states">
+<div class="tab-bar">
+<button class="tab-btn active" onclick="showTab('states',0)">Starting up</button>
+<button class="tab-btn" onclick="showTab('states',1)">Overloaded</button>
+<button class="tab-btn" onclick="showTab('states',2)">Deadlocked</button>
+<button class="tab-btn" onclick="showTab('states',3)">Partially broken</button>
+<button class="tab-btn" onclick="showTab('states',4)">Shutting down</button>
+</div>
+<div class="tab-panel active">
+<div class="env-card" style="background:rgba(110,161,255,0.04);border:1px solid rgba(110,161,255,0.1)">
+<div class="env-name" style="color:var(--accent)">Starting up</div>
+<div class="env-status" style="color:var(--text)">Process is alive but hasn't loaded cache or connected to DB yet. If K8s sends traffic now → errors. Need: startup probe to give it time, readiness probe to block traffic until ready.</div>
+</div>
+</div>
+<div class="tab-panel">
+<div class="env-card" style="background:rgba(251,191,36,0.04);border:1px solid rgba(251,191,36,0.1)">
+<div class="env-name" style="color:var(--amber)">Overloaded</div>
+<div class="env-status" style="color:var(--text)">Alive but too busy to accept new requests. Need: readiness probe to temporarily remove from load balancer. Don't kill it — just stop sending traffic until it recovers.</div>
+</div>
+</div>
+<div class="tab-panel">
+<div class="env-card" style="background:rgba(248,113,113,0.04);border:1px solid rgba(248,113,113,0.1)">
+<div class="env-name" style="color:var(--red)">Deadlocked</div>
+<div class="env-status" style="color:var(--text)">Process is alive (PID exists, memory allocated) but threads are stuck waiting on each other. Will never recover on its own. Need: liveness probe to detect and restart.</div>
+</div>
+</div>
+<div class="tab-panel">
+<div class="env-card" style="background:rgba(251,146,60,0.04);border:1px solid rgba(251,146,60,0.1)">
+<div class="env-name" style="color:var(--coral)">Partially broken</div>
+<div class="env-status" style="color:var(--text)">HTTP works but database connection is lost. Process is alive (liveness passes) but can't do useful work (readiness fails). Don't restart — just wait for DB to reconnect.</div>
+</div>
+</div>
+<div class="tab-panel">
+<div class="env-card" style="background:rgba(139,92,246,0.04);border:1px solid rgba(139,92,246,0.1)">
+<div class="env-name" style="color:var(--accent2)">Gracefully shutting down</div>
+<div class="env-status" style="color:var(--text)">Finishing in-flight requests, shouldn't get new ones. Readiness fails → K8s stops routing traffic. Liveness still passes → K8s doesn't kill it prematurely.</div>
+</div>
+</div>
+</div>
+
+<p>K8s needs to know which state your pod is in to make the right decision. That's what the three probe types are for.</p>
+</div>
+
+<!-- ═══════════════════ SECTION 2 ═══════════════════ -->
+<div class="section" id="s2">
+<h2><span class="num">02</span> The 3 Probe Types</h2>
+
+<div class="tab-group" id="probes">
+<div class="tab-bar">
+<button class="tab-btn active" onclick="showTab('probes',0)">Liveness</button>
+<button class="tab-btn" onclick="showTab('probes',1)">Readiness</button>
+<button class="tab-btn" onclick="showTab('probes',2)">Startup</button>
+</div>
+<div class="tab-panel active">
+<div class="env-card" style="background:rgba(248,113,113,0.04);border:1px solid rgba(248,113,113,0.1)">
+<div class="env-name" style="color:var(--red)">Liveness probe — "Is the process alive?"</div>
+<div class="env-status" style="color:var(--text);font-size:13px;line-height:1.7;margin-top:6px">
+<strong style="color:var(--red)">On failure:</strong> K8s <strong>kills and restarts</strong> the pod.<br>
+<strong>Endpoint:</strong> <code>/health/live</code> or <code>/healthz</code><br>
+<strong>What it checks:</strong> "Can the process respond to HTTP at all?" — minimal, just returns 200 OK.<br>
+<strong>Purpose:</strong> Detect deadlocks, infinite loops, memory leaks — unrecoverable situations.
+</div>
+</div>
+<div class="note-red note">
+<b>Real scenario:</b> Orders service has a thread pool. A bug causes all threads to deadlock. Process is alive (PID exists) but can't handle any request. Without liveness: K8s thinks it's fine, routes traffic to a dead pod. With liveness: probe times out → K8s kills the pod → fresh one starts → deadlock gone.
+</div>
+</div>
+<div class="tab-panel">
+<div class="env-card" style="background:rgba(251,191,36,0.04);border:1px solid rgba(251,191,36,0.1)">
+<div class="env-name" style="color:var(--amber)">Readiness probe — "Can it handle traffic right now?"</div>
+<div class="env-status" style="color:var(--text);font-size:13px;line-height:1.7;margin-top:6px">
+<strong style="color:var(--amber)">On failure:</strong> K8s <strong>removes from Service endpoints</strong> (stops routing traffic) but does NOT kill the pod.<br>
+<strong>Endpoint:</strong> <code>/health/ready</code><br>
+<strong>What it checks:</strong> "Can I do useful work?" — checks dependencies: DB, Redis, external APIs.<br>
+<strong>Purpose:</strong> Temporarily take pod out of rotation when alive but can't serve.
+</div>
+</div>
+<div class="note-warn note">
+<b>Real scenario:</b> Service starts and needs to warm a cache from Redis (30 seconds). During those 30 seconds, liveness passes but readiness fails. K8s doesn't route traffic → cache loads → readiness passes → traffic flows. Users never see errors.
+</div>
+</div>
+<div class="tab-panel">
+<div class="env-card" style="background:rgba(110,161,255,0.04);border:1px solid rgba(110,161,255,0.1)">
+<div class="env-name" style="color:var(--accent)">Startup probe — "Has it finished starting?"</div>
+<div class="env-status" style="color:var(--text);font-size:13px;line-height:1.7;margin-top:6px">
+<strong style="color:var(--accent)">On failure:</strong> K8s <strong>kills and restarts</strong> (same as liveness) — but only during startup.<br>
+<strong>Endpoint:</strong> Same as liveness, or dedicated <code>/health/startup</code><br>
+<strong>What it checks:</strong> "Has the app finished initialization?" — migrations, cache loading, config.<br>
+<strong>Purpose:</strong> Protect slow-starting apps from being killed by liveness before they're ready. <strong>Once startup passes, it never runs again.</strong>
+</div>
+</div>
+<div class="note note">
+<b>Real scenario:</b> Service runs EF Core migrations on startup — takes 60 seconds. Liveness has 10-second timeout. Without startup: liveness fails 6 times during migration → K8s kills → restart → migration starts again → infinite CrashLoopBackOff. With startup: gets 300s to complete → migrations finish → liveness takes over.
+</div>
+</div>
+</div>
+</div>
+
+<!-- ═══════════════════ SECTION 3 ═══════════════════ -->
+<div class="section" id="s3">
+<h2><span class="num">03</span> All Three Working Together</h2>
+
+<div class="tab-group" id="timeline">
+<div class="tab-bar">
+<button class="tab-btn active" onclick="showTab('timeline',0)">Full timeline</button>
+<button class="tab-btn" onclick="showTab('timeline',1)">DB goes down scenario</button>
+<button class="tab-btn" onclick="showTab('timeline',2)">Deadlock scenario</button>
+</div>
+<div class="tab-panel active">
+<pre><code>Pod created
+  → Startup probe begins checking
+  → App is starting (migrations, cache load)... startup fails, that's OK
+  → App finishes startup → startup probe passes
+  → Startup probe DISABLES ITSELF (never runs again)
+
+Liveness probe + Readiness probe take over
+  → Liveness: checks every 20s — "are you alive?"
+  → Readiness: checks every 10s — "can you handle traffic?"
+
+Normal operation:
+  → Both pass → pod receives traffic ✅</code></pre>
+</div>
+<div class="tab-panel">
+<pre><code>Database connection lost:
+  → Liveness still passes (process is alive, can respond to HTTP)
+  → Readiness FAILS (can't do useful work without DB)
+  → K8s removes pod from Service endpoints (no new traffic)
+  → Pod stays alive, keeps trying to reconnect
+  → DB recovers → readiness passes → K8s adds pod back → traffic flows
+
+Key: pod was NOT restarted. Just temporarily removed from rotation.</code></pre>
+</div>
+<div class="tab-panel">
+<pre><code>Thread deadlock occurs:
+  → Liveness probe times out (process can't respond to HTTP)
+  → First failure... second failure... third failure (failureThreshold: 3)
+  → K8s kills the pod
+  → Fresh pod starts → startup probe begins
+  → Startup passes → liveness + readiness take over
+  → New pod is healthy ✅
+
+Key: liveness detected an UNRECOVERABLE issue and restarted.</code></pre>
+</div>
+</div>
+</div>
+
+<!-- ═══════════════════ SECTION 4 ═══════════════════ -->
+<div class="section" id="s4">
+<h2><span class="num">04</span> Full ASP.NET Core Implementation</h2>
+
+<div class="tab-group" id="impl">
+<div class="tab-bar">
+<button class="tab-btn active" onclick="showTab('impl',0)">Register health checks</button>
+<button class="tab-btn" onclick="showTab('impl',1)">Map three endpoints</button>
+<button class="tab-btn" onclick="showTab('impl',2)">Why liveness has no checks</button>
+</div>
+<div class="tab-panel active">
+<pre><code>// Program.cs — register all health check dependencies
+builder.Services.AddHealthChecks()
+    // Can we reach the database?
+    .AddDbContextCheck&lt;OrdersDbContext&gt;(
+        name: "database",
+        tags: new[] { "ready" })       // tagged as readiness dependency
+
+    // Can we reach Redis?
+    .AddRedis(
+        builder.Configuration.GetConnectionString("Redis"),
+        name: "redis",
+        tags: new[] { "ready" })
+
+    // Can we reach the payment provider?
+    .AddUrlGroup(
+        new Uri("https://api.stripe.com/v1"),
+        name: "stripe",
+        tags: new[] { "ready" })
+
+    // Custom: is the cache warm?
+    .AddCheck("cache-warmup", () =>
+    {
+        return CacheService.IsWarmed
+            ? HealthCheckResult.Healthy("Cache is warm")
+            : HealthCheckResult.Unhealthy("Cache still loading");
+    }, tags: new[] { "ready" });</code></pre>
+</div>
+<div class="tab-panel">
+<pre><code>// Map three endpoints — one per probe type
+
+// Liveness: MINIMAL — just "can the process respond?"
+app.MapHealthChecks("/health/live", new HealthCheckOptions
+{
+    Predicate = _ => false   // run NO checks — just return 200
+});
+
+// Readiness: FULL — checks all dependencies tagged "ready"
+app.MapHealthChecks("/health/ready", new HealthCheckOptions
+{
+    Predicate = check => check.Tags.Contains("ready"),
+    ResponseWriter = WriteDetailedResponse  // JSON with each check
+});
+
+// Startup: same as readiness (once passes, K8s stops calling it)
+app.MapHealthChecks("/health/startup", new HealthCheckOptions
+{
+    Predicate = check => check.Tags.Contains("ready")
+});</code></pre>
+</div>
+<div class="tab-panel">
+<div class="note-green note">
+<b>The key design decision: liveness has Predicate = _ => false</b><br><br>
+It runs <strong>NO checks</strong>. Just tests "can ASP.NET respond to HTTP?"<br><br>
+If you put database checks in liveness, a temporary DB outage would cause K8s to <strong>restart ALL pods</strong> — making things worse, not better. Database connectivity belongs in readiness (temporarily stop traffic) not liveness (kill the pod).
+</div>
+</div>
+</div>
+</div>
+
+<!-- ═══════════════════ SECTION 5 ═══════════════════ -->
+<div class="section" id="s5">
+<h2><span class="num">05</span> Detailed Response Writer</h2>
+<p>When readiness fails, you want to know <strong>which</strong> dependency is down:</p>
+
+<div class="tab-group" id="writer">
+<div class="tab-bar">
+<button class="tab-btn active" onclick="showTab('writer',0)">C# implementation</button>
+<button class="tab-btn" onclick="showTab('writer',1)">Example JSON output</button>
+</div>
+<div class="tab-panel active">
+<pre><code>private static async Task WriteDetailedResponse(
+    HttpContext context, HealthReport report)
+{
+    context.Response.ContentType = "application/json";
+
+    var result = new
+    {
+        status = report.Status.ToString(),
+        totalDuration = report.TotalDuration.TotalMilliseconds + "ms",
+        checks = report.Entries.Select(e => new
+        {
+            name = e.Key,
+            status = e.Value.Status.ToString(),
+            duration = e.Value.Duration.TotalMilliseconds + "ms",
+            description = e.Value.Description,
+            error = e.Value.Exception?.Message
+        })
+    };
+
+    await context.Response.WriteAsJsonAsync(result);
+}</code></pre>
+</div>
+<div class="tab-panel">
+<pre><code>{
+  "status": "Unhealthy",
+  "totalDuration": "234ms",
+  "checks": [
+    { "name": "database",     "status": "Healthy",   "duration": "12ms"   },
+    { "name": "redis",        "status": "Unhealthy", "duration": "3001ms",
+      "error": "Connection timeout" },
+    { "name": "stripe",       "status": "Healthy",   "duration": "89ms"   },
+    { "name": "cache-warmup", "status": "Healthy",   "duration": "0ms"    }
+  ]
+}
+
+// One glance: Redis is down. Everything else is fine.</code></pre>
+</div>
+</div>
+</div>
+
+<!-- ═══════════════════ SECTION 6 ═══════════════════ -->
+<div class="section" id="s6">
+<h2><span class="num">06</span> Kubernetes YAML Configuration</h2>
+
+<div class="tab-group" id="yaml">
+<div class="tab-bar">
+<button class="tab-btn active" onclick="showTab('yaml',0)">Full annotated YAML</button>
+<button class="tab-btn" onclick="showTab('yaml',1)">What each field means</button>
+</div>
+<div class="tab-panel active">
+<pre><code>containers:
+  - name: orders
+    image: orders:v2
+
+    # Startup probe — protect slow starters
+    startupProbe:
+      httpGet:
+        path: /health/startup
+        port: 5001
+      initialDelaySeconds: 5    # wait 5s before first check
+      periodSeconds: 5          # check every 5s
+      failureThreshold: 60      # allow up to 60 failures
+      # 60 × 5s = 300s = 5 minutes max startup time
+
+    # Liveness probe — detect deadlocks
+    livenessProbe:
+      httpGet:
+        path: /health/live
+        port: 5001
+      initialDelaySeconds: 0    # starts AFTER startup passes
+      periodSeconds: 20         # check every 20s
+      failureThreshold: 3       # 3 failures = kill and restart
+      timeoutSeconds: 5         # each check must respond in 5s
+
+    # Readiness probe — control traffic routing
+    readinessProbe:
+      httpGet:
+        path: /health/ready
+        port: 5001
+      initialDelaySeconds: 0
+      periodSeconds: 10         # check every 10s
+      failureThreshold: 3       # 3 failures = remove from endpoints
+      successThreshold: 1       # 1 success = add back
+      timeoutSeconds: 5</code></pre>
+</div>
+<div class="tab-panel">
+<table>
+<tr><th>Field</th><th>What it does</th></tr>
+<tr><td><code>initialDelaySeconds</code></td><td>Wait this long before first probe check. Gives the app time to start before being evaluated.</td></tr>
+<tr><td><code>periodSeconds</code></td><td>How often to run the probe. Lower = faster detection, higher = less overhead.</td></tr>
+<tr><td><code>failureThreshold</code></td><td>How many consecutive failures before K8s acts. Filters transient issues.</td></tr>
+<tr><td><code>successThreshold</code></td><td>How many consecutive successes before K8s considers the pod healthy again (readiness only).</td></tr>
+<tr><td><code>timeoutSeconds</code></td><td>How long to wait for a response before considering the probe failed.</td></tr>
+</table>
+</div>
+</div>
+</div>
+
+<!-- ═══════════════════ SECTION 7 ═══════════════════ -->
+<div class="section" id="s7">
+<h2><span class="num">07</span> Who Calls These Endpoints?</h2>
+<p>All three probes are called <strong>only by Kubernetes</strong> — specifically by the <strong>kubelet</strong> (K8s agent running on each node). Not by other services. Not by users. Not by the API Gateway.</p>
+
+<div class="tab-group" id="who">
+<div class="tab-bar">
+<button class="tab-btn active" onclick="showTab('who',0)">Who calls what</button>
+<button class="tab-btn" onclick="showTab('who',1)">Why they're internal-only</button>
+</div>
+<div class="tab-panel active">
+<pre><code>Users / other services call:
+  → /api/orders          (business logic)
+  → /api/orders/123      (business logic)
+  → /api/payments/charge  (business logic)
+
+Kubernetes (kubelet) calls:
+  → /health/live      (liveness)
+  → /health/ready     (readiness)
+  → /health/startup   (startup)
+
+These endpoints are infrastructure-level, not application-level.
+Services never know or care about them.</code></pre>
+</div>
+<div class="tab-panel">
+<p>Health endpoints are typically <strong>not exposed outside the cluster</strong>. The API Gateway doesn't route <code>/health/*</code> to the outside world. They exist on the internal pod IP, accessible only by the kubelet on the same node.</p>
+<pre><code>// Extra safety — restrict to internal port
+app.MapHealthChecks("/health/live")
+    .RequireHost("*:5001");   // only on internal port
+
+// Public API on a different port or path
+app.MapControllers();         // /api/* routes for real traffic</code></pre>
+<p>That's why liveness can be super minimal — it's just K8s whispering "you alive?" and your pod whispering back "yeah."</p>
+</div>
+</div>
+</div>
+
+<!-- ═══════════════════ SECTION 8 ═══════════════════ -->
+<div class="section" id="s8">
+<h2><span class="num">08</span> The 4 Production Mistakes</h2>
+
+<div class="tab-group" id="mistakes">
+<div class="tab-bar">
+<button class="tab-btn active" onclick="showTab('mistakes',0)">DB in liveness</button>
+<button class="tab-btn" onclick="showTab('mistakes',1)">No startup probe</button>
+<button class="tab-btn" onclick="showTab('mistakes',2)">External deps in liveness</button>
+<button class="tab-btn" onclick="showTab('mistakes',3)">Too aggressive timing</button>
+</div>
+<div class="tab-panel active">
+<div class="env-card" style="background:rgba(248,113,113,0.04);border:1px solid rgba(248,113,113,0.1)">
+<div class="env-name" style="color:var(--red)">Mistake: DB check in liveness probe</div>
+<div class="env-status" style="color:var(--text);font-size:13px;line-height:1.7;margin-top:6px">Liveness checks database. DB has a 30-second blip. Liveness fails 3 times → K8s kills ALL pods → all pods restart → all reconnect simultaneously → thundering herd → DB overwhelmed → more failures → cascade outage.</div>
+</div>
+<div class="env-card" style="background:rgba(52,211,153,0.04);border:1px solid rgba(52,211,153,0.1);margin-top:8px">
+<div class="env-name" style="color:var(--green)">Fix: DB check belongs in READINESS only</div>
+<div class="env-status" style="color:var(--text);font-size:13px;line-height:1.7;margin-top:6px">Readiness fails → K8s stops routing traffic (pod stays alive). DB recovers → readiness passes → traffic flows. No restarts, no thundering herd.</div>
+</div>
+</div>
+<div class="tab-panel">
+<div class="env-card" style="background:rgba(248,113,113,0.04);border:1px solid rgba(248,113,113,0.1)">
+<div class="env-name" style="color:var(--red)">Mistake: No startup probe for slow apps</div>
+<div class="env-status" style="color:var(--text);font-size:13px;line-height:1.7;margin-top:6px">App runs EF migrations (60 seconds). Liveness starts after 10 seconds. Fails → killed → restart → migrations restart → killed again → infinite CrashLoopBackOff.</div>
+</div>
+<div class="env-card" style="background:rgba(52,211,153,0.04);border:1px solid rgba(52,211,153,0.1);margin-top:8px">
+<div class="env-name" style="color:var(--green)">Fix: Add startup probe with generous failureThreshold</div>
+<div class="env-status" style="color:var(--text);font-size:13px;line-height:1.7;margin-top:6px"><code>startupProbe</code> with <code>failureThreshold: 60, periodSeconds: 5</code> = 5 minutes to start. Once passes, liveness takes over. Startup never runs again.</div>
+</div>
+</div>
+<div class="tab-panel">
+<div class="env-card" style="background:rgba(248,113,113,0.04);border:1px solid rgba(248,113,113,0.1)">
+<div class="env-name" style="color:var(--red)">Mistake: Checking Stripe/external APIs in liveness</div>
+<div class="env-status" style="color:var(--text);font-size:13px;line-height:1.7;margin-top:6px">Liveness checks if Stripe is reachable. Stripe has 2-minute outage. K8s kills all pods. Your service is DOWN even though your code is fine — restarting healthy pods because Stripe is slow.</div>
+</div>
+<div class="env-card" style="background:rgba(52,211,153,0.04);border:1px solid rgba(52,211,153,0.1);margin-top:8px">
+<div class="env-name" style="color:var(--green)">Fix: External deps in readiness (or nowhere)</div>
+<div class="env-status" style="color:var(--text);font-size:13px;line-height:1.7;margin-top:6px">Stripe down? Readiness can fail (stop taking new orders). But your process is healthy — don't restart it. Or better: don't check Stripe at all — handle with circuit breaker + fallback.</div>
+</div>
+</div>
+<div class="tab-panel">
+<div class="env-card" style="background:rgba(248,113,113,0.04);border:1px solid rgba(248,113,113,0.1)">
+<div class="env-name" style="color:var(--red)">Mistake: Too aggressive probe timing</div>
+<div class="env-status" style="color:var(--text);font-size:13px;line-height:1.7;margin-top:6px"><code>periodSeconds: 1, failureThreshold: 1</code> → one slow response and K8s kills the pod. GC pauses (50-200ms) cause timeouts. Brief CPU spikes cause liveness to fail.</div>
+</div>
+<div class="env-card" style="background:rgba(52,211,153,0.04);border:1px solid rgba(52,211,153,0.1);margin-top:8px">
+<div class="env-name" style="color:var(--green)">Fix: Give room for transient issues</div>
+<div class="env-status" style="color:var(--text);font-size:13px;line-height:1.7;margin-top:6px"><code>periodSeconds: 20, failureThreshold: 3, timeoutSeconds: 5</code> → must fail 3 checks over 60 seconds before K8s acts. Filters GC pauses, CPU spikes, network blips.</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- ═══════════════════ SECTION 9 ═══════════════════ -->
+<div class="section" id="s9">
+<h2><span class="num">09</span> The Golden Rule</h2>
+
+<table>
+<tr><th>Probe</th><th>What to check</th><th>What NOT to check</th></tr>
+<tr><td><strong>Liveness</strong></td><td>Can the process respond to HTTP? (minimal)</td><td>Database, Redis, external APIs — <strong>NEVER</strong></td></tr>
+<tr><td><strong>Readiness</strong></td><td>Can I do useful work? (DB, cache, Redis)</td><td>Nothing too expensive or slow</td></tr>
+<tr><td><strong>Startup</strong></td><td>Same as readiness (has init finished?)</td><td>N/A — once passes, gone forever</td></tr>
+</table>
+
+<div class="note-green note">
+<b>The medical analogy:</b><br><br>
+<strong>Liveness</strong> = is the patient breathing? (If no → defibrillator / restart)<br>
+<strong>Readiness</strong> = is the patient able to work? (If no → rest at home / no traffic)<br>
+<strong>Startup</strong> = has the patient woken up from surgery? (If no → keep monitoring, don't panic)
+</div>
+</div>
+
+<!-- ═══════════════════ SECTION 10 ═══════════════════ -->
+<div class="section" id="s10">
+<h2><span class="num">10</span> Interview Q&amp;A</h2>
+
+<div class="qa"><div class="qa-q">Q: What's the difference between liveness and readiness probes?</div><div class="qa-a">Liveness checks if the process is alive — failure triggers a restart. Readiness checks if it can handle traffic — failure removes from load balancer but keeps running. A service loading its cache is alive but not ready. Critical rule: never put dependency checks (DB, Redis) in liveness — a temporary DB outage would restart all pods, making it worse.</div></div>
+<div class="qa"><div class="qa-q">Q: When do you need a startup probe?</div><div class="qa-a">When your app takes a long time to initialize — migrations, large caches, remote config. Without it, liveness would kill the pod before it finishes starting (infinite CrashLoopBackOff). Startup probe gives time (e.g., 5 minutes). Once it passes, it disables itself forever — liveness and readiness take over.</div></div>
+<div class="qa"><div class="qa-q">Q: What should a liveness probe check?</div><div class="qa-a">As little as possible. Ideally just "can the HTTP server respond with 200?" — Predicate = _ => false in ASP.NET Core, running no health checks. Only detects unrecoverable issues (deadlocks, memory corruption). Anything recoverable (DB down, cache cold) belongs in readiness.</div></div>
+<div class="qa"><div class="qa-q">Q: Who calls the health check endpoints?</div><div class="qa-a">Only Kubernetes — specifically the kubelet on each node. Never by other services, never by users, never by the API Gateway. These are infrastructure-level endpoints, not exposed outside the cluster. They exist on the internal pod IP only.</div></div>
+<div class="qa"><div class="qa-q">Q: What happens when readiness fails?</div><div class="qa-a">K8s removes the pod from Service endpoints — it stops receiving traffic. But the pod stays alive and keeps running. When readiness passes again, K8s adds it back. This is perfect for temporary issues like a DB blip or cache warming — the pod recovers without being restarted.</div></div>
+<div class="qa"><div class="qa-q">Q: Why is putting DB checks in liveness dangerous?</div><div class="qa-a">A 30-second DB blip causes liveness to fail → K8s kills all pods → all restart simultaneously → all try to reconnect to DB at once → thundering herd overwhelms the recovering DB → more failures → cascade outage. DB checks belong in readiness — stop traffic but don't restart.</div></div>
+</div>
+
+<div class="footer">Health Checks in Kubernetes — Microservices Study Guide · Deep Dive · C# / .NET · 2026</div>
+</div>
+
+<script>
+function showTab(g,i){var p=document.getElementById(g).querySelectorAll('.tab-panel'),b=document.getElementById(g).querySelectorAll('.tab-btn');p.forEach(function(x,j){x.classList.toggle('active',j===i)});b.forEach(function(x,j){x.classList.remove('active');if(j===i)x.classList.add('active')})}
+</script>
+</body>
+</html>

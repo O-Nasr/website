@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Topic 2 — Inter-Service Communication</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0b0e14;--s:#131820;--s2:#1a2030;--b:rgba(255,255,255,.06);--b2:rgba(255,255,255,.12);--accent:#10b981;--blue:#3b82f6;--amber:#f59e0b;--red:#ef4444;--purple:#a855f7;--coral:#f97316;--text:#e2e8f0;--muted:#7d8a9c;--code:#070a0f;--r:10px}
+*{box-sizing:border-box;margin:0;padding:0}html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Sora',sans-serif;font-size:15px;line-height:1.75}
+.hero{padding:0;background:linear-gradient(135deg,#070c12 0%,#0b1018 50%,#070e14 100%);border-bottom:1px solid var(--b2);position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-100px;right:-80px;width:600px;height:600px;background:radial-gradient(circle,rgba(16,185,129,.1) 0%,transparent 65%);pointer-events:none}
+.hero::after{content:'';position:absolute;bottom:-60px;left:-60px;width:400px;height:400px;background:radial-gradient(circle,rgba(59,130,246,.07) 0%,transparent 60%);pointer-events:none}
+.hero-inner{max-width:980px;margin:0 auto;padding:64px 32px 56px;position:relative;z-index:1}
+.badge{display:inline-flex;align-items:center;gap:7px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent);background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.22);padding:4px 12px;border-radius:20px;letter-spacing:.06em;margin-bottom:22px}
+.bdot{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:blink 2s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+h1{font-size:clamp(30px,5vw,52px);font-weight:700;line-height:1.1;letter-spacing:-.03em;margin-bottom:14px;background:linear-gradient(135deg,#e2e8f0 0%,#64748b 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-sub{font-size:16px;color:var(--muted);max-width:560px;line-height:1.7;margin-bottom:24px}
+.hero-tags{display:flex;gap:8px;flex-wrap:wrap}
+.hero-tag{font-size:11px;color:var(--muted);background:var(--s);border:1px solid var(--b2);padding:3px 12px;border-radius:20px}
+.page{max-width:980px;margin:0 auto;padding:0 32px 100px}
+.toc{margin:36px 0;background:var(--s);border:1px solid var(--b);border-radius:var(--r);padding:24px 28px}
+.toc-title{font-size:10px;font-weight:600;color:var(--muted);letter-spacing:.14em;text-transform:uppercase;margin-bottom:14px}
+.toc ol{list-style:none;counter-reset:t;display:grid;grid-template-columns:1fr 1fr;gap:5px 24px}
+.toc li{counter-increment:t;display:flex;gap:8px;align-items:baseline}
+.toc li::before{content:counter(t,decimal-leading-zero);font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--accent);opacity:.55;flex-shrink:0}
+.toc a{color:var(--muted);text-decoration:none;font-size:13px;transition:color .15s}.toc a:hover{color:var(--text)}
+.section{padding-top:60px}
+.sec-lbl{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);margin-bottom:10px;display:flex;align-items:center;gap:10px}
+.sec-lbl::after{content:'';flex:1;height:1px;background:var(--b)}
+h2{font-size:26px;font-weight:700;letter-spacing:-.025em;margin-bottom:14px;line-height:1.25}
+h3{font-size:17px;font-weight:600;margin:28px 0 12px}
+p{color:var(--muted);margin-bottom:14px;line-height:1.75}p strong{color:var(--text);font-weight:600}
+.code-block{background:var(--code);border:1px solid var(--b);border-radius:var(--r);overflow:hidden;margin:18px 0}
+.code-hdr{display:flex;align-items:center;justify-content:space-between;padding:9px 16px;background:rgba(255,255,255,.02);border-bottom:1px solid var(--b)}
+.code-lang{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--accent);font-weight:600;letter-spacing:.1em;text-transform:uppercase}
+.code-dots{display:flex;gap:5px}.code-dots span{width:9px;height:9px;border-radius:50%}
+.code-dots span:nth-child(1){background:#ef4444}.code-dots span:nth-child(2){background:#f59e0b}.code-dots span:nth-child(3){background:#22c55e}
+pre{padding:20px;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.8}
+code{color:#c8d0e0}.kw{color:#7c9ef5}.cm{color:#3a5068;font-style:italic}.str{color:#7ec891}.typ{color:#e8a96e}.num{color:#c3a6e0}
+.callout{border-radius:var(--r);padding:14px 18px;margin:16px 0;border-left:3px solid;display:flex;gap:12px;align-items:flex-start}
+.callout-icon{font-size:14px;flex-shrink:0;margin-top:2px}.callout-body{flex:1;font-size:13px;line-height:1.65}.callout-body strong{font-weight:600}
+.callout.info{background:rgba(59,130,246,.07);border-color:var(--blue)}.callout.info .callout-body{color:#93b8f8}
+.callout.tip{background:rgba(16,185,129,.07);border-color:var(--accent)}.callout.tip .callout-body{color:#6ee7b7}
+.callout.warn{background:rgba(245,158,11,.07);border-color:var(--amber)}.callout.warn .callout-body{color:#fcd34d}
+.callout.danger{background:rgba(239,68,68,.07);border-color:var(--red)}.callout.danger .callout-body{color:#fca5a5}
+.diagram-card{background:var(--s);border:1px solid var(--b);border-radius:var(--r);padding:28px;margin:20px 0;overflow:hidden}
+.diagram-card svg{width:100%;display:block}
+.table-wrap{overflow-x:auto;margin:16px 0}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:480px}
+th{text-align:left;padding:10px 14px;background:rgba(255,255,255,.03);color:var(--text);font-weight:600;font-size:11px;letter-spacing:.06em;border-bottom:1px solid var(--b2)}
+td{padding:10px 14px;color:var(--muted);border-bottom:1px solid var(--b);vertical-align:top;line-height:1.5}
+tr:last-child td{border-bottom:none}td strong{color:var(--text)}
+.bdg{display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600;letter-spacing:.04em;white-space:nowrap}
+.bdg-g{background:rgba(16,185,129,.15);color:var(--accent)}.bdg-r{background:rgba(239,68,68,.15);color:var(--red)}.bdg-b{background:rgba(59,130,246,.15);color:var(--blue)}.bdg-a{background:rgba(245,158,11,.15);color:var(--amber)}
+.qa-list{display:flex;flex-direction:column;gap:12px;margin:16px 0}
+.qa-item{background:var(--s);border:1px solid var(--b);border-radius:var(--r);overflow:hidden}
+.qa-q{padding:14px 18px;font-size:13.5px;color:var(--text);font-weight:600;background:rgba(255,255,255,.02);display:flex;gap:12px;align-items:flex-start}
+.qa-q::before{content:'Q';font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;color:var(--accent);background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.25);padding:2px 7px;border-radius:4px;flex-shrink:0;margin-top:1px}
+.qa-a{padding:14px 18px;font-size:13px;color:var(--muted);border-top:1px solid var(--b);display:flex;gap:12px;line-height:1.65}
+.qa-a::before{content:'A';font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;color:#22c55e;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.2);padding:2px 7px;border-radius:4px;flex-shrink:0;margin-top:2px}
+.divider{height:1px;background:var(--b);margin:52px 0 0}
+.footer{margin-top:60px;padding-top:20px;border-top:1px solid var(--b);text-align:center;font-size:11px;color:var(--muted);opacity:.4}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:16px 0}
+.card{background:var(--s);border:1px solid var(--b);border-radius:var(--r);padding:18px}
+.card-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px}
+.card-body{font-size:12.5px;color:var(--muted);line-height:1.6}
+button{font-family:'Sora',sans-serif;font-size:12px;font-weight:500;padding:5px 14px;border-radius:20px;border:1px solid var(--b2);background:transparent;color:var(--muted);cursor:pointer;transition:all .15s}
+button:hover{background:var(--s2);color:var(--text)}
+button.act{background:rgba(16,185,129,.12);color:var(--accent);border-color:rgba(16,185,129,.3)}
+.sim-note{font-size:13px;color:var(--muted);padding:10px 14px;border-radius:var(--r);background:var(--s2);border:1px solid var(--b);margin-top:8px;min-height:44px;line-height:1.65}
+@keyframes fflow{0%,100%{stroke-dashoffset:80}100%{stroke-dashoffset:0}}
+@media(prefers-reduced-motion:no-preference){.flow-line{stroke-dasharray:8 72;animation:fflow 1.8s ease-in-out infinite}}
+@media(max-width:640px){.toc ol,.grid2{grid-template-columns:1fr}.page,.hero-inner{padding-left:16px;padding-right:16px}h2{font-size:20px}}
+</style>
+</head>
+<body>
+<div class="hero">
+<div class="hero-inner">
+  <div class="badge"><span class="bdot"></span>Microservices · Topic 2 · C# / .NET</div>
+  <h1>Inter-Service<br>Communication</h1>
+  <p class="hero-sub">Synchronous vs asynchronous, REST vs gRPC, message queues, event-driven patterns, and the animated order flow showing when to use each.</p>
+  <div class="hero-tags">
+    <span class="hero-tag">REST</span><span class="hero-tag">gRPC</span><span class="hero-tag">Kafka</span>
+    <span class="hero-tag">RabbitMQ</span><span class="hero-tag">MassTransit</span><span class="hero-tag">Pulsar</span>
+  </div>
+</div>
+</div>
+
+<div class="page">
+
+<div class="toc">
+<div class="toc-title">Contents</div>
+<ol>
+<li><a href="#s1">The core problem</a></li>
+<li><a href="#s2">Synchronous communication</a></li>
+<li><a href="#s3">REST in depth</a></li>
+<li><a href="#s4">gRPC in depth</a></li>
+<li><a href="#s5">REST vs gRPC comparison</a></li>
+<li><a href="#s6">Asynchronous communication</a></li>
+<li><a href="#s7">MassTransit — C# async messaging</a></li>
+<li><a href="#s8">The decision framework</a></li>
+<li><a href="#s9">The sync chain danger</a></li>
+<li><a href="#s10">Order flow — animated</a></li>
+<li><a href="#s11">Kafka vs RabbitMQ vs Pulsar</a></li>
+<li><a href="#s12">Interview Q&A</a></li>
+</ol>
+</div>
+
+<!-- S1 -->
+<div class="section" id="s1">
+<div class="sec-lbl">01</div>
+<h2>The Core Problem</h2>
+<p>In a monolith, one module calls another with a direct method call — no address, no network, no failure modes. In microservices, that same call crosses a network. You now must make a conscious choice: <strong>how should these services talk?</strong></p>
+<div class="grid2">
+<div class="card">
+<div class="card-title">Synchronous</div>
+<div class="card-body">Caller sends a request and <strong>waits</strong> for the response before continuing. Like a phone call — you can't hang up until the other person answers.</div>
+</div>
+<div class="card">
+<div class="card-title">Asynchronous</div>
+<div class="card-body">Caller fires a message and <strong>moves on immediately</strong>. Like sending an email — you don't wait for a reply to continue your work.</div>
+</div>
+</div>
+</div>
+
+<div class="divider"></div>
+
+<!-- S2 -->
+<div class="section" id="s2">
+<div class="sec-lbl">02</div>
+<h2>Synchronous Communication</h2>
+<p>The caller blocks until the response arrives. Two protocols dominate.</p>
+<div class="diagram-card">
+<svg viewBox="0 0 820 200" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="as" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#10b981" stroke-width="1.5" stroke-linecap="round"/></marker>
+<marker id="asr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round"/></marker></defs>
+<!-- REST example -->
+<text x="205" y="18" text-anchor="middle" fill="#94a3b8" font-size="12" font-weight="600" font-family="Sora,sans-serif">REST (HTTP/JSON)</text>
+<rect x="20" y="30" width="120" height="50" rx="8" fill="rgba(16,185,129,.08)" stroke="rgba(16,185,129,.25)" stroke-width="1"/>
+<text x="80" y="52" text-anchor="middle" fill="#6ee7b7" font-size="12" font-weight="600" font-family="Sora,sans-serif">Orders</text>
+<text x="80" y="69" text-anchor="middle" fill="#94a3b8" font-size="10" font-family="Sora,sans-serif">service</text>
+<line x1="140" y1="55" x2="268" y2="55" stroke="#10b981" stroke-width="1.5" marker-end="url(#as)"/>
+<text x="204" y="47" text-anchor="middle" fill="#10b981" font-size="10" font-family="Sora,sans-serif">POST /api/payments (JSON)</text>
+<rect x="270" y="30" width="120" height="50" rx="8" fill="rgba(59,130,246,.08)" stroke="rgba(59,130,246,.25)" stroke-width="1"/>
+<text x="330" y="52" text-anchor="middle" fill="#93b8f8" font-size="12" font-weight="600" font-family="Sora,sans-serif">Payments</text>
+<text x="330" y="69" text-anchor="middle" fill="#94a3b8" font-size="10" font-family="Sora,sans-serif">service</text>
+<line x1="268" y1="72" x2="140" y2="72" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="3 3" marker-end="url(#asr)"/>
+<text x="204" y="86" text-anchor="middle" fill="#94a3b8" font-size="10" font-family="Sora,sans-serif">200 { paymentId: "pay-456" }</text>
+<text x="204" y="108" text-anchor="middle" fill="#64748b" font-size="11" font-family="Sora,sans-serif">Orders WAITS until response arrives</text>
+<text x="204" y="124" text-anchor="middle" fill="#10b981" font-size="10" font-family="Sora,sans-serif">human-readable, easy to debug</text>
+<!-- gRPC example -->
+<text x="614" y="18" text-anchor="middle" fill="#94a3b8" font-size="12" font-weight="600" font-family="Sora,sans-serif">gRPC (HTTP/2 + Protobuf)</text>
+<rect x="430" y="30" width="120" height="50" rx="8" fill="rgba(16,185,129,.08)" stroke="rgba(16,185,129,.25)" stroke-width="1"/>
+<text x="490" y="52" text-anchor="middle" fill="#6ee7b7" font-size="12" font-weight="600" font-family="Sora,sans-serif">Orders</text>
+<text x="490" y="69" text-anchor="middle" fill="#94a3b8" font-size="10" font-family="Sora,sans-serif">service</text>
+<line x1="550" y1="55" x2="678" y2="55" stroke="#a855f7" stroke-width="1.5" marker-end="url(#as)"/>
+<text x="614" y="47" text-anchor="middle" fill="#d8b4fe" font-size="10" font-family="Sora,sans-serif">ChargeOrder(binary protobuf)</text>
+<rect x="680" y="30" width="120" height="50" rx="8" fill="rgba(168,85,247,.08)" stroke="rgba(168,85,247,.25)" stroke-width="1"/>
+<text x="740" y="52" text-anchor="middle" fill="#d8b4fe" font-size="12" font-weight="600" font-family="Sora,sans-serif">Payments</text>
+<text x="740" y="69" text-anchor="middle" fill="#94a3b8" font-size="10" font-family="Sora,sans-serif">service</text>
+<line x1="678" y1="72" x2="550" y2="72" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="3 3" marker-end="url(#asr)"/>
+<text x="614" y="86" text-anchor="middle" fill="#94a3b8" font-size="10" font-family="Sora,sans-serif">ChargeResponse(binary)</text>
+<text x="614" y="108" text-anchor="middle" fill="#64748b" font-size="11" font-family="Sora,sans-serif">5–10× faster, schema-enforced</text>
+<text x="614" y="124" text-anchor="middle" fill="#a855f7" font-size="10" font-family="Sora,sans-serif">strongly typed, compiler checks</text>
+</svg>
+</div>
+</div>
+
+<div class="divider"></div>
+
+<!-- S3 -->
+<div class="section" id="s3">
+<div class="sec-lbl">03</div>
+<h2>REST in Depth</h2>
+<p>REST uses HTTP verbs (GET, POST, PUT, DELETE) over HTTP/1.1. It's human-readable, universally supported, and trivially debuggable with a browser or curl.</p>
+<div class="code-block">
+<div class="code-hdr"><span class="code-lang">C# — REST with HttpClient</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+<pre><code><span class="kw">public class</span> <span class="typ">OrdersService</span>
+{
+    <span class="kw">private readonly</span> <span class="typ">HttpClient</span> _http;
+    <span class="kw">public</span> OrdersService(<span class="typ">HttpClient</span> http) =&gt; _http = http;
+
+    <span class="kw">public async</span> Task&lt;<span class="typ">PaymentResult</span>&gt; ChargeAsync(<span class="typ">Order</span> order)
+    {
+        <span class="cm">// Serialize to JSON, send over HTTP, wait for response</span>
+        <span class="kw">var</span> response = <span class="kw">await</span> _http.PostAsJsonAsync(
+            <span class="str">"http://payments-service/api/payments"</span>,
+            <span class="kw">new</span> { OrderId = order.Id, Amount = order.Total, Currency = <span class="str">"USD"</span> }
+        );
+        response.EnsureSuccessStatusCode();
+        <span class="kw">return await</span> response.Content.ReadFromJsonAsync&lt;<span class="typ">PaymentResult</span>&gt;();
+    }
+}
+
+<span class="cm">// On the wire:</span>
+<span class="cm">// POST /api/payments HTTP/1.1</span>
+<span class="cm">// Content-Type: application/json</span>
+<span class="cm">// { "orderId": "ord-123", "amount": 59.99, "currency": "USD" }</span>
+<span class="cm">// ← 200 { "paymentId": "pay-456", "status": "authorised" }</span></code></pre>
+</div>
+</div>
+
+<div class="divider"></div>
+
+<!-- S4 -->
+<div class="section" id="s4">
+<div class="sec-lbl">04</div>
+<h2>gRPC in Depth</h2>
+<p>gRPC uses HTTP/2 and serializes with Protocol Buffers (binary). 5–10× faster and smaller than REST. Tradeoff: harder to debug, requires tooling, not browser-friendly. You define a schema-first contract in a .proto file.</p>
+<div class="code-block">
+<div class="code-hdr"><span class="code-lang">Protobuf — payments.proto (shared contract)</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+<pre><code>syntax = <span class="str">"proto3"</span>;
+
+service <span class="typ">PaymentsService</span> {
+  rpc ChargeOrder (<span class="typ">ChargeRequest</span>) returns (<span class="typ">ChargeResponse</span>);
+}
+
+message <span class="typ">ChargeRequest</span> {
+  string order_id  = <span class="num">1</span>;
+  double amount    = <span class="num">2</span>;
+  string currency  = <span class="num">3</span>;
+}
+
+message <span class="typ">ChargeResponse</span> {
+  string payment_id = <span class="num">1</span>;
+  string status     = <span class="num">2</span>;
+}</code></pre>
+</div>
+<div class="code-block">
+<div class="code-hdr"><span class="code-lang">C# — gRPC client (.NET has first-class support)</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+<pre><code><span class="kw">public class</span> <span class="typ">OrdersService</span>
+{
+    <span class="kw">private readonly</span> <span class="typ">PaymentsService</span>.<span class="typ">PaymentsServiceClient</span> _client;
+
+    <span class="kw">public async</span> Task&lt;<span class="typ">ChargeResponse</span>&gt; ChargeAsync(<span class="typ">Order</span> order)
+    {
+        <span class="cm">// Strongly typed — compiler catches contract mismatches</span>
+        <span class="cm">// Binary serialization — 5–10x faster than JSON</span>
+        <span class="kw">return await</span> _client.ChargeOrderAsync(<span class="kw">new</span> <span class="typ">ChargeRequest</span>
+        {
+            OrderId  = order.Id,
+            Amount   = order.Total,
+            Currency = <span class="str">"USD"</span>
+        });
+    }
+}</code></pre>
+</div>
+<div class="callout info">
+<span class="callout-icon">💡</span>
+<div class="callout-body"><strong>Contract enforcement:</strong> If Payments changes its .proto and breaks the contract, the compiler tells you before it hits production. This is the key advantage over REST where contract changes are discovered at runtime.</div>
+</div>
+</div>
+
+<div class="divider"></div>
+
+<!-- S5 -->
+<div class="section" id="s5">
+<div class="sec-lbl">05</div>
+<h2>REST vs gRPC — When to Use Which</h2>
+<p>Practical rule: <strong>REST for anything external-facing or browser-accessible. gRPC for high-throughput internal service-to-service calls where you control both ends.</strong></p>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Dimension</th><th>REST (HTTP/JSON)</th><th>gRPC (HTTP/2 + Protobuf)</th></tr></thead>
+<tbody>
+<tr><td><strong>Speed</strong></td><td><span class="bdg bdg-a">Moderate — text serialization</span></td><td><span class="bdg bdg-g">Fast — binary, 5–10× smaller</span></td></tr>
+<tr><td><strong>Contract</strong></td><td>Implicit — OpenAPI optional</td><td><span class="bdg bdg-g">Explicit — .proto enforced</span></td></tr>
+<tr><td><strong>Browser support</strong></td><td><span class="bdg bdg-g">Yes — native</span></td><td><span class="bdg bdg-r">No — needs grpc-web proxy</span></td></tr>
+<tr><td><strong>Debuggability</strong></td><td><span class="bdg bdg-g">Easy — curl, Postman</span></td><td><span class="bdg bdg-a">Hard — needs tooling</span></td></tr>
+<tr><td><strong>Streaming</strong></td><td>No — request/response only</td><td><span class="bdg bdg-g">Yes — bi-directional streams</span></td></tr>
+<tr><td><strong>Versioning</strong></td><td>URL versioning /v1/, /v2/</td><td>Field numbers in .proto</td></tr>
+<tr><td><strong>Best for</strong></td><td><span class="bdg bdg-b">Public APIs, external clients</span></td><td><span class="bdg bdg-b">Internal service-to-service</span></td></tr>
+</tbody>
+</table>
+</div>
+</div>
+
+<div class="divider"></div>
+
+<!-- S6 -->
+<div class="section" id="s6">
+<div class="sec-lbl">06</div>
+<h2>Asynchronous Communication</h2>
+<p>The caller publishes a message and moves on immediately. It doesn't wait. It doesn't even know if anyone received the message. The consumer processes it in their own time. This is the backbone of truly independent microservices.</p>
+<div class="diagram-card">
+<svg viewBox="0 0 820 270" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="aa" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/></marker>
+<marker id="aap" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#a855f7" stroke-width="1.5" stroke-linecap="round"/></marker></defs>
+<!-- Publisher -->
+<rect x="20" y="100" width="130" height="56" rx="8" fill="rgba(16,185,129,.08)" stroke="rgba(16,185,129,.25)" stroke-width="1"/>
+<text x="85" y="123" text-anchor="middle" fill="#6ee7b7" font-size="13" font-weight="600" font-family="Sora,sans-serif">Orders service</text>
+<text x="85" y="141" text-anchor="middle" fill="#94a3b8" font-size="10" font-family="Sora,sans-serif">Publisher</text>
+<line x1="150" y1="128" x2="218" y2="128" stroke="#f59e0b" stroke-width="1.5" marker-end="url(#aa)"/>
+<text x="184" y="118" text-anchor="middle" fill="#f59e0b" font-size="10" font-family="Sora,sans-serif">publishes</text>
+<!-- Queue -->
+<rect x="220" y="80" width="220" height="96" rx="10" fill="rgba(245,158,11,.06)" stroke="rgba(245,158,11,.25)" stroke-width="1"/>
+<text x="330" y="106" text-anchor="middle" fill="#fbbf24" font-size="13" font-weight="600" font-family="Sora,sans-serif">Message Queue</text>
+<text x="330" y="124" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="Sora,sans-serif">Kafka / RabbitMQ</text>
+<text x="330" y="142" text-anchor="middle" fill="#94a3b8" font-size="10" font-family="Sora,sans-serif">durable, ordered buffer</text>
+<!-- Fan out arrows -->
+<line x1="440" y1="108" x2="498" y2="68" stroke="#a855f7" stroke-width="1.5" marker-end="url(#aap)"/>
+<line x1="440" y1="128" x2="498" y2="128" stroke="#a855f7" stroke-width="1.5" marker-end="url(#aap)"/>
+<line x1="440" y1="148" x2="498" y2="188" stroke="#a855f7" stroke-width="1.5" marker-end="url(#aap)"/>
+<!-- Consumers -->
+<rect x="500" y="40" width="148" height="52" rx="8" fill="rgba(168,85,247,.08)" stroke="rgba(168,85,247,.25)" stroke-width="1"/>
+<text x="574" y="60" text-anchor="middle" fill="#d8b4fe" font-size="12" font-weight="600" font-family="Sora,sans-serif">Payments service</text>
+<text x="574" y="78" text-anchor="middle" fill="#94a3b8" font-size="10" font-family="Sora,sans-serif">Consumer</text>
+<rect x="500" y="102" width="148" height="52" rx="8" fill="rgba(168,85,247,.08)" stroke="rgba(168,85,247,.25)" stroke-width="1"/>
+<text x="574" y="122" text-anchor="middle" fill="#d8b4fe" font-size="12" font-weight="600" font-family="Sora,sans-serif">Inventory service</text>
+<text x="574" y="140" text-anchor="middle" fill="#94a3b8" font-size="10" font-family="Sora,sans-serif">Consumer</text>
+<rect x="500" y="164" width="148" height="52" rx="8" fill="rgba(168,85,247,.08)" stroke="rgba(168,85,247,.25)" stroke-width="1"/>
+<text x="574" y="184" text-anchor="middle" fill="#d8b4fe" font-size="12" font-weight="600" font-family="Sora,sans-serif">Notifications</text>
+<text x="574" y="202" text-anchor="middle" fill="#94a3b8" font-size="10" font-family="Sora,sans-serif">Consumer</text>
+<!-- Notes -->
+<text x="85" y="186" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="Sora,sans-serif">Publishes once.</text>
+<text x="85" y="202" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="Sora,sans-serif">Doesn't wait.</text>
+<text x="85" y="218" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="Sora,sans-serif">Doesn't know consumers.</text>
+<text x="574" y="240" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="Sora,sans-serif">All 3 get event.</text>
+<text x="574" y="256" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="Sora,sans-serif">Each processes independently.</text>
+</svg>
+</div>
+<p>Orders publishes one <code>OrderPlaced</code> event. Payments, Inventory, and Notifications each receive it independently. Orders doesn't know or care how many consumers exist — loose coupling in action.</p>
+</div>
+
+<div class="divider"></div>
+
+<!-- S7 -->
+<div class="section" id="s7">
+<div class="sec-lbl">07</div>
+<h2>MassTransit — C# Async Messaging</h2>
+<p>MassTransit is the standard .NET library for async messaging, supporting RabbitMQ, Azure Service Bus, and Kafka.</p>
+<div class="code-block">
+<div class="code-hdr"><span class="code-lang">C# — Publisher (Orders service)</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+<pre><code><span class="cm">// Shared event contract — plain C# record</span>
+<span class="kw">public record</span> <span class="typ">OrderPlaced</span>(
+    <span class="typ">string</span> OrderId, <span class="typ">string</span> CustomerId,
+    <span class="typ">decimal</span> Total, <span class="typ">string</span> Currency, DateTimeOffset PlacedAt);
+
+<span class="kw">public class</span> <span class="typ">OrderService</span>
+{
+    <span class="kw">private readonly</span> <span class="typ">IPublishEndpoint</span> _bus;
+    <span class="kw">public</span> OrderService(<span class="typ">IPublishEndpoint</span> bus) =&gt; _bus = bus;
+
+    <span class="kw">public async</span> Task PlaceOrderAsync(<span class="typ">Cart</span> cart)
+    {
+        <span class="kw">var</span> order = <span class="kw">await</span> SaveOrderAsync(cart);
+
+        <span class="cm">// Publish event — fire and forget, no waiting</span>
+        <span class="kw">await</span> _bus.Publish(<span class="kw">new</span> <span class="typ">OrderPlaced</span>(
+            order.Id, order.CustomerId, order.Total,
+            <span class="str">"USD"</span>, DateTimeOffset.UtcNow));
+
+        <span class="cm">// Return immediately — Payments/Inventory process independently</span>
+    }
+}</code></pre>
+</div>
+<div class="code-block">
+<div class="code-hdr"><span class="code-lang">C# — Consumer (Payments service)</span><div class="code-dots"><span></span><span></span><span></span></div></div>
+<pre><code><span class="kw">public class</span> <span class="typ">OrderPlacedConsumer</span> : <span class="typ">IConsumer</span>&lt;<span class="typ">OrderPlaced</span>&gt;
+{
+    <span class="kw">private readonly</span> <span class="typ">IPaymentGateway</span> _gateway;
+    <span class="kw">public</span> OrderPlacedConsumer(<span class="typ">IPaymentGateway</span> gateway) =&gt; _gateway = gateway;
+
+    <span class="kw">public async</span> Task Consume(<span class="typ">ConsumeContext</span>&lt;<span class="typ">OrderPlaced</span>&gt; context)
+    {
+        <span class="kw">var</span> order = context.Message;
+        <span class="cm">// Processes in its own time, independently of the publisher</span>
+        <span class="kw">await</span> _gateway.ChargeAsync(order.OrderId, order.Total, order.Currency);
+    }
+}
+
+<span class="cm">// Register in Program.cs</span>
+builder.Services.AddMassTransit(x =&gt;
+{
+    x.AddConsumer&lt;<span class="typ">OrderPlacedConsumer</span>&gt;();
+    x.UsingRabbitMq((ctx, cfg) =&gt;
+    {
+        cfg.Host(<span class="str">"rabbitmq://localhost"</span>);
+        cfg.ConfigureEndpoints(ctx);
+    });
+});</code></pre>
+</div>
+</div>
+
+<div class="divider"></div>
+
+<!-- S8 -->
+<div class="section" id="s8">
+<div class="sec-lbl">08</div>
+<h2>The Decision Framework</h2>
+<p>One question decides it: <strong>does the caller need the result right now to complete this request?</strong></p>
+<div class="diagram-card">
+<svg viewBox="0 0 820 320" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="adf" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round"/></marker>
+<marker id="adfg" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#10b981" stroke-width="1.5" stroke-linecap="round"/></marker>
+<marker id="adfr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#f97316" stroke-width="1.5" stroke-linecap="round"/></marker></defs>
+<!-- Question -->
+<rect x="250" y="16" width="320" height="52" rx="8" fill="rgba(245,158,11,.07)" stroke="rgba(245,158,11,.25)" stroke-width="1"/>
+<text x="410" y="37" text-anchor="middle" fill="#fbbf24" font-size="13" font-weight="600" font-family="Sora,sans-serif">Need the result to continue?</text>
+<text x="410" y="57" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="Sora,sans-serif">Can the request complete without this answer?</text>
+<!-- Yes branch -->
+<line x1="290" y1="68" x2="165" y2="108" stroke="#10b981" stroke-width="1.5" marker-end="url(#adfg)"/>
+<text x="212" y="96" text-anchor="middle" fill="#10b981" font-size="11" font-family="Sora,sans-serif">YES</text>
+<!-- No branch -->
+<line x1="530" y1="68" x2="655" y2="108" stroke="#f97316" stroke-width="1.5" marker-end="url(#adfr)"/>
+<text x="608" y="96" text-anchor="middle" fill="#f97316" font-size="11" font-family="Sora,sans-serif">NO</text>
+<!-- Sync box -->
+<rect x="30" y="110" width="270" height="100" rx="8" fill="rgba(16,185,129,.07)" stroke="rgba(16,185,129,.25)" stroke-width="1"/>
+<text x="165" y="134" text-anchor="middle" fill="#6ee7b7" font-size="13" font-weight="600" font-family="Sora,sans-serif">Synchronous (REST/gRPC)</text>
+<text x="165" y="154" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="Sora,sans-serif">Check stock before checkout</text>
+<text x="165" y="170" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="Sora,sans-serif">Validate payment before proceeding</text>
+<text x="165" y="186" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="Sora,sans-serif">Get user profile for this request</text>
+<!-- Async box -->
+<rect x="520" y="110" width="270" height="100" rx="8" fill="rgba(249,115,22,.07)" stroke="rgba(249,115,22,.25)" stroke-width="1"/>
+<text x="655" y="134" text-anchor="middle" fill="#fdba74" font-size="13" font-weight="600" font-family="Sora,sans-serif">Asynchronous (Events/Queue)</text>
+<text x="655" y="154" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="Sora,sans-serif">Send confirmation email after order</text>
+<text x="655" y="170" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="Sora,sans-serif">Update inventory after sale</text>
+<text x="655" y="186" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="Sora,sans-serif">Log to analytics pipeline</text>
+<!-- Summary -->
+<rect x="100" y="240" width="620" height="48" rx="8" fill="rgba(255,255,255,.03)" stroke="rgba(255,255,255,.07)" stroke-width="1"/>
+<text x="410" y="259" text-anchor="middle" fill="#94a3b8" font-size="12" font-family="Sora,sans-serif">Sync when you need the answer now. Async when you don't.</text>
+<text x="410" y="278" text-anchor="middle" fill="#64748b" font-size="11" font-family="Sora,sans-serif">Most things don't need an immediate answer.</text>
+</svg>
+</div>
+</div>
+
+<div class="divider"></div>
+
+<!-- S9 -->
+<div class="section" id="s9">
+<div class="sec-lbl">09</div>
+<h2>The Sync Chain Danger</h2>
+<p>The most common mistake: defaulting to synchronous HTTP for everything. A chain of sync calls is fragile — one slow service blocks everyone upstream.</p>
+<div class="diagram-card">
+<svg viewBox="0 0 820 280" xmlns="http://www.w3.org/2000/svg">
+<defs><marker id="asc" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round"/></marker></defs>
+<!-- All sync chain -->
+<text x="410" y="18" text-anchor="middle" fill="#94a3b8" font-size="12" font-family="Sora,sans-serif">Fully synchronous — all good</text>
+<rect x="16" y="30" width="80" height="40" rx="6" fill="rgba(255,255,255,.04)" stroke="rgba(255,255,255,.08)" stroke-width="1"/>
+<text x="56" y="53" text-anchor="middle" fill="#94a3b8" font-size="11" font-weight="600" font-family="Sora,sans-serif">Client</text>
+<line x1="96" y1="50" x2="126" y2="50" stroke="#94a3b8" stroke-width="1" marker-end="url(#asc)"/>
+<rect x="128" y="30" width="95" height="40" rx="6" fill="rgba(16,185,129,.07)" stroke="rgba(16,185,129,.2)" stroke-width="1"/>
+<text x="175" y="53" text-anchor="middle" fill="#6ee7b7" font-size="11" font-weight="600" font-family="Sora,sans-serif">Orders</text>
+<line x1="223" y1="50" x2="253" y2="50" stroke="#94a3b8" stroke-width="1" marker-end="url(#asc)"/>
+<rect x="255" y="30" width="105" height="40" rx="6" fill="rgba(16,185,129,.07)" stroke="rgba(16,185,129,.2)" stroke-width="1"/>
+<text x="307" y="53" text-anchor="middle" fill="#6ee7b7" font-size="11" font-weight="600" font-family="Sora,sans-serif">Inventory</text>
+<line x1="360" y1="50" x2="390" y2="50" stroke="#94a3b8" stroke-width="1" marker-end="url(#asc)"/>
+<rect x="392" y="30" width="105" height="40" rx="6" fill="rgba(16,185,129,.07)" stroke="rgba(16,185,129,.2)" stroke-width="1"/>
+<text x="444" y="53" text-anchor="middle" fill="#6ee7b7" font-size="11" font-weight="600" font-family="Sora,sans-serif">Payments</text>
+<line x1="497" y1="50" x2="527" y2="50" stroke="#94a3b8" stroke-width="1" marker-end="url(#asc)"/>
+<rect x="529" y="30" width="120" height="40" rx="6" fill="rgba(16,185,129,.07)" stroke="rgba(16,185,129,.2)" stroke-width="1"/>
+<text x="589" y="53" text-anchor="middle" fill="#6ee7b7" font-size="11" font-weight="600" font-family="Sora,sans-serif">Notifications</text>
+<text x="410" y="90" text-anchor="middle" fill="#64748b" font-size="11" font-family="Sora,sans-serif">Total latency = sum of all hops. Notifications goes down...</text>
+<!-- Failure chain -->
+<text x="410" y="118" text-anchor="middle" fill="#ef4444" font-size="12" font-weight="600" font-family="Sora,sans-serif">Notifications fails — entire order fails!</text>
+<rect x="16" y="130" width="80" height="40" rx="6" fill="rgba(239,68,68,.1)" stroke="rgba(239,68,68,.3)" stroke-width="1"/>
+<text x="56" y="153" text-anchor="middle" fill="#fca5a5" font-size="11" font-weight="600" font-family="Sora,sans-serif">Client</text>
+<line x1="96" y1="150" x2="126" y2="150" stroke="#ef4444" stroke-width="1" marker-end="url(#asc)"/>
+<rect x="128" y="130" width="95" height="40" rx="6" fill="rgba(239,68,68,.08)" stroke="rgba(239,68,68,.2)" stroke-width="1"/>
+<text x="175" y="153" text-anchor="middle" fill="#fca5a5" font-size="11" font-weight="600" font-family="Sora,sans-serif">Orders</text>
+<line x1="223" y1="150" x2="253" y2="150" stroke="#ef4444" stroke-width="1" marker-end="url(#asc)"/>
+<rect x="255" y="130" width="105" height="40" rx="6" fill="rgba(239,68,68,.08)" stroke="rgba(239,68,68,.2)" stroke-width="1"/>
+<text x="307" y="153" text-anchor="middle" fill="#fca5a5" font-size="11" font-weight="600" font-family="Sora,sans-serif">Inventory</text>
+<line x1="360" y1="150" x2="390" y2="150" stroke="#ef4444" stroke-width="1" marker-end="url(#asc)"/>
+<rect x="392" y="130" width="105" height="40" rx="6" fill="rgba(239,68,68,.08)" stroke="rgba(239,68,68,.2)" stroke-width="1"/>
+<text x="444" y="153" text-anchor="middle" fill="#fca5a5" font-size="11" font-weight="600" font-family="Sora,sans-serif">Payments</text>
+<line x1="497" y1="150" x2="527" y2="150" stroke="#ef4444" stroke-width="1" marker-end="url(#asc)"/>
+<rect x="529" y="130" width="120" height="40" rx="6" fill="rgba(239,68,68,.2)" stroke="rgba(239,68,68,.5)" stroke-width="1"/>
+<text x="589" y="147" text-anchor="middle" fill="#ef4444" font-size="11" font-weight="600" font-family="Sora,sans-serif">Notifications</text>
+<text x="589" y="163" text-anchor="middle" fill="#ef4444" font-size="10" font-family="Sora,sans-serif">DOWN</text>
+<path d="M497 200 L497 230 L128 230 L128 200" fill="none" stroke="rgba(239,68,68,.4)" stroke-width="1" stroke-dasharray="4 3"/>
+<text x="312" y="250" text-anchor="middle" fill="#ef4444" font-size="12" font-family="Sora,sans-serif">Entire order fails — just because an email couldn't be sent</text>
+<text x="312" y="270" text-anchor="middle" fill="#64748b" font-size="11" font-family="Sora,sans-serif">Fix: make Notifications async. Sending emails doesn't need to block placing an order.</text>
+</svg>
+</div>
+</div>
+
+<div class="divider"></div>
+
+<!-- S10 -->
+<div class="section" id="s10">
+<div class="sec-lbl">10</div>
+<h2>Real "Place Order" Flow — Hybrid Architecture</h2>
+<p>Real systems use both sync and async. Steps that need an immediate answer (stock reservation, payment) are synchronous. Side effects that don't affect the response (email, analytics, loyalty points) are asynchronous.</p>
+<div style="background:var(--s);border:1px solid var(--b);border-radius:var(--r);padding:20px;margin:20px 0">
+<svg id="flow-svg" width="100%" viewBox="0 0 680 330">
+<defs>
+  <marker id="afl" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round"/></marker>
+</defs>
+<!-- Sync lane -->
+<rect x="10" y="28" width="660" height="62" rx="8" fill="none" stroke="rgba(59,130,246,.2)" stroke-width="1" stroke-dasharray="4 3"/>
+<text x="22" y="44" fill="#3b82f6" font-size="10" font-family="JetBrains Mono,monospace">SYNC LANE — critical path</text>
+<!-- Async lane -->
+<rect x="10" y="200" width="660" height="110" rx="8" fill="none" stroke="rgba(16,185,129,.2)" stroke-width="1" stroke-dasharray="4 3"/>
+<text x="22" y="216" fill="#10b981" font-size="10" font-family="JetBrains Mono,monospace">ASYNC LANE — side effects</text>
+<!-- Nodes in sync lane -->
+<rect x="22" y="44" width="76" height="36" rx="6" fill="rgba(255,255,255,.04)" stroke="rgba(255,255,255,.08)" stroke-width="1"/>
+<text x="60" y="66" text-anchor="middle" fill="#94a3b8" font-size="10" font-weight="600" font-family="Sora,sans-serif">Client</text>
+<rect x="118" y="44" width="80" height="36" rx="6" fill="rgba(255,255,255,.04)" stroke="rgba(255,255,255,.08)" stroke-width="1"/>
+<text x="158" y="61" text-anchor="middle" fill="#94a3b8" font-size="10" font-weight="500" font-family="Sora,sans-serif">API</text>
+<text x="158" y="73" text-anchor="middle" fill="#94a3b8" font-size="10" font-weight="500" font-family="Sora,sans-serif">Gateway</text>
+<rect x="218" y="44" width="80" height="36" rx="6" fill="rgba(16,185,129,.08)" stroke="rgba(16,185,129,.2)" stroke-width="1"/>
+<text x="258" y="66" text-anchor="middle" fill="#6ee7b7" font-size="10" font-weight="600" font-family="Sora,sans-serif">Orders</text>
+<rect x="318" y="44" width="82" height="36" rx="6" fill="rgba(168,85,247,.08)" stroke="rgba(168,85,247,.2)" stroke-width="1"/>
+<text x="359" y="61" text-anchor="middle" fill="#d8b4fe" font-size="10" font-weight="600" font-family="Sora,sans-serif">Inventory</text>
+<text x="359" y="73" text-anchor="middle" fill="#94a3b8" font-size="9" font-family="Sora,sans-serif">[gRPC]</text>
+<rect x="420" y="44" width="82" height="36" rx="6" fill="rgba(168,85,247,.08)" stroke="rgba(168,85,247,.2)" stroke-width="1"/>
+<text x="461" y="61" text-anchor="middle" fill="#d8b4fe" font-size="10" font-weight="600" font-family="Sora,sans-serif">Payments</text>
+<text x="461" y="73" text-anchor="middle" fill="#94a3b8" font-size="9" font-family="Sora,sans-serif">[gRPC]</text>
+<rect x="522" y="44" width="92" height="36" rx="6" fill="rgba(245,158,11,.08)" stroke="rgba(245,158,11,.2)" stroke-width="1"/>
+<text x="568" y="61" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="600" font-family="Sora,sans-serif">Message</text>
+<text x="568" y="73" text-anchor="middle" fill="#fbbf24" font-size="10" font-weight="600" font-family="Sora,sans-serif">Queue</text>
+<!-- Sync arrows -->
+<line x1="98" y1="62" x2="116" y2="62" stroke="#94a3b8" stroke-width="1" marker-end="url(#afl)"/>
+<line x1="198" y1="62" x2="216" y2="62" stroke="#3b82f6" stroke-width="1.5" marker-end="url(#afl)"/>
+<line x1="298" y1="62" x2="316" y2="62" stroke="#6b3fa0" stroke-width="1.5" marker-end="url(#afl)"/>
+<line x1="400" y1="62" x2="418" y2="62" stroke="#6b3fa0" stroke-width="1.5" marker-end="url(#afl)"/>
+<line x1="502" y1="62" x2="520" y2="62" stroke="#10b981" stroke-width="1.5" marker-end="url(#afl)"/>
+<!-- Step labels -->
+<text x="107" y="56" text-anchor="middle" fill="#3b82f6" font-size="8" font-family="JetBrains Mono,monospace">1</text>
+<text x="207" y="56" text-anchor="middle" fill="#3b82f6" font-size="8" font-family="JetBrains Mono,monospace">2</text>
+<text x="307" y="56" text-anchor="middle" fill="#6b3fa0" font-size="8" font-family="JetBrains Mono,monospace">3</text>
+<text x="409" y="56" text-anchor="middle" fill="#6b3fa0" font-size="8" font-family="JetBrains Mono,monospace">4</text>
+<text x="511" y="56" text-anchor="middle" fill="#10b981" font-size="8" font-family="JetBrains Mono,monospace">5</text>
+<!-- Arrow from Orders down to Queue -->
+<path d="M258 80 Q258 190 450 225" fill="none" stroke="#10b981" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#afl)"/>
+<!-- Async consumers -->
+<rect x="22" y="218" width="100" height="34" rx="6" fill="rgba(249,115,22,.08)" stroke="rgba(249,115,22,.2)" stroke-width="1"/>
+<text x="72" y="239" text-anchor="middle" fill="#fdba74" font-size="10" font-weight="600" font-family="Sora,sans-serif">Notifications</text>
+<rect x="132" y="218" width="100" height="34" rx="6" fill="rgba(249,115,22,.08)" stroke="rgba(249,115,22,.2)" stroke-width="1"/>
+<text x="182" y="239" text-anchor="middle" fill="#fdba74" font-size="10" font-weight="600" font-family="Sora,sans-serif">Analytics</text>
+<rect x="242" y="218" width="100" height="34" rx="6" fill="rgba(249,115,22,.08)" stroke="rgba(249,115,22,.2)" stroke-width="1"/>
+<text x="292" y="239" text-anchor="middle" fill="#fdba74" font-size="10" font-weight="600" font-family="Sora,sans-serif">Loyalty</text>
+<rect x="352" y="218" width="110" height="34" rx="6" fill="rgba(249,115,22,.08)" stroke="rgba(249,115,22,.2)" stroke-width="1"/>
+<text x="407" y="239" text-anchor="middle" fill="#fdba74" font-size="10" font-weight="600" font-family="Sora,sans-serif">Inv. Update</text>
+<!-- Queue fans to consumers -->
+<line x1="522" y1="235" x2="354" y2="235" stroke="#f97316" stroke-width="1" marker-end="url(#afl)"/>
+<line x1="450" y1="244" x2="354" y2="244" stroke="#f97316" stroke-width="1" stroke-dasharray="2 2"/>
+<!-- Notes -->
+<text x="340" y="285" text-anchor="middle" fill="#94a3b8" font-size="11" font-family="Sora,sans-serif">Steps 3 &amp; 4 sync — need confirmation before proceeding</text>
+<text x="340" y="302" text-anchor="middle" fill="#64748b" font-size="10" font-family="Sora,sans-serif">Steps 5+ async — don't block order completion, run independently</text>
+</svg>
+</div>
+</div>
+
+<div class="divider"></div>
+
+<!-- S11 -->
+<div class="section" id="s11">
+<div class="sec-lbl">11</div>
+<h2>Kafka vs RabbitMQ vs Pulsar</h2>
+<div class="table-wrap">
+<table>
+<thead><tr><th>Feature</th><th>RabbitMQ</th><th>Kafka</th><th>Pulsar</th></tr></thead>
+<tbody>
+<tr><td><strong>Model</strong></td><td>Work queue — message deleted after ACK</td><td>Append-only log — events retained</td><td>Unified queue + streaming</td></tr>
+<tr><td><strong>Consumer model</strong></td><td>Push — broker delivers to consumer</td><td>Pull — consumer reads at own offset</td><td>Cursor-based subscription</td></tr>
+<tr><td><strong>Multiple consumers</strong></td><td>Competing — each msg goes to ONE</td><td>Independent groups — all read same log</td><td>Multiple subscription types</td></tr>
+<tr><td><strong>Event replay</strong></td><td><span class="bdg bdg-r">No — deleted after ACK</span></td><td><span class="bdg bdg-g">Yes — retained for days/weeks</span></td><td><span class="bdg bdg-g">Yes — BookKeeper storage</span></td></tr>
+<tr><td><strong>Storage</strong></td><td>In broker</td><td>In broker (partitioned)</td><td>Separate (BookKeeper)</td></tr>
+<tr><td><strong>Best for</strong></td><td>Task queues, work distribution</td><td>Event sourcing, high-throughput, audit</td><td>Multi-tenancy, geo-replication</td></tr>
+</tbody>
+</table>
+</div>
+<p>The one-line summary: <strong>RabbitMQ</strong> — message disappears after one consumer reads it. <strong>Kafka</strong> — event stays in the log, every consumer group reads independently at its own pace. <strong>Pulsar</strong> — separates compute (broker) from storage (BookKeeper), scale each independently.</p>
+</div>
+
+<div class="divider"></div>
+
+<!-- S12 -->
+<div class="section" id="s12">
+<div class="sec-lbl">12</div>
+<h2>Interview Q&A</h2>
+<div class="qa-list">
+<div class="qa-item">
+<div class="qa-q">When would you use gRPC over REST?</div>
+<div class="qa-a">Internal high-frequency service-to-service calls where you control both ends — e.g. an Orders service calling Inventory 10,000 times/sec. You get binary serialization, streaming, and strong typing from the .proto contract. REST is better for external APIs, public-facing endpoints, or anything a browser talks to directly.</div>
+</div>
+<div class="qa-item">
+<div class="qa-q">What's the problem with chaining synchronous calls?</div>
+<div class="qa-a">Latency adds up — total response time is the sum of every hop. More critically, availability compounds: if each service is 99.9% available and you chain 5 synchronously, overall availability is 99.9%^5 ≈ 99.5%. A downstream failure blocks everyone upstream. Fix: make anything that doesn't need an immediate result asynchronous.</div>
+</div>
+<div class="qa-item">
+<div class="qa-q">What guarantee does a message queue give you?</div>
+<div class="qa-a">At-least-once delivery — a message will be delivered at least once, but may be delivered more than once on retries. This means consumers must be idempotent — processing the same message twice produces the same result as once. Exactly-once is possible (Kafka has it) but expensive. Design for at-least-once.</div>
+</div>
+<div class="qa-item">
+<div class="qa-q">What is eventual consistency and when does it apply?</div>
+<div class="qa-a">When you go async, different services are temporarily out of sync — the email might be sent 200ms after the order is confirmed, inventory count might lag by a second. The system will eventually converge to the correct state, but not immediately. Acceptable for non-financial side effects. Not acceptable for "has this payment been charged" — that must be synchronous.</div>
+</div>
+<div class="qa-item">
+<div class="qa-q">What is the difference between Kafka and RabbitMQ?</div>
+<div class="qa-a">RabbitMQ is a message queue — each message is consumed by one instance and deleted after acknowledgement. Use for task distribution (one worker handles one job). Kafka is an event log — events are written to an append-only log and never deleted until retention expires. Multiple consumer groups each read the full log independently at their own offset. Use for event sourcing, audit logs, and when multiple systems need the same events.</div>
+</div>
+</div>
+</div>
+
+<div class="footer">Inter-Service Communication · Microservices Topic 2 · C# / .NET · Interview Prep</div>
+</div>
+</body>
+</html>

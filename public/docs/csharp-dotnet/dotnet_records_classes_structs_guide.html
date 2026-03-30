@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Records Classes Structs</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0c10;
+      --surface: #111318;
+      --surface2: #181c24;
+      --surface3: #1f2530;
+      --border: rgba(255,255,255,0.06);
+      --border2: rgba(255,255,255,0.11);
+      --accent: #6ea1ff;
+      --accent2: #8b6cf6;
+      --green: #34d399;
+      --amber: #fbbf24;
+      --red: #f87171;
+      --teal: #2dd4bf;
+      --text: #dfe5ef;
+      --muted: #7e8a9e;
+      --code-bg: #080a0e;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Outfit', sans-serif;
+      font-size: 15px;
+      line-height: 1.78;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      padding: 56px 28px 44px;
+      max-width: 900px;
+      margin: 0 auto;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -80px;
+      right: -40px;
+      width: 360px;
+      height: 360px;
+      background: radial-gradient(circle, rgba(110,161,255,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-tag {
+      display: inline-block;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10.5px;
+      font-weight: 500;
+      color: var(--accent);
+      background: rgba(110,161,255,0.07);
+      border: 1px solid rgba(110,161,255,0.18);
+      padding: 4px 14px;
+      border-radius: 20px;
+      letter-spacing: 0.09em;
+      margin-bottom: 14px;
+      text-transform: uppercase;
+    }
+    .hero h1 {
+      font-size: clamp(26px, 4.2vw, 42px);
+      font-weight: 700;
+      line-height: 1.15;
+      letter-spacing: -0.03em;
+      margin-bottom: 0;
+      background: linear-gradient(135deg, #dfe5ef 0%, #6ea1ff 50%, #34d399 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* ── Page layout ── */
+    .page {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 28px 100px;
+    }
+
+    /* ── Sections ── */
+    .doc-content h1 {
+      font-size: 20px;
+      font-weight: 700;
+      color: #fff;
+      margin: 30px 0 0;
+      padding: 24px 0 14px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      -webkit-text-fill-color: #fff;
+      background-clip: padding-box;
+    }
+    .doc-content h1:first-child { margin-top: 10px; }
+
+    .doc-content h2 {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--accent);
+      margin: 22px 0 10px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+    }
+
+    .doc-content h3 {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--accent2);
+      margin: 18px 0 8px;
+    }
+
+    .doc-content h4, .doc-content h5, .doc-content h6 {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--teal);
+      margin: 14px 0 6px;
+    }
+
+    p {
+      margin: 0;
+      padding: 6px 0;
+      font-size: 14.5px;
+      line-height: 1.75;
+    }
+    strong, b { color: #fff; }
+    em { color: var(--muted); }
+
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ── Lists ── */
+    ul, ol {
+      padding-left: 20px;
+      margin: 4px 0 10px;
+    }
+    li {
+      margin: 3px 0;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+    li strong { color: #fff; }
+
+    /* ── Tables ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin: 12px 0;
+    }
+    th {
+      background: var(--surface2);
+      color: var(--accent);
+      font-weight: 600;
+      text-align: left;
+      padding: 9px 13px;
+      border: 1px solid var(--border);
+    }
+    td {
+      padding: 8px 13px;
+      border: 1px solid var(--border);
+    }
+    tr:nth-child(even) td {
+      background: rgba(255,255,255,0.012);
+    }
+
+    /* Single-cell tables = note/callout boxes */
+    table:has(tr:only-child td:only-child) {
+      background: rgba(110,161,255,0.05);
+      border: 1px solid rgba(110,161,255,0.14);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    table:has(tr:only-child td:only-child) td {
+      border: none;
+      padding: 13px 16px;
+      font-size: 13px;
+      line-height: 1.7;
+    }
+    table:has(tr:only-child td:only-child) td strong {
+      color: var(--accent);
+    }
+
+    /* ── Code ── */
+    code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12.5px;
+      color: var(--accent);
+      background: rgba(110,161,255,0.07);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    pre {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 18px;
+      overflow-x: auto;
+      margin: 12px 0;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12.5px;
+      line-height: 1.7;
+      color: #c4cdd9;
+      scrollbar-width: thin;
+      scrollbar-color: #333 transparent;
+    }
+    pre::-webkit-scrollbar { height: 4px; }
+    pre::-webkit-scrollbar-track { background: transparent; }
+    pre::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+    pre::-webkit-scrollbar-thumb:hover { background: #555; }
+    pre code {
+      background: none;
+      padding: 0;
+      color: inherit;
+      font-size: inherit;
+    }
+
+    /* ── Blockquote ── */
+    blockquote {
+      background: rgba(110,161,255,0.05);
+      border: 1px solid rgba(110,161,255,0.14);
+      border-left: 3px solid var(--accent);
+      border-radius: 0 10px 10px 0;
+      padding: 13px 16px;
+      margin: 10px 0;
+      font-size: 13px;
+      line-height: 1.7;
+    }
+    blockquote b, blockquote strong { color: var(--accent); }
+
+    /* ── Images ── */
+    img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 10px;
+      margin: 12px 0;
+      border: 1px solid var(--border);
+    }
+
+    /* ── HR ── */
+    hr {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 24px 0;
+    }
+
+    /* ── Footer ── */
+    .footer {
+      text-align: center;
+      padding: 36px 0 16px;
+      font-size: 11px;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      margin-top: 40px;
+    }
+
+    @media (max-width: 640px) {
+      .page { padding: 0 16px 60px; }
+      .hero { padding: 36px 16px 30px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-tag">C# & .NET</div>
+  <h1>Records Classes Structs</h1>
+</div>
+
+<div class="page">
+  <div class="doc-content">
+<p><strong>.NET Interview Study Guide</strong></p><p><em>Records vs Classes vs Structs — Complete Guide</em></p><h1><strong>1. Class — Mutable Reference Type</strong></h1><pre><code>Classes are reference types stored on the heap. Variables hold a reference (pointer) to the object — not the object itself. Equality compares references by default.
+public class PersonClass
+{
+    public string Name { get; set; }
+    public int Age { get; set; }
+}
+
+// Reference semantics — both variables point to SAME object
+var p1 = new PersonClass { Name = "Omar", Age = 25 };
+var p2 = p1; // p2 is NOT a copy — same reference
+
+p2.Name = "Ali"; // modifies the SAME object
+Console.WriteLine(p1.Name); // "Ali" — p1 also changed! 😱
+
+// Equality compares REFERENCES — not content
+var p3 = new PersonClass { Name = "Omar", Age = 25 };
+var p4 = new PersonClass { Name = "Omar", Age = 25 };
+Console.WriteLine(p3 == p4); // false — different objects in memory</code></pre><h1><strong>2. Struct — Value Type</strong></h1><pre><code>Structs are value types. Assignment creates a complete independent copy. Equality compares values by default.
+public struct PersonStruct
+{
+    public string Name { get; set; }
+    public int Age { get; set; }
+}
+
+// Value semantics — s2 is a COMPLETE COPY — independent
+var s1 = new PersonStruct { Name = "Omar", Age = 25 };
+var s2 = s1; // full copy
+
+s2.Name = "Ali"; // modifies s2 ONLY
+Console.WriteLine(s1.Name); // "Omar" — s1 unchanged ✅
+
+// Equality compares VALUES — content
+var s3 = new PersonStruct { Name = "Omar", Age = 25 };
+var s4 = new PersonStruct { Name = "Omar", Age = 25 };
+Console.WriteLine(s3 == s4); // true — same content ✅</code></pre><h2><strong>Where Struct is Actually Stored</strong></h2><pre><code>// Local variable → stored on STACK ✅
+void MyMethod()
+{
+    PersonStruct p = new PersonStruct(); // stack
+}
+
+// Field inside a class → stored on HEAP with the class
+public class Order
+{
+    public PersonStruct Customer; // heap — lives inside Order object
+}
+
+// Inside an array → stored on HEAP
+PersonStruct[] people = new PersonStruct[10]; // heap
+
+// Rule: struct is a VALUE TYPE — WHERE it lives depends on context</code></pre><table><tr><td><p><strong>⚠️ Important:  </strong>Microsoft guideline: Struct should be 16 bytes or less. Larger structs are expensive to copy — use a class instead.</p></td></tr></table><h2><strong>Struct Performance Warning</strong></h2><pre><code>// ❌ Large struct — every assignment copies ALL fields — expensive
+public struct BigData
+{
+    public double F1, F2, F3, F4;
+    public string S1, S2, S3, S4; // 8 fields!
+}
+BigData a = new BigData();
+BigData b = a; // copies all 8 fields 😱
+
+// ✅ Small struct — cheap copy
+public struct Point
+{
+    public int X, Y; // 2 fields — tiny and fast
+}</code></pre><h1><strong>3. Record — Immutable Reference Type with Value Equality (C# 9+)</strong></h1><p>A record is a reference type like a class BUT with value equality like a struct. Designed for immutable data. The compiler auto-generates equality, ToString, constructor, and with-expression support.</p><h2><strong>One Line — Compiler Generates Everything</strong></h2><pre><code>// One line — positional syntax
+public record PersonRecord(string Name, int Age);
+
+// Equivalent to writing ALL of this manually:
+public class PersonRecord
+{
+    public string Name { get; init; }  // init — set only at creation
+    public int Age { get; init; }
+
+    public PersonRecord(string Name, int Age)
+    {
+        this.Name = Name;
+        this.Age = Age;
+    }
+
+    // Value equality — generated automatically
+    public override bool Equals(object obj) { ... }
+    public override int GetHashCode() { ... }
+
+    // Clean ToString — generated automatically
+    public override string ToString()
+        =&gt; $"PersonRecord {{ Name = {Name}, Age = {Age} }}";
+}</code></pre><h2><strong>Value Equality — The Biggest Difference from Class</strong></h2><pre><code>var r1 = new PersonRecord("Omar", 25);
+var r2 = new PersonRecord("Omar", 25);
+
+Console.WriteLine(r1 == r2);       // ✅ TRUE — value equality
+Console.WriteLine(r1.Equals(r2));  // ✅ TRUE
+
+// Compare with class — same content, different result
+var c1 = new PersonClass { Name = "Omar", Age = 25 };
+var c2 = new PersonClass { Name = "Omar", Age = 25 };
+Console.WriteLine(c1 == c2); // ❌ FALSE — reference equality</code></pre><h2><strong>Immutability — init Keyword</strong></h2><pre><code>var person = new PersonRecord("Omar", 25);
+
+person.Name = "Ali"; // ❌ COMPILE ERROR — init only!
+                     // Properties can only be set during construction</code></pre><p> </p><p>// Perfect for DTOs — data should not change after creation</p><h2><strong>with Expression — Non-Destructive Mutation</strong></h2><p>Since records are immutable — create a new one with modified values using with:</p><pre><code>var original = new PersonRecord("Omar", 25);
+
+// Create new record — only Age changes — original untouched
+var updated = original with { Age = 26 };
+
+Console.WriteLine(original); // PersonRecord { Name = Omar, Age = 25 }
+Console.WriteLine(updated);  // PersonRecord { Name = Omar, Age = 26 }
+// original is NOT modified ✅</code></pre><h2><strong>Auto-Generated ToString</strong></h2><pre><code>var person = new PersonRecord("Omar", 25);
+Console.WriteLine(person);
+// Output: PersonRecord { Name = Omar, Age = 25 }
+// No need to override ToString manually ✅</code></pre><h2><strong>Record Types — C# 9 and 10</strong></h2><pre><code>// Record class (default) — reference type with value equality
+public record PersonRecord(string Name, int Age);
+
+// Record struct (C# 10) — value type with value equality
+public record struct Point(int X, int Y);
+
+// Mutable record — possible but NOT recommended
+public record MutablePerson
+{
+    public string Name { get; set; } // set not init — mutable
+    public int Age { get; set; }
+}</code></pre><h2><strong>Record Inheritance</strong></h2><pre><code>public record Animal(string Name);
+public record Dog(string Name, string Breed) : Animal(Name);
+
+var dog = new Dog("Rex", "Husky");
+Console.WriteLine(dog); // Dog { Name = Rex, Breed = Husky }
+
+// Equality considers full type — not just content
+var a1 = new Animal("Rex");
+var d1 = new Dog("Rex", "Husky");
+Console.WriteLine(a1 == d1); // false — different types</code></pre><h1><strong>4. Side by Side Comparison</strong></h1><pre><code>// Class — mutable reference type
+var c1 = new PersonClass { Name = "Omar", Age = 25 };
+var c2 = c1;           // same reference — NOT a copy
+c2.Name = "Ali";
+Console.WriteLine(c1.Name); // "Ali" — both changed 😱
+
+// Struct — mutable value type
+var s1 = new PersonStruct { Name = "Omar", Age = 25 };
+var s2 = s1;           // COPY — independent
+s2.Name = "Ali";
+Console.WriteLine(s1.Name); // "Omar" — unchanged ✅
+
+// Record — immutable reference type
+var r1 = new PersonRecord("Omar", 25);
+var r2 = r1 with { Name = "Ali" }; // new copy — original untouched
+Console.WriteLine(r1.Name); // "Omar" — unchanged ✅
+Console.WriteLine(r1 == new PersonRecord("Omar", 25)); // true ✅</code></pre><h1><strong>5. Full Comparison Table</strong></h1><table><tr><td></td><td><p><strong>Class</strong></p></td><td><p><strong>Struct</strong></p></td><td><p><strong>Record</strong></p></td></tr><tr><td><p>Type</p></td><td><p>Reference</p></td><td><p>Value</p></td><td><p>Reference (default)</p></td></tr><tr><td><p>Memory</p></td><td><p>Heap</p></td><td><p>Stack (usually)</p></td><td><p>Heap</p></td></tr><tr><td><p>Equality</p></td><td><p>Reference</p></td><td><p>Value</p></td><td><p>Value</p></td></tr><tr><td><p>Mutable?</p></td><td><p>✅ Yes</p></td><td><p>✅ Yes</p></td><td><p>❌ Immutable (init)</p></td></tr><tr><td><p>Inheritance</p></td><td><p>✅ Yes</p></td><td><p>❌ No</p></td><td><p>✅ Records only</p></td></tr><tr><td><p>with expression</p></td><td><p>❌ No</p></td><td><p>❌ No</p></td><td><p>✅ Yes</p></td></tr><tr><td><p>Auto ToString</p></td><td><p>❌ No</p></td><td><p>❌ No</p></td><td><p>✅ Yes</p></td></tr><tr><td><p>Boxing/Unboxing</p></td><td><p>❌ No</p></td><td><p>✅ When cast to object</p></td><td><p>❌ No</p></td></tr><tr><td><p>C# version</p></td><td><p>All versions</p></td><td><p>All versions</p></td><td><p>C# 9+</p></td></tr></table><h1><strong>6. When to Use Which</strong></h1><h2><strong>Use Class When:</strong></h2><ul><li>Object has complex behavior and methods</li><li>Object is mutable — changes state over time</li><li>You need inheritance from non-record types</li><li>Example: OrderService, UserRepository, HttpClient</li></ul><h2><strong>Use Struct When:</strong></h2><ul><li>Small lightweight data — 2 to 4 fields maximum</li><li>Short-lived — created and discarded quickly</li><li>Frequently created in very large numbers</li><li>16 bytes or less — Microsoft guideline</li><li>Example: Point(X,Y), Color(R,G,B), DateTime, Guid</li></ul><h2><strong>Use Record When:</strong></h2><ul><li>Immutable data that represents a value</li><li>DTOs for API requests and responses</li><li>Value objects in Domain Driven Design</li><li>Equality should be based on content not reference</li><li>Example: OrderDto, AddressValue, ApiResponse, SearchQuery</li></ul><h1><strong>7. Real World Examples</strong></h1><pre><code>// ✅ Class — mutable business logic
+public class OrderService
+{
+    private readonly IRepository&lt;Order&gt; _repo;
+    private int _processedCount = 0; // mutable state
+
+    public OrderService(IRepository&lt;Order&gt; repo) =&gt; _repo = repo;
+
+    public void Process(Order order)
+    {
+        _processedCount++; // state changes
+        _repo.Save(order);
+    }
+}
+
+// ✅ Struct — small value used heavily
+public struct Money
+{
+    public decimal Amount { get; }
+    public string Currency { get; }
+    public Money(decimal amount, string currency)
+    {
+        Amount = amount;
+        Currency = currency;
+    }
+}
+
+// ✅ Record — immutable DTO
+public record CreateOrderRequest(
+    string CustomerName,
+    string ProductId,
+    int Quantity,
+    Money Price
+);
+
+// API controller — record equality useful for caching/deduplication
+[HttpPost]
+public IActionResult Create(CreateOrderRequest request)
+{
+    // request is immutable — safe to pass anywhere
+    _orderService.Process(request);
+    return Ok();
+}</code></pre><h1><strong>8. Interview Questions</strong></h1><p><strong>Q: What is the difference between class and struct?</strong></p><table><tr><td><p><strong>🎯 Interview Answer:  </strong>Classes are reference types stored on the heap — assignment copies the reference so multiple variables can point to the same object. Structs are value types usually stored on the stack — assignment creates a complete independent copy. Classes use reference equality by default so two objects with the same content are not equal unless they are the same instance. Structs use value equality so two structs with the same content are equal.</p></td></tr></table><p><strong>Q: What is a record in C#?</strong></p><table><tr><td><p><strong>🎯 Interview Answer:  </strong>A record introduced in C# 9 is a reference type like a class but with value equality like a struct. The compiler automatically generates equality methods, GetHashCode, ToString, and with-expression support. Records use init-only properties making them immutable by default. They are ideal for DTOs, API models, and value objects where equality should be based on content not reference identity.</p></td></tr></table><p><strong>Q: What is the with expression in records?</strong></p><table><tr><td><p><strong>🎯 Interview Answer:  </strong>The with expression creates a new record based on an existing one with specific properties changed — the original record is not modified. For example: var updated = original with { Age = 26 } creates a new record identical to original except Age is 26. This is called non-destructive mutation — you get a modified copy while the original stays immutable.</p></td></tr></table><p><strong>Q: When would you choose record over class?</strong></p><table><tr><td><p><strong>🎯 Interview Answer:  </strong>Use record when the type represents immutable data where equality is based on content — like API request and response DTOs, value objects in domain driven design, or configuration objects. Use class when the object has mutable state that changes over time or complex behavior. The key question is: should two objects with the same data be considered equal? If yes — record. If no — class.</p></td></tr></table><p><strong>Q: Why should structs be kept small?</strong></p><table><tr><td><p><strong>🎯 Interview Answer:  </strong>Structs are value types — every assignment, method call, and return creates a complete copy of all fields. A small struct with 2 to 4 fields copies cheaply. A large struct with many fields copies all of them every time it is used, consuming CPU and memory. Microsoft recommends keeping structs at 16 bytes or less. If data is larger or complex, a class is more appropriate because only the reference is copied — not the entire object.</p></td></tr></table><p><em>Good luck with your interview! 🚀</em></p>
+  </div>
+  <div class="footer">Study Docs Portal</div>
+</div>
+
+</body>
+</html>

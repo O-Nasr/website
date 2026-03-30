@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Observability — Microservices Study Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0c10;--surface:#111318;--surface2:#181c24;--surface3:#1f2530;--border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.11);--accent:#6ea1ff;--accent2:#2dd4bf;--green:#34d399;--amber:#fbbf24;--red:#f87171;--teal:#2dd4bf;--coral:#fb923c;--purple:#8b6cf6;--text:#dfe5ef;--muted:#7e8a9e;--code-bg:#080a0e}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font-size:15px;line-height:1.78;-webkit-font-smoothing:antialiased}
+.page{max-width:900px;margin:0 auto;padding:0 28px 100px}
+.hero{padding:56px 28px 44px;max-width:900px;margin:0 auto;border-bottom:1px solid var(--border);position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-80px;right:-40px;width:360px;height:360px;background:radial-gradient(circle,rgba(45,212,191,0.08) 0%,transparent 70%);pointer-events:none}
+.hero-tag{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:10.5px;font-weight:500;color:var(--accent2);background:rgba(45,212,191,0.07);border:1px solid rgba(45,212,191,0.18);padding:4px 14px;border-radius:20px;letter-spacing:0.09em;margin-bottom:14px;text-transform:uppercase}
+.hero h1{font-size:clamp(26px,4.2vw,42px);font-weight:700;line-height:1.15;letter-spacing:-0.03em;margin-bottom:10px;background:linear-gradient(135deg,#dfe5ef 0%,#2dd4bf 50%,#6ea1ff 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero-sub{font-size:15px;color:var(--muted);line-height:1.65;max-width:620px}
+.section{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:30px;margin-top:30px}
+.section h2{font-size:20px;font-weight:700;color:#fff;margin-bottom:18px;display:flex;align-items:center;gap:10px}
+.section h2 .num{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--accent2);background:rgba(45,212,191,0.1);padding:3px 10px;border-radius:6px;font-weight:500}
+p{margin-bottom:12px}strong{color:#fff}
+pre{background:var(--code-bg);border:1px solid var(--border);border-radius:10px;padding:14px 18px;overflow-x:auto;margin:12px 0;font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.7;color:#c4cdd9}
+code{font-family:'JetBrains Mono',monospace;font-size:12.5px;color:var(--accent);background:rgba(110,161,255,0.07);padding:2px 6px;border-radius:4px}
+pre code{background:none;padding:0;color:inherit}
+table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13px}
+th{background:var(--surface2);color:var(--accent2);font-weight:600;text-align:left;padding:9px 13px;border:1px solid var(--border)}
+td{padding:8px 13px;border:1px solid var(--border)}
+tr:nth-child(even) td{background:rgba(255,255,255,0.012)}
+.note{background:rgba(110,161,255,0.05);border:1px solid rgba(110,161,255,0.14);border-radius:10px;padding:13px 16px;margin:12px 0;font-size:13px;line-height:1.7}.note b{color:var(--accent)}
+.note-warn{background:rgba(251,191,36,0.05);border-color:rgba(251,191,36,0.14)}.note-warn b{color:var(--amber)}
+.note-red{background:rgba(248,113,113,0.05);border-color:rgba(248,113,113,0.14)}.note-red b{color:var(--red)}
+.note-green{background:rgba(52,211,153,0.05);border-color:rgba(52,211,153,0.14)}.note-green b{color:var(--green)}
+.qa{background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:14px 18px;margin:10px 0}
+.qa-q{font-weight:600;color:#fff;margin-bottom:5px;font-size:14px}
+.qa-a{color:var(--muted);font-size:13px;line-height:1.7}
+.tab-group{margin:16px 0}.tab-bar{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.tab-btn{padding:6px 14px;font-size:12px;font-weight:500;font-family:'Outfit',sans-serif;border:1px solid var(--border2);border-radius:6px;background:transparent;color:var(--muted);cursor:pointer;transition:all 0.15s}
+.tab-btn:hover{border-color:rgba(45,212,191,0.3);color:var(--text)}
+.tab-btn.active{background:rgba(45,212,191,0.1);color:var(--accent2);border-color:rgba(45,212,191,0.3)}
+.tab-panel{display:none}.tab-panel.active{display:block}
+.flow{display:flex;align-items:center;gap:8px;margin:10px 0;flex-wrap:wrap}
+.flow-step{background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:8px 14px;font-size:13px;color:var(--text);font-weight:500}
+.flow-arrow{color:var(--muted);font-size:16px}
+.toc{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px 24px;margin:30px 0}
+.toc h3{font-size:12px;font-weight:600;color:var(--accent2);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.06em}
+.toc a{font-size:13px;color:var(--muted);text-decoration:none;display:block;padding:4px 0;transition:color 0.15s}.toc a:hover{color:var(--accent2)}
+/* Trace waterfall */
+.trace-row{display:flex;align-items:center;gap:8px;padding:4px 0}.svc-label{width:90px;font-size:12px;color:var(--muted);text-align:right;flex-shrink:0}.bar-area{flex:1;position:relative;height:24px}
+.span-bar{position:absolute;height:20px;border-radius:4px;top:2px;display:flex;align-items:center;padding:0 6px;font-size:11px;font-weight:500}
+.trace-header{display:flex;justify-content:space-between;padding:0 0 8px;border-bottom:0.5px solid var(--border);margin-bottom:8px}
+.ruler{display:flex;justify-content:space-between;padding:0 98px 4px 98px}.ruler span{font-size:10px;color:var(--muted)}
+.footer{text-align:center;padding:36px 0 16px;font-size:11px;color:var(--muted);border-top:1px solid var(--border);margin-top:40px}
+@media(max-width:640px){.page{padding:0 16px 60px}.section{padding:20px 16px}.hero{padding:36px 16px 30px}.svc-label{width:70px}}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-tag">Microservices · Topic 09 · Interview Prep</div>
+  <h1>Observability</h1>
+  <p class="hero-sub">The 3 pillars — Logs, Metrics, Traces. Structured logging with Serilog, Correlation IDs, distributed tracing waterfall, OpenTelemetry setup, custom business metrics, and the debugging workflow that ties it all together.</p>
+</div>
+
+<div class="page">
+
+<div class="toc">
+  <h3>Contents</h3>
+  <a href="#s1">1. The debugging nightmare — monolith vs microservices</a>
+  <a href="#s2">2. The 3 pillars of observability</a>
+  <a href="#s3">3. Pillar 1 — Structured logging with Serilog</a>
+  <a href="#s4">4. The Correlation ID — key to everything</a>
+  <a href="#s5">5. Pillar 2 — Distributed tracing (waterfall)</a>
+  <a href="#s6">6. Your question: "Trace and Metric feel the same"</a>
+  <a href="#s7">7. Pillar 3 — Metrics (Prometheus + Grafana)</a>
+  <a href="#s8">8. Full C# — OpenTelemetry setup (tracing + metrics)</a>
+  <a href="#s9">9. Custom spans + custom business metrics</a>
+  <a href="#s10">10. Your question: "Does OpenTelemetry replace Jaeger?"</a>
+  <a href="#s11">11. The debugging workflow — how all 3 connect</a>
+  <a href="#s12">12. Interview Q&amp;A</a>
+</div>
+
+<!-- ═══════════════════ SECTION 1 ═══════════════════ -->
+<div class="section" id="s1">
+<h2><span class="num">01</span> The Debugging Nightmare</h2>
+
+<div class="tab-group" id="nightmare">
+<div class="tab-bar">
+<button class="tab-btn active" onclick="showTab('nightmare',0)">The nightmare scenario</button>
+<button class="tab-btn" onclick="showTab('nightmare',1)">Monolith vs microservices</button>
+</div>
+<div class="tab-panel active">
+<p>User reports: <strong>"My order failed."</strong> The request passed through Gateway → Orders → Inventory → Payments → Stripe. Error happened somewhere in this chain. Where?</p>
+<p>With <code>Console.WriteLine</code>: SSH into Gateway server → read log. SSH into Orders server → read log. SSH into Payments server → read log. SSH into Inventory server → read log. Try to match timestamps manually.</p>
+<div class="note-red note"><b>Problems:</b> Logs are on different servers. Clocks are slightly out of sync. 1000s of requests per second — which log line belongs to THIS user? Containers restart → logs are GONE.</div>
+</div>
+<div class="tab-panel">
+<table>
+<tr><th style="color:var(--green)">Monolith</th><th style="color:var(--red)">Microservices</th></tr>
+<tr><td>1 server, 1 log file</td><td>10 servers, 10 log streams</td></tr>
+<tr><td>Stack trace shows the full chain</td><td>Stack trace ends at HTTP call</td></tr>
+<tr><td>Debugger works end-to-end</td><td>Can't attach debugger to 10 services</td></tr>
+<tr><td>In-process calls = no network</td><td>Network adds latency + failures</td></tr>
+<tr><td><code>grep "error" app.log</code> → Done.</td><td>Need: centralized logs, tracing, metrics, correlation IDs</td></tr>
+</table>
+</div>
+</div>
+</div>
+
+<!-- ═══════════════════ SECTION 2 ═══════════════════ -->
+<div class="section" id="s2">
+<h2><span class="num">02</span> The 3 Pillars of Observability</h2>
+<table>
+<tr><th>Pillar</th><th>Question</th><th>Example</th><th>Tools</th></tr>
+<tr><td><strong>Logs</strong></td><td>What happened?</td><td>"Order #123 failed: insufficient stock"</td><td>Serilog, ELK, Seq</td></tr>
+<tr><td><strong>Metrics</strong></td><td>How is it performing?</td><td>Request rate: 1200/sec, P99: 340ms</td><td>Prometheus, Grafana</td></tr>
+<tr><td><strong>Traces</strong></td><td>Where did time go?</td><td>Gateway: 5ms, Inventory: 230ms (slow!)</td><td>Jaeger, Zipkin</td></tr>
+</table>
+<div class="note-green note"><b>Remember this one-liner:</b> Logs tell you WHAT happened. Metrics tell you HOW MUCH. Traces tell you WHERE.</div>
+</div>
+
+<!-- ═══════════════════ SECTION 3 ═══════════════════ -->
+<div class="section" id="s3">
+<h2><span class="num">03</span> Pillar 1 — Structured Logging with Serilog</h2>
+<p><code>Console.WriteLine("Order failed for user")</code> is useless. Which order? Which user? Which service? When?</p>
+<p><strong>Structured logging</strong> gives you searchable, filterable JSON:</p>
+<pre><code>// Serilog structured logging — properties become searchable fields
+Log.Error("Order failed {@OrderId} for {@UserId} — reason: {@Reason}",
+    order.Id, userId, "insufficient_stock");</code></pre>
+<p>This outputs structured JSON:</p>
+<pre><code>{
+  "timestamp": "2026-03-26T14:32:01.123Z",
+  "level": "Error",
+  "message": "Order failed ord-123 for user-abc — reason: insufficient_stock",
+  "properties": {
+    "OrderId": "ord-123",
+    "UserId": "user-abc",
+    "Reason": "insufficient_stock",
+    "ServiceName": "orders-service",
+    "TraceId": "abc123def456"
+  }
+}</code></pre>
+<p>Now you can <strong>search and filter</strong>: "show me all errors for user-abc in the last hour across all services."</p>
+<p>But logs from 10 services are on 10 different servers. Send them all to <strong>one central place</strong>:</p>
+<pre><code>// Program.cs — send logs to Seq (or ELK, Datadog, etc.)
+Log.Logger = new LoggerConfiguration()
+    .Enrich.WithProperty("ServiceName", "orders-service")
+    .Enrich.FromLogContext()
+    .WriteTo.Console()
+    .WriteTo.Seq("http://seq-server:5341")   // centralized log server
+    .CreateLogger();</code></pre>
+</div>
+
+<!-- ═══════════════════ SECTION 4 ═══════════════════ -->
+<div class="section" id="s4">
+<h2><span class="num">04</span> The Correlation ID — Key to Everything</h2>
+<p>1000 requests per second, 10 services each = 10,000 log lines per second. How do you find the logs for <strong>one specific user request</strong>?</p>
+<p>The answer: a <strong>Correlation ID</strong> — one unique ID, generated at the entry point, passed through every service call.</p>
+<pre><code>User → Gateway              generates: X-Correlation-Id: abc-123
+       Gateway → Orders     forwards:  X-Correlation-Id: abc-123
+       Orders → Inventory   forwards:  X-Correlation-Id: abc-123
+       Orders → Payments    forwards:  X-Correlation-Id: abc-123</code></pre>
+<p>Search for <code>abc-123</code> → you see the <strong>entire journey</strong> of that one request across all services, in order.</p>
+
+<div class="tab-group" id="corr">
+<div class="tab-bar">
+<button class="tab-btn active" onclick="showTab('corr',0)">CorrelationIdMiddleware</button>
+<button class="tab-btn" onclick="showTab('corr',1)">CorrelationIdHandler (outgoing)</button>
+</div>
+<div class="tab-panel active">
+<pre><code>// Middleware — extracts or creates the correlation ID
+public class CorrelationIdMiddleware
+{
+    private readonly RequestDelegate _next;
+
+    public async Task InvokeAsync(HttpContext context)
+    {
+        // Check if caller already passed a correlation ID
+        var correlationId = context.Request.Headers["X-Correlation-Id"]
+                                .FirstOrDefault()
+                            ?? Guid.NewGuid().ToString();
+
+        // Add to response headers (so caller can see it)
+        context.Response.Headers["X-Correlation-Id"] = correlationId;
+
+        // Push into Serilog context — every log in this request gets it
+        using (LogContext.PushProperty("CorrelationId", correlationId))
+        {
+            await _next(context);
+        }
+    }
+}
+
+// Register in Program.cs
+app.UseMiddleware&lt;CorrelationIdMiddleware&gt;();</code></pre>
+</div>
+<div class="tab-panel">
+<pre><code>// DelegatingHandler — forwards correlation ID on outgoing HTTP calls
+public class CorrelationIdHandler : DelegatingHandler
+{
+    protected override async Task&lt;HttpResponseMessage&gt; SendAsync(
+        HttpRequestMessage request, CancellationToken ct)
+    {
+        // Get current correlation ID from Activity context
+        var correlationId = Activity.Current?.Id
+                            ?? Guid.NewGuid().ToString();
+        request.Headers.Add("X-Correlation-Id", correlationId);
+
+        return await base.SendAsync(request, ct);
+    }
+}
+
+// Register on HttpClient
+builder.Services.AddHttpClient("Inventory")
+    .AddHttpMessageHandler&lt;CorrelationIdHandler&gt;();</code></pre>
+</div>
+</div>
+</div>
+
+<!-- ═══════════════════ SECTION 5 ═══════════════════ -->
+<div class="section" id="s5">
+<h2><span class="num">05</span> Pillar 2 — Distributed Tracing (Waterfall)</h2>
+<p>Logs tell you what happened. <strong>Traces</strong> show you the timing — a visual timeline of the entire request journey. This is what Jaeger and Zipkin display:</p>
+
+<div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:20px;margin:14px 0">
+<div class="trace-header">
+  <div style="font-size:14px;font-weight:500;color:#fff">Trace: Place order</div>
+  <div style="font-size:12px;color:var(--muted);font-family:'JetBrains Mono',monospace">trace-id: abc-123</div>
+</div>
+<div class="ruler"><span>0ms</span><span>100ms</span><span>200ms</span><span>400ms</span><span>680ms</span></div>
+<div class="trace-row"><div class="svc-label">Gateway</div><div class="bar-area"><div class="span-bar" style="left:0%;width:100%;background:rgba(110,161,255,0.15);border:1px solid rgba(110,161,255,0.3);color:var(--accent);">POST /orders — 680ms</div></div></div>
+<div class="trace-row"><div class="svc-label">Orders</div><div class="bar-area"><div class="span-bar" style="left:1%;width:96%;background:rgba(139,108,246,0.15);border:1px solid rgba(139,108,246,0.3);color:var(--purple);">CreateOrder — 650ms</div></div></div>
+<div class="trace-row"><div class="svc-label">Inventory</div><div class="bar-area"><div class="span-bar" style="left:3%;width:35%;background:rgba(45,212,191,0.15);border:1px solid rgba(45,212,191,0.3);color:var(--teal);">ReserveStock — 230ms</div></div></div>
+<div class="trace-row"><div class="svc-label" style="padding-left:12px">→ DB query</div><div class="bar-area"><div class="span-bar" style="left:5%;width:30%;background:rgba(251,191,36,0.15);border:1px solid rgba(251,191,36,0.3);color:var(--amber);">SELECT stock — 200ms !!</div></div></div>
+<div class="trace-row"><div class="svc-label">Payments</div><div class="bar-area"><div class="span-bar" style="left:39%;width:55%;background:rgba(251,146,60,0.15);border:1px solid rgba(251,146,60,0.3);color:var(--coral);">ChargeCard — 370ms</div></div></div>
+<div class="trace-row"><div class="svc-label" style="padding-left:12px">→ Stripe API</div><div class="bar-area"><div class="span-bar" style="left:41%;width:50%;background:rgba(248,113,113,0.15);border:1px solid rgba(248,113,113,0.3);color:var(--red);">stripe.charge — 340ms</div></div></div>
+</div>
+
+<div class="note"><b>What the trace tells you instantly:</b> Total latency: 680ms. Inventory DB query took 200ms (slow query — needs index?). Stripe API took 340ms (external dependency — consider caching or timeout). Orders service itself added only ~10ms of logic.</div>
+</div>
+
+<!-- ═══════════════════ SECTION 6 ═══════════════════ -->
+<div class="section" id="s6">
+<h2><span class="num">06</span> Your Question: "Trace and Metric Feel the Same"</h2>
+<p>This was a great question. Here's why they're fundamentally different:</p>
+
+<div class="tab-group" id="tvs">
+<div class="tab-bar">
+<button class="tab-btn active" onclick="showTab('tvs',0)">Trace (one request)</button>
+<button class="tab-btn" onclick="showTab('tvs',1)">Metric (all requests)</button>
+<button class="tab-btn" onclick="showTab('tvs',2)">Debugging workflow</button>
+</div>
+<div class="tab-panel active">
+<p><strong>This is ONE specific request from ONE user.</strong> Shows the full journey: Gateway → Orders → Inventory → Payments with exact timing for each hop.</p>
+<p>You debug: "Why was USER X's order slow? Ah — Inventory DB was slow at 200ms."</p>
+</div>
+<div class="tab-panel">
+<p><strong>This is ALL requests aggregated over time.</strong> No individual request details — just numbers and trends.</p>
+<p>Last hour: 45,000 requests, error rate 2.3%, avg latency 120ms, P99 latency 890ms, CPU 72%.</p>
+<p>You alert: "Error rate spiked from 0.1% to 2.3% — something is broken!"</p>
+</div>
+<div class="tab-panel">
+<div class="flow"><div class="flow-step" style="border-color:rgba(45,212,191,0.3);color:var(--teal)">Step 1 — Metrics alert you</div><span class="flow-arrow">→</span><div class="flow-step" style="border-color:rgba(251,191,36,0.3);color:var(--amber)">Step 2 — Traces pinpoint the cause</div><span class="flow-arrow">→</span><div class="flow-step" style="border-color:rgba(139,108,246,0.3);color:var(--purple)">Step 3 — Logs give the details</div></div>
+<p><strong>Step 1:</strong> "Error rate on Payments service jumped to 5%" (Grafana dashboard)</p>
+<p><strong>Step 2:</strong> Open a failing trace → see Stripe API returning 503 after 5s timeout (Jaeger)</p>
+<p><strong>Step 3:</strong> Search correlation ID → see exact Stripe error message and payload (Seq/ELK)</p>
+</div>
+</div>
+
+<table>
+<tr><th></th><th>Trace</th><th>Metric</th></tr>
+<tr><td>Scope</td><td>One specific request</td><td>All requests aggregated</td></tr>
+<tr><td>Granularity</td><td>Detailed — every hop, every ms</td><td>Aggregated — averages, percentiles</td></tr>
+<tr><td>Question</td><td>"Why was THIS request slow?"</td><td>"Is the system healthy right now?"</td></tr>
+<tr><td>When used</td><td>After you know something is wrong</td><td>To detect something IS wrong</td></tr>
+<tr><td>Analogy</td><td>Following one car through the city</td><td>Traffic report for the whole city</td></tr>
+<tr><td>Data volume</td><td>High (one trace per request)</td><td>Low (a few numbers per second)</td></tr>
+</table>
+</div>
+
+<!-- ═══════════════════ SECTION 7 ═══════════════════ -->
+<div class="section" id="s7">
+<h2><span class="num">07</span> Pillar 3 — Metrics (Prometheus + Grafana)</h2>
+<p>Metrics are numeric measurements aggregated over time. You don't look at individual data points — you look at <strong>trends</strong>:</p>
+<pre><code>// Custom business metrics
+private static readonly Counter&lt;long&gt; _ordersPlaced =
+    Meter.CreateCounter&lt;long&gt;("orders.placed", "count");
+
+private static readonly Histogram&lt;double&gt; _orderLatency =
+    Meter.CreateHistogram&lt;double&gt;("orders.latency", "ms");
+
+public async Task PlaceOrderAsync(CreateOrderRequest req)
+{
+    var sw = Stopwatch.StartNew();
+
+    // ... business logic ...
+
+    sw.Stop();
+    _ordersPlaced.Add(1, new("status", "confirmed"));
+    _orderLatency.Record(sw.ElapsedMilliseconds);
+}</code></pre>
+<p>Prometheus scrapes the <code>/metrics</code> endpoint every 15 seconds. Grafana visualizes it as dashboards: request rate, error rate, P99 latency, CPU/memory.</p>
+</div>
+
+<!-- ═══════════════════ SECTION 8 ═══════════════════ -->
+<div class="section" id="s8">
+<h2><span class="num">08</span> Full C# — OpenTelemetry Setup</h2>
+<pre><code>// Program.cs — one setup for both tracing AND metrics
+builder.Services.AddOpenTelemetry()
+    .WithTracing(tracing =>
+    {
+        tracing
+            .SetResourceBuilder(ResourceBuilder.CreateDefault()
+                .AddService("orders-service"))
+            .AddAspNetCoreInstrumentation()         // auto-trace incoming HTTP
+            .AddHttpClientInstrumentation()          // auto-trace outgoing HTTP
+            .AddEntityFrameworkCoreInstrumentation()  // auto-trace EF queries
+            .AddJaegerExporter(o =>                  // send traces to Jaeger
+            {
+                o.Endpoint = new Uri("http://jaeger:14268/api/traces");
+            });
+    })
+    .WithMetrics(metrics =>
+    {
+        metrics
+            .AddAspNetCoreInstrumentation()   // request count, duration
+            .AddHttpClientInstrumentation()    // outgoing call metrics
+            .AddPrometheusExporter();           // expose /metrics endpoint
+    });</code></pre>
+<div class="note-green note"><b>That's it.</b> OpenTelemetry automatically creates spans for every incoming request, every outgoing HTTP call, and every EF Core query. The correlation ID is propagated through HTTP headers automatically.</div>
+</div>
+
+<!-- ═══════════════════ SECTION 9 ═══════════════════ -->
+<div class="section" id="s9">
+<h2><span class="num">09</span> Custom Spans + Custom Business Metrics</h2>
+
+<div class="tab-group" id="custom">
+<div class="tab-bar">
+<button class="tab-btn active" onclick="showTab('custom',0)">Custom spans (tracing)</button>
+<button class="tab-btn" onclick="showTab('custom',1)">Custom metrics (business)</button>
+</div>
+<div class="tab-panel active">
+<pre><code>// For business logic that isn't auto-instrumented
+private static readonly ActivitySource _tracer = new("OrdersService");
+
+public async Task PlaceOrderAsync(CreateOrderRequest req)
+{
+    using var span = _tracer.StartActivity("PlaceOrder");
+    span?.SetTag("order.userId", req.UserId);
+    span?.SetTag("order.itemCount", req.Items.Count);
+
+    // Each outgoing HTTP call automatically becomes a child span
+    var stock = await _inventoryClient.ReserveStockAsync(req.Items);
+    var payment = await _paymentClient.ChargeAsync(req.Total);
+
+    span?.SetTag("order.status", "confirmed");
+}</code></pre>
+</div>
+<div class="tab-panel">
+<pre><code>// Counter — counts events (orders placed, errors, retries)
+private static readonly Counter&lt;long&gt; _ordersPlaced =
+    Meter.CreateCounter&lt;long&gt;("orders.placed", "count");
+
+// Histogram — measures distributions (latency, payload size)
+private static readonly Histogram&lt;double&gt; _orderLatency =
+    Meter.CreateHistogram&lt;double&gt;("orders.latency", "ms");
+
+// Usage — tag with dimensions for filtering in Grafana
+_ordersPlaced.Add(1, new("status", "confirmed"));
+_ordersPlaced.Add(1, new("status", "failed"));
+_orderLatency.Record(sw.ElapsedMilliseconds);</code></pre>
+</div>
+</div>
+</div>
+
+<!-- ═══════════════════ SECTION 10 ═══════════════════ -->
+<div class="section" id="s10">
+<h2><span class="num">10</span> Your Question: "Does OpenTelemetry Replace Jaeger?"</h2>
+<p><strong>No.</strong> OpenTelemetry does NOT replace Jaeger, Prometheus, or Seq. It replaces the <strong>client libraries</strong> you use in your code — not the backends.</p>
+
+<div class="tab-group" id="otel">
+<div class="tab-bar">
+<button class="tab-btn active" onclick="showTab('otel',0)">Before OpenTelemetry</button>
+<button class="tab-btn" onclick="showTab('otel',1)">With OpenTelemetry</button>
+</div>
+<div class="tab-panel active">
+<pre><code>Your code → Jaeger client SDK    → Jaeger backend (traces)
+Your code → Prometheus client SDK → Prometheus backend (metrics)
+Your code → Serilog + Seq sink   → Seq backend (logs)
+
+3 different libraries in your code.
+Want to switch from Jaeger to Zipkin? Rewrite all your tracing code.</code></pre>
+</div>
+<div class="tab-panel">
+<pre><code>Your code → OpenTelemetry SDK → Jaeger backend    (traces)
+                              → Prometheus backend (metrics)
+                              → Seq backend        (logs)
+
+1 library in your code.
+Want to switch from Jaeger to Zipkin? Change one config line.
+Your code stays exactly the same.</code></pre>
+</div>
+</div>
+
+<p>OpenTelemetry is the <strong>universal adapter</strong> between your code and whatever backend you choose. Jaeger, Prometheus, Seq, Datadog — they all still exist and do the actual storage, visualization, and alerting.</p>
+<pre><code>// Switch from Jaeger to Zipkin — only this line changes
+.AddJaegerExporter()    // ← before
+.AddZipkinExporter()    // ← after
+
+// Your instrumentation code? Zero changes.
+using var span = _tracer.StartActivity("PlaceOrder");
+// This line works the same regardless of backend</code></pre>
+<div class="note"><b>The real power:</b> Your team instruments the code <strong>once</strong>. Then the ops team picks whatever backend the company uses — and they can switch backends without any developer touching any service code.</div>
+</div>
+
+<!-- ═══════════════════ SECTION 11 ═══════════════════ -->
+<div class="section" id="s11">
+<h2><span class="num">11</span> The Debugging Workflow — How All 3 Connect</h2>
+<div class="flow"><div class="flow-step" style="border-color:rgba(45,212,191,0.3);color:var(--teal)">Metrics alert you</div><span class="flow-arrow">→</span><div class="flow-step" style="border-color:rgba(251,191,36,0.3);color:var(--amber)">Traces pinpoint the cause</div><span class="flow-arrow">→</span><div class="flow-step" style="border-color:rgba(139,108,246,0.3);color:var(--purple)">Logs give the details</div></div>
+<p>Think of it as <strong>zooming from wide to narrow</strong>:</p>
+<p><strong>Metrics</strong> = the satellite view. "Something is wrong somewhere." (Error rate spiked, P99 latency doubled.)</p>
+<p><strong>Traces</strong> = the street view. "The problem is in the Payments → Stripe call." (Open a failing trace, see the 5s timeout.)</p>
+<p><strong>Logs</strong> = the security camera. "Here's exactly what happened." (Search correlation ID, see the Stripe 503 error body.)</p>
+<div class="note-green note"><b>The Correlation ID is the thread</b> that connects all three. A metric alert leads you to traces for that time window. A trace gives you the correlation ID. The correlation ID finds you every log line from every service involved in that one request.</div>
+</div>
+
+<!-- ═══════════════════ SECTION 12 ═══════════════════ -->
+<div class="section" id="s12">
+<h2><span class="num">12</span> Interview Q&amp;A</h2>
+
+<div class="qa"><div class="qa-q">Q: What is observability in microservices?</div><div class="qa-a">Observability is the ability to understand what's happening inside your distributed system from the outside. It has 3 pillars: logs (what happened — discrete events with context), metrics (how the system is performing — aggregated numbers over time), and distributed traces (where time was spent — a request's journey across all services with timing). Together they let you debug, monitor, and optimize a system of many independent services.</div></div>
+<div class="qa"><div class="qa-q">Q: What is a Correlation ID and why is it critical?</div><div class="qa-a">A Correlation ID is a unique identifier generated at the entry point (API Gateway) and propagated through every service in the request chain via HTTP headers. Every log line includes it. To debug a user's failed request, you search for that one ID and see the complete journey across all services in chronological order. Without it, matching log lines across 10 services at 1000 requests/second is impossible.</div></div>
+<div class="qa"><div class="qa-q">Q: What is distributed tracing?</div><div class="qa-a">A trace represents the complete journey of a single request through all services. It's made of spans — each span is one operation (an HTTP call, a DB query, a method). Spans are nested: the Gateway span contains the Orders span, which contains the Inventory span and the Payment span. A waterfall visualization shows the timing of each span, instantly revealing which service or dependency is the bottleneck.</div></div>
+<div class="qa"><div class="qa-q">Q: What is OpenTelemetry?</div><div class="qa-a">OpenTelemetry is a vendor-neutral open standard for generating, collecting, and exporting telemetry data — traces, metrics, and logs. You instrument your code once with the OTel SDK, then export to any backend (Jaeger, Prometheus, Datadog) by changing configuration. It replaces the client libraries (Jaeger SDK, Prometheus client), NOT the backends themselves. Prevents vendor lock-in and is now the industry standard.</div></div>
+<div class="qa"><div class="qa-q">Q: How would you set up observability for a new microservices project?</div><div class="qa-a">Add OpenTelemetry SDK to every service. Enable auto-instrumentation for ASP.NET Core (incoming requests), HttpClient (outgoing calls), and Entity Framework (DB queries). Export traces to Jaeger, metrics to Prometheus + Grafana, and logs to a centralized store like Seq or ELK. Use correlation IDs propagated via HTTP headers. Add custom business metrics for domain-specific monitoring. Set up alerts on error rate spikes and P99 latency thresholds.</div></div>
+</div>
+
+<div class="footer">Observability — Microservices Study Guide · Topic 09 · C# / .NET · Interview Prep · 2026</div>
+</div>
+
+<script>
+function showTab(g,i){var p=document.getElementById(g).querySelectorAll('.tab-panel'),b=document.getElementById(g).querySelectorAll('.tab-btn');p.forEach(function(x,j){x.classList.toggle('active',j===i)});b.forEach(function(x,j){x.classList.remove('active');if(j===i)x.classList.add('active')})}
+</script>
+</body>
+</html>

@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chapter 8: URL Shortener — System Design Interview</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --purple: #7B2D8B; --purple-light: #F9F0FF; --purple-mid: #9C36B5;
+    --gray: #f8f9fa; --gray2: #f1f3f5; --gray3: #dee2e6;
+    --text: #1a1a1a; --text2: #555; --text3: #888;
+    --success: #2f9e44; --success-bg: #ebfbee;
+    --warning: #e67700; --warning-bg: #fff3bf;
+    --danger: #c92a2a; --danger-bg: #ffe3e3;
+    --info: #1864ab; --info-bg: #e7f5ff;
+  }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif; background: #f4f6f8; color: var(--text); line-height: 1.7; }
+  .page { max-width: 900px; margin: 0 auto; padding: 40px 24px 80px; }
+
+  /* Header */
+  .doc-header { background: linear-gradient(135deg, #7B2D8B 0%, #9C36B5 100%); color: white; border-radius: 16px; padding: 40px 48px; margin-bottom: 40px; }
+  .doc-header h1 { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+  .doc-header p { font-size: 14px; opacity: 0.8; }
+
+  /* TOC */
+  .toc { background: white; border: 0.5px solid var(--gray3); border-radius: 12px; padding: 24px 28px; margin-bottom: 40px; }
+  .toc h3 { font-size: 13px; font-weight: 600; color: var(--purple); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .toc a { display: block; font-size: 14px; color: var(--purple-mid); text-decoration: none; padding: 4px 0; border-bottom: 0.5px solid var(--gray2); }
+  .toc a:last-child { border-bottom: none; }
+  .toc a:hover { color: var(--purple); }
+
+  /* Sections */
+  .section { background: white; border: 0.5px solid var(--gray3); border-radius: 12px; padding: 32px 36px; margin-bottom: 28px; }
+  .section-title { font-size: 22px; font-weight: 700; color: var(--purple); margin-bottom: 20px; padding-bottom: 12px; border-bottom: 2px solid var(--purple-light); display: flex; align-items: center; gap: 10px; }
+  .section-title .num { background: var(--purple); color: white; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; flex-shrink: 0; }
+  h3 { font-size: 16px; font-weight: 600; color: var(--purple-mid); margin: 20px 0 10px; }
+  p { font-size: 14px; color: var(--text2); margin-bottom: 12px; }
+  ul { margin: 8px 0 12px 24px; }
+  ul li { font-size: 14px; color: var(--text2); margin-bottom: 6px; }
+
+  /* Note boxes */
+  .note { display: flex; border-radius: 8px; overflow: hidden; margin: 16px 0; font-size: 13px; }
+  .note-label { background: var(--purple); color: white; padding: 12px 14px; font-weight: 700; writing-mode: vertical-rl; text-orientation: mixed; transform: rotate(180deg); display: flex; align-items: center; justify-content: center; min-width: 44px; font-size: 12px; }
+  .note-body { background: var(--purple-light); padding: 12px 16px; color: var(--purple); flex: 1; }
+  .note.success .note-label { background: var(--success); }
+  .note.success .note-body { background: var(--success-bg); color: var(--success); }
+  .note.warning .note-label { background: var(--warning); }
+  .note.warning .note-body { background: var(--warning-bg); color: var(--warning); }
+  .note.danger .note-label { background: var(--danger); }
+  .note.danger .note-body { background: var(--danger-bg); color: var(--danger); }
+  .note.info .note-label { background: var(--info); }
+  .note.info .note-body { background: var(--info-bg); color: var(--info); }
+
+  /* Code */
+  .code { background: #1e1e2e; color: #cdd6f4; font-family: "SF Mono","Fira Code",monospace; font-size: 12px; border-radius: 8px; padding: 16px 20px; margin: 12px 0; overflow-x: auto; line-height: 1.9; }
+  .code .kw  { color: #89dceb; }
+  .code .str { color: #a6e3a1; }
+  .code .cm  { color: #6c7086; }
+  .code .ok  { color: #a6e3a1; }
+  .code .err { color: #f38ba8; }
+
+  /* Tables */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 16px 0; }
+  th { background: var(--purple); color: white; padding: 10px 14px; text-align: left; font-weight: 600; }
+  td { padding: 9px 14px; border-bottom: 0.5px solid var(--gray3); color: var(--text2); vertical-align: top; }
+  tr:nth-child(even) td { background: var(--purple-light); }
+  tr:last-child td { border-bottom: none; }
+
+  /* Badges */
+  .badge { font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: 600; display: inline-block; }
+  .b-green  { background: var(--success-bg); color: var(--success); }
+  .b-red    { background: var(--danger-bg);  color: var(--danger); }
+  .b-yellow { background: var(--warning-bg); color: var(--warning); }
+  .b-gray   { background: var(--gray2); color: var(--text3); }
+  .b-blue   { background: var(--info-bg); color: var(--info); }
+
+  /* Widgets */
+  .widget { border: 0.5px solid var(--gray3); border-radius: 10px; padding: 20px; margin: 16px 0; background: var(--gray); }
+  .widget-title { font-size: 13px; font-weight: 600; color: var(--purple); margin-bottom: 14px; display: flex; align-items: center; gap: 6px; }
+  .widget-title::before { content: ""; width: 8px; height: 8px; background: var(--purple); border-radius: 50%; display: inline-block; }
+  button { font-size: 13px; padding: 7px 16px; border-radius: 6px; cursor: pointer; border: 0.5px solid var(--gray3); background: white; color: var(--text); transition: background 0.15s; }
+  button:hover { background: var(--gray2); }
+
+  /* Flow step */
+  .flow-steps { display: flex; align-items: center; gap: 0; flex-wrap: wrap; margin: 8px 0 14px; }
+  .flow-step { background: var(--purple-light); border: 0.5px solid var(--purple-mid); border-radius: 8px; padding: 8px 12px; font-size: 12px; font-weight: 600; color: var(--purple); cursor: pointer; transition: all 0.2s; text-align: center; min-width: 90px; }
+  .flow-step:hover, .flow-step.active { background: var(--purple); color: white; }
+  .flow-arrow { font-size: 14px; color: var(--purple-mid); padding: 0 4px; }
+  .flow-desc { background: var(--purple-light); border-left: 3px solid var(--purple); border-radius: 0 8px 8px 0; padding: 12px 16px; font-size: 13px; color: var(--purple); min-height: 44px; }
+
+  /* TTL */
+  .key-card { border: 0.5px solid var(--gray3); border-radius: 8px; padding: 12px 14px; background: white; margin-bottom: 8px; }
+  .bar-track { background: var(--gray3); border-radius: 3px; height: 6px; overflow: hidden; margin-top: 8px; }
+  .bar-fill  { height: 100%; border-radius: 3px; transition: width 0.2s, background 0.3s; }
+
+  /* 301 vs 302 toggle */
+  .tab-row { display: flex; gap: 8px; margin-bottom: 14px; }
+  .tab-btn { padding: 6px 16px; font-size: 13px; border-radius: 6px; cursor: pointer; border: 0.5px solid var(--gray3); background: white; color: var(--text2); }
+  .tab-btn.active { background: var(--purple); color: white; border-color: var(--purple); }
+
+  /* Interview box */
+  .interview-box { background: linear-gradient(135deg, #7B2D8B 0%, #9C36B5 100%); color: white; border-radius: 12px; padding: 24px 28px; margin: 16px 0; font-size: 14px; line-height: 1.8; font-style: italic; }
+
+  /* Stat cards */
+  .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 16px 0; }
+  .stat-card { background: var(--gray2); border-radius: 8px; padding: 14px; text-align: center; }
+  .stat-val  { font-size: 22px; font-weight: 700; color: var(--purple); }
+  .stat-lbl  { font-size: 12px; color: var(--text3); margin-top: 4px; }
+
+  @keyframes slideOut { 0%{opacity:1;transform:translateX(0)} 100%{opacity:0;transform:translateX(30px)} }
+  .slide-out { animation: slideOut 0.4s ease forwards; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Header -->
+  <div class="doc-header">
+    <h1>Chapter 8: Design a URL Shortener</h1>
+    <p>System Design Interview — Alex Xu &nbsp;|&nbsp; Full study notes with interactive diagrams</p>
+  </div>
+
+  <!-- TOC -->
+  <div class="toc">
+    <h3>Contents</h3>
+    <a href="#s1">1. The Core Problem</a>
+    <a href="#s2">2. Back-of-Envelope Estimation</a>
+    <a href="#s3">3. Why Hashing Alone Fails</a>
+    <a href="#s4">4. Snowflake ID + Base62 Encoding</a>
+    <a href="#s5">5. 301 vs 302 Redirect</a>
+    <a href="#s6">6. URL Expiry + Redis TTL</a>
+    <a href="#s7">7. Complete Architecture</a>
+    <a href="#s8">8. Database Schema</a>
+    <a href="#s9">9. Interview Answer Template</a>
+    <a href="#s10">10. Quick Reference</a>
+  </div>
+
+  <!-- Section 1 -->
+  <div class="section" id="s1">
+    <div class="section-title"><span class="num">1</span> The Core Problem</div>
+    <p>A URL shortener converts a long URL into a short alias. When a user clicks the short URL, the server redirects them to the original long URL.</p>
+    <div class="code">
+Long:  https://www.example.com/some/very/long/path?with=query&params=here
+Short: https://bit.ly/<span class="str">zn9edcu</span>
+    </div>
+    <p>Simple on the surface — but at millions of URLs and billions of clicks, the design becomes interesting.</p>
+
+    <div class="widget">
+      <div class="widget-title">Interactive — Full request flow (click each step)</div>
+      <div class="flow-steps">
+        <div class="flow-step active" onclick="showStep(0)">Submit URL</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step" onclick="showStep(1)">Generate ID</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step" onclick="showStep(2)">Base62 encode</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step" onclick="showStep(3)">Store + Cache</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step" onclick="showStep(4)">Return URL</div>
+      </div>
+      <div class="flow-desc" id="flow-desc">User submits a long URL via POST /api/v1/shorten. System checks if this URL was shortened before.</div>
+    </div>
+  </div>
+
+  <!-- Section 2 -->
+  <div class="section" id="s2">
+    <div class="section-title"><span class="num">2</span> Back-of-Envelope Estimation</div>
+    <p>Assume 100 million URLs created per day with a 10:1 read/write ratio.</p>
+    <div class="stat-grid">
+      <div class="stat-card"><div class="stat-val">~1,160</div><div class="stat-lbl">Write QPS (shorten)</div></div>
+      <div class="stat-card"><div class="stat-val">~11,600</div><div class="stat-lbl">Read QPS (redirect)</div></div>
+      <div class="stat-card"><div class="stat-val">~182 TB</div><div class="stat-lbl">Storage over 10 years</div></div>
+    </div>
+    <div class="note info">
+      <div class="note-label">Key Insight</div>
+      <div class="note-body">Read/write ratio is 10:1 — this is a read-heavy system. Design accordingly: aggressive caching, read replicas, optimized redirect path.</div>
+    </div>
+  </div>
+
+  <!-- Section 3 -->
+  <div class="section" id="s3">
+    <div class="section-title"><span class="num">3</span> Why Hashing Alone Fails</div>
+    <p>Taking the first 7 characters of an MD5 hash seems simple — but has two critical problems.</p>
+
+    <div class="widget">
+      <div class="widget-title">Interactive — See the collision problem</div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px;">
+        <div>
+          <div style="font-size:12px; color:var(--text3); margin-bottom:6px;">URL A</div>
+          <div class="code" style="font-size:11px; padding:10px 14px;">https://example.com/page-a</div>
+          <div style="font-size:11px; color:var(--text3); margin:4px 0;">MD5 → first 7 chars</div>
+          <div id="hash-a" class="code" style="font-size:13px; padding:8px 14px; text-align:center; letter-spacing:2px;">a9993e3</div>
+        </div>
+        <div>
+          <div style="font-size:12px; color:var(--text3); margin-bottom:6px;">URL B</div>
+          <div class="code" style="font-size:11px; padding:10px 14px;">https://example.com/page-b</div>
+          <div style="font-size:11px; color:var(--text3); margin:4px 0;">MD5 → first 7 chars</div>
+          <div id="hash-b" class="code" style="font-size:13px; padding:8px 14px; text-align:center; letter-spacing:2px;">a9993e3</div>
+        </div>
+      </div>
+      <button onclick="showCollision()">Show collision scenario</button>
+      <div id="collision-result" style="margin-top:10px; font-size:13px; min-height:20px;"></div>
+    </div>
+
+    <table>
+      <tr><th>Problem</th><th>What Happens</th><th>Impact</th></tr>
+      <tr><td>Hash Collision</td><td>Two different URLs produce same first 7 chars</td><td>Both map to same short code — one URL is lost</td></tr>
+      <tr><td>Duplicate URLs</td><td>Same URL hashed twice gives same short code</td><td>Must check DB every single time — expensive</td></tr>
+      <tr><td>DB Check Required</td><td>Every write needs a DB read to detect collision</td><td>At 1,160 writes/sec this adds significant latency</td></tr>
+    </table>
+
+    <div class="note danger">
+      <div class="note-label">The Fix</div>
+      <div class="note-body">Use Snowflake ID + Base62 encoding instead. Guaranteed unique IDs with zero collision checks needed.</div>
+    </div>
+  </div>
+
+  <!-- Section 4 -->
+  <div class="section" id="s4">
+    <div class="section-title"><span class="num">4</span> Snowflake ID + Base62 Encoding</div>
+    <p>Generate a unique Snowflake ID (from Chapter 7), then convert it to Base62 to produce a short, URL-safe alias.</p>
+
+    <div class="widget">
+      <div class="widget-title">Interactive — Watch the encoding process</div>
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px; flex-wrap:wrap;">
+        <button onclick="runEncoding()">Generate new ID</button>
+        <span style="font-size:12px; color:var(--text3);">Watch the Snowflake ID get converted to a short code</span>
+      </div>
+      <div id="encoding-steps" style="font-size:13px;"></div>
+    </div>
+
+    <div class="code">
+<span class="cm">// Base62 character set</span>
+[0-9] + [a-z] + [A-Z] = 62 options
+
+<span class="cm">// With 7 characters</span>
+62^7 = <span class="str">~3.5 trillion</span> unique combinations ✅
+
+<span class="cm">// Full flow</span>
+Step 1: ID  = <span class="str">2009215674938</span>    <span class="cm">← Snowflake ID</span>
+Step 2:        <span class="kw">Base62 encode</span>
+Step 3: alias = <span class="str">"zn9edcu"</span>         <span class="cm">← 7-char short code</span>
+Step 4: DB  = { <span class="str">"zn9edcu"</span> → <span class="str">"https://example.com"</span> }
+    </div>
+
+    <table>
+      <tr><th>Approach</th><th>Unique</th><th>Sortable</th><th>DB Check Needed</th><th>Verdict</th></tr>
+      <tr><td>MD5 Hashing</td><td><span class="badge b-red">No</span></td><td><span class="badge b-red">No</span></td><td><span class="badge b-red">Every time</span></td><td>Fails at scale</td></tr>
+      <tr><td>UUID</td><td><span class="badge b-green">Yes</span></td><td><span class="badge b-red">No</span></td><td><span class="badge b-green">No</span></td><td>Not numeric, not sortable</td></tr>
+      <tr><td>Snowflake + Base62</td><td><span class="badge b-green">Yes</span></td><td><span class="badge b-green">Yes</span></td><td><span class="badge b-green">Never</span></td><td><strong>Best choice ✅</strong></td></tr>
+    </table>
+  </div>
+
+  <!-- Section 5 -->
+  <div class="section" id="s5">
+    <div class="section-title"><span class="num">5</span> 301 vs 302 Redirect</div>
+    <p>When a user clicks a short URL, the server responds with a redirect. Two options — each with very different implications.</p>
+
+    <div class="widget">
+      <div class="widget-title">Interactive — Compare 301 vs 302 behavior</div>
+      <div class="tab-row">
+        <button class="tab-btn active" onclick="showRedirect('301')">301 Permanent</button>
+        <button class="tab-btn" onclick="showRedirect('302')">302 Temporary</button>
+      </div>
+      <div id="redirect-content"></div>
+    </div>
+
+    <table>
+      <tr><th></th><th>301 Permanent</th><th>302 Temporary</th></tr>
+      <tr><td>Browser caching</td><td>Cached forever — never hits server again</td><td>No caching — every click hits server</td></tr>
+      <tr><td>Server load</td><td>Very low after first visit</td><td>Higher — every redirect goes through server</td></tr>
+      <tr><td>Analytics tracking</td><td>Cannot track repeat clicks</td><td>Every click is logged on server</td></tr>
+      <tr><td>Permission control</td><td>Cannot revoke — browser ignores server</td><td>Server can validate access every click</td></tr>
+      <tr><td>Expiring links</td><td>Cannot enforce expiry in browser</td><td>Server enforces expiry on every request</td></tr>
+      <tr><td>Best for</td><td>Public static marketing links</td><td>Permission-based, expiring, or tracked links</td></tr>
+    </table>
+
+    <div class="note info">
+      <div class="note-label">Interview Answer</div>
+      <div class="note-body">Use 302 for most URL shorteners — it enables analytics, permission enforcement, and expiry control. Use 301 only for static public links where reducing server load is the priority.</div>
+    </div>
+  </div>
+
+  <!-- Section 6 -->
+  <div class="section" id="s6">
+    <div class="section-title"><span class="num">6</span> URL Expiry + Redis TTL</div>
+    <h3>What is Redis TTL?</h3>
+    <p>TTL = Time To Live. A countdown timer attached to a Redis key. When the timer hits zero — Redis auto-deletes the key. No manual cleanup needed.</p>
+
+    <div class="code">
+<span class="cm">// Store with TTL</span>
+SET <span class="str">"zn9edcu"</span> <span class="str">"{url, expires_at}"</span> EX <span class="kw">86400</span>    <span class="cm">← 24 hours</span>
+SET <span class="str">"ab3Xk2"</span>  <span class="str">"{url, expires_at}"</span> EX <span class="kw">604800</span>   <span class="cm">← 7 days</span>
+SET <span class="str">"pQ7mN1"</span>  <span class="str">"{url}"</span>               <span class="cm">← never expires</span>
+
+<span class="cm">// On expiry: Redis auto-deletes the key</span>
+GET <span class="str">"zn9edcu"</span>  <span class="cm">← returns nil after expiry</span>
+    </div>
+
+    <div class="widget">
+      <div class="widget-title">Interactive — Redis TTL live countdown</div>
+      <div style="display:flex; align-items:center; gap:12px; margin-bottom:14px;">
+        <label style="font-size:13px; color:var(--text2);">TTL (seconds)</label>
+        <input type="range" min="5" max="60" value="20" id="ttl-slider" oninput="updateTTL(this.value)" style="flex:1; max-width:180px; accent-color:var(--purple);">
+        <span style="font-size:13px; font-weight:600; min-width:30px;" id="ttl-val">20s</span>
+        <button onclick="addKey()">+ Add key</button>
+        <button onclick="resetKeys()">↺ Reset</button>
+      </div>
+      <div id="keys-list" style="display:flex; flex-direction:column; gap:8px; margin-bottom:10px;"></div>
+      <div style="background:var(--gray2); border-radius:6px; padding:10px 14px; font-size:12px; font-family:monospace; color:var(--text2);">
+        SET "zn9edcu" "https://example.com" EX <span id="cmd-ttl" style="color:var(--success); font-weight:600;">20</span>
+      </div>
+    </div>
+
+    <h3>Cache Invalidation on Revoke</h3>
+    <p>If admin revokes a URL before it expires — don't wait for TTL. Delete the Redis key immediately.</p>
+
+    <div class="widget">
+      <div class="widget-title">Interactive — Revoke flow</div>
+      <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:14px;" id="revoke-flow">
+        <div style="background:white; border:0.5px solid var(--gray3); border-radius:8px; padding:10px; text-align:center;">
+          <div style="font-size:11px; color:var(--text3); margin-bottom:4px;">Step 1</div>
+          <div style="font-size:12px; font-weight:600;">Admin revokes</div>
+        </div>
+        <div style="background:white; border:0.5px solid var(--gray3); border-radius:8px; padding:10px; text-align:center;">
+          <div style="font-size:11px; color:var(--text3); margin-bottom:4px;">Step 2</div>
+          <div style="font-size:12px; font-weight:600;">Update DB</div>
+          <div style="font-size:11px; color:var(--text3);">status = revoked</div>
+        </div>
+        <div style="background:white; border:0.5px solid var(--gray3); border-radius:8px; padding:10px; text-align:center;">
+          <div style="font-size:11px; color:var(--text3); margin-bottom:4px;">Step 3</div>
+          <div style="font-size:12px; font-weight:600;">DELETE Redis key</div>
+          <div style="font-size:11px; color:var(--text3);">immediately</div>
+        </div>
+        <div style="background:white; border:0.5px solid var(--gray3); border-radius:8px; padding:10px; text-align:center;">
+          <div style="font-size:11px; color:var(--text3); margin-bottom:4px;">Step 4</div>
+          <div style="font-size:12px; font-weight:600;">Next click</div>
+          <div style="font-size:11px; color:var(--text3);">→ 410 Gone</div>
+        </div>
+      </div>
+      <button onclick="animateRevoke()">Simulate revoke</button>
+      <div id="revoke-log" style="font-size:13px; margin-top:10px; min-height:20px; color:var(--text2);"></div>
+    </div>
+
+    <div class="note warning">
+      <div class="note-label">Why Not Short TTL?</div>
+      <div class="note-body">Setting a very short TTL means the revoked URL is still accessible for seconds or minutes. For permission-sensitive links this is unacceptable. Immediate cache deletion is the correct approach.</div>
+    </div>
+  </div>
+
+  <!-- Section 7 -->
+  <div class="section" id="s7">
+    <div class="section-title"><span class="num">7</span> Complete Architecture</div>
+
+    <div class="widget">
+      <div class="widget-title">Interactive — Shorten URL flow</div>
+      <div id="shorten-steps" style="display:flex; flex-direction:column; gap:6px; margin-bottom:12px;"></div>
+      <button onclick="runShortenFlow()">Run shorten flow</button>
+    </div>
+
+    <div class="widget">
+      <div class="widget-title">Interactive — Redirect flow</div>
+      <div id="redirect-steps" style="display:flex; flex-direction:column; gap:6px; margin-bottom:12px;"></div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <button onclick="runRedirectFlow('hit')">Cache HIT scenario</button>
+        <button onclick="runRedirectFlow('miss')">Cache MISS scenario</button>
+        <button onclick="runRedirectFlow('expired')">Expired URL scenario</button>
+      </div>
+    </div>
+
+    <h3>Scale Strategy</h3>
+    <table>
+      <tr><th>Challenge</th><th>Solution</th></tr>
+      <tr><td>Read-heavy (10:1 ratio)</td><td>Redis cache absorbs 80-90% of redirect traffic</td></tr>
+      <tr><td>Write throughput</td><td>Snowflake ID — no DB coordination needed</td></tr>
+      <tr><td>DB read pressure</td><td>Route all redirects to DB read replicas</td></tr>
+      <tr><td>Data distribution</td><td>Consistent hashing to shard URL data across nodes</td></tr>
+    </table>
+  </div>
+
+  <!-- Section 8 -->
+  <div class="section" id="s8">
+    <div class="section-title"><span class="num">8</span> Database Schema</div>
+    <table>
+      <tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+      <tr><td><code>id</code></td><td>bigint</td><td>Snowflake ID — primary key</td></tr>
+      <tr><td><code>short_code</code></td><td>varchar(7)</td><td>Base62 encoded ID — unique index for fast redirect lookup</td></tr>
+      <tr><td><code>long_url</code></td><td>varchar(2048)</td><td>Original URL</td></tr>
+      <tr><td><code>created_at</code></td><td>timestamp</td><td>When the short URL was created</td></tr>
+      <tr><td><code>expires_at</code></td><td>timestamp</td><td>NULL = never expires</td></tr>
+      <tr><td><code>user_id</code></td><td>bigint</td><td>Who created this short URL</td></tr>
+    </table>
+    <div class="note success">
+      <div class="note-label">Two Indexes</div>
+      <div class="note-body">Primary key on id (writes). Unique index on short_code (redirect lookups). The second index is what makes redirects fast at high QPS.</div>
+    </div>
+  </div>
+
+  <!-- Section 9 -->
+  <div class="section" id="s9">
+    <div class="section-title"><span class="num">9</span> Interview Answer Template</div>
+    <div class="interview-box">
+      "I'd use Snowflake ID converted to Base62 to generate collision-free 7-character short codes with no DB collision checks. Short URLs are stored in DB with optional expiry timestamps and cached in Redis with matching TTL. I'd use 302 redirects so every click hits the server — enabling analytics, permission checks, and expiry enforcement. On cache miss we query DB and repopulate Redis. On revocation we immediately delete the Redis key to prevent stale cache access. The system is read-heavy (10:1 ratio) so Redis absorbs most traffic with 80-90% cache hit rate."
+    </div>
+  </div>
+
+  <!-- Section 10 -->
+  <div class="section" id="s10">
+    <div class="section-title"><span class="num">10</span> Quick Reference</div>
+    <table>
+      <tr><th>Concept</th><th>One-Line Summary</th></tr>
+      <tr><td>URL Shortener core</td><td>Long URL → Snowflake ID → Base62 → 7-char alias</td></tr>
+      <tr><td>Why not MD5 hashing</td><td>Hash collisions + requires expensive DB check on every write</td></tr>
+      <tr><td>Base62</td><td>[0-9]+[a-z]+[A-Z] = 62 chars. 62^7 = 3.5 trillion combinations</td></tr>
+      <tr><td>301 redirect</td><td>Permanent. Browser caches forever. No analytics. No expiry control.</td></tr>
+      <tr><td>302 redirect</td><td>Temporary. Every click hits server. Enables analytics + control.</td></tr>
+      <tr><td>Redis TTL</td><td>Timer on cache key. Auto-deleted when timer hits zero.</td></tr>
+      <tr><td>Cache invalidation</td><td>On revoke: delete Redis key immediately. DB update alone is not enough.</td></tr>
+      <tr><td>Scale strategy</td><td>Redis for reads, Snowflake for writes, read replicas for DB</td></tr>
+    </table>
+  </div>
+
+</div>
+
+<script>
+// --- Flow steps (section 1) ---
+const flowDescs = [
+  "User submits a long URL via POST /api/v1/shorten. System checks if this URL was already shortened before to avoid duplicates.",
+  "System generates a unique 64-bit Snowflake ID. No coordination with other servers needed — guaranteed unique globally.",
+  "Snowflake ID is converted to Base62 encoding, producing a 7-character alias like 'zn9edcu'. No DB check for collision needed.",
+  "The short code and long URL are stored in the database with an optional expiry timestamp. The entry is also cached in Redis with matching TTL.",
+  "The short URL (e.g. https://bit.ly/zn9edcu) is returned to the user. Done."
+];
+function showStep(i) {
+  document.querySelectorAll('.flow-step').forEach((el,j) => el.classList.toggle('active', i===j));
+  document.getElementById('flow-desc').textContent = flowDescs[i];
+}
+
+// --- Collision demo ---
+function showCollision() {
+  const a = document.getElementById('hash-a');
+  const b = document.getElementById('hash-b');
+  const res = document.getElementById('collision-result');
+  a.style.color = '#f38ba8'; b.style.color = '#f38ba8';
+  res.innerHTML = '<span style="color:var(--danger); font-weight:600;">💥 COLLISION — both URLs map to "a9993e3"! When user clicks the short URL — which long URL do we redirect to?</span>';
+}
+
+// --- Base62 encoding demo ---
+const chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+function toBase62(num) {
+  let result = '';
+  while(num > 0) { result = chars[num % 62] + result; num = Math.floor(num / 62); }
+  return result.padStart(7,'0').slice(-7);
+}
+function runEncoding() {
+  const id = Math.floor(Math.random() * 9e12) + 1e12;
+  const alias = toBase62(id);
+  const el = document.getElementById('encoding-steps');
+  el.innerHTML = `
+    <div style="display:flex; flex-direction:column; gap:8px;">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <div style="background:var(--purple); color:white; border-radius:6px; padding:4px 10px; font-size:12px; font-weight:600; min-width:80px; text-align:center;">Step 1</div>
+        <div style="font-family:monospace; font-size:13px; color:var(--text2);">Snowflake ID generated: <strong style="color:var(--purple);">${id.toLocaleString()}</strong></div>
+      </div>
+      <div style="display:flex; align-items:center; gap:10px;">
+        <div style="background:var(--purple-mid); color:white; border-radius:6px; padding:4px 10px; font-size:12px; font-weight:600; min-width:80px; text-align:center;">Step 2</div>
+        <div style="font-family:monospace; font-size:13px; color:var(--text2);">Base62 encode: ${id} ÷ 62 repeatedly...</div>
+      </div>
+      <div style="display:flex; align-items:center; gap:10px;">
+        <div style="background:#9C36B5; color:white; border-radius:6px; padding:4px 10px; font-size:12px; font-weight:600; min-width:80px; text-align:center;">Step 3</div>
+        <div style="font-family:monospace; font-size:13px; color:var(--text2);">Short alias: <strong style="color:var(--success); font-size:16px; letter-spacing:2px;">${alias}</strong></div>
+      </div>
+      <div style="display:flex; align-items:center; gap:10px;">
+        <div style="background:var(--success); color:white; border-radius:6px; padding:4px 10px; font-size:12px; font-weight:600; min-width:80px; text-align:center;">Step 4</div>
+        <div style="font-family:monospace; font-size:13px; color:var(--text2);">Short URL: <strong style="color:var(--purple);">https://bit.ly/${alias}</strong></div>
+      </div>
+    </div>`;
+}
+runEncoding();
+
+// --- 301 vs 302 ---
+const redirectContent = {
+  '301': {
+    title: '301 Permanent Redirect',
+    color: 'var(--warning)',
+    bg: 'var(--warning-bg)',
+    steps: [
+      { label: 'First click', desc: 'Browser sends request to bit.ly/zn9edcu', ok: true },
+      { label: 'Server responds', desc: '301 Moved Permanently → https://example.com', ok: true },
+      { label: 'Browser caches', desc: 'Stores: bit.ly/zn9edcu → https://example.com FOREVER', ok: true },
+      { label: 'Second click', desc: 'Browser redirects directly — never contacts bit.ly', ok: null },
+      { label: 'Problem', desc: 'No analytics, no expiry control, cannot revoke', ok: false }
+    ]
+  },
+  '302': {
+    title: '302 Temporary Redirect',
+    color: 'var(--success)',
+    bg: 'var(--success-bg)',
+    steps: [
+      { label: 'Every click', desc: 'Browser sends request to bit.ly/zn9edcu', ok: true },
+      { label: 'Server checks', desc: 'Is this URL expired? Is user authorized?', ok: true },
+      { label: 'Server responds', desc: '302 Found → https://example.com (no cache)', ok: true },
+      { label: 'Analytics logged', desc: 'Every click tracked on server', ok: true },
+      { label: 'Full control', desc: 'Can expire, revoke, or permission-gate any time', ok: true }
+    ]
+  }
+};
+function showRedirect(type) {
+  document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('active', (i===0&&type==='301')||(i===1&&type==='302')));
+  const d = redirectContent[type];
+  document.getElementById('redirect-content').innerHTML = `
+    <div style="font-size:13px; font-weight:600; color:${d.color}; margin-bottom:10px;">${d.title}</div>
+    ${d.steps.map(s => `
+      <div style="display:flex; align-items:flex-start; gap:10px; padding:6px 0; border-bottom:0.5px solid var(--gray3);">
+        <div style="min-width:16px; font-size:14px; margin-top:1px;">${s.ok===true?'✅':s.ok===false?'❌':'⚠️'}</div>
+        <div><span style="font-size:12px; font-weight:600; color:var(--text);">${s.label}</span><br><span style="font-size:12px; color:var(--text3);">${s.desc}</span></div>
+      </div>`).join('')}`;
+}
+showRedirect('301');
+
+// --- Redis TTL ---
+let ttlVal = 20, keys = [], keyCounter = 0, intervals = [];
+const keyNames = ['zn9edcu','ab3Xk2','pQ7mN1','rT5cZ8','wL2jY4'];
+const keyURLs  = ['https://example.com/very/long/path','https://company.com/secret-doc.pdf','https://shop.io/product/42','https://blog.dev/post/2024','https://api.service.io/v2/data'];
+function updateTTL(v) {
+  ttlVal = parseInt(v);
+  document.getElementById('ttl-val').textContent = v+'s';
+  document.getElementById('cmd-ttl').textContent = v;
+}
+function addKey() {
+  if(keys.length >= 4) return;
+  keyCounter++;
+  const idx = (keyCounter-1) % keyNames.length;
+  const key = { id: keyCounter, name: keyNames[idx], url: keyURLs[idx], ttl: ttlVal, remaining: ttlVal, started: Date.now(), expired: false };
+  keys.push(key);
+  renderKeys();
+  const iv = setInterval(() => {
+    key.remaining = Math.max(0, key.ttl - (Date.now()-key.started)/1000);
+    if(key.remaining <= 0) { key.expired = true; clearInterval(iv); }
+    updateKeyCard(key);
+  }, 100);
+  intervals.push(iv);
+}
+function renderKeys() {
+  document.getElementById('keys-list').innerHTML = keys.map(k => `
+    <div class="key-card" id="kcard-${k.id}">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+        <span style="font-family:monospace; font-size:13px; font-weight:600;">"${k.name}"</span>
+        <span style="font-size:11px;" id="kstatus-${k.id}">alive ✅</span>
+      </div>
+      <div style="font-size:11px; font-family:monospace; color:var(--text3); margin-bottom:6px;">${k.url}</div>
+      <div class="bar-track"><div class="bar-fill" id="kbar-${k.id}" style="width:100%; background:var(--success);"></div></div>
+      <div style="font-size:11px; color:var(--text3); margin-top:4px;" id="ktime-${k.id}">${k.ttl}s remaining</div>
+    </div>`).join('');
+}
+function updateKeyCard(k) {
+  const bar = document.getElementById('kbar-'+k.id);
+  const time = document.getElementById('ktime-'+k.id);
+  const status = document.getElementById('kstatus-'+k.id);
+  if(!bar) return;
+  const pct = (k.remaining/k.ttl)*100;
+  bar.style.width = pct+'%';
+  bar.style.background = k.expired ? '#aaa' : pct>40 ? 'var(--success)' : pct>15 ? 'var(--warning)' : 'var(--danger)';
+  time.textContent = k.expired ? 'Expired — auto-deleted by Redis 🗑️' : k.remaining.toFixed(1)+'s remaining';
+  time.style.color = k.expired ? 'var(--danger)' : 'var(--text3)';
+  status.textContent = k.expired ? 'expired ❌' : 'alive ✅';
+  const card = document.getElementById('kcard-'+k.id);
+  if(card) card.style.opacity = k.expired ? '0.4' : '1';
+}
+function resetKeys() {
+  intervals.forEach(clearInterval); intervals=[]; keys=[]; keyCounter=0;
+  document.getElementById('keys-list').innerHTML='';
+}
+
+// --- Revoke animation ---
+function animateRevoke() {
+  const steps = document.querySelectorAll('#revoke-flow > div');
+  const log = document.getElementById('revoke-log');
+  const messages = ['Admin clicks revoke button...','Updating DB: status = revoked ✅','Deleting Redis key immediately 🗑️','Next click returns 410 Gone ✅'];
+  steps.forEach(s => s.style.background = 'white');
+  log.textContent = '';
+  steps.forEach((s, i) => {
+    setTimeout(() => {
+      steps.forEach(x => x.style.background='white');
+      s.style.background = i===2 ? 'var(--danger-bg)' : i===3 ? 'var(--success-bg)' : 'var(--warning-bg)';
+      log.textContent = messages[i];
+      log.style.color = i===2 ? 'var(--danger)' : i===3 ? 'var(--success)' : 'var(--warning)';
+    }, i * 700);
+  });
+}
+
+// --- Shorten flow ---
+function runShortenFlow() {
+  const steps = [
+    { text: 'POST /api/v1/shorten received', color: 'var(--purple)', ok: true },
+    { text: 'Check DB: does this long URL already exist?', color: 'var(--warning)', ok: null },
+    { text: 'No match found → Generate Snowflake ID', color: 'var(--purple)', ok: true },
+    { text: 'Convert ID to Base62 → "zn9edcu"', color: 'var(--purple)', ok: true },
+    { text: 'Save to DB: { short_code, long_url, expires_at }', color: 'var(--success)', ok: true },
+    { text: 'Cache in Redis with TTL', color: 'var(--success)', ok: true },
+    { text: 'Return: https://bit.ly/zn9edcu', color: 'var(--success)', ok: true }
+  ];
+  const el = document.getElementById('shorten-steps');
+  el.innerHTML = '';
+  steps.forEach((s,i) => {
+    setTimeout(() => {
+      const d = document.createElement('div');
+      d.style.cssText = `display:flex; align-items:center; gap:10px; padding:7px 10px; background:white; border-radius:6px; border:0.5px solid var(--gray3); font-size:13px; animation:slideIn 0.3s ease;`;
+      d.innerHTML = `<span>${s.ok===true?'✅':s.ok===false?'❌':'⏳'}</span><span style="color:${s.color}; font-weight:500;">${s.text}</span>`;
+      el.appendChild(d);
+    }, i*300);
+  });
+}
+
+// --- Redirect flow ---
+function runRedirectFlow(scenario) {
+  const flows = {
+    hit: [
+      { text: 'GET /api/v1/zn9edcu received', ok: true },
+      { text: 'Check Redis for "zn9edcu"...', ok: null },
+      { text: 'Cache HIT ✅ — found in Redis', ok: true },
+      { text: 'Check expiry: expires_at > now ✅', ok: true },
+      { text: '302 redirect → https://example.com', ok: true }
+    ],
+    miss: [
+      { text: 'GET /api/v1/zn9edcu received', ok: true },
+      { text: 'Check Redis for "zn9edcu"...', ok: null },
+      { text: 'Cache MISS — not in Redis', ok: null },
+      { text: 'Query DB → found! Not expired ✅', ok: true },
+      { text: 'Repopulate Redis with TTL', ok: true },
+      { text: '302 redirect → https://example.com', ok: true }
+    ],
+    expired: [
+      { text: 'GET /api/v1/zn9edcu received', ok: true },
+      { text: 'Check Redis → key already deleted by TTL', ok: null },
+      { text: 'Query DB → found but expires_at < now ❌', ok: false },
+      { text: '410 Gone — URL has expired', ok: false }
+    ]
+  };
+  const el = document.getElementById('redirect-steps');
+  el.innerHTML = '';
+  flows[scenario].forEach((s,i) => {
+    setTimeout(() => {
+      const d = document.createElement('div');
+      d.style.cssText = `display:flex; align-items:center; gap:10px; padding:7px 10px; background:white; border-radius:6px; border:0.5px solid var(--gray3); font-size:13px;`;
+      const col = s.ok===true?'var(--success)':s.ok===false?'var(--danger)':'var(--warning)';
+      d.innerHTML = `<span>${s.ok===true?'✅':s.ok===false?'❌':'⏳'}</span><span style="color:${col}; font-weight:500;">${s.text}</span>`;
+      el.appendChild(d);
+    }, i*350);
+  });
+}
+</script>
+</body>
+</html>

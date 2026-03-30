@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Saga Pattern — Microservices Study Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0c10;--surface:#111318;--surface2:#181c24;--surface3:#1f2530;--border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.11);--accent:#6ea1ff;--accent2:#8b6cf6;--green:#34d399;--amber:#fbbf24;--red:#f87171;--teal:#2dd4bf;--coral:#fb923c;--text:#dfe5ef;--muted:#7e8a9e;--code-bg:#080a0e}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;font-size:15px;line-height:1.78;-webkit-font-smoothing:antialiased}
+.page{max-width:900px;margin:0 auto;padding:0 28px 100px}
+.hero{padding:56px 28px 44px;max-width:900px;margin:0 auto;border-bottom:1px solid var(--border);position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-80px;right:-40px;width:360px;height:360px;background:radial-gradient(circle,rgba(251,191,36,0.08) 0%,transparent 70%);pointer-events:none}
+.hero-tag{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:10.5px;font-weight:500;color:var(--amber);background:rgba(251,191,36,0.07);border:1px solid rgba(251,191,36,0.18);padding:4px 14px;border-radius:20px;letter-spacing:0.09em;margin-bottom:14px;text-transform:uppercase}
+.hero h1{font-size:clamp(26px,4.2vw,42px);font-weight:700;line-height:1.15;letter-spacing:-0.03em;margin-bottom:10px;background:linear-gradient(135deg,#dfe5ef 0%,#fbbf24 50%,#f87171 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero-sub{font-size:15px;color:var(--muted);line-height:1.65;max-width:600px}
+.section{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:30px;margin-top:30px}
+.section h2{font-size:20px;font-weight:700;color:#fff;margin-bottom:18px;display:flex;align-items:center;gap:10px}
+.section h2 .num{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--amber);background:rgba(251,191,36,0.1);padding:3px 10px;border-radius:6px;font-weight:500}
+.section h3{font-size:15px;font-weight:600;color:var(--accent);margin:22px 0 10px;padding-top:14px;border-top:1px solid var(--border)}
+.section h3:first-of-type{border-top:none;padding-top:0}
+p{margin-bottom:12px}strong{color:#fff}
+ul{padding-left:20px;margin:8px 0 14px}li{margin:4px 0;font-size:14px}
+pre{background:var(--code-bg);border:1px solid var(--border);border-radius:10px;padding:14px 18px;overflow-x:auto;margin:12px 0;font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.7;color:#c4cdd9}
+code{font-family:'JetBrains Mono',monospace;font-size:12.5px;color:var(--accent);background:rgba(110,161,255,0.07);padding:2px 6px;border-radius:4px}
+pre code{background:none;padding:0;color:inherit}
+table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13px}
+th{background:var(--surface2);color:var(--accent);font-weight:600;text-align:left;padding:9px 13px;border:1px solid var(--border)}
+td{padding:8px 13px;border:1px solid var(--border)}
+tr:nth-child(even) td{background:rgba(255,255,255,0.012)}
+.note{background:rgba(110,161,255,0.05);border:1px solid rgba(110,161,255,0.14);border-radius:10px;padding:13px 16px;margin:12px 0;font-size:13px;line-height:1.7}.note b{color:var(--accent)}
+.note-warn{background:rgba(251,191,36,0.05);border-color:rgba(251,191,36,0.14)}.note-warn b{color:var(--amber)}
+.note-red{background:rgba(248,113,113,0.05);border-color:rgba(248,113,113,0.14)}.note-red b{color:var(--red)}
+.note-green{background:rgba(52,211,153,0.05);border-color:rgba(52,211,153,0.14)}.note-green b{color:var(--green)}
+.qa{background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:14px 18px;margin:10px 0}
+.qa-q{font-weight:600;color:#fff;margin-bottom:5px;font-size:14px}
+.qa-a{color:var(--muted);font-size:13px;line-height:1.7}
+.tab-group{margin:16px 0}.tab-bar{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.tab-btn{padding:6px 14px;font-size:12px;font-weight:500;font-family:'Outfit',sans-serif;border:1px solid var(--border2);border-radius:6px;background:transparent;color:var(--muted);cursor:pointer;transition:all 0.15s}
+.tab-btn:hover{border-color:rgba(251,191,36,0.3);color:var(--text)}
+.tab-btn.active{background:rgba(251,191,36,0.1);color:var(--amber);border-color:rgba(251,191,36,0.3)}
+.tab-panel{display:none}.tab-panel.active{display:block}
+.flow{display:flex;align-items:center;gap:8px;margin:10px 0;flex-wrap:wrap}
+.flow-step{background:var(--surface2);border:1px solid var(--border2);border-radius:8px;padding:8px 14px;font-size:13px;color:var(--text);font-weight:500}
+.flow-arrow{color:var(--muted);font-size:16px}
+.env-row{display:flex;gap:12px;margin:10px 0;align-items:stretch}
+.env-card{flex:1;border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:4px}
+.env-card .env-name{font-size:13px;font-weight:600}.env-card .env-status{font-size:11px;color:var(--muted)}
+.toc{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px 24px;margin:30px 0}
+.toc h3{font-size:12px;font-weight:600;color:var(--amber);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.06em}
+.toc a{font-size:13px;color:var(--muted);text-decoration:none;display:block;padding:4px 0;transition:color 0.15s}.toc a:hover{color:var(--amber)}
+.footer{text-align:center;padding:36px 0 16px;font-size:11px;color:var(--muted);border-top:1px solid var(--border);margin-top:40px}
+@media(max-width:640px){.page{padding:0 16px 60px}.section{padding:20px 16px}.env-row{flex-direction:column}.hero{padding:36px 16px 30px}}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-tag">Microservices · Topic 06 · Interview Prep</div>
+  <h1>Saga Pattern</h1>
+  <p class="hero-sub">Distributed transactions without 2PC. Choreography vs orchestration, compensating transactions, idempotency, MassTransit state machine, crash recovery. Full C# implementations and interview Q&amp;A.</p>
+</div>
+
+<div class="page">
+
+<div class="toc">
+  <h3>Contents</h3>
+  <a href="#s1">1. The Problem — no shared transactions across services</a>
+  <a href="#s2">2. Why not 2PC (Two-Phase Commit)?</a>
+  <a href="#s3">3. What is a Saga? Compensation ≠ Rollback</a>
+  <a href="#s4">4. Happy path vs failure path</a>
+  <a href="#s5">5. Choreography — event-driven, no coordinator</a>
+  <a href="#s6">6. Orchestration — central state machine</a>
+  <a href="#s7">7. Full C# Orchestrator code</a>
+  <a href="#s8">8. MassTransit state machine implementation</a>
+  <a href="#s9">9. Crash recovery — durable state machine</a>
+  <a href="#s10">10. Idempotency — preventing double-processing</a>
+  <a href="#s11">11. Eventual consistency during saga execution</a>
+  <a href="#s12">12. Interview Q&amp;A</a>
+</div>
+
+<!-- ═══════════════════ SECTION 1 ═══════════════════ -->
+<div class="section" id="s1">
+<h2><span class="num">01</span> The Problem</h2>
+<p>In a monolith: <code>BEGIN TRANSACTION</code> wraps all steps — create order, reduce stock, charge payment. Either all commit or all rollback. <strong>ACID</strong>.</p>
+<p>In microservices: each service has its <strong>own database</strong>. There is no single transaction that spans all three. If Payment fails after Orders committed, you're stuck — the order exists, stock was reduced, but money was never charged.</p>
+
+<div class="tab-group" id="prob">
+<div class="tab-bar">
+<button class="tab-btn active" onclick="showTab('prob',0)">The broken state</button>
+<button class="tab-btn" onclick="showTab('prob',1)">Why this happens</button>
+</div>
+<div class="tab-panel active">
+<div class="env-row">
+<div class="env-card" style="background:rgba(139,92,246,0.04);border:1px solid rgba(139,92,246,0.1)"><div class="env-name" style="color:var(--accent2)">Orders service</div><div class="env-status">Orders DB → order created ✓</div></div>
+<div class="env-card" style="background:rgba(251,191,36,0.04);border:1px solid rgba(251,191,36,0.1)"><div class="env-name" style="color:var(--amber)">Inventory service</div><div class="env-status">Inventory DB → stock reduced ✓</div></div>
+<div class="env-card" style="background:rgba(248,113,113,0.04);border:1px solid rgba(248,113,113,0.1)"><div class="env-name" style="color:var(--red)">Payment service</div><div class="env-status">Payments DB → CHARGE FAILED ✗</div></div>
+</div>
+<p style="color:var(--red)">Order exists, stock is reduced, but money was never charged. System is inconsistent.</p>
+</div>
+<div class="tab-panel">
+<p>Each service has its own database. There is no <code>BEGIN TRANSACTION</code> that spans all three. Each service commits independently. If step 3 fails after steps 1 and 2 committed — those commits are permanent. You can't "roll back" a committed transaction in another service's database.</p>
+</div>
+</div>
+</div>
+
+<!-- ═══════════════════ SECTION 2 ═══════════════════ -->
+<div class="section" id="s2">
+<h2><span class="num">02</span> Why Not 2PC?</h2>
+<p>Two-Phase Commit (2PC) exists — a coordinator asks all services to "prepare," then tells them all to "commit." But it doesn't work for microservices:</p>
+<ul>
+<li><strong>Blocking</strong> — all services lock rows and wait for the coordinator. If coordinator crashes, everyone stays locked forever.</li>
+<li><strong>Performance</strong> — every service waits on the slowest. A 50ms flow becomes 500ms.</li>
+<li><strong>Coupling</strong> — all services must be available simultaneously. One down = all stuck.</li>
+</ul>
+<div class="note-red note"><b>2PC creates tight coupling between services</b> — the exact thing microservices are supposed to eliminate. This is why Sagas exist.</div>
+</div>
+
+<!-- ═══════════════════ SECTION 3 ═══════════════════ -->
+<div class="section" id="s3">
+<h2><span class="num">03</span> What is a Saga?</h2>
+<p>A sequence of <strong>local transactions</strong>, where each service does its own work and publishes an event. If any step fails, <strong>compensating transactions</strong> run backward to undo previous steps.</p>
+
+<div class="tab-group" id="comp">
+<div class="tab-bar">
+<button class="tab-btn active" onclick="showTab('comp',0)">Compensation ≠ Rollback</button>
+<button class="tab-btn" onclick="showTab('comp',1)">Real examples</button>
+</div>
+<div class="tab-panel active">
+<div class="note-warn note">
+<b>A rollback</b> undoes uncommitted changes automatically — the database does it for you.<br>
+<b>A compensation</b> is a NEW committed transaction that semantically reverses the previous one — <strong>you write the logic yourself</strong>.<br><br>
+The original transaction already committed. It's gone. You can't undo it at the DB level. You must write a new transaction that achieves the reverse effect.
+</div>
+</div>
+<div class="tab-panel">
+<table>
+<tr><th>Step</th><th>Original action</th><th>Compensation</th></tr>
+<tr><td>Create order</td><td><code>INSERT order (status=PENDING)</code></td><td><code>UPDATE order SET status=CANCELLED</code></td></tr>
+<tr><td>Reserve stock</td><td><code>stock -= 5</code></td><td><code>stock += 5</code> (ReleaseStock)</td></tr>
+<tr><td>Charge payment</td><td>Call Stripe charge API</td><td>Call Stripe <strong>refund</strong> API</td></tr>
+</table>
+<p>Notice: the Stripe compensation isn't "undo the charge" — it's "call the refund endpoint." A completely new API call.</p>
+</div>
+</div>
+</div>
+
+<!-- ═══════════════════ SECTION 4 ═══════════════════ -->
+<div class="section" id="s4">
+<h2><span class="num">04</span> Happy Path vs Failure Path</h2>
+
+<div class="tab-group" id="paths">
+<div class="tab-bar">
+<button class="tab-btn active" onclick="showTab('paths',0)">Happy path</button>
+<button class="tab-btn" onclick="showTab('paths',1)">Failure + compensation</button>
+</div>
+<div class="tab-panel active">
+<p style="font-weight:600;color:var(--green)">All steps succeed — system consistent</p>
+<div class="flow"><div class="flow-step" style="border-color:rgba(139,92,246,0.3);color:var(--accent2)">Create order (PENDING)</div><span class="flow-arrow">→</span><div class="flow-step" style="border-color:rgba(251,191,36,0.3);color:var(--amber)">Reserve stock</div><span class="flow-arrow">→</span><div class="flow-step" style="border-color:rgba(52,211,153,0.3);color:var(--green)">Charge payment ✓</div><span class="flow-arrow">→</span><div class="flow-step" style="border-color:rgba(52,211,153,0.3);color:var(--green)">Confirm order ✓</div></div>
+</div>
+<div class="tab-panel">
+<p style="font-weight:600;color:var(--red)">Payment fails — compensations run backward</p>
+<div class="flow"><div class="flow-step" style="border-color:rgba(139,92,246,0.3);color:var(--accent2)">Create order ✓</div><span class="flow-arrow">→</span><div class="flow-step" style="border-color:rgba(251,191,36,0.3);color:var(--amber)">Reserve stock ✓</div><span class="flow-arrow">→</span><div class="flow-step" style="border-color:rgba(248,113,113,0.3);color:var(--red)">Payment FAILS ✗</div></div>
+<p style="margin-top:10px;font-weight:600;color:var(--red)">Compensation runs:</p>
+<div class="flow"><div class="flow-step" style="border-color:rgba(248,113,113,0.3);color:var(--red);border-style:dashed">Release stock (qty += 5)</div><span class="flow-arrow">→</span><div class="flow-step" style="border-color:rgba(248,113,113,0.3);color:var(--red);border-style:dashed">Cancel order (CANCELLED)</div></div>
+<p>System back to consistent state. No money charged, stock restored, order cancelled.</p>
+</div>
+</div>
+</div>
+
+<!-- ═══════════════════ SECTION 5 ═══════════════════ -->
+<div class="section" id="s5">
+<h2><span class="num">05</span> Choreography — No Boss, Just Events</h2>
+<p>Each service publishes events and reacts to other services' events. No central coordinator:</p>
+
+<div class="tab-group" id="choreo">
+<div class="tab-bar">
+<button class="tab-btn active" onclick="showTab('choreo',0)">Event chain</button>
+<button class="tab-btn" onclick="showTab('choreo',1)">C# code</button>
+<button class="tab-btn" onclick="showTab('choreo',2)">Problems at scale</button>
+</div>
+<div class="tab-panel active">
+<pre><code>Orders creates order → publishes OrderCreated
+    ↓
+Inventory hears OrderCreated → reserves stock → publishes StockReserved
+    ↓
+Payments hears StockReserved → charges card → publishes PaymentCompleted
+    ↓
+Orders hears PaymentCompleted → status = CONFIRMED
+
+--- If payment fails: ---
+Payments publishes PaymentFailed
+    ↓
+Inventory hears PaymentFailed → releases stock (qty += 5)
+    ↓
+Orders hears PaymentFailed → status = CANCELLED</code></pre>
+</div>
+<div class="tab-panel">
+<pre><code>// Events (shared contracts)
+public record OrderCreated(Guid OrderId, string ProductId, int Qty);
+public record StockReserved(Guid OrderId);
+public record PaymentCompleted(Guid OrderId);
+public record PaymentFailed(Guid OrderId, string Reason);
+
+// Inventory Service — reacts to OrderCreated
+public class InventoryHandler
+{
+    public async Task Handle(OrderCreated evt)
+    {
+        var stock = await _db.Stock.FindAsync(evt.ProductId);
+        if (stock.Quantity >= evt.Qty)
+        {
+            stock.Quantity -= evt.Qty;
+            await _db.SaveChangesAsync();
+            await _bus.PublishAsync(new StockReserved(evt.OrderId));
+        }
+        else
+        {
+            await _bus.PublishAsync(new PaymentFailed(evt.OrderId, "Out of stock"));
+        }
+    }
+}</code></pre>
+</div>
+<div class="tab-panel">
+<ul>
+<li><strong>No visibility</strong> — you can't look at one place and see "this saga is 60% done." Workflow is scattered across 4 services.</li>
+<li><strong>Cyclic dependencies</strong> — 10 services publishing events to each other can create event loops.</li>
+<li><strong>Hard to add steps</strong> — inserting a fraud check means modifying multiple services' subscriptions.</li>
+<li><strong>Hard to debug</strong> — a saga fails, and you must trace events across 4 separate log streams.</li>
+</ul>
+<div class="note-warn note"><b>Choreography works for simple sagas (2–4 steps).</b> Beyond that, use orchestration.</div>
+</div>
+</div>
+</div>
+
+<!-- ═══════════════════ SECTION 6 ═══════════════════ -->
+<div class="section" id="s6">
+<h2><span class="num">06</span> Orchestration — One Boss Controls Everything</h2>
+<p>A Saga Orchestrator knows the entire workflow and tells each service what to do. Hub-and-spoke model. Services never talk to each other — only to the orchestrator.</p>
+
+<div class="tab-group" id="orch">
+<div class="tab-bar">
+<button class="tab-btn active" onclick="showTab('orch',0)">How it works</button>
+<button class="tab-btn" onclick="showTab('orch',1)">Happy path steps</button>
+<button class="tab-btn" onclick="showTab('orch',2)">Failure + compensation</button>
+<button class="tab-btn" onclick="showTab('orch',3)">Comparison table</button>
+</div>
+<div class="tab-panel active">
+<pre><code>Orchestrator sends: CreateOrderCommand    → Orders service
+  ← receives:       OrderCreated reply
+
+Orchestrator sends: ReserveStockCommand   → Inventory service
+  ← receives:       StockReserved reply
+
+Orchestrator sends: ChargePaymentCommand  → Payments service
+  ← receives:       PaymentCompleted reply (or PaymentFailed)
+
+Orchestrator sends: ConfirmOrderCommand   → Orders service</code></pre>
+<p>The entire workflow is in <strong>one class</strong>. A new developer reads <code>OrderSagaOrchestrator</code> and understands the complete order flow in 2 minutes.</p>
+</div>
+<div class="tab-panel">
+<div class="flow"><div class="flow-step">1. CreateOrder</div><span class="flow-arrow">→</span><div class="flow-step">2. ReserveStock</div><span class="flow-arrow">→</span><div class="flow-step">3. ChargePayment</div><span class="flow-arrow">→</span><div class="flow-step">4. ConfirmOrder</div></div>
+<p>At each step, the orchestrator: (1) saves its state to DB, (2) sends a command, (3) waits for a reply, (4) advances to the next step.</p>
+</div>
+<div class="tab-panel">
+<p style="font-weight:600;color:var(--red)">Payment fails at step 3:</p>
+<div class="flow"><div class="flow-step" style="border-color:rgba(52,211,153,0.3);color:var(--green)">1. CreateOrder ✓</div><span class="flow-arrow">→</span><div class="flow-step" style="border-color:rgba(52,211,153,0.3);color:var(--green)">2. ReserveStock ✓</div><span class="flow-arrow">→</span><div class="flow-step" style="border-color:rgba(248,113,113,0.3);color:var(--red)">3. ChargePayment ✗</div></div>
+<p>Orchestrator receives PaymentFailed → transitions to COMPENSATING state:</p>
+<div class="flow"><div class="flow-step" style="border-color:rgba(248,113,113,0.3);color:var(--red);border-style:dashed">ReleaseStock</div><span class="flow-arrow">→</span><div class="flow-step" style="border-color:rgba(248,113,113,0.3);color:var(--red);border-style:dashed">CancelOrder</div><span class="flow-arrow">→</span><div class="flow-step" style="border-color:rgba(248,113,113,0.3);color:var(--red)">Saga FAILED</div></div>
+<p>Both compensations are <strong>new forward writes</strong> — not DB rollbacks. Orchestrator runs them in reverse order of the original steps.</p>
+</div>
+<div class="tab-panel">
+<table>
+<tr><th>Aspect</th><th>Choreography</th><th>Orchestration</th></tr>
+<tr><td>Who controls?</td><td>No one — services react to events</td><td>Central orchestrator</td></tr>
+<tr><td>Can you see the full workflow?</td><td>No — scattered across services</td><td>Yes — one class/file</td></tr>
+<tr><td>Adding a new step</td><td>Edit multiple services</td><td>Edit one orchestrator</td></tr>
+<tr><td>Coupling</td><td>Services don't know each other</td><td>Services don't know each other (only orchestrator does)</td></tr>
+<tr><td>Single point of failure</td><td>None</td><td>Orchestrator (must be resilient)</td></tr>
+<tr><td>Debugging</td><td>Hard — trace events across 4 logs</td><td>Easy — one class, one state</td></tr>
+<tr><td>Best for</td><td>Simple sagas (2–4 steps)</td><td>Complex sagas (5+ steps)</td></tr>
+</table>
+</div>
+</div>
+</div>
+
+<!-- ═══════════════════ SECTION 7 ═══════════════════ -->
+<div class="section" id="s7">
+<h2><span class="num">07</span> Full C# Orchestrator Code</h2>
+
+<div class="tab-group" id="code">
+<div class="tab-bar">
+<button class="tab-btn active" onclick="showTab('code',0)">Start saga</button>
+<button class="tab-btn" onclick="showTab('code',1)">Handle replies (happy)</button>
+<button class="tab-btn" onclick="showTab('code',2)">Handle failure (compensation)</button>
+<button class="tab-btn" onclick="showTab('code',3)">Full class together</button>
+</div>
+<div class="tab-panel active">
+<pre><code>public class OrderSagaOrchestrator
+{
+    private readonly IEventBus _bus;
+    private readonly SagaDbContext _db;
+
+    public async Task StartSaga(CreateOrderRequest req)
+    {
+        // Save saga state — so we can recover if orchestrator crashes
+        var saga = new OrderSaga
+        {
+            Id = Guid.NewGuid(),
+            CurrentStep = "CreateOrder",
+            Status = "IN_PROGRESS"
+        };
+        _db.Sagas.Add(saga);
+        await _db.SaveChangesAsync();
+
+        // Step 1: tell Orders to create the order
+        await _bus.SendCommandAsync(new CreateOrderCommand(saga.Id, req));
+    }
+}</code></pre>
+</div>
+<div class="tab-panel">
+<pre><code>public async Task Handle(OrderCreated reply)
+{
+    var saga = await _db.Sagas.FindAsync(reply.SagaId);
+    saga.CurrentStep = "ReserveStock";
+    await _db.SaveChangesAsync();   // save state BEFORE sending command
+    await _bus.SendCommandAsync(new ReserveStockCommand(saga.Id, reply.ProductId, reply.Qty));
+}
+
+public async Task Handle(StockReserved reply)
+{
+    var saga = await _db.Sagas.FindAsync(reply.SagaId);
+    saga.CurrentStep = "ChargePayment";
+    await _db.SaveChangesAsync();
+    await _bus.SendCommandAsync(new ChargePaymentCommand(saga.Id, reply.Amount));
+}
+
+public async Task Handle(PaymentCompleted reply)
+{
+    var saga = await _db.Sagas.FindAsync(reply.SagaId);
+    saga.CurrentStep = "Completed";
+    saga.Status = "COMPLETED";
+    await _db.SaveChangesAsync();
+    await _bus.SendCommandAsync(new ConfirmOrderCommand(saga.Id));
+}</code></pre>
+</div>
+<div class="tab-panel">
+<pre><code>// COMPENSATION — payment failed
+public async Task Handle(PaymentFailed reply)
+{
+    var saga = await _db.Sagas.FindAsync(reply.SagaId);
+    saga.Status = "COMPENSATING";
+    await _db.SaveChangesAsync();
+
+    // Run compensations backward
+    await _bus.SendCommandAsync(new ReleaseStockCommand(saga.Id));
+    await _bus.SendCommandAsync(new CancelOrderCommand(saga.Id));
+
+    saga.Status = "FAILED";
+    await _db.SaveChangesAsync();
+}</code></pre>
+<p>Key insight: the orchestrator saves <code>CurrentStep</code> and <code>Status</code> to DB <strong>before every command</strong>. This is what enables crash recovery.</p>
+</div>
+<div class="tab-panel">
+<pre><code>public class OrderSagaOrchestrator
+{
+    public async Task StartSaga(CreateOrderRequest req)      { /* save + CreateOrderCommand */ }
+    public async Task Handle(OrderCreated reply)             { /* save + ReserveStockCommand */ }
+    public async Task Handle(StockReserved reply)            { /* save + ChargePaymentCommand */ }
+    public async Task Handle(PaymentCompleted reply)         { /* save + ConfirmOrderCommand */ }
+    public async Task Handle(PaymentFailed reply)            { /* save + ReleaseStock + CancelOrder */ }
+}
+
+// The entire order flow — happy path AND compensation — in ONE class.
+// New developer reads it in 2 minutes.</code></pre>
+</div>
+</div>
+</div>
+
+<!-- ═══════════════════ SECTION 8 ═══════════════════ -->
+<div class="section" id="s8">
+<h2><span class="num">08</span> MassTransit State Machine</h2>
+<p>In production, you use MassTransit's built-in saga support instead of writing the orchestrator manually:</p>
+
+<div class="tab-group" id="mt">
+<div class="tab-bar">
+<button class="tab-btn active" onclick="showTab('mt',0)">State machine</button>
+<button class="tab-btn" onclick="showTab('mt',1)">Registration</button>
+</div>
+<div class="tab-panel active">
+<pre><code>public class OrderSagaStateMachine : MassTransitStateMachine&lt;OrderSagaState&gt;
+{
+    public State OrderCreated { get; private set; }
+    public State StockReserved { get; private set; }
+    public State Completed { get; private set; }
+    public State Failed { get; private set; }
+
+    public Event&lt;PlaceOrderCommand&gt; PlaceOrder { get; private set; }
+    public Event&lt;StockReservedEvent&gt; StockReserved_ { get; private set; }
+    public Event&lt;PaymentFailedEvent&gt; PaymentFailed { get; private set; }
+    public Event&lt;PaymentSucceededEvent&gt; PaymentSucceeded { get; private set; }
+
+    public OrderSagaStateMachine()
+    {
+        CorrelateBy&lt;PlaceOrderCommand&gt;(x => x.Message.OrderId, x => x.OrderId);
+        CorrelateBy&lt;StockReservedEvent&gt;(x => x.Message.OrderId, x => x.OrderId);
+
+        Initially(
+            When(PlaceOrder)
+                .Then(ctx => { ctx.Saga.OrderId = ctx.Message.OrderId; })
+                .Publish(ctx => new ReserveStockCommand(ctx.Saga.OrderId))
+                .TransitionTo(OrderCreated)
+        );
+
+        During(OrderCreated,
+            When(StockReserved_)
+                .Publish(ctx => new ChargeCardCommand(ctx.Saga.OrderId, ctx.Saga.Total))
+                .TransitionTo(StockReserved)
+        );
+
+        During(StockReserved,
+            When(PaymentSucceeded)
+                .Publish(ctx => new ConfirmOrderCommand(ctx.Saga.OrderId))
+                .TransitionTo(Completed)
+                .Finalize(),
+
+            // COMPENSATION PATH
+            When(PaymentFailed)
+                .Publish(ctx => new ReleaseStockCommand(ctx.Saga.OrderId))
+                .Publish(ctx => new CancelOrderCommand(ctx.Saga.OrderId))
+                .TransitionTo(Failed)
+                .Finalize()
+        );
+    }
+}</code></pre>
+</div>
+<div class="tab-panel">
+<pre><code>// Program.cs — register with EF Core persistence
+builder.Services.AddMassTransit(x =>
+{
+    x.AddSagaStateMachine&lt;OrderSagaStateMachine, OrderSagaState&gt;()
+     .EntityFrameworkRepository(r =>
+     {
+         r.ExistingDbContext&lt;AppDbContext&gt;();
+         r.UseSqlServer();    // state persisted in DB
+     });
+
+    x.UsingRabbitMq((ctx, cfg) =>
+    {
+        cfg.Host("rabbitmq://localhost");
+        cfg.ConfigureEndpoints(ctx);
+    });
+});</code></pre>
+<p>The state machine persists its current state (<code>OrderCreated</code>, <code>StockReserved</code>, etc.) to the database after every transition. If the process crashes, it reads the persisted state and continues.</p>
+</div>
+</div>
+</div>
+
+<!-- ═══════════════════ SECTION 9 ═══════════════════ -->
+<div class="section" id="s9">
+<h2><span class="num">09</span> Crash Recovery — Durable State Machine</h2>
+
+<div class="tab-group" id="crash">
+<div class="tab-bar">
+<button class="tab-btn active" onclick="showTab('crash',0)">The problem</button>
+<button class="tab-btn" onclick="showTab('crash',1)">The solution</button>
+<button class="tab-btn" onclick="showTab('crash',2)">Multiple instances</button>
+</div>
+<div class="tab-panel active">
+<p>The orchestrator crashes after step 2 but before step 3:</p>
+<pre><code>Step 1: CreateOrder  ✓  (committed)
+Step 2: ReserveStock ✓  (committed)
+--- CRASH ---
+Step 3: ChargePayment   (never sent)</code></pre>
+<p>The saga is stuck. Order exists, stock is reserved, but nothing charges the card. Without recovery, this order stays in limbo forever.</p>
+</div>
+<div class="tab-panel">
+<p>The orchestrator saved its state to DB before the crash:</p>
+<pre><code>Saga #abc → CurrentStep: "ChargePayment", Status: "IN_PROGRESS"</code></pre>
+<p>When the orchestrator restarts, it queries the DB: <strong>"give me all sagas that are IN_PROGRESS"</strong> — and picks up exactly where it left off. This is a <strong>durable state machine</strong>.</p>
+<p>The key: state was saved <strong>before</strong> sending the command. If the command was already sent before the crash, the receiving service must be <strong>idempotent</strong> — processing the same command twice is safe.</p>
+</div>
+<div class="tab-panel">
+<p>Run <strong>2+ orchestrator instances</strong> behind a load balancer. If one dies, the others keep processing. The DB is the shared source of truth — any instance can pick up any saga.</p>
+<p>Subtlety: two instances must not pick up the same saga simultaneously. MassTransit handles this via <strong>competing consumers</strong> — each message from the queue is delivered to only one consumer instance.</p>
+</div>
+</div>
+</div>
+
+<!-- ═══════════════════ SECTION 10 ═══════════════════ -->
+<div class="section" id="s10">
+<h2><span class="num">10</span> Idempotency — Preventing Double-Processing</h2>
+
+<div class="tab-group" id="idem">
+<div class="tab-bar">
+<button class="tab-btn active" onclick="showTab('idem',0)">The problem</button>
+<button class="tab-btn" onclick="showTab('idem',1)">The fix (C# code)</button>
+<button class="tab-btn" onclick="showTab('idem',2)">The pattern</button>
+</div>
+<div class="tab-panel active">
+<p>Orchestrator sends <code>ChargePaymentCommand</code>. Payment charges $100. The reply message gets lost (network blip). Orchestrator never gets <code>PaymentCompleted</code>, so it <strong>retries</strong> the command.</p>
+<p style="color:var(--red)">Customer is charged <strong>$200</strong>. The charge happened twice.</p>
+<p>This happens because messages in distributed systems can be delivered <strong>more than once</strong> — due to retries, network issues, or orchestrator crashes and replays.</p>
+</div>
+<div class="tab-panel">
+<pre><code>public class PaymentService
+{
+    public async Task Handle(ChargePaymentCommand cmd)
+    {
+        // Idempotency check — did I already process this saga step?
+        var existing = await _db.Payments
+            .FirstOrDefaultAsync(p => p.SagaId == cmd.SagaId);
+
+        if (existing != null)
+        {
+            // Already charged — just re-publish the reply
+            await _bus.PublishAsync(new PaymentCompleted(cmd.SagaId));
+            return;  // no double charge!
+        }
+
+        // First time — actually charge
+        var result = await _stripe.ChargeAsync(cmd.Amount);
+        _db.Payments.Add(new Payment
+        {
+            SagaId = cmd.SagaId,
+            StripeId = result.Id,
+            Amount = cmd.Amount
+        });
+        await _db.SaveChangesAsync();
+
+        await _bus.PublishAsync(new PaymentCompleted(cmd.SagaId));
+    }
+}</code></pre>
+</div>
+<div class="tab-panel">
+<p>The <code>SagaId</code> acts as an <strong>idempotency key</strong>. Before doing any work, the service checks: "have I already processed a command with this SagaId?" If yes → skip the work, re-publish the reply. If no → do the work.</p>
+<p>This is the same pattern you learned in Chapter 10 (notification dedup with <code>event_id</code> in Redis) — same concept, different context.</p>
+<div class="note-green note"><b>Rule: every saga step and every compensation MUST be idempotent.</b> Safe to execute more than once with the same result. This is non-negotiable in distributed systems.</div>
+</div>
+</div>
+</div>
+
+<!-- ═══════════════════ SECTION 11 ═══════════════════ -->
+<div class="section" id="s11">
+<h2><span class="num">11</span> Eventual Consistency</h2>
+<p>During a saga's execution, the system is <strong>temporarily inconsistent</strong>:</p>
+<pre><code>Step 1 done: order exists (PENDING), stock not yet reserved
+Step 2 done: order exists, stock reserved, payment not yet charged
+Step 3 done: order CONFIRMED, stock reserved, payment charged ← CONSISTENT</code></pre>
+<p>Between steps, other transactions can see intermediate states. This is expected. The saga will <strong>eventually</strong> reach either a fully committed or fully compensated state.</p>
+<p><strong>Application must handle this:</strong> don't show "order confirmed" until the saga completes. Use status fields: <code>PENDING → CONFIRMED</code> or <code>PENDING → CANCELLED</code>.</p>
+<div class="note"><b>A saga guarantees ACD but not I:</b><br>
+<strong>A</strong>tomicity — via compensations (all or nothing, eventually)<br>
+<strong>C</strong>onsistency — eventual, not immediate<br>
+<strong>D</strong>urability — each local commit is durable<br>
+<strong>I</strong>solation — ❌ NO. Intermediate states are visible to other transactions.</div>
+</div>
+
+<!-- ═══════════════════ SECTION 12 ═══════════════════ -->
+<div class="section" id="s12">
+<h2><span class="num">12</span> Interview Q&amp;A</h2>
+
+<div class="qa"><div class="qa-q">Q: What is a Saga and why do microservices need it?</div><div class="qa-a">A saga is a sequence of local transactions — one per service — coordinated to behave like a single distributed operation. Microservices can't use database transactions across service boundaries, so when a multi-step operation fails partway through, sagas use compensating transactions to undo completed steps and restore consistency.</div></div>
+<div class="qa"><div class="qa-q">Q: What's the difference between choreography and orchestration?</div><div class="qa-a">Choreography: no central coordinator — each service publishes events and reacts to others' events. Loose coupling but hard to debug and add steps. Orchestration: a central state machine sends commands to each service and waits for responses. Easier to reason about, one class shows the full workflow, but the orchestrator is a single point of failure.</div></div>
+<div class="qa"><div class="qa-q">Q: What is a compensating transaction?</div><div class="qa-a">A new forward database write that semantically reverses a previous step. It is NOT a database rollback — the original transaction already committed. ReleaseStock (qty += 1) compensates for ReserveStock (qty -= 1). Stripe refund API compensates for Stripe charge API.</div></div>
+<div class="qa"><div class="qa-q">Q: Why must every saga step be idempotent?</div><div class="qa-a">Messages can be delivered more than once — retries, network issues, orchestrator crashes and replays. If a step isn't idempotent, processing the same message twice corrupts data (charging a card twice). Every step checks: "have I already processed this SagaId?" If yes, skip and re-publish the reply.</div></div>
+<div class="qa"><div class="qa-q">Q: Does a saga guarantee ACID?</div><div class="qa-a">No. ACD but not Isolation. Between steps, other transactions can see intermediate states — stock reserved but payment not yet charged. Handle with status fields (PENDING → CONFIRMED). The saga eventually reaches a fully committed or fully compensated state.</div></div>
+<div class="qa"><div class="qa-q">Q: How do you handle the orchestrator crashing?</div><div class="qa-a">The orchestrator persists saga state to DB before every command. Run multiple instances. On restart, query for IN_PROGRESS sagas and resume. Commands must be idempotent so retries are safe. MassTransit handles this with EntityFramework persistence and competing consumers on the message queue.</div></div>
+<div class="qa"><div class="qa-q">Q: Why not use 2PC instead of Sagas?</div><div class="qa-a">2PC blocks all participants while waiting for coordinator, doesn't scale, and creates tight coupling — all services must be available simultaneously. Sagas use local transactions per service, are non-blocking, and handle partial failures through compensation. 2PC violates microservices independence principles.</div></div>
+</div>
+
+<div class="footer">Saga Pattern — Microservices Study Guide · Topic 06 · C# / .NET · Interview Prep · 2026</div>
+</div>
+
+<script>
+function showTab(g,i){var p=document.getElementById(g).querySelectorAll('.tab-panel'),b=document.getElementById(g).querySelectorAll('.tab-btn');p.forEach(function(x,j){x.classList.toggle('active',j===i)});b.forEach(function(x,j){x.classList.remove('active');if(j===i)x.classList.add('active')})}
+</script>
+</body>
+</html>
