@@ -7,7 +7,7 @@ const PUBLIC_DIR = path.resolve(import.meta.dirname, '..', 'public');
 const DOCS_OUT = path.join(PUBLIC_DIR, 'docs');
 const HTML_OUT = path.join(PUBLIC_DIR, 'html');
 
-const SKIP_DIRS = new Set(['website', 'node_modules', '.git']);
+const SKIP_DIRS = new Set(['website', 'node_modules', '.git', 'public', 'src', 'scripts', 'dist']);
 
 function slugify(name) {
   return name
