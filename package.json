@@ -4,8 +4,10 @@
   "type": "module",
   "scripts": {
     "convert": "node scripts/convert-docx.mjs",
-    "dev": "node scripts/convert-docx.mjs && vite",
-    "build": "node scripts/convert-docx.mjs && vite build",
+    "dev": "vite",
+    "dev:convert": "node scripts/convert-docx.mjs && vite",
+    "build": "vite build",
+    "build:convert": "node scripts/convert-docx.mjs && vite build",
     "preview": "vite preview"
   },
   "devDependencies": {
