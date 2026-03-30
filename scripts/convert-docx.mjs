@@ -551,7 +551,9 @@ async function main() {
   const files = await walkDir(STUDY_DOCS_ROOT);
   console.log(`   Found ${files.docx.length} .docx and ${files.html.length} .html files`);
 
-  // Ensure output dirs exist (overwrite files in place)
+  // Clean and recreate output dirs so removed source files don't linger
+  try { await fs.rm(DOCS_OUT, { recursive: true, force: true }); } catch {}
+  try { await fs.rm(HTML_OUT, { recursive: true, force: true }); } catch {}
   await fs.mkdir(DOCS_OUT, { recursive: true });
   await fs.mkdir(HTML_OUT, { recursive: true });
 
