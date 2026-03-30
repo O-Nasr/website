@@ -2,7 +2,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import mammoth from 'mammoth';
 
-const STUDY_DOCS_ROOT = path.resolve(import.meta.dirname, '..', '..');
+const STUDY_DOCS_ROOT = path.resolve(import.meta.dirname, '..', '..', 'Sourcing');
 const PUBLIC_DIR = path.resolve(import.meta.dirname, '..', 'public');
 const DOCS_OUT = path.join(PUBLIC_DIR, 'docs');
 const HTML_OUT = path.join(PUBLIC_DIR, 'html');
