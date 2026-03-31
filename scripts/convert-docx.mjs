@@ -264,6 +264,12 @@ function makeDocxTemplate(title, htmlContent, dirPath) {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${displayTitle}</title>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    (function(){
+      if(localStorage.getItem('theme')==='light')document.documentElement.setAttribute('data-theme','light');
+      window.addEventListener('message',function(e){if(e.data&&e.data.type==='theme-change'){if(e.data.theme==='light')document.documentElement.setAttribute('data-theme','light');else document.documentElement.removeAttribute('data-theme');}});
+    })();
+  </script>
   <style>
     :root {
       --bg: #0a0c10;
@@ -281,6 +287,29 @@ function makeDocxTemplate(title, htmlContent, dirPath) {
       --text: #dfe5ef;
       --muted: #7e8a9e;
       --code-bg: #080a0e;
+      --text-strong: #ffffff;
+      --pre-text: #c4cdd9;
+      --table-row-even: rgba(255,255,255,0.012);
+    }
+    [data-theme="light"] {
+      --bg: #f6f8fa;
+      --surface: #ffffff;
+      --surface2: #eaeef2;
+      --surface3: #dde3ea;
+      --border: rgba(0,0,0,0.08);
+      --border2: rgba(0,0,0,0.14);
+      --accent: #2563eb;
+      --accent2: #7c3aed;
+      --green: #059669;
+      --amber: #b45309;
+      --red: #dc2626;
+      --teal: #0891b2;
+      --text: #1e2432;
+      --muted: #4a5568;
+      --code-bg: #edf0f5;
+      --text-strong: #0d1117;
+      --pre-text: #24292f;
+      --table-row-even: rgba(0,0,0,0.025);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -333,7 +362,7 @@ function makeDocxTemplate(title, htmlContent, dirPath) {
       line-height: 1.15;
       letter-spacing: -0.03em;
       margin-bottom: 0;
-      background: linear-gradient(135deg, #dfe5ef 0%, #6ea1ff 50%, #34d399 100%);
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 50%, var(--green) 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
@@ -350,15 +379,13 @@ function makeDocxTemplate(title, htmlContent, dirPath) {
     .doc-content h1 {
       font-size: 20px;
       font-weight: 700;
-      color: #fff;
+      color: var(--text-strong);
       margin: 30px 0 0;
       padding: 24px 0 14px;
       border-bottom: 1px solid var(--border);
       display: flex;
       align-items: center;
       gap: 10px;
-      -webkit-text-fill-color: #fff;
-      background-clip: padding-box;
     }
     .doc-content h1:first-child { margin-top: 10px; }
 
@@ -391,7 +418,7 @@ function makeDocxTemplate(title, htmlContent, dirPath) {
       font-size: 14.5px;
       line-height: 1.75;
     }
-    strong, b { color: #fff; }
+    strong, b { color: var(--text-strong); }
     em { color: var(--muted); }
 
     a { color: var(--accent); text-decoration: none; }
@@ -407,7 +434,7 @@ function makeDocxTemplate(title, htmlContent, dirPath) {
       font-size: 14px;
       line-height: 1.7;
     }
-    li strong { color: #fff; }
+    li strong { color: var(--text-strong); }
 
     /* ── Tables ── */
     table {
@@ -429,7 +456,7 @@ function makeDocxTemplate(title, htmlContent, dirPath) {
       border: 1px solid var(--border);
     }
     tr:nth-child(even) td {
-      background: rgba(255,255,255,0.012);
+      background: var(--table-row-even);
     }
 
     /* Single-cell tables = note/callout boxes */
@@ -468,7 +495,7 @@ function makeDocxTemplate(title, htmlContent, dirPath) {
       font-family: 'JetBrains Mono', monospace;
       font-size: 12.5px;
       line-height: 1.7;
-      color: #c4cdd9;
+      color: var(--pre-text);
       scrollbar-width: thin;
       scrollbar-color: #333 transparent;
     }

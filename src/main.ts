@@ -19,6 +19,31 @@ async function init() {
   const homeLink = document.getElementById('home-link')!;
   const bookmarkCard = document.getElementById('bookmark-card')!;
   const bookmarkTitle = document.getElementById('bookmark-title')!;
+  const themeToggle = document.getElementById('theme-toggle')!;
+
+  // Theme
+  function applyTheme(theme: 'dark' | 'light') {
+    if (theme === 'light') {
+      document.documentElement.setAttribute('data-theme', 'light');
+      themeToggle.classList.add('is-light');
+      themeToggle.setAttribute('aria-label', 'Switch to dark mode');
+    } else {
+      document.documentElement.removeAttribute('data-theme');
+      themeToggle.classList.remove('is-light');
+      themeToggle.setAttribute('aria-label', 'Switch to light mode');
+    }
+  }
+
+  const savedTheme = (localStorage.getItem('theme') as 'dark' | 'light') || 'dark';
+  applyTheme(savedTheme);
+
+  themeToggle.addEventListener('click', () => {
+    const isLight = document.documentElement.hasAttribute('data-theme');
+    const next = isLight ? 'dark' : 'light';
+    localStorage.setItem('theme', next);
+    applyTheme(next);
+    sendThemeToIframe();
+  });
 
   // Update stats dynamically from manifest
   const totalDocs = getAllDocuments(tree).length;
@@ -35,6 +60,13 @@ async function init() {
     welcomeScreen.style.display = 'flex';
     updateBookmarkCard();
   }
+
+  function sendThemeToIframe() {
+    const theme = document.documentElement.hasAttribute('data-theme') ? 'light' : 'dark';
+    htmlIframe.contentWindow?.postMessage({ type: 'theme-change', theme }, '*');
+  }
+
+  htmlIframe.addEventListener('load', sendThemeToIframe);
 
   function loadDocument(doc: DocNode) {
     welcomeScreen.style.display = 'none';
