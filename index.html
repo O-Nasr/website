@@ -14,13 +14,15 @@
     (function () {
       if (localStorage.getItem('theme') === 'light')
         document.documentElement.setAttribute('data-theme', 'light');
-      // Restore sidebar width/collapse state before first paint to avoid layout flash
-      var collapsed = localStorage.getItem('sidebar-collapsed') === 'true';
-      var savedWidth = localStorage.getItem('sidebar-width');
-      if (collapsed) {
-        document.documentElement.style.setProperty('--sidebar-width', '0px');
-      } else if (savedWidth) {
-        document.documentElement.style.setProperty('--sidebar-width', savedWidth + 'px');
+      // Restore sidebar width/collapse on desktop only to avoid layout flash
+      if (window.innerWidth > 768) {
+        var collapsed = localStorage.getItem('sidebar-collapsed') === 'true';
+        var savedWidth = localStorage.getItem('sidebar-width');
+        if (collapsed) {
+          document.body.classList.add('sidebar-collapsed');
+        } else if (savedWidth) {
+          document.documentElement.style.setProperty('--sidebar-width', savedWidth + 'px');
+        }
       }
     })();
   </script>
@@ -29,7 +31,7 @@
   <!-- Header -->
   <header class="header">
     <div class="header__left">
-      <button class="header__menu-btn" id="menu-toggle" aria-label="Toggle sidebar">
+      <button type="button" class="header__menu-btn" id="menu-toggle" aria-label="Toggle sidebar">
         <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
           <path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
         </svg>
@@ -80,8 +82,8 @@
 
   <!-- Content -->
   <main class="content" id="content">
-    <div class="content__docx" id="docx-container" style="display:none;"></div>
-    <iframe class="content__iframe" id="html-iframe" style="display:none;" sandbox="allow-scripts allow-same-origin"></iframe>
+    <div class="content__docx" id="docx-container"></div>
+    <iframe class="content__iframe" id="html-iframe" title="Document viewer" sandbox="allow-scripts allow-same-origin"></iframe>
     <div class="content__welcome" id="welcome-screen">
       <div class="welcome">
         <div class="welcome__glow"></div>

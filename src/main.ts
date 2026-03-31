@@ -131,8 +131,16 @@ async function init() {
     return isNaN(n) ? SIDEBAR_DEFAULT : Math.min(SIDEBAR_MAX, Math.max(SIDEBAR_MIN, n));
   }
 
+  // Always leave at least this many px for the content area
+  const CONTENT_MIN = 120;
+
+  function clampWidth(px: number): number {
+    const viewportMax = window.innerWidth - CONTENT_MIN;
+    return Math.min(SIDEBAR_MAX, Math.max(SIDEBAR_MIN, Math.min(px, viewportMax)));
+  }
+
   function applySidebarWidth(px: number) {
-    document.documentElement.style.setProperty('--sidebar-width', px + 'px');
+    document.documentElement.style.setProperty('--sidebar-width', clampWidth(px) + 'px');
   }
 
   function setSidebarCollapsed(collapsed: boolean) {
@@ -150,6 +158,13 @@ async function init() {
     }
   }
 
+  // Re-clamp sidebar width when window is resized
+  window.addEventListener('resize', () => {
+    if (isMobile()) return;
+    if (document.body.classList.contains('sidebar-collapsed')) return;
+    applySidebarWidth(getSavedWidth());
+  });
+
   // ── Drag resize ────────────────────────────────────────────────
   const resizeHandle = document.getElementById('sidebar-resize-handle')!;
 
@@ -161,14 +176,13 @@ async function init() {
     document.body.style.transition = 'none';
 
     function onMove(ev: MouseEvent) {
-      const newWidth = Math.min(SIDEBAR_MAX, Math.max(SIDEBAR_MIN, ev.clientX));
-      applySidebarWidth(newWidth);
+      applySidebarWidth(ev.clientX);
     }
 
     function onUp(ev: MouseEvent) {
       resizeHandle.classList.remove('dragging');
       document.body.style.transition = '';
-      const finalWidth = Math.min(SIDEBAR_MAX, Math.max(SIDEBAR_MIN, ev.clientX));
+      const finalWidth = clampWidth(ev.clientX);
       applySidebarWidth(finalWidth);
       localStorage.setItem('sidebar-width', String(finalWidth));
       window.removeEventListener('mousemove', onMove);
