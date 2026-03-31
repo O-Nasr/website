@@ -7,6 +7,43 @@
   overflow-x: hidden;
   scrollbar-width: thin;
   scrollbar-color: var(--border-light) transparent;
+  position: relative;
+  min-width: 0;
+  transition: border-color 0.25s;
+}
+
+body.sidebar-collapsed .sidebar {
+  border-right-color: transparent;
+  overflow: hidden;
+}
+
+body.sidebar-collapsed .sidebar__nav {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s;
+}
+
+/* ── Resize Handle ── */
+.sidebar__resize-handle {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 5px;
+  height: 100%;
+  cursor: col-resize;
+  z-index: 10;
+  background: transparent;
+  transition: background 0.15s;
+}
+
+.sidebar__resize-handle:hover,
+.sidebar__resize-handle.dragging {
+  background: var(--accent);
+  opacity: 0.5;
+}
+
+body.sidebar-collapsed .sidebar__resize-handle {
+  display: none;
 }
 
 .sidebar::-webkit-scrollbar {
@@ -26,6 +63,7 @@
 
 /* ── Tree Nodes ── */
 .tree-folder {
+  -webkit-user-select: none;
   user-select: none;
 }
 

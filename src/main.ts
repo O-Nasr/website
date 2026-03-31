@@ -116,15 +116,86 @@ async function init() {
     updateBookmarkCard();
   });
 
-  // Mobile sidebar
+  // ── Sidebar collapse (desktop) ──────────────────────────────────
+  const SIDEBAR_MIN = 180;
+  const SIDEBAR_MAX = 480;
+  const SIDEBAR_DEFAULT = 280;
+
+  function isMobile() {
+    return window.innerWidth <= 768;
+  }
+
+  function getSavedWidth(): number {
+    const saved = localStorage.getItem('sidebar-width');
+    const n = saved ? parseInt(saved, 10) : NaN;
+    return isNaN(n) ? SIDEBAR_DEFAULT : Math.min(SIDEBAR_MAX, Math.max(SIDEBAR_MIN, n));
+  }
+
+  function applySidebarWidth(px: number) {
+    document.documentElement.style.setProperty('--sidebar-width', px + 'px');
+  }
+
+  function setSidebarCollapsed(collapsed: boolean) {
+    document.body.classList.toggle('sidebar-collapsed', collapsed);
+    localStorage.setItem('sidebar-collapsed', String(collapsed));
+    menuToggle.setAttribute('aria-label', collapsed ? 'Expand sidebar' : 'Collapse sidebar');
+  }
+
+  // Restore persisted state on load (JS-side, flash prevention already done inline)
+  if (!isMobile()) {
+    const isCollapsed = localStorage.getItem('sidebar-collapsed') === 'true';
+    setSidebarCollapsed(isCollapsed);
+    if (!isCollapsed) {
+      applySidebarWidth(getSavedWidth());
+    }
+  }
+
+  // ── Drag resize ────────────────────────────────────────────────
+  const resizeHandle = document.getElementById('sidebar-resize-handle')!;
+
+  resizeHandle.addEventListener('mousedown', (e) => {
+    if (isMobile()) return;
+    e.preventDefault();
+    resizeHandle.classList.add('dragging');
+    // disable transition during drag for instant feedback
+    document.body.style.transition = 'none';
+
+    function onMove(ev: MouseEvent) {
+      const newWidth = Math.min(SIDEBAR_MAX, Math.max(SIDEBAR_MIN, ev.clientX));
+      applySidebarWidth(newWidth);
+    }
+
+    function onUp(ev: MouseEvent) {
+      resizeHandle.classList.remove('dragging');
+      document.body.style.transition = '';
+      const finalWidth = Math.min(SIDEBAR_MAX, Math.max(SIDEBAR_MIN, ev.clientX));
+      applySidebarWidth(finalWidth);
+      localStorage.setItem('sidebar-width', String(finalWidth));
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseup', onUp);
+    }
+
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+  });
+
+  // ── Mobile sidebar ─────────────────────────────────────────────
   function closeMobileSidebar() {
     sidebar.classList.remove('open');
     sidebarOverlay.classList.remove('active');
   }
 
   menuToggle.addEventListener('click', () => {
-    sidebar.classList.toggle('open');
-    sidebarOverlay.classList.toggle('active');
+    if (isMobile()) {
+      sidebar.classList.toggle('open');
+      sidebarOverlay.classList.toggle('active');
+    } else {
+      const willCollapse = !document.body.classList.contains('sidebar-collapsed');
+      setSidebarCollapsed(willCollapse);
+      if (!willCollapse) {
+        applySidebarWidth(getSavedWidth());
+      }
+    }
   });
 
   sidebarOverlay.addEventListener('click', closeMobileSidebar);
