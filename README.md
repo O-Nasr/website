@@ -31,15 +31,42 @@ Open `http://localhost:5173` in your browser. That's it — the site runs with t
 | `npm run convert` | Yes | Only run the conversion script |
 | `npm run preview` | No | Preview the production build locally |
 
-## Adding New Documents
+## Using Your Own Documents (Sourcing Folder)
 
-1. Place `.docx` or `.html` files in the source folders (parent directory)
-2. Run `npm run dev:convert` or `npm run convert`
-3. The conversion script will:
+To replace the content with your own documents, you need to create a **`Sourcing`** folder **beside** (not inside) the `website/` folder.
+
+### Folder Structure
+
+```
+(parent directory)/
+├── Sourcing/               # ← Your source documents go here
+│   ├── Category One/
+│   │   ├── topic.docx
+│   │   └── notes.html
+│   ├── Category Two/
+│   │   └── guide.docx
+│   └── ...
+└── website/                # ← This project
+    ├── index.html
+    ├── package.json
+    └── ...
+```
+
+The conversion script (`scripts/convert-docx.mjs`) looks one level up (`../Sourcing/`) for source files. Subfolders become sidebar categories, and files within them become documents.
+
+> **Omar's original sourcing folder** (the documents that ship with this project) is available on Google Drive:
+> [https://drive.google.com/drive/folders/1zdTsLbu8-SBtK_zOLOu8Uek6cFX3pFeq?usp=sharing](https://drive.google.com/drive/folders/1zdTsLbu8-SBtK_zOLOu8Uek6cFX3pFeq?usp=sharing)
+
+### Steps to Add Your Own Documents
+
+1. Create the `Sourcing` folder beside `website/` as shown above
+2. Place your `.docx` or `.html` files inside (organized into subfolders)
+3. Run `npm run dev:convert` or `npm run convert`
+4. The conversion script will:
    - Convert DOCX files to styled HTML → `public/docs/`
    - Copy HTML files → `public/html/`
    - Regenerate `public/doc-manifest.json`
-4. New documents appear in the sidebar automatically
+5. New documents appear in the sidebar automatically
 
 ## Project Structure
 
@@ -49,14 +76,15 @@ website/
 ├── package.json
 ├── vite.config.ts
 ├── scripts/
-│   └── convert-docx.mjs    # DOCX conversion + HTML copy + manifest generation
+│   ├── convert-docx.mjs    # DOCX conversion + HTML copy + manifest generation
+│   └── patch-theme.mjs     # One-time migration for theme support on existing docs
 ├── src/
 │   ├── main.ts             # Entry point, content loading, keyboard shortcuts
-│   ├── sidebar.ts          # Collapsible tree navigation
+│   ├── sidebar.ts          # Collapsible tree navigation with bookmark support
 │   ├── router.ts           # Hash-based SPA routing
 │   ├── documents.ts        # Loads manifest, document lookup helpers
 │   └── styles/
-│       ├── main.css         # Layout, header, welcome screen, dark theme
+│       ├── main.css         # Layout, header, welcome screen, light/dark theme
 │       └── sidebar.css      # Tree navigation styling
 └── public/
     ├── doc-manifest.json    # Auto-generated document tree
