@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dedupe Logic &amp; Idempotency — System Design Study Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=DM+Sans:ital,wght@0,400;0,500;0,700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#060810;--bg-card:#0d0f18;--bg-code:#090b12;--bg-el:#151828;--border:#191d30;--border-gl:#242840;--text:#c2c8d8;--text-dim:#5c6486;--text-br:#e4eaf4;--c1:#f59e0b;--c2:#06b6d4;--c3:#a855f7;--c4:#10b981;--c5:#3b82f6;--c6:#ef4444;--c7:#ec4899;--r:12px}
+*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.72;overflow-x:hidden}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border-gl);border-radius:3px}
+.hero{position:relative;min-height:44vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:80px 24px 50px;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 500px 350px at 25% 40%,rgba(245,158,11,.1),transparent),radial-gradient(ellipse 400px 300px at 75% 55%,rgba(6,182,212,.07),transparent)}
+.hero-badge{position:relative;display:inline-flex;align-items:center;gap:8px;padding:6px 18px;border:1px solid var(--c1);border-radius:100px;font-size:.8rem;color:var(--c1);letter-spacing:.08em;text-transform:uppercase;margin-bottom:20px}
+.hero h1{position:relative;font-family:'Playfair Display',serif;font-size:clamp(2rem,5vw,3.4rem);font-weight:900;line-height:1.15;color:var(--text-br);max-width:750px}
+.hero h1 span{background:linear-gradient(135deg,var(--c1),var(--c2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{position:relative;max-width:640px;margin-top:16px;color:var(--text-dim);font-size:1rem}
+.np{position:relative;display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:28px}
+.np a{display:inline-block;padding:6px 14px;border:1px solid var(--border-gl);border-radius:100px;color:var(--text-dim);text-decoration:none;font-size:.82rem;transition:all .25s}
+.np a:hover{border-color:var(--c1);color:var(--c1);background:rgba(245,158,11,.06)}
+.sec{max-width:1000px;margin:0 auto 70px;padding:0 24px;scroll-margin-top:32px}
+.sh{display:flex;align-items:center;gap:16px;margin-bottom:8px}
+.sn{display:flex;align-items:center;justify-content:center;width:46px;height:46px;border-radius:14px;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:1rem;flex-shrink:0;background:color-mix(in srgb,var(--pat) 16%,transparent);color:var(--pat);border:1px solid color-mix(in srgb,var(--pat) 28%,transparent)}
+.sh h2{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;color:var(--text-br)}
+.ss{color:var(--text-dim);font-style:italic;margin-bottom:24px;padding-left:62px;font-size:.93rem}
+.s1{--pat:var(--c6)}.s2{--pat:var(--c1)}.s3{--pat:var(--c2)}.s4{--pat:var(--c4)}.s5{--pat:var(--c3)}.s6{--pat:var(--c5)}
+.card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r);padding:22px;margin-bottom:18px}
+.card h3{font-size:.95rem;color:var(--text-br);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card h3::before{content:'';display:inline-block;width:3px;height:16px;border-radius:2px;background:var(--pat,var(--c1))}
+.dw{background:var(--bg-code);border:1px solid var(--border);border-radius:var(--r);padding:24px;margin-bottom:18px;overflow-x:auto}
+.dw svg{display:block;margin:0 auto;max-width:100%;height:auto}
+.tw{overflow-x:auto;margin-bottom:18px}table{width:100%;border-collapse:collapse;font-size:.84rem}
+thead th{background:var(--bg-el);color:var(--text-br);padding:11px 14px;text-align:left;font-weight:600;border-bottom:2px solid var(--border-gl);white-space:nowrap}
+tbody td{padding:9px 14px;border-bottom:1px solid var(--border);vertical-align:top}tbody tr:hover{background:rgba(245,158,11,.03)}
+.tip{display:flex;gap:12px;padding:14px 16px;border-radius:var(--r);margin-bottom:18px;font-size:.87rem}
+.tip-y{background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.16)}.tip-y .ic{color:var(--c1)}
+.tip-c{background:rgba(6,182,212,.06);border:1px solid rgba(6,182,212,.16)}.tip-c .ic{color:var(--c2)}
+.tip-r{background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.16)}.tip-r .ic{color:var(--c6)}
+.tip-g{background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.16)}.tip-g .ic{color:var(--c4)}
+.tip-p{background:rgba(168,85,247,.06);border:1px solid rgba(168,85,247,.16)}.tip-p .ic{color:var(--c3)}
+.tip .ic{font-size:1.2rem;flex-shrink:0}
+.code{background:var(--bg-code);border:1px solid var(--border);border-radius:var(--r);margin-bottom:16px;overflow:hidden}
+.code-h{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:var(--bg-el);border-bottom:1px solid var(--border);font-size:.78rem;color:var(--text-dim);font-family:'JetBrains Mono',monospace}
+.code-h .dots{display:flex;gap:6px}.code-h .dots span{width:10px;height:10px;border-radius:50%}
+.code-h .dots span:nth-child(1){background:#ff5f57}.code-h .dots span:nth-child(2){background:#febc2e}.code-h .dots span:nth-child(3){background:#28c840}
+.cbtn{background:none;border:1px solid var(--border-gl);color:var(--text-dim);padding:3px 10px;border-radius:6px;cursor:pointer;font-size:.72rem;font-family:'JetBrains Mono',monospace;transition:all .2s}
+.cbtn:hover{border-color:var(--c4);color:var(--c4)}
+.code pre{padding:16px 18px;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:.82rem;line-height:1.65;color:var(--text)}
+.kw{color:#c678dd}.tp{color:#61afef}.str{color:#98c379}.cm{color:#5c6370;font-style:italic}.fn{color:#e5c07b}.num{color:#d19a66}
+.qa-b{margin-bottom:10px}
+.qa-q{display:flex;align-items:start;gap:10px;padding:13px 16px;background:var(--bg-el);border:1px solid var(--border);border-radius:var(--r);cursor:pointer;color:var(--text-br);font-size:.88rem;font-weight:500;transition:all .25s;user-select:none}
+.qa-q:hover{border-color:var(--c1)}.qa-q .ar{flex-shrink:0;transition:transform .3s;color:var(--c1);font-size:.8rem}.qa-q.open .ar{transform:rotate(90deg)}
+.qa-a{max-height:0;overflow:hidden;transition:max-height .35s ease,padding .35s;padding:0 16px;color:var(--text);font-size:.86rem;line-height:1.7;background:var(--bg-card);border:1px solid var(--border);border-top:none;border-radius:0 0 var(--r) var(--r)}
+.qa-a.open{max-height:800px;padding:14px 16px}
+.tmpl{background:var(--bg-code);border:1px solid var(--c1);border-radius:var(--r);padding:20px;margin-bottom:18px;font-size:.9rem;line-height:1.8;color:var(--text-br);border-left:4px solid var(--c1)}
+.bt{position:fixed;bottom:24px;right:24px;width:44px;height:44px;border-radius:50%;background:var(--c1);color:#fff;border:none;cursor:pointer;font-size:1.2rem;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s,transform .3s;box-shadow:0 4px 16px rgba(245,158,11,.35);z-index:100;font-weight:700}
+.bt.show{opacity:1;pointer-events:auto}.bt:hover{transform:scale(1.1)}
+footer{text-align:center;padding:36px 24px;color:var(--text-dim);font-size:.8rem;border-top:1px solid var(--border);margin-top:40px}
+.sum{max-width:1000px;margin:0 auto 60px;padding:0 24px}.sum h2{font-family:'Playfair Display',serif;font-size:1.5rem;color:var(--text-br);margin-bottom:20px;text-align:center}
+@media(max-width:768px){.ss{padding-left:0}}
+</style>
+</head>
+<body>
+
+<section class="hero">
+  <div class="hero-badge">Chapter 10 — Alex Xu</div>
+  <h1><span>Dedupe Logic</span> &amp; Idempotency</h1>
+  <p>Why distributed systems can't guarantee exactly-once delivery — and how event ID deduplication makes at-least-once delivery safe.</p>
+  <div class="np">
+    <a href="#why">Why Duplicates</a><a href="#dedupe">Dedupe Flow</a><a href="#redis">Redis Pattern</a><a href="#arch">Architecture</a><a href="#tradeoff">Tradeoffs</a><a href="#interview">Interview</a>
+  </div>
+</section>
+
+<!-- ═══════ 1. WHY DUPLICATES HAPPEN ═══════ -->
+<section id="why" class="sec s1">
+  <div class="sh"><div class="sn">1</div><h2>Why Duplicates Happen</h2></div>
+  <div class="ss">Worker crashes after sending but before acknowledging — queue re-delivers the same message.</div>
+
+  <div class="dw">
+    <svg viewBox="0 0 780 300" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+      <defs><marker id="ad" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#5c6486"/></marker><marker id="adr" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#ef4444"/></marker></defs>
+      <!-- Step 1: Service → Queue -->
+      <rect x="30" y="50" width="130" height="45" rx="10" fill="rgba(168,85,247,.08)" stroke="#a855f7" stroke-width="1.2"/>
+      <text x="95" y="72" text-anchor="middle" fill="#a855f7" font-weight="600" font-size="11">Notification Svc</text>
+      <text x="95" y="88" text-anchor="middle" fill="#5c6486" font-size="8">sends event</text>
+      <path d="M160,72 L210,72" fill="none" stroke="#5c6486" stroke-width="1.2" marker-end="url(#ad)"/>
+      <text x="185" y="64" fill="#5c6486" font-size="8">①</text>
+      <!-- Queue -->
+      <rect x="210" y="45" width="120" height="55" rx="10" fill="rgba(245,158,11,.1)" stroke="#f59e0b" stroke-width="1.5"/>
+      <text x="270" y="68" text-anchor="middle" fill="#f59e0b" font-weight="700" font-size="12">Queue</text>
+      <text x="270" y="86" text-anchor="middle" fill="#8890a8" font-size="9">Kafka / SQS</text>
+      <!-- Step 2: Queue → Worker -->
+      <path d="M330,72 L390,72" fill="none" stroke="#5c6486" stroke-width="1.2" marker-end="url(#ad)"/>
+      <text x="360" y="64" fill="#5c6486" font-size="8">②</text>
+      <!-- Worker -->
+      <rect x="390" y="45" width="120" height="55" rx="10" fill="rgba(6,182,212,.08)" stroke="#06b6d4" stroke-width="1.2"/>
+      <text x="450" y="68" text-anchor="middle" fill="#06b6d4" font-weight="600" font-size="11">Worker</text>
+      <text x="450" y="86" text-anchor="middle" fill="#5c6486" font-size="8">processes event</text>
+      <!-- Step 3: Worker sends push -->
+      <path d="M510,62 L580,42" fill="none" stroke="#10b981" stroke-width="1.2" marker-end="url(#ad)"/>
+      <text x="545" y="45" fill="#10b981" font-size="8">③ sends push</text>
+      <rect x="580" y="22" width="110" height="40" rx="8" fill="rgba(16,185,129,.08)" stroke="#10b981" stroke-width="1"/>
+      <text x="635" y="46" text-anchor="middle" fill="#10b981" font-size="10">📱 Push Sent ✓</text>
+      <!-- Step 4: CRASH before ACK! -->
+      <rect x="420" y="115" width="120" height="40" rx="8" fill="rgba(239,68,68,.15)" stroke="#ef4444" stroke-width="2"/>
+      <text x="480" y="132" text-anchor="middle" fill="#ef4444" font-weight="900" font-size="12">💥 CRASH</text>
+      <text x="480" y="148" text-anchor="middle" fill="#ef4444" font-size="9">before ACK sent</text>
+      <path d="M450,100 L460,115" fill="none" stroke="#ef4444" stroke-width="1.5"/>
+      <!-- Step 5: Queue re-delivers -->
+      <path d="M270,100 L270,190 L390,190" fill="none" stroke="#ef4444" stroke-width="1.8" stroke-dasharray="6 4" marker-end="url(#adr)"/>
+      <text x="330" y="175" text-anchor="middle" fill="#ef4444" font-size="9" font-weight="600">⑤ Queue re-delivers!</text>
+      <text x="330" y="192" text-anchor="middle" fill="#ef4444" font-size="8">"No ACK received..."</text>
+      <!-- Worker processes AGAIN -->
+      <rect x="390" y="175" width="120" height="45" rx="10" fill="rgba(239,68,68,.08)" stroke="#ef4444" stroke-width="1.2"/>
+      <text x="450" y="195" text-anchor="middle" fill="#ef4444" font-weight="600" font-size="11">Worker (new)</text>
+      <text x="450" y="212" text-anchor="middle" fill="#ef4444" font-size="8">processes again!</text>
+      <path d="M510,190 L580,180" fill="none" stroke="#ef4444" stroke-width="1.2" marker-end="url(#adr)"/>
+      <rect x="580" y="162" width="140" height="40" rx="8" fill="rgba(239,68,68,.1)" stroke="#ef4444" stroke-width="1.5"/>
+      <text x="650" y="180" text-anchor="middle" fill="#ef4444" font-weight="700" font-size="11">📱 DUPLICATE!</text>
+      <text x="650" y="195" text-anchor="middle" fill="#ef4444" font-size="9">user gets 2 notifications</text>
+      <!-- Key insight -->
+      <rect x="80" y="240" width="600" height="48" rx="10" fill="rgba(245,158,11,.06)" stroke="#f59e0b" stroke-width="1.2"/>
+      <text x="380" y="260" text-anchor="middle" fill="#f59e0b" font-weight="700" font-size="12">At-Least-Once Delivery</text>
+      <text x="380" y="278" text-anchor="middle" fill="#8890a8" font-size="10">Queue cannot distinguish "processed but ACK lost" from "never processed" — so it retries.</text>
+    </svg>
+  </div>
+
+  <div class="tip tip-r"><span class="ic">🔥</span><span><strong>Why exactly-once is impossible:</strong> You cannot distinguish between "message was processed but ACK lost" and "message was never processed." Both look identical from the sender's perspective. This is the <strong>Two Generals Problem</strong>.</span></div>
+</section>
+
+<!-- ═══════ 2. DEDUPE FLOW ═══════ -->
+<section id="dedupe" class="sec s2">
+  <div class="sh"><div class="sn">2</div><h2>Dedupe Logic (Event ID Check)</h2></div>
+  <div class="ss">At-least-once delivery + idempotency = effectively-once processing.</div>
+
+  <div class="dw">
+    <svg viewBox="0 0 780 260" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+      <defs><marker id="af" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#f59e0b"/></marker></defs>
+      <!-- Event arrives -->
+      <rect x="30" y="80" width="130" height="55" rx="10" fill="rgba(245,158,11,.1)" stroke="#f59e0b" stroke-width="1.5"/>
+      <text x="95" y="102" text-anchor="middle" fill="#f59e0b" font-weight="700" font-size="12">Event arrives</text>
+      <text x="95" y="122" text-anchor="middle" fill="#8890a8" font-size="9" font-family="JetBrains Mono,monospace">event_id: "abc123"</text>
+      <!-- Check dedupe store -->
+      <path d="M160,107 L210,107" fill="none" stroke="#f59e0b" stroke-width="1.5" marker-end="url(#af)"/>
+      <rect x="210" y="70" width="180" height="75" rx="14" fill="rgba(6,182,212,.08)" stroke="#06b6d4" stroke-width="2"/>
+      <text x="300" y="98" text-anchor="middle" fill="#06b6d4" font-weight="700" font-size="13">Check Dedupe Store</text>
+      <text x="300" y="118" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">event_id exists?</text>
+      <text x="300" y="136" text-anchor="middle" fill="#06b6d4" font-size="9">(Redis / KV store)</text>
+      <!-- YES path: discard -->
+      <path d="M300,145 L300,200" fill="none" stroke="#ef4444" stroke-width="1.5" marker-end="url(#af)"/>
+      <text x="315" y="175" fill="#ef4444" font-size="10" font-weight="600">YES</text>
+      <rect x="230" y="200" width="140" height="40" rx="10" fill="rgba(239,68,68,.1)" stroke="#ef4444" stroke-width="1.5"/>
+      <text x="300" y="225" text-anchor="middle" fill="#ef4444" font-weight="700" font-size="12">🗑 DISCARD</text>
+      <text x="300" y="237" text-anchor="middle" fill="#ef4444" font-size="9">duplicate — ignore</text>
+      <!-- NO path: process -->
+      <path d="M390,107 L460,107" fill="none" stroke="#10b981" stroke-width="1.5" marker-end="url(#af)"/>
+      <text x="425" y="98" fill="#10b981" font-size="10" font-weight="600">NO</text>
+      <rect x="460" y="70" width="150" height="75" rx="10" fill="rgba(16,185,129,.08)" stroke="#10b981" stroke-width="1.5"/>
+      <text x="535" y="98" text-anchor="middle" fill="#10b981" font-weight="700" font-size="12">✅ Process</text>
+      <text x="535" y="116" text-anchor="middle" fill="#8890a8" font-size="9">send notification</text>
+      <text x="535" y="132" text-anchor="middle" fill="#10b981" font-size="9" font-family="JetBrains Mono,monospace">store event_id</text>
+      <!-- Result -->
+      <path d="M610,107 L660,107" fill="none" stroke="#10b981" stroke-width="1.2" marker-end="url(#af)"/>
+      <rect x="660" y="82" width="100" height="50" rx="10" fill="rgba(16,185,129,.06)" stroke="#10b981" stroke-width="1"/>
+      <text x="710" y="104" text-anchor="middle" fill="#10b981" font-size="10">📱 Sent</text>
+      <text x="710" y="122" text-anchor="middle" fill="#10b981" font-size="9">exactly once*</text>
+      <!-- Effectively once note -->
+      <rect x="460" y="170" width="280" height="32" rx="8" fill="rgba(245,158,11,.05)" stroke="rgba(245,158,11,.15)" stroke-width="1"/>
+      <text x="600" y="190" text-anchor="middle" fill="#f59e0b" font-size="10">*effectively-once from user perspective</text>
+    </svg>
+  </div>
+
+  <div class="card"><h3>Three Related Concepts</h3><div class="tw"><table>
+    <thead><tr><th>Concept</th><th>Definition</th></tr></thead>
+    <tbody>
+      <tr><td><strong style="color:var(--c1)">Deduplication</strong></td><td>Detect and discard duplicate messages using event IDs</td></tr>
+      <tr><td><strong style="color:var(--c2)">Idempotency</strong></td><td>Running an operation multiple times produces the same result as running it once</td></tr>
+      <tr><td><strong style="color:var(--c6)">Exactly-once delivery</strong></td><td>A theoretical guarantee — almost impossible in pure distributed systems</td></tr>
+    </tbody>
+  </table></div>
+    <div class="tip tip-y"><span class="ic">🧠</span><span>Your design is: <strong>At-least-once delivery + dedupe logic = effectively-once processing</strong>. That's the correct mental model.</span></div>
+  </div>
+</section>
+
+<!-- ═══════ 3. REDIS SETNX PATTERN ═══════ -->
+<section id="redis" class="sec s3">
+  <div class="sh"><div class="sn">3</div><h2>Redis SETNX Pattern</h2></div>
+  <div class="ss">Atomic, fast, with automatic TTL expiration — the perfect dedupe store.</div>
+
+  <div class="code"><div class="code-h"><div class="dots"><span></span><span></span><span></span></div><span>Redis — Dedupe Command</span><button class="cbtn" onclick="copyCode(this)">Copy</button></div><pre><span class="cm">// Atomic dedupe check + store in one command</span>
+<span class="fn">SET</span> event_id value <span class="kw">NX</span> <span class="kw">EX</span> <span class="num">86400</span>
+
+<span class="cm">// NX = only set if NOT exists (dedupe check)</span>
+<span class="cm">// EX 86400 = expire after 24 hours (TTL)</span>
+
+<span class="cm">// If command succeeds → new event → PROCESS</span>
+<span class="cm">// If command fails   → duplicate → DISCARD</span></pre></div>
+
+  <div class="card"><h3>Why Redis for Dedupe?</h3><div class="tw"><table>
+    <thead><tr><th>Requirement</th><th>Redis Provides</th></tr></thead>
+    <tbody>
+      <tr><td>Fast lookup O(1)</td><td>In-memory hash table</td></tr>
+      <tr><td>Shared across instances</td><td>Centralized / clustered</td></tr>
+      <tr><td>TTL support</td><td>Built-in key expiration</td></tr>
+      <tr><td>Atomic check+set</td><td>SETNX — single atomic operation</td></tr>
+      <tr><td>High throughput</td><td>100K+ ops/sec per node</td></tr>
+    </tbody>
+  </table></div></div>
+
+  <div class="card"><h3>Why NOT Other Stores?</h3><div class="tw"><table>
+    <thead><tr><th>Store</th><th>Why Not</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Relational DB</strong></td><td>Too slow for high QPS. Dedupe data is short-lived — DB is overkill.</td></tr>
+      <tr><td><strong>Local in-memory</strong></td><td>Lost on restart. Not shared across instances. Breaks in distributed setup.</td></tr>
+    </tbody>
+  </table></div></div>
+
+  <div class="tip tip-g"><span class="ic">⚠</span><span><strong>Practical detail (shows senior thinking):</strong> Dedupe storage can't grow forever. Use TTL (e.g. 24-48 hours) or time-based partitioning. Otherwise memory explodes.</span></div>
+</section>
+
+<!-- ═══════ 4. NOTIFICATION SYSTEM ARCHITECTURE ═══════ -->
+<section id="arch" class="sec s5">
+  <div class="sh"><div class="sn">4</div><h2>Notification System Architecture (Figure 10-14)</h2></div>
+  <div class="ss">The full notification pipeline — where dedupe fits, what templates are, and where event IDs live.</div>
+
+  <div class="dw">
+    <svg viewBox="0 0 780 420" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+      <defs><marker id="aa" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#5c6486"/></marker><marker id="aab" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#06b6d4"/></marker></defs>
+      <!-- Service N -->
+      <rect x="20" y="155" width="100" height="42" rx="10" fill="rgba(168,85,247,.08)" stroke="#a855f7" stroke-width="1.2"/>
+      <text x="70" y="180" text-anchor="middle" fill="#a855f7" font-weight="600" font-size="10">Service N</text>
+      <!-- Notification Servers -->
+      <rect x="150" y="140" width="140" height="72" rx="10" fill="rgba(6,182,212,.08)" stroke="#06b6d4" stroke-width="1.5" stroke-dasharray="6 4"/>
+      <text x="220" y="165" text-anchor="middle" fill="#06b6d4" font-weight="600" font-size="10">Notification Servers</text>
+      <text x="220" y="182" text-anchor="middle" fill="#5c6486" font-size="8">Authentication</text>
+      <text x="220" y="195" text-anchor="middle" fill="#5c6486" font-size="8">Rate Limit</text>
+      <!-- Arrow Service → Notif Servers -->
+      <path d="M120,176 L150,176" fill="none" stroke="#5c6486" stroke-width="1" marker-end="url(#aa)"/>
+      <!-- Queue -->
+      <rect x="330" y="148" width="120" height="56" rx="10" fill="rgba(245,158,11,.1)" stroke="#f59e0b" stroke-width="1.5"/>
+      <text x="390" y="172" text-anchor="middle" fill="#f59e0b" font-weight="700" font-size="11">iOS PN Queue</text>
+      <text x="390" y="190" text-anchor="middle" fill="#5c6486" font-size="8">message buffer</text>
+      <path d="M290,176 L330,176" fill="none" stroke="#5c6486" stroke-width="1" marker-end="url(#aa)"/>
+      <!-- Workers -->
+      <rect x="490" y="148" width="110" height="56" rx="10" fill="rgba(6,182,212,.08)" stroke="#06b6d4" stroke-width="1.5"/>
+      <text x="545" y="172" text-anchor="middle" fill="#06b6d4" font-weight="600" font-size="11">Workers</text>
+      <text x="545" y="190" text-anchor="middle" fill="#5c6486" font-size="8">process + dedupe</text>
+      <path d="M450,176 L490,176" fill="none" stroke="#5c6486" stroke-width="1" marker-end="url(#aa)"/>
+      <!-- APNs → iOS -->
+      <rect x="640" y="148" width="65" height="42" rx="8" fill="rgba(100,116,139,.08)" stroke="#64748b" stroke-width="1"/>
+      <text x="673" y="173" text-anchor="middle" fill="#64748b" font-size="9">APNs</text>
+      <path d="M600,170 L640,170" fill="none" stroke="#5c6486" stroke-width="1" marker-end="url(#aa)"/>
+      <rect x="720" y="148" width="50" height="42" rx="8" fill="rgba(100,116,139,.05)" stroke="#64748b" stroke-width="1"/>
+      <text x="745" y="173" text-anchor="middle" fill="#64748b" font-size="9">📱</text>
+      <path d="M705,170 L720,170" fill="none" stroke="#5c6486" stroke-width="1" marker-end="url(#aa)"/>
+      <!-- Retry on error -->
+      <path d="M545,148 C545,120 390,120 390,148" fill="none" stroke="#ef4444" stroke-width="1" stroke-dasharray="4 3"/>
+      <text x="468" y="112" text-anchor="middle" fill="#ef4444" font-size="8">retry on error</text>
+      <!-- Analytics -->
+      <rect x="420" y="30" width="110" height="40" rx="8" fill="rgba(168,85,247,.06)" stroke="#a855f7" stroke-width="1"/>
+      <text x="475" y="54" text-anchor="middle" fill="#a855f7" font-size="9">Analytics Service</text>
+      <path d="M220" y1="140" x2="420" y2="50" fill="none" stroke="#5c6486" stroke-width=".8" stroke-dasharray="3 3"/>
+      <path d="M640,148 L530,70" fill="none" stroke="#5c6486" stroke-width=".8" stroke-dasharray="3 3"/>
+      <text x="250" y="90" fill="#5c6486" font-size="7">send pending</text>
+      <text x="600" y="100" fill="#5c6486" font-size="7">click tracking</text>
+      <!-- DB + Cache (left side) -->
+      <rect x="150" y="250" width="80" height="45" rx="8" fill="rgba(59,130,246,.08)" stroke="#3b82f6" stroke-width="1"/>
+      <text x="190" y="270" text-anchor="middle" fill="#3b82f6" font-size="9">Cache</text>
+      <text x="190" y="284" text-anchor="middle" fill="#5c6486" font-size="7">device tokens</text>
+      <rect x="150" y="315" width="80" height="45" rx="8" fill="rgba(59,130,246,.08)" stroke="#3b82f6" stroke-width="1"/>
+      <text x="190" y="335" text-anchor="middle" fill="#3b82f6" font-size="9">DB</text>
+      <text x="190" y="349" text-anchor="middle" fill="#5c6486" font-size="7">device/user info</text>
+      <path d="M220,212 L200,250" fill="none" stroke="#5c6486" stroke-width=".8"/>
+      <path d="M190,295 L190,315" fill="none" stroke="#5c6486" stroke-width=".8" marker-end="url(#aa)"/>
+      <!-- Notification Template -->
+      <rect x="430" y="250" width="130" height="55" rx="10" fill="rgba(245,158,11,.08)" stroke="#f59e0b" stroke-width="1.2"/>
+      <text x="495" y="270" text-anchor="middle" fill="#f59e0b" font-weight="600" font-size="10">Notification</text>
+      <text x="495" y="286" text-anchor="middle" fill="#f59e0b" font-weight="600" font-size="10">Template</text>
+      <text x="495" y="300" text-anchor="middle" fill="#5c6486" font-size="7">ORDER_SHIPPED, etc.</text>
+      <path d="M530,204 L495,250" fill="none" stroke="#5c6486" stroke-width=".8"/>
+      <!-- Notification Log DB -->
+      <rect x="590" y="250" width="130" height="55" rx="10" fill="rgba(16,185,129,.1)" stroke="#10b981" stroke-width="1.5"/>
+      <text x="655" y="270" text-anchor="middle" fill="#10b981" font-weight="700" font-size="10">Notification Log</text>
+      <text x="655" y="286" text-anchor="middle" fill="#10b981" font-size="9">event_id, status</text>
+      <text x="655" y="300" text-anchor="middle" fill="#10b981" font-size="8" font-weight="600">← DEDUPE HERE</text>
+      <path d="M560,204 L655,250" fill="none" stroke="#10b981" stroke-width="1" marker-end="url(#aab)"/>
+      <!-- Legend annotations -->
+      <rect x="30" y="370" width="710" height="42" rx="10" fill="rgba(245,158,11,.05)" stroke="rgba(245,158,11,.15)" stroke-width="1"/>
+      <text x="390" y="388" text-anchor="middle" fill="#f59e0b" font-weight="600" font-size="10">Template = reusable message blueprint (title + body + placeholders)</text>
+      <text x="390" y="404" text-anchor="middle" fill="#10b981" font-size="10"><tspan font-weight="600">Event ID stored in Notification Log DB</tspan> — dedupe belongs to delivery tracking, not user state</text>
+    </svg>
+  </div>
+
+  <div class="card"><h3>What is a Notification Template?</h3><p>A reusable message blueprint with placeholders. Example: Template <code>ORDER_SHIPPED</code> → "Hi {{first_name}}, your order {{order_id}} has shipped." At runtime, the worker fetches the template, fills placeholders, and sends the final message. Benefits: centralized control, easy A/B testing, localization (English/Arabic).</p></div>
+
+  <div class="card"><h3>Where Does Event ID Live?</h3><p>Store in the <strong>Notification Log DB</strong> — not in the user/device DB. Dedupe belongs to delivery tracking (event_id, status, timestamp, channel), not user state (device tokens, preferences, settings). In high-scale systems: fast-path dedupe in Redis + durable record in Notification Log DB.</p></div>
+</section>
+
+<!-- ═══════ 5. TRADEOFFS — REDIS DOWN ═══════ -->
+<section id="tradeoff" class="sec s4">
+  <div class="sh"><div class="sn">5</div><h2>What If Redis Is Down?</h2></div>
+  <div class="ss">The answer depends on the business — notifications vs payments have opposite priorities.</div>
+
+  <div class="card"><h3>Three Options When Dedupe Is Unavailable</h3><div class="tw"><table>
+    <thead><tr><th>Option</th><th>Behavior</th><th>Prioritizes</th><th>Risk</th></tr></thead>
+    <tbody>
+      <tr><td><strong style="color:var(--c6)">A) Reject</strong></td><td>Drop all notifications</td><td>Consistency</td><td>Users miss messages</td></tr>
+      <tr><td><strong style="color:var(--c4)">B) Send anyway</strong></td><td>Skip dedupe, risk duplicates</td><td>Availability</td><td>Duplicate notifications</td></tr>
+      <tr><td><strong style="color:var(--c1)">C) Block/wait</strong></td><td>Retry until Redis returns</td><td>Correctness</td><td>Cascading failures, thread exhaustion</td></tr>
+    </tbody>
+  </table></div></div>
+
+  <div class="card"><h3>Decision by System Type</h3><div class="tw"><table>
+    <thead><tr><th>System Type</th><th>Best Choice</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr><td><strong style="color:var(--c4)">Notifications</strong></td><td style="color:var(--c4)"><strong>B) Send anyway</strong></td><td>Duplicate notification is annoying. Missing notification can be critical. Blocking can crash the pipeline.</td></tr>
+      <tr><td><strong style="color:var(--c6)">Payments</strong></td><td style="color:var(--c6)"><strong>C) Block / fail safely</strong></td><td>Duplicate charge is catastrophic. Better to delay than double-charge. Retry with circuit breaker, fail if still down.</td></tr>
+    </tbody>
+  </table></div></div>
+
+  <div class="tip tip-g"><span class="ic">🧠</span><span><strong>Senior thinking:</strong> Mitigate with circuit breaker around Redis, retry with backoff, alerting/monitoring, and multi-region Redis replication. For payments: bounded retries, then fail the transaction — let client retry later.</span></div>
+</section>
+
+<!-- ═══════ 6. INTERVIEW ═══════ -->
+<section id="interview" class="sum">
+  <h2>Interview Answers</h2>
+
+  <div class="qa-b"><div class="qa-q" onclick="toggleQA(this)"><span class="ar">▶</span>"Why can't we guarantee exactly-once delivery?"</div><div class="qa-a">In distributed systems, network failures and crashes make it impossible to distinguish between a lost acknowledgment and a failed operation. Therefore, systems typically provide <strong>at-least-once delivery</strong> and rely on <strong>idempotent processing</strong> to prevent duplicate side effects.</div></div>
+
+  <div class="qa-b"><div class="qa-q" onclick="toggleQA(this)"><span class="ar">▶</span>"How do you handle duplicate notification events?"</div><div class="qa-a">We use idempotent processing by storing processed event IDs. Before sending a notification, we check whether the event ID has already been processed. If it has, we discard it to prevent duplicate delivery.</div></div>
+
+  <div class="qa-b"><div class="qa-q" onclick="toggleQA(this)"><span class="ar">▶</span>"Where would you store dedupe event IDs?"</div><div class="qa-a">I would use a distributed in-memory store like <strong>Redis with TTL support</strong>. It provides low-latency lookups, atomic operations like SETNX to prevent duplicates, and automatic expiration to prevent unbounded memory growth.</div></div>
+
+  <div class="qa-b"><div class="qa-q" onclick="toggleQA(this)"><span class="ar">▶</span>"If Redis is unavailable, would you still send without dedupe for payments?"</div><div class="qa-a">No. In payment systems, duplicate processing is unacceptable. I would prefer to <strong>block with bounded retries</strong> or fail the transaction rather than risk double charging. Payments prioritize <strong>strong consistency</strong> over availability.</div></div>
+
+  <div class="qa-b"><div class="qa-q" onclick="toggleQA(this)"><span class="ar">▶</span>"Where does dedupe fit in real systems?"</div><div class="qa-a">Dedupe is used in payment systems (critical), notification systems, webhooks (e.g. Stripe retries), Kafka consumers, and event-driven architectures. For example, if Stripe retries a webhook, your server must dedupe using the event_id.</div></div>
+</section>
+
+<!-- ═══════ DELIVERY GUARANTEES ═══════ -->
+<section class="sum">
+  <h2>Delivery Guarantees Summary</h2>
+  <div class="card" style="--pat:var(--c1)"><div class="tw"><table>
+    <thead><tr><th>Guarantee</th><th>Meaning</th><th>Risk</th></tr></thead>
+    <tbody>
+      <tr><td><strong style="color:var(--c6)">At-most-once</strong></td><td>Fire and forget — no retries</td><td>Messages may be lost</td></tr>
+      <tr><td><strong style="color:var(--c1)">At-least-once</strong></td><td>Retry until ACK — may duplicate</td><td>Duplicate processing</td></tr>
+      <tr><td><strong style="color:var(--c4)">Effectively-once</strong></td><td>At-least-once + idempotency</td><td>Best practical solution ✅</td></tr>
+    </tbody>
+  </table></div></div>
+</section>
+
+<button class="bt" id="backTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+<footer><p>Dedupe Logic &amp; Idempotency — System Design Study Guide (Ch10, Alex Xu)</p></footer>
+
+<script>
+function toggleQA(el){el.classList.toggle('open');el.nextElementSibling.classList.toggle('open')}
+function copyCode(btn){const pre=btn.closest('.code').querySelector('pre');navigator.clipboard.writeText(pre.textContent).then(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',1500)})}
+window.addEventListener('scroll',()=>{document.getElementById('backTop').classList.toggle('show',window.scrollY>400)})
+</script>
+</body>
+</html>

@@ -1,0 +1,1927 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Behavioral Design Patterns — C# Interactive Study Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=DM+Sans:ital,wght@0,400;0,500;0,700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-deep: #0a0c14;
+  --bg-card: #12151f;
+  --bg-code: #0d1017;
+  --bg-elevated: #1a1e2e;
+  --border: #1f2438;
+  --border-glow: #2a3050;
+  --text: #c8cdd8;
+  --text-dim: #6b7394;
+  --text-bright: #e8ecf4;
+  --accent-1: #7b68ee;
+  --accent-2: #40e0d0;
+  --accent-3: #ff6b9d;
+  --accent-4: #ffd700;
+  --accent-5: #50fa7b;
+  --accent-6: #ff9f43;
+  --syntax-keyword: #c678dd;
+  --syntax-string: #98c379;
+  --syntax-type: #61afef;
+  --syntax-number: #d19a66;
+  --syntax-comment: #5c6370;
+  --syntax-method: #e5c07b;
+  --radius: 12px;
+  --shadow: 0 8px 32px rgba(0,0,0,.4);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
+body {
+  font-family:'DM Sans',system-ui,sans-serif;
+  background: var(--bg-deep);
+  color: var(--text);
+  line-height: 1.7;
+  overflow-x: hidden;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-deep); }
+::-webkit-scrollbar-thumb { background: var(--border-glow); border-radius: 3px; }
+
+/* ─── HERO ─── */
+.hero {
+  position: relative;
+  min-height: 55vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 80px 24px 60px;
+  overflow: hidden;
+}
+.hero::before {
+  content:'';
+  position:absolute; inset:0;
+  background:
+    radial-gradient(ellipse 600px 400px at 30% 40%, rgba(123,104,238,.12), transparent),
+    radial-gradient(ellipse 500px 350px at 70% 60%, rgba(64,224,208,.08), transparent),
+    radial-gradient(ellipse 400px 300px at 50% 80%, rgba(255,107,157,.06), transparent);
+}
+.hero-badge {
+  position: relative;
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 6px 18px;
+  border: 1px solid var(--accent-1);
+  border-radius: 100px;
+  font-size: .8rem;
+  color: var(--accent-1);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  margin-bottom: 24px;
+  backdrop-filter: blur(8px);
+}
+.hero h1 {
+  position: relative;
+  font-family:'Playfair Display',serif;
+  font-size: clamp(2.4rem,6vw,4.2rem);
+  font-weight: 900;
+  line-height: 1.15;
+  color: var(--text-bright);
+  max-width: 700px;
+}
+.hero h1 span {
+  background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.hero p {
+  position: relative;
+  max-width: 600px;
+  margin-top: 20px;
+  color: var(--text-dim);
+  font-size: 1.05rem;
+}
+.pattern-pills {
+  position: relative;
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 8px;
+  margin-top: 32px;
+  max-width: 700px;
+}
+.pattern-pills a {
+  display: inline-block;
+  padding: 6px 14px;
+  border: 1px solid var(--border-glow);
+  border-radius: 100px;
+  color: var(--text-dim);
+  text-decoration: none;
+  font-size: .82rem;
+  transition: all .25s;
+}
+.pattern-pills a:hover {
+  border-color: var(--accent-1);
+  color: var(--accent-1);
+  background: rgba(123,104,238,.08);
+}
+
+/* ─── OVERVIEW TABLE ─── */
+.overview-section {
+  max-width: 1100px;
+  margin: 0 auto 60px;
+  padding: 0 24px;
+}
+.overview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 14px;
+}
+.overview-card {
+  display: grid;
+  grid-template-columns: 40px 1fr;
+  gap: 14px;
+  padding: 18px 20px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all .3s;
+  text-decoration: none;
+  color: inherit;
+}
+.overview-card:hover {
+  border-color: var(--accent-1);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(123,104,238,.12);
+}
+.overview-card .icon {
+  font-size: 1.6rem;
+  display: flex; align-items: start; justify-content: center;
+  padding-top: 2px;
+}
+.overview-card h3 { font-size: .95rem; color: var(--text-bright); margin-bottom: 4px; }
+.overview-card .intent { font-size: .82rem; color: var(--text-dim); }
+.overview-card .key-idea {
+  grid-column: 1 / -1;
+  font-size: .78rem;
+  padding: 8px 12px;
+  background: var(--bg-elevated);
+  border-radius: 8px;
+  color: var(--accent-2);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* ─── PATTERN SECTIONS ─── */
+.pattern-section {
+  max-width: 1000px;
+  margin: 0 auto 80px;
+  padding: 0 24px;
+  scroll-margin-top: 32px;
+}
+.pattern-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 8px;
+}
+.pattern-num {
+  display: flex; align-items: center; justify-content: center;
+  width: 48px; height: 48px;
+  border-radius: 14px;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+.pattern-header h2 {
+  font-family:'Playfair Display',serif;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--text-bright);
+}
+.pattern-subtitle {
+  color: var(--text-dim);
+  font-style: italic;
+  margin-bottom: 28px;
+  padding-left: 64px;
+  font-size: .95rem;
+}
+
+/* color per pattern */
+.p1 { --pat: #7b68ee; } .p2 { --pat: #40e0d0; } .p3 { --pat: #ff6b9d; }
+.p4 { --pat: #ffd700; } .p5 { --pat: #50fa7b; } .p6 { --pat: #ff9f43; }
+.p7 { --pat: #00bfff; } .p8 { --pat: #da70d6; } .p9 { --pat: #20b2aa; }
+.p10 { --pat: #f08080; } .p11 { --pat: #87ceeb; }
+.pattern-num { background: color-mix(in srgb, var(--pat) 18%, transparent); color: var(--pat); border: 1px solid color-mix(in srgb, var(--pat) 30%, transparent); }
+
+/* ─── CARDS / BLOCKS ─── */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  margin-bottom: 20px;
+}
+.card h3 {
+  font-size: 1rem;
+  color: var(--text-bright);
+  margin-bottom: 14px;
+  display: flex; align-items: center; gap: 8px;
+}
+.card h3::before {
+  content:'';
+  display:inline-block;
+  width:3px; height:18px;
+  border-radius:2px;
+  background: var(--pat, var(--accent-1));
+}
+
+/* ─── SVG DIAGRAMS ─── */
+.diagram-wrapper {
+  background: var(--bg-code);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  margin-bottom: 20px;
+  overflow-x: auto;
+}
+.diagram-wrapper svg {
+  display: block;
+  margin: 0 auto;
+  max-width: 100%;
+  height: auto;
+}
+
+/* ─── CODE BLOCKS ─── */
+.code-block {
+  position: relative;
+  background: var(--bg-code);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+.code-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: var(--bg-elevated);
+  border-bottom: 1px solid var(--border);
+  font-size: .78rem;
+  color: var(--text-dim);
+  font-family: 'JetBrains Mono', monospace;
+}
+.code-header .dots {
+  display: flex; gap: 6px;
+}
+.code-header .dots span {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+}
+.code-header .dots span:nth-child(1) { background: #ff5f57; }
+.code-header .dots span:nth-child(2) { background: #febc2e; }
+.code-header .dots span:nth-child(3) { background: #28c840; }
+.copy-btn {
+  background: none; border: 1px solid var(--border-glow);
+  color: var(--text-dim);
+  padding: 3px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: .72rem;
+  font-family: 'JetBrains Mono', monospace;
+  transition: all .2s;
+}
+.copy-btn:hover { border-color: var(--accent-2); color: var(--accent-2); }
+.code-block pre {
+  padding: 18px 20px;
+  overflow-x: auto;
+  font-family:'JetBrains Mono',monospace;
+  font-size: .82rem;
+  line-height: 1.65;
+  color: var(--text);
+}
+
+/* syntax highlight classes */
+.kw { color: var(--syntax-keyword); }
+.tp { color: var(--syntax-type); }
+.str { color: var(--syntax-string); }
+.num { color: var(--syntax-number); }
+.cm { color: var(--syntax-comment); font-style: italic; }
+.fn { color: var(--syntax-method); }
+.op { color: #abb2bf; }
+
+/* ─── TABLES ─── */
+.table-wrap {
+  overflow-x: auto;
+  margin-bottom: 20px;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .85rem;
+}
+thead th {
+  background: var(--bg-elevated);
+  color: var(--text-bright);
+  padding: 12px 16px;
+  text-align: left;
+  font-weight: 600;
+  border-bottom: 2px solid var(--border-glow);
+  white-space: nowrap;
+}
+tbody td {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+tbody tr:hover { background: rgba(123,104,238,.04); }
+
+/* ─── QA ACCORDION ─── */
+.qa-block { margin-bottom: 10px; }
+.qa-q {
+  display: flex; align-items: start; gap: 10px;
+  padding: 14px 18px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  color: var(--text-bright);
+  font-size: .9rem;
+  font-weight: 500;
+  transition: all .25s;
+  user-select: none;
+}
+.qa-q:hover { border-color: var(--accent-1); }
+.qa-q .arrow {
+  flex-shrink: 0;
+  width: 20px; height: 20px;
+  display: flex; align-items: center; justify-content: center;
+  transition: transform .3s;
+  color: var(--accent-1);
+  font-size: .8rem;
+}
+.qa-q.open .arrow { transform: rotate(90deg); }
+.qa-a {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height .35s ease, padding .35s;
+  padding: 0 18px;
+  color: var(--text);
+  font-size: .88rem;
+  line-height: 1.7;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-top: none;
+  border-radius: 0 0 var(--radius) var(--radius);
+}
+.qa-a.open { max-height: 500px; padding: 16px 18px; }
+
+/* ─── USE/AVOID ─── */
+.use-avoid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+@media(max-width:600px) { .use-avoid { grid-template-columns: 1fr; } }
+.use-col, .avoid-col {
+  padding: 16px 18px;
+  border-radius: var(--radius);
+  font-size: .85rem;
+}
+.use-col {
+  background: rgba(80,250,123,.06);
+  border: 1px solid rgba(80,250,123,.18);
+}
+.avoid-col {
+  background: rgba(255,107,157,.06);
+  border: 1px solid rgba(255,107,157,.18);
+}
+.use-col h4 { color: var(--accent-5); margin-bottom: 8px; }
+.avoid-col h4 { color: var(--accent-3); margin-bottom: 8px; }
+.use-col li, .avoid-col li {
+  margin-bottom: 6px;
+  list-style: none;
+  padding-left: 18px;
+  position: relative;
+}
+.use-col li::before { content:'✓'; position: absolute; left:0; color: var(--accent-5); font-weight: 700; }
+.avoid-col li::before { content:'✗'; position: absolute; left:0; color: var(--accent-3); font-weight: 700; }
+
+/* ─── NOTE CALLOUT ─── */
+.note {
+  display: flex; gap: 12px;
+  padding: 16px 18px;
+  background: rgba(123,104,238,.06);
+  border: 1px solid rgba(123,104,238,.18);
+  border-radius: var(--radius);
+  margin-bottom: 20px;
+  font-size: .88rem;
+}
+.note .bulb { font-size: 1.2rem; flex-shrink: 0; }
+
+/* ─── COLLAPSIBLE ─── */
+.collapsible-trigger {
+  display: flex; align-items: center; justify-content: space-between;
+  width: 100%;
+  padding: 16px 20px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  color: var(--text-bright);
+  font-size: .95rem;
+  font-weight: 600;
+  margin-bottom: 4px;
+  transition: all .25s;
+}
+.collapsible-trigger:hover { border-color: var(--accent-1); }
+.collapsible-trigger .chevron { transition: transform .3s; color: var(--text-dim); }
+.collapsible-trigger.open .chevron { transform: rotate(180deg); }
+.collapsible-body {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height .4s ease;
+}
+.collapsible-body.open { max-height: 8000px; }
+.collapsible-body > .inner { padding: 16px 0; }
+
+/* ─── BACK TO TOP ─── */
+.back-top {
+  position: fixed;
+  bottom: 24px; right: 24px;
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  background: var(--accent-1);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2rem;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .3s, transform .3s;
+  box-shadow: 0 4px 16px rgba(123,104,238,.4);
+  z-index: 100;
+}
+.back-top.show { opacity: 1; pointer-events: auto; }
+.back-top:hover { transform: scale(1.1); }
+
+/* ─── FOOTER ─── */
+footer {
+  text-align: center;
+  padding: 40px 24px;
+  color: var(--text-dim);
+  font-size: .8rem;
+  border-top: 1px solid var(--border);
+  margin-top: 40px;
+}
+
+/* ─── SUMMARY SECTION ─── */
+.summary-section {
+  max-width: 1000px;
+  margin: 0 auto 60px;
+  padding: 0 24px;
+}
+.summary-section h2 {
+  font-family:'Playfair Display',serif;
+  font-size: 1.8rem;
+  color: var(--text-bright);
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+/* ─── RESPONSIVE ─── */
+@media(max-width:768px) {
+  .overview-grid { grid-template-columns: 1fr; }
+  .pattern-subtitle { padding-left: 0; }
+}
+
+/* ─── DIAGRAM STYLES ─── */
+.diagram-wrapper svg text { font-family:'DM Sans',system-ui,sans-serif; }
+.diagram-wrapper svg .class-box { rx:8; ry:8; }
+.diagram-wrapper svg .label { font-family:'JetBrains Mono',monospace; font-size:11px; }
+</style>
+</head>
+<body>
+
+<!-- ═══ HERO ═══ -->
+<section class="hero">
+  <div class="hero-badge">C# Design Patterns</div>
+  <h1>Behavioral <span>Patterns</span></h1>
+  <p>Communication, responsibility, and interaction between objects — 11 patterns that define how objects collaborate, delegate, and distribute behavior.</p>
+  <div class="pattern-pills">
+    <a href="#chain">⛓️ Chain of Resp.</a>
+    <a href="#command">📋 Command</a>
+    <a href="#iterator">🔁 Iterator</a>
+    <a href="#mediator">🎙️ Mediator</a>
+    <a href="#memento">💾 Memento</a>
+    <a href="#observer">👁️ Observer</a>
+    <a href="#state">🔄 State</a>
+    <a href="#strategy">♟️ Strategy</a>
+    <a href="#template">📐 Template Method</a>
+    <a href="#visitor">🧳 Visitor</a>
+    <a href="#interpreter">📖 Interpreter</a>
+  </div>
+</section>
+
+<!-- ═══ OVERVIEW ═══ -->
+<section class="overview-section">
+  <div class="overview-grid">
+    <a class="overview-card" href="#chain"><div class="icon">⛓️</div><div><h3>Chain of Responsibility</h3><div class="intent">Pass request along a chain until handled</div></div><div class="key-idea">Decouples sender from receiver</div></a>
+    <a class="overview-card" href="#command"><div class="icon">📋</div><div><h3>Command</h3><div class="intent">Encapsulate request as an object</div></div><div class="key-idea">Enables undo, queue, log, macro</div></a>
+    <a class="overview-card" href="#iterator"><div class="icon">🔁</div><div><h3>Iterator</h3><div class="intent">Traverse collection without exposing structure</div></div><div class="key-idea">Uniform traversal interface</div></a>
+    <a class="overview-card" href="#mediator"><div class="icon">🎙️</div><div><h3>Mediator</h3><div class="intent">Centralize communication between objects</div></div><div class="key-idea">Replaces web of connections with a hub</div></a>
+    <a class="overview-card" href="#memento"><div class="icon">💾</div><div><h3>Memento</h3><div class="intent">Save and restore object state</div></div><div class="key-idea">Snapshot — preserves encapsulation</div></a>
+    <a class="overview-card" href="#observer"><div class="icon">👁️</div><div><h3>Observer</h3><div class="intent">Notify many objects when one changes</div></div><div class="key-idea">One-to-many dependency</div></a>
+    <a class="overview-card" href="#state"><div class="icon">🔄</div><div><h3>State</h3><div class="intent">Change behavior when internal state changes</div></div><div class="key-idea">Each state is its own class</div></a>
+    <a class="overview-card" href="#strategy"><div class="icon">♟️</div><div><h3>Strategy</h3><div class="intent">Swap algorithms at runtime</div></div><div class="key-idea">Client injects the algorithm</div></a>
+    <a class="overview-card" href="#template"><div class="icon">📐</div><div><h3>Template Method</h3><div class="intent">Skeleton algorithm, subclasses fill in steps</div></div><div class="key-idea">Inheritance-based extension points</div></a>
+    <a class="overview-card" href="#visitor"><div class="icon">🧳</div><div><h3>Visitor</h3><div class="intent">Add operations without modifying objects</div></div><div class="key-idea">Double dispatch</div></a>
+    <a class="overview-card" href="#interpreter"><div class="icon">📖</div><div><h3>Interpreter</h3><div class="intent">Define and evaluate a grammar</div></div><div class="key-idea">Expression tree — each node interprets itself</div></a>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════
+     PATTERN 1 — CHAIN OF RESPONSIBILITY
+     ════════════════════════════════════════════════════════ -->
+<section id="chain" class="pattern-section p1">
+  <div class="pattern-header">
+    <div class="pattern-num">01</div>
+    <h2>⛓️ Chain of Responsibility</h2>
+  </div>
+  <div class="pattern-subtitle">Pass a request along a chain of handlers until one handles it.</div>
+
+  <div class="card">
+    <h3>Intent</h3>
+    <p>Pass a request along a chain of handlers. Each handler decides to process the request or pass it to the next. The sender does not know which handler will process it.</p>
+  </div>
+
+  <!-- Enhanced SVG Diagram -->
+  <div class="diagram-wrapper">
+    <svg viewBox="0 0 780 340" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+      <defs>
+        <linearGradient id="g1a" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#7b68ee" stop-opacity=".2"/><stop offset="100%" stop-color="#7b68ee" stop-opacity=".05"/></linearGradient>
+        <linearGradient id="g1b" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#40e0d0" stop-opacity=".2"/><stop offset="100%" stop-color="#40e0d0" stop-opacity=".05"/></linearGradient>
+        <marker id="arrow1" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#6b7394"/></marker>
+        <marker id="arrow1d" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#40e0d0"/></marker>
+      </defs>
+      <!-- Abstract Handler -->
+      <rect x="240" y="20" width="300" height="100" rx="10" fill="url(#g1a)" stroke="#7b68ee" stroke-width="1.5"/>
+      <text x="390" y="48" text-anchor="middle" fill="#c8a2ff" font-weight="700" font-size="14">Handler «abstract»</text>
+      <line x1="260" y1="56" x2="520" y2="56" stroke="#7b68ee" stroke-opacity=".3"/>
+      <text x="390" y="76" text-anchor="middle" fill="#8890a8" font-size="12" font-family="JetBrains Mono,monospace">_next : Handler</text>
+      <text x="390" y="96" text-anchor="middle" fill="#8890a8" font-size="12" font-family="JetBrains Mono,monospace">SetNext(h) / Handle(request)</text>
+      <!-- Self-ref arrow -->
+      <path d="M540,55 C580,55 580,35 555,35" fill="none" stroke="#6b7394" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#arrow1)"/>
+      <text x="588" y="48" fill="#6b7394" font-size="10">_next</text>
+      <!-- Concrete Handlers -->
+      <rect x="40" y="210" width="200" height="80" rx="10" fill="url(#g1b)" stroke="#40e0d0" stroke-width="1.2"/>
+      <text x="140" y="238" text-anchor="middle" fill="#40e0d0" font-weight="600" font-size="13">FrontlineSupport</text>
+      <line x1="60" y1="246" x2="220" y2="246" stroke="#40e0d0" stroke-opacity=".3"/>
+      <text x="140" y="268" text-anchor="middle" fill="#8890a8" font-size="11" font-family="JetBrains Mono,monospace">severity: 1</text>
+      <text x="140" y="282" text-anchor="middle" fill="#8890a8" font-size="11" font-family="JetBrains Mono,monospace">Handle(request)</text>
+
+      <rect x="290" y="210" width="200" height="80" rx="10" fill="url(#g1b)" stroke="#40e0d0" stroke-width="1.2"/>
+      <text x="390" y="238" text-anchor="middle" fill="#40e0d0" font-weight="600" font-size="13">TechnicalSupport</text>
+      <line x1="310" y1="246" x2="470" y2="246" stroke="#40e0d0" stroke-opacity=".3"/>
+      <text x="390" y="268" text-anchor="middle" fill="#8890a8" font-size="11" font-family="JetBrains Mono,monospace">severity: 2</text>
+      <text x="390" y="282" text-anchor="middle" fill="#8890a8" font-size="11" font-family="JetBrains Mono,monospace">Handle(request)</text>
+
+      <rect x="540" y="210" width="200" height="80" rx="10" fill="url(#g1b)" stroke="#40e0d0" stroke-width="1.2"/>
+      <text x="640" y="238" text-anchor="middle" fill="#40e0d0" font-weight="600" font-size="13">ManagementSupport</text>
+      <line x1="560" y1="246" x2="720" y2="246" stroke="#40e0d0" stroke-opacity=".3"/>
+      <text x="640" y="268" text-anchor="middle" fill="#8890a8" font-size="11" font-family="JetBrains Mono,monospace">severity: 3</text>
+      <text x="640" y="282" text-anchor="middle" fill="#8890a8" font-size="11" font-family="JetBrains Mono,monospace">Handle(request)</text>
+      <!-- Extends arrows -->
+      <line x1="140" y1="210" x2="340" y2="120" stroke="#6b7394" stroke-width="1" marker-end="url(#arrow1)"/>
+      <line x1="390" y1="210" x2="390" y2="120" stroke="#6b7394" stroke-width="1" marker-end="url(#arrow1)"/>
+      <line x1="640" y1="210" x2="440" y2="120" stroke="#6b7394" stroke-width="1" marker-end="url(#arrow1)"/>
+      <text x="210" y="170" fill="#6b7394" font-size="10">extends</text>
+      <text x="396" y="170" fill="#6b7394" font-size="10">extends</text>
+      <text x="550" y="170" fill="#6b7394" font-size="10">extends</text>
+      <!-- Chain arrows -->
+      <path d="M240,250 L290,250" fill="none" stroke="#40e0d0" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#arrow1d)"/>
+      <path d="M490,250 L540,250" fill="none" stroke="#40e0d0" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#arrow1d)"/>
+      <text x="265" y="242" fill="#40e0d0" font-size="9">SetNext</text>
+      <text x="515" y="242" fill="#40e0d0" font-size="9">SetNext</text>
+      <!-- Client -->
+      <rect x="40" y="316" width="80" height="22" rx="6" fill="#1a1e2e" stroke="#6b7394" stroke-width="1"/>
+      <text x="80" y="332" text-anchor="middle" fill="#8890a8" font-size="10">Client</text>
+      <path d="M80,316 L80,300 L80,295" fill="none" stroke="#6b7394" stroke-width="1" stroke-dasharray="3 3"/>
+      <text x="92" y="310" fill="#6b7394" font-size="9">Handle(req)</text>
+    </svg>
+  </div>
+
+  <div class="card">
+    <h3>The Problem It Solves</h3>
+    <p>Without this pattern, handling logic lives in one bloated method with cascading if/else blocks. Adding a new handler requires editing that method — violating OCP.</p>
+  </div>
+
+  <button class="collapsible-trigger" onclick="toggleCollapsible(this)">
+    C# Implementation <span class="chevron">▼</span>
+  </button>
+  <div class="collapsible-body"><div class="inner">
+    <div class="code-block">
+      <div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span>Step 1 — Abstract Handler</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="kw">public abstract class</span> <span class="tp">SupportHandler</span>
+{
+    <span class="kw">private</span> <span class="tp">SupportHandler</span> _next;
+
+    <span class="kw">public</span> <span class="tp">SupportHandler</span> <span class="fn">SetNext</span>(<span class="tp">SupportHandler</span> next)
+    {
+        _next = next;
+        <span class="kw">return</span> next; <span class="cm">// enables: h1.SetNext(h2).SetNext(h3)</span>
+    }
+
+    <span class="kw">public abstract void</span> <span class="fn">Handle</span>(<span class="tp">SupportTicket</span> ticket);
+
+    <span class="kw">protected void</span> <span class="fn">PassToNext</span>(<span class="tp">SupportTicket</span> ticket)
+    {
+        <span class="kw">if</span> (_next != <span class="kw">null</span>) _next.<span class="fn">Handle</span>(ticket);
+        <span class="kw">else</span> <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">$"Unhandled: '{ticket.Issue}'"</span>);
+    }
+}</pre>
+    </div>
+    <div class="code-block">
+      <div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span>Step 2 — Concrete Handlers</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="kw">public class</span> <span class="tp">FrontlineSupport</span> : <span class="tp">SupportHandler</span>
+{
+    <span class="kw">public override void</span> <span class="fn">Handle</span>(<span class="tp">SupportTicket</span> ticket)
+    {
+        <span class="kw">if</span> (ticket.Severity == <span class="num">1</span>)
+            <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">$"Frontline handled: '{ticket.Issue}'"</span>);
+        <span class="kw">else</span> { <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">"Passing up."</span>); <span class="fn">PassToNext</span>(ticket); }
+    }
+}
+
+<span class="kw">public class</span> <span class="tp">TechnicalSupport</span> : <span class="tp">SupportHandler</span>
+{
+    <span class="kw">public override void</span> <span class="fn">Handle</span>(<span class="tp">SupportTicket</span> ticket)
+    {
+        <span class="kw">if</span> (ticket.Severity == <span class="num">2</span>)
+            <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">$"Technical handled: '{ticket.Issue}'"</span>);
+        <span class="kw">else</span> { <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">"Passing up."</span>); <span class="fn">PassToNext</span>(ticket); }
+    }
+}</pre>
+    </div>
+    <div class="code-block">
+      <div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span>Step 3 — Build chain and run</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="kw">var</span> frontline = <span class="kw">new</span> <span class="tp">FrontlineSupport</span>();
+<span class="kw">var</span> technical = <span class="kw">new</span> <span class="tp">TechnicalSupport</span>();
+<span class="kw">var</span> management = <span class="kw">new</span> <span class="tp">ManagementSupport</span>();
+
+frontline.<span class="fn">SetNext</span>(technical).<span class="fn">SetNext</span>(management);
+
+frontline.<span class="fn">Handle</span>(<span class="kw">new</span> <span class="tp">SupportTicket</span>(<span class="str">"Password reset"</span>, <span class="num">1</span>)); <span class="cm">// Frontline handled</span>
+frontline.<span class="fn">Handle</span>(<span class="kw">new</span> <span class="tp">SupportTicket</span>(<span class="str">"Server crash"</span>, <span class="num">3</span>));   <span class="cm">// passed up to Management</span></pre>
+    </div>
+  </div></div>
+
+  <div class="note">
+    <span class="bulb">💡</span>
+    <span>ASP.NET Core Middleware is a built-in example of Chain of Responsibility. Each middleware calls <code>next()</code> to pass the request down the chain.</span>
+  </div>
+
+  <button class="collapsible-trigger" onclick="toggleCollapsible(this)">
+    Interview Q&A <span class="chevron">▼</span>
+  </button>
+  <div class="collapsible-body"><div class="inner">
+    <div class="qa-block">
+      <div class="qa-q" onclick="toggleQA(this)"><span class="arrow">▶</span>What is the difference between Chain of Responsibility and if/else?</div>
+      <div class="qa-a">An if/else chain is hardcoded — adding a new condition edits existing code, violating OCP. Chain of Responsibility makes handlers independent objects that can be added, removed, or reordered without touching existing code.</div>
+    </div>
+    <div class="qa-block">
+      <div class="qa-q" onclick="toggleQA(this)"><span class="arrow">▶</span>What happens if no handler processes the request?</div>
+      <div class="qa-a">You can silently drop it, log it, throw an exception, or add a default catch-all handler at the end — similar to <code>catch(Exception ex)</code> at the bottom of a try/catch.</div>
+    </div>
+    <div class="qa-block">
+      <div class="qa-q" onclick="toggleQA(this)"><span class="arrow">▶</span>Can a handler both process AND pass the request forward?</div>
+      <div class="qa-a">Yes. In logging systems every handler logs at its level AND passes to the next. The pattern supports both variations — stop at first match or traverse all handlers.</div>
+    </div>
+  </div></div>
+
+  <div class="use-avoid">
+    <div class="use-col"><h4>✅ Use When</h4><ul>
+      <li>More than one object may handle a request</li>
+      <li>The handler is not known upfront</li>
+      <li>Handlers should be configurable at runtime</li>
+    </ul></div>
+    <div class="avoid-col"><h4>❌ Avoid When</h4><ul>
+      <li>You always know exactly which handler will process it</li>
+      <li>The chain is always the same — hardcoding is simpler</li>
+      <li>Long chains make request flow hard to trace</li>
+    </ul></div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════
+     PATTERN 2 — COMMAND
+     ════════════════════════════════════════════════════════ -->
+<section id="command" class="pattern-section p2">
+  <div class="pattern-header">
+    <div class="pattern-num">02</div>
+    <h2>📋 Command</h2>
+  </div>
+  <div class="pattern-subtitle">Encapsulate a request as an object — enabling undo, queue, log, and macro.</div>
+
+  <div class="card"><h3>Intent</h3><p>Encapsulate a request as an object. This lets you parameterize methods with different requests, queue or log operations, and support undoable actions.</p></div>
+
+  <div class="diagram-wrapper">
+    <svg viewBox="0 0 780 320" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+      <defs>
+        <linearGradient id="g2a" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#40e0d0" stop-opacity=".2"/><stop offset="100%" stop-color="#40e0d0" stop-opacity=".05"/></linearGradient>
+        <linearGradient id="g2b" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#ffd700" stop-opacity=".2"/><stop offset="100%" stop-color="#ffd700" stop-opacity=".05"/></linearGradient>
+        <marker id="arrow2" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#6b7394"/></marker>
+      </defs>
+      <!-- Invoker -->
+      <rect x="20" y="30" width="180" height="80" rx="10" fill="url(#g2b)" stroke="#ffd700" stroke-width="1.2"/>
+      <text x="110" y="55" text-anchor="middle" fill="#ffd700" font-weight="700" font-size="13">Invoker</text>
+      <line x1="40" y1="62" x2="180" y2="62" stroke="#ffd700" stroke-opacity=".3"/>
+      <text x="110" y="80" text-anchor="middle" fill="#8890a8" font-size="11" font-family="JetBrains Mono,monospace">_history: Stack&lt;ICommand&gt;</text>
+      <text x="110" y="96" text-anchor="middle" fill="#8890a8" font-size="11" font-family="JetBrains Mono,monospace">ExecuteCommand() / Undo()</text>
+      <!-- ICommand -->
+      <rect x="300" y="30" width="180" height="70" rx="10" fill="url(#g2a)" stroke="#40e0d0" stroke-width="1.5"/>
+      <text x="390" y="55" text-anchor="middle" fill="#40e0d0" font-weight="700" font-size="13">«interface» ICommand</text>
+      <line x1="320" y1="62" x2="460" y2="62" stroke="#40e0d0" stroke-opacity=".3"/>
+      <text x="390" y="82" text-anchor="middle" fill="#8890a8" font-size="11" font-family="JetBrains Mono,monospace">Execute() / Undo()</text>
+      <!-- Receiver -->
+      <rect x="580" y="30" width="180" height="70" rx="10" fill="#1a1e2e" stroke="#6b7394" stroke-width="1"/>
+      <text x="670" y="55" text-anchor="middle" fill="#c8cdd8" font-weight="600" font-size="13">Receiver</text>
+      <line x1="600" y1="62" x2="740" y2="62" stroke="#6b7394" stroke-opacity=".3"/>
+      <text x="670" y="82" text-anchor="middle" fill="#8890a8" font-size="11" font-family="JetBrains Mono,monospace">DoWork()</text>
+      <!-- Concrete Commands -->
+      <rect x="220" y="180" width="170" height="70" rx="10" fill="url(#g2a)" stroke="#40e0d0" stroke-width="1" stroke-opacity=".6"/>
+      <text x="305" y="205" text-anchor="middle" fill="#40e0d0" font-weight="600" font-size="12">InsertTextCommand</text>
+      <line x1="240" y1="212" x2="370" y2="212" stroke="#40e0d0" stroke-opacity=".3"/>
+      <text x="305" y="232" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">Execute() / Undo()</text>
+
+      <rect x="420" y="180" width="160" height="70" rx="10" fill="url(#g2a)" stroke="#40e0d0" stroke-width="1" stroke-opacity=".6"/>
+      <text x="500" y="205" text-anchor="middle" fill="#40e0d0" font-weight="600" font-size="12">MacroCommand</text>
+      <line x1="440" y1="212" x2="560" y2="212" stroke="#40e0d0" stroke-opacity=".3"/>
+      <text x="500" y="232" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">Execute() / Undo()</text>
+      <!-- Arrows -->
+      <line x1="200" y1="70" x2="300" y2="70" stroke="#6b7394" stroke-width="1" marker-end="url(#arrow2)"/>
+      <text x="250" y="62" fill="#6b7394" font-size="9" text-anchor="middle">uses</text>
+      <line x1="480" y1="70" x2="580" y2="70" stroke="#6b7394" stroke-width="1" marker-end="url(#arrow2)"/>
+      <text x="530" y="62" fill="#6b7394" font-size="9" text-anchor="middle">calls</text>
+      <line x1="305" y1="180" x2="370" y2="100" stroke="#6b7394" stroke-width="1" marker-end="url(#arrow2)"/>
+      <line x1="500" y1="180" x2="430" y2="100" stroke="#6b7394" stroke-width="1" marker-end="url(#arrow2)"/>
+      <text x="320" y="145" fill="#6b7394" font-size="9">implements</text>
+      <text x="478" y="145" fill="#6b7394" font-size="9">implements</text>
+      <!-- Client -->
+      <rect x="20" y="290" width="80" height="22" rx="6" fill="#1a1e2e" stroke="#6b7394" stroke-width="1"/>
+      <text x="60" y="306" text-anchor="middle" fill="#8890a8" font-size="10">Client</text>
+      <path d="M60,290 L60,120 L110,110" fill="none" stroke="#6b7394" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#arrow2)"/>
+    </svg>
+  </div>
+
+  <div class="card"><h3>Four Key Roles</h3>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Role</th><th>Responsibility</th><th>Example</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Invoker</strong></td><td>Triggers commands, manages history stack</td><td>RemoteControl, CommandInvoker</td></tr>
+        <tr><td><strong>ICommand</strong></td><td>Interface: Execute() and Undo()</td><td>ICommand interface</td></tr>
+        <tr><td><strong>ConcreteCommand</strong></td><td>Wraps receiver, implements Execute/Undo</td><td>InsertTextCommand</td></tr>
+        <tr><td><strong>Receiver</strong></td><td>Does the actual work</td><td>TextEditor, Lights</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <button class="collapsible-trigger" onclick="toggleCollapsible(this)">C# Implementation <span class="chevron">▼</span></button>
+  <div class="collapsible-body"><div class="inner">
+    <div class="code-block">
+      <div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span>ICommand + ConcreteCommand + Invoker</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="kw">public interface</span> <span class="tp">ICommand</span>
+{
+    <span class="kw">void</span> <span class="fn">Execute</span>();
+    <span class="kw">void</span> <span class="fn">Undo</span>();
+}
+
+<span class="kw">public class</span> <span class="tp">InsertTextCommand</span> : <span class="tp">ICommand</span>
+{
+    <span class="kw">private readonly</span> <span class="tp">TextEditor</span> _editor;
+    <span class="kw">private readonly</span> <span class="kw">string</span> _text;
+    <span class="kw">public</span> <span class="fn">InsertTextCommand</span>(<span class="tp">TextEditor</span> editor, <span class="kw">string</span> text)
+    { _editor = editor; _text = text; }
+    <span class="kw">public void</span> <span class="fn">Execute</span>() => _editor.<span class="fn">InsertText</span>(_text);
+    <span class="kw">public void</span> <span class="fn">Undo</span>() => <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">"Undo insert."</span>);
+}
+
+<span class="kw">public class</span> <span class="tp">CommandInvoker</span>
+{
+    <span class="kw">private readonly</span> <span class="tp">Stack</span>&lt;<span class="tp">ICommand</span>&gt; _history = <span class="kw">new</span>();
+    <span class="kw">public void</span> <span class="fn">ExecuteCommand</span>(<span class="tp">ICommand</span> command)
+    { command.<span class="fn">Execute</span>(); _history.<span class="fn">Push</span>(command); }
+    <span class="kw">public void</span> <span class="fn">Undo</span>()
+    {
+        <span class="kw">if</span> (_history.Count == <span class="num">0</span>) { <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">"Nothing to undo."</span>); <span class="kw">return</span>; }
+        _history.<span class="fn">Pop</span>().<span class="fn">Undo</span>();
+    }
+}
+
+<span class="cm">// Macro Command (Command + Composite)</span>
+<span class="kw">public class</span> <span class="tp">MacroCommand</span> : <span class="tp">ICommand</span>
+{
+    <span class="kw">private readonly</span> <span class="tp">List</span>&lt;<span class="tp">ICommand</span>&gt; _commands;
+    <span class="kw">public</span> <span class="fn">MacroCommand</span>(<span class="tp">List</span>&lt;<span class="tp">ICommand</span>&gt; commands) { _commands = commands; }
+    <span class="kw">public void</span> <span class="fn">Execute</span>() => _commands.<span class="fn">ForEach</span>(c => c.<span class="fn">Execute</span>());
+    <span class="cm">// Undo in REVERSE order — critical</span>
+    <span class="kw">public void</span> <span class="fn">Undo</span>() => _commands.<span class="fn">AsEnumerable</span>().<span class="fn">Reverse</span>()
+        .<span class="fn">ToList</span>().<span class="fn">ForEach</span>(c => c.<span class="fn">Undo</span>());
+}</pre>
+    </div>
+  </div></div>
+
+  <div class="note"><span class="bulb">💡</span><span>MacroCommand combines Command + Composite. Undo must run in reverse order — undoing in original order can leave the system in an inconsistent state.</span></div>
+
+  <button class="collapsible-trigger" onclick="toggleCollapsible(this)">Interview Q&A <span class="chevron">▼</span></button>
+  <div class="collapsible-body"><div class="inner">
+    <div class="qa-block"><div class="qa-q" onclick="toggleQA(this)"><span class="arrow">▶</span>What are the four roles in the Command pattern?</div><div class="qa-a">Invoker triggers commands. Command is the request object with Execute() and Undo(). Receiver does the actual work. Client assembles the command, wires the receiver, and gives it to the invoker.</div></div>
+    <div class="qa-block"><div class="qa-q" onclick="toggleQA(this)"><span class="arrow">▶</span>What is a Macro Command?</div><div class="qa-a">A composite command that holds a list of commands and executes them all as one unit. Undo reverses all sub-commands in reverse order. It combines Command with the Composite pattern.</div></div>
+    <div class="qa-block"><div class="qa-q" onclick="toggleQA(this)"><span class="arrow">▶</span>What is the difference between Command and Strategy?</div><div class="qa-a">Both encapsulate behavior as an object. Strategy encapsulates an algorithm to vary. Command encapsulates a request — focused on invoking, queuing, logging, and undoing. Strategy has no concept of Undo.</div></div>
+  </div></div>
+
+  <div class="use-avoid">
+    <div class="use-col"><h4>✅ Use When</h4><ul><li>You need undo / redo functionality</li><li>You want to queue, schedule, or log operations</li><li>You need macro commands</li></ul></div>
+    <div class="avoid-col"><h4>❌ Avoid When</h4><ul><li>The operation is simple and never needs undoing</li><li>No need for history or logging</li><li>Wrapping adds unnecessary complexity</li></ul></div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════
+     PATTERN 3 — ITERATOR (condensed format)
+     ════════════════════════════════════════════════════════ -->
+<section id="iterator" class="pattern-section p3">
+  <div class="pattern-header"><div class="pattern-num">03</div><h2>🔁 Iterator</h2></div>
+  <div class="pattern-subtitle">Traverse a collection without exposing its internal structure.</div>
+  <div class="card"><h3>Intent</h3><p>Provide a way to sequentially access elements of a collection without exposing its underlying structure.</p></div>
+
+  <div class="diagram-wrapper">
+    <svg viewBox="0 0 780 280" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+      <defs>
+        <linearGradient id="g3a" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#ff6b9d" stop-opacity=".2"/><stop offset="100%" stop-color="#ff6b9d" stop-opacity=".05"/></linearGradient>
+        <marker id="arrow3" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#6b7394"/></marker>
+      </defs>
+      <!-- IIterator -->
+      <rect x="20" y="20" width="200" height="80" rx="10" fill="url(#g3a)" stroke="#ff6b9d" stroke-width="1.5"/>
+      <text x="120" y="45" text-anchor="middle" fill="#ff6b9d" font-weight="700" font-size="13">«interface» IIterator&lt;T&gt;</text>
+      <line x1="40" y1="52" x2="200" y2="52" stroke="#ff6b9d" stroke-opacity=".3"/>
+      <text x="120" y="72" text-anchor="middle" fill="#8890a8" font-size="11" font-family="JetBrains Mono,monospace">HasNext() / Next() / Reset()</text>
+      <!-- IPlaylist -->
+      <rect x="300" y="20" width="200" height="80" rx="10" fill="url(#g3a)" stroke="#ff6b9d" stroke-width="1.5"/>
+      <text x="400" y="45" text-anchor="middle" fill="#ff6b9d" font-weight="700" font-size="13">«interface» IPlaylist&lt;T&gt;</text>
+      <line x1="320" y1="52" x2="480" y2="52" stroke="#ff6b9d" stroke-opacity=".3"/>
+      <text x="400" y="72" text-anchor="middle" fill="#8890a8" font-size="11" font-family="JetBrains Mono,monospace">AddSong() / CreateIterator()</text>
+      <!-- Concrete -->
+      <rect x="20" y="170" width="200" height="70" rx="10" fill="#1a1e2e" stroke="#ff6b9d" stroke-width="1" stroke-opacity=".5"/>
+      <text x="120" y="198" text-anchor="middle" fill="#ff6b9d" font-weight="600" font-size="12">PlaylistIterator&lt;T&gt;</text>
+      <line x1="40" y1="206" x2="200" y2="206" stroke="#ff6b9d" stroke-opacity=".2"/>
+      <text x="120" y="226" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">_songs, _position</text>
+
+      <rect x="300" y="170" width="200" height="70" rx="10" fill="#1a1e2e" stroke="#ff6b9d" stroke-width="1" stroke-opacity=".5"/>
+      <text x="400" y="198" text-anchor="middle" fill="#ff6b9d" font-weight="600" font-size="12">MusicPlaylist&lt;T&gt;</text>
+      <line x1="320" y1="206" x2="480" y2="206" stroke="#ff6b9d" stroke-opacity=".2"/>
+      <text x="400" y="226" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">_songs: List&lt;T&gt;</text>
+      <!-- Arrows -->
+      <line x1="120" y1="170" x2="120" y2="100" stroke="#6b7394" stroke-width="1" marker-end="url(#arrow3)"/>
+      <line x1="400" y1="170" x2="400" y2="100" stroke="#6b7394" stroke-width="1" marker-end="url(#arrow3)"/>
+      <text x="130" y="140" fill="#6b7394" font-size="9">implements</text>
+      <text x="410" y="140" fill="#6b7394" font-size="9">implements</text>
+      <path d="M500,60 L540,60 L540,205 L500,205" fill="none" stroke="#6b7394" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#arrow3)"/>
+      <text x="550" y="135" fill="#6b7394" font-size="9" transform="rotate(90 550 135)">creates</text>
+      <!-- C# note -->
+      <rect x="580" y="80" width="180" height="80" rx="10" fill="rgba(255,107,157,.06)" stroke="#ff6b9d" stroke-width="1" stroke-dasharray="4 3"/>
+      <text x="670" y="110" text-anchor="middle" fill="#ff6b9d" font-size="12" font-weight="600">C# Built-in</text>
+      <text x="670" y="130" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">IEnumerable&lt;T&gt;</text>
+      <text x="670" y="148" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">yield return</text>
+    </svg>
+  </div>
+
+  <button class="collapsible-trigger" onclick="toggleCollapsible(this)">C# Implementation <span class="chevron">▼</span></button>
+  <div class="collapsible-body"><div class="inner">
+    <div class="code-block"><div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span>Step 1 — Iterator and Collection interfaces</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="kw">public interface</span> <span class="tp">IIterator</span>&lt;<span class="tp">T</span>&gt;
+{
+    <span class="kw">bool</span> <span class="fn">HasNext</span>();
+    <span class="tp">T</span> <span class="fn">Next</span>();
+    <span class="kw">void</span> <span class="fn">Reset</span>();
+}
+
+<span class="kw">public interface</span> <span class="tp">IPlaylist</span>&lt;<span class="tp">T</span>&gt;
+{
+    <span class="kw">void</span> <span class="fn">AddSong</span>(<span class="tp">T</span> song);
+    <span class="tp">IIterator</span>&lt;<span class="tp">T</span>&gt; <span class="fn">CreateIterator</span>();
+}</pre>
+    </div>
+    <div class="code-block"><div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span>Step 2 — Concrete Iterator and Collection</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="kw">public class</span> <span class="tp">PlaylistIterator</span>&lt;<span class="tp">T</span>&gt; : <span class="tp">IIterator</span>&lt;<span class="tp">T</span>&gt;
+{
+    <span class="kw">private readonly</span> <span class="tp">List</span>&lt;<span class="tp">T</span>&gt; _songs;
+    <span class="kw">private int</span> _position = <span class="num">0</span>;
+    <span class="kw">public</span> <span class="fn">PlaylistIterator</span>(<span class="tp">List</span>&lt;<span class="tp">T</span>&gt; songs) { _songs = songs; }
+    <span class="kw">public bool</span> <span class="fn">HasNext</span>() => _position &lt; _songs.Count;
+    <span class="kw">public</span> <span class="tp">T</span> <span class="fn">Next</span>() => _songs[_position++];
+    <span class="kw">public void</span> <span class="fn">Reset</span>() => _position = <span class="num">0</span>;
+}
+
+<span class="kw">public class</span> <span class="tp">MusicPlaylist</span>&lt;<span class="tp">T</span>&gt; : <span class="tp">IPlaylist</span>&lt;<span class="tp">T</span>&gt;
+{
+    <span class="kw">private readonly</span> <span class="tp">List</span>&lt;<span class="tp">T</span>&gt; _songs = <span class="kw">new</span>();
+    <span class="kw">public void</span> <span class="fn">AddSong</span>(<span class="tp">T</span> song) => _songs.<span class="fn">Add</span>(song);
+    <span class="kw">public</span> <span class="tp">IIterator</span>&lt;<span class="tp">T</span>&gt; <span class="fn">CreateIterator</span>() => <span class="kw">new</span> <span class="tp">PlaylistIterator</span>&lt;<span class="tp">T</span>&gt;(_songs);
+}</pre>
+    </div>
+    <div class="code-block"><div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span>Step 3 — C# built-in: yield keyword</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="kw">public class</span> <span class="tp">MusicPlaylist</span> : <span class="tp">IEnumerable</span>&lt;<span class="kw">string</span>&gt;
+{
+    <span class="kw">private readonly</span> <span class="tp">List</span>&lt;<span class="kw">string</span>&gt; _songs = <span class="kw">new</span>();
+    <span class="kw">public void</span> <span class="fn">AddSong</span>(<span class="kw">string</span> song) => _songs.<span class="fn">Add</span>(song);
+    <span class="kw">public</span> <span class="tp">IEnumerator</span>&lt;<span class="kw">string</span>&gt; <span class="fn">GetEnumerator</span>()
+    {
+        <span class="kw">foreach</span> (<span class="kw">var</span> song <span class="kw">in</span> _songs)
+            <span class="kw">yield return</span> song; <span class="cm">// compiler generates full state machine</span>
+    }
+    <span class="tp">IEnumerator</span> <span class="tp">IEnumerable</span>.<span class="fn">GetEnumerator</span>() => <span class="fn">GetEnumerator</span>();
+}
+
+<span class="kw">foreach</span> (<span class="kw">var</span> song <span class="kw">in</span> playlist) <span class="cm">// foreach uses Iterator under the hood</span>
+    <span class="tp">Console</span>.<span class="fn">WriteLine</span>(song);</pre>
+    </div>
+  </div></div>
+
+  <div class="note"><span class="bulb">💡</span><span><code>yield return</code> is C#'s built-in Iterator. <code>foreach</code> is syntactic sugar — it calls <code>GetEnumerator()</code> then <code>MoveNext()</code> + <code>Current</code> in a loop.</span></div>
+
+  <button class="collapsible-trigger" onclick="toggleCollapsible(this)">Interview Q&A <span class="chevron">▼</span></button>
+  <div class="collapsible-body"><div class="inner">
+    <div class="qa-block"><div class="qa-q" onclick="toggleQA(this)"><span class="arrow">▶</span>Why not just expose the internal list directly?</div><div class="qa-a">That couples the client to the internal data structure. If you switch from List to Tree, every client breaks. Iterator decouples traversal from internal representation.</div></div>
+    <div class="qa-block"><div class="qa-q" onclick="toggleQA(this)"><span class="arrow">▶</span>How does foreach relate to Iterator in C#?</div><div class="qa-a"><code>foreach</code> is syntactic sugar for the Iterator pattern. The compiler calls <code>GetEnumerator()</code>, then <code>MoveNext()</code> and <code>Current</code> on each iteration.</div></div>
+    <div class="qa-block"><div class="qa-q" onclick="toggleQA(this)"><span class="arrow">▶</span>Can you have multiple iterators on the same collection?</div><div class="qa-a">Yes. Each call to CreateIterator() returns a new independent iterator with its own position. Multiple iterators traverse simultaneously without interfering.</div></div>
+  </div></div>
+
+  <div class="use-avoid">
+    <div class="use-col"><h4>✅ Use When</h4><ul><li>You want to hide collection internals</li><li>Multiple independent simultaneous traversals needed</li><li>Uniform traversal interface across different types</li></ul></div>
+    <div class="avoid-col"><h4>❌ Avoid When</h4><ul><li>The collection is a plain list — just use foreach</li><li>You never need more than one traversal</li><li>Lazy evaluation is not needed</li></ul></div>
+  </div>
+</section>
+
+<!-- ═══ PATTERNS 4-11 follow same structure — condensed for filesize ═══ -->
+
+<!-- PATTERN 4 — MEDIATOR -->
+<section id="mediator" class="pattern-section p4">
+  <div class="pattern-header"><div class="pattern-num">04</div><h2>🎙️ Mediator</h2></div>
+  <div class="pattern-subtitle">Centralize communication between objects through one hub.</div>
+  <div class="card"><h3>Intent</h3><p>Define an object that encapsulates how a set of objects interact. Mediator promotes loose coupling by preventing objects from referring to each other directly.</p></div>
+  <div class="card"><h3>The Problem It Solves</h3><p>With n components communicating directly, you get n × (n-1) connections. Mediator replaces this web with a star topology — n connections total.</p></div>
+
+  <div class="diagram-wrapper">
+    <svg viewBox="0 0 600 300" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+      <defs><marker id="arrow4" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#ffd700"/></marker></defs>
+      <!-- Hub -->
+      <circle cx="300" cy="150" r="55" fill="rgba(255,215,0,.1)" stroke="#ffd700" stroke-width="2"/>
+      <text x="300" y="145" text-anchor="middle" fill="#ffd700" font-weight="700" font-size="13">Control</text>
+      <text x="300" y="162" text-anchor="middle" fill="#ffd700" font-weight="700" font-size="13">Tower</text>
+      <!-- Components -->
+      <rect x="30" y="30" width="120" height="50" rx="8" fill="#1a1e2e" stroke="#40e0d0" stroke-width="1.2"/>
+      <text x="90" y="60" text-anchor="middle" fill="#40e0d0" font-size="12" font-weight="600">Aircraft A</text>
+      <rect x="450" y="30" width="120" height="50" rx="8" fill="#1a1e2e" stroke="#40e0d0" stroke-width="1.2"/>
+      <text x="510" y="60" text-anchor="middle" fill="#40e0d0" font-size="12" font-weight="600">Aircraft B</text>
+      <rect x="30" y="220" width="120" height="50" rx="8" fill="#1a1e2e" stroke="#40e0d0" stroke-width="1.2"/>
+      <text x="90" y="250" text-anchor="middle" fill="#40e0d0" font-size="12" font-weight="600">Aircraft C</text>
+      <rect x="450" y="220" width="120" height="50" rx="8" fill="#1a1e2e" stroke="#40e0d0" stroke-width="1.2"/>
+      <text x="510" y="250" text-anchor="middle" fill="#40e0d0" font-size="12" font-weight="600">Aircraft D</text>
+      <!-- Lines to hub -->
+      <line x1="150" y1="55" x2="255" y2="125" stroke="#ffd700" stroke-width="1.2" marker-end="url(#arrow4)"/>
+      <line x1="450" y1="55" x2="345" y2="125" stroke="#ffd700" stroke-width="1.2" marker-end="url(#arrow4)"/>
+      <line x1="150" y1="245" x2="255" y2="175" stroke="#ffd700" stroke-width="1.2" marker-end="url(#arrow4)"/>
+      <line x1="450" y1="245" x2="345" y2="175" stroke="#ffd700" stroke-width="1.2" marker-end="url(#arrow4)"/>
+      <text x="300" y="290" text-anchor="middle" fill="#6b7394" font-size="11">Star topology: n connections instead of n×(n-1)</text>
+    </svg>
+  </div>
+
+  <button class="collapsible-trigger" onclick="toggleCollapsible(this)">C# Implementation <span class="chevron">▼</span></button>
+  <div class="collapsible-body"><div class="inner">
+    <div class="code-block"><div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span>Control Tower Mediator</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="kw">public interface</span> <span class="tp">IControlTower</span>
+{
+    <span class="kw">void</span> <span class="fn">RegisterAircraft</span>(<span class="tp">Aircraft</span> aircraft);
+    <span class="kw">void</span> <span class="fn">Notify</span>(<span class="tp">Aircraft</span> sender, <span class="kw">string</span> message);
+}
+
+<span class="kw">public abstract class</span> <span class="tp">Aircraft</span>
+{
+    <span class="kw">protected</span> <span class="tp">IControlTower</span> _tower;
+    <span class="kw">public string</span> CallSign { <span class="kw">get</span>; }
+    <span class="kw">protected</span> <span class="fn">Aircraft</span>(<span class="kw">string</span> callSign, <span class="tp">IControlTower</span> tower)
+    { CallSign = callSign; _tower = tower; _tower.<span class="fn">RegisterAircraft</span>(<span class="kw">this</span>); }
+    <span class="kw">public void</span> <span class="fn">Send</span>(<span class="kw">string</span> msg) { <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">$"{CallSign}: {msg}"</span>); _tower.<span class="fn">Notify</span>(<span class="kw">this</span>, msg); }
+    <span class="kw">public abstract void</span> <span class="fn">Receive</span>(<span class="kw">string</span> message, <span class="kw">string</span> from);
+}
+
+<span class="kw">public class</span> <span class="tp">ControlTower</span> : <span class="tp">IControlTower</span>
+{
+    <span class="kw">private readonly</span> <span class="tp">List</span>&lt;<span class="tp">Aircraft</span>&gt; _aircrafts = <span class="kw">new</span>();
+    <span class="kw">public void</span> <span class="fn">RegisterAircraft</span>(<span class="tp">Aircraft</span> a) => _aircrafts.<span class="fn">Add</span>(a);
+    <span class="kw">public void</span> <span class="fn">Notify</span>(<span class="tp">Aircraft</span> sender, <span class="kw">string</span> message)
+    {
+        <span class="kw">foreach</span> (<span class="kw">var</span> a <span class="kw">in</span> _aircrafts)
+            <span class="kw">if</span> (a != sender) a.<span class="fn">Receive</span>(message, sender.CallSign);
+    }
+}</pre>
+    </div>
+  </div></div>
+  <div class="note"><span class="bulb">💡</span><span>MediatR library in ASP.NET Core is a direct Mediator implementation. SignalR hubs are also Mediators — clients talk through the hub which routes to other clients.</span></div>
+
+  <button class="collapsible-trigger" onclick="toggleCollapsible(this)">Interview Q&A <span class="chevron">▼</span></button>
+  <div class="collapsible-body"><div class="inner">
+    <div class="qa-block"><div class="qa-q" onclick="toggleQA(this)"><span class="arrow">▶</span>What is the difference between Mediator and Facade?</div><div class="qa-a">Facade provides a simplified one-directional interface — subsystem classes do not know it exists. Mediator centralizes two-directional communication — components actively use it to communicate with each other.</div></div>
+    <div class="qa-block"><div class="qa-q" onclick="toggleQA(this)"><span class="arrow">▶</span>Does Mediator violate SRP?</div><div class="qa-a">It can. As components grow, the mediator accumulates more coordination logic and risks becoming a God Object. Keep the mediator focused on coordination only.</div></div>
+  </div></div>
+
+  <div class="card"><h3>Mediator vs Facade vs Observer</h3>
+    <div class="table-wrap"><table><thead><tr><th></th><th>Mediator</th><th>Facade</th><th>Observer</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Direction</strong></td><td>Two-way coordination</td><td>One-way simplification</td><td>One-to-many broadcast</td></tr>
+        <tr><td><strong>Awareness</strong></td><td>Components know mediator</td><td>Subsystem unaware of Facade</td><td>Publisher unaware of observers</td></tr>
+        <tr><td><strong>Control</strong></td><td>Mediator decides routing</td><td>No routing logic</td><td>Publisher just broadcasts</td></tr>
+      </tbody></table></div>
+  </div>
+
+  <div class="use-avoid">
+    <div class="use-col"><h4>✅ Use When</h4><ul><li>Many objects communicate in complex ways</li><li>You want to reuse components independently</li><li>Centralized control of interactions is desired</li></ul></div>
+    <div class="avoid-col"><h4>❌ Avoid When</h4><ul><li>Only two or three objects interact</li><li>The mediator grows too large and becomes a God Object</li><li>Communication is simple and stable</li></ul></div>
+  </div>
+</section>
+
+<!-- PATTERN 5 — MEMENTO -->
+<section id="memento" class="pattern-section p5">
+  <div class="pattern-header"><div class="pattern-num">05</div><h2>💾 Memento</h2></div>
+  <div class="pattern-subtitle">Capture and restore an object's state without violating encapsulation.</div>
+  <div class="card"><h3>Intent</h3><p>Capture and externalize an object's internal state so it can be restored later — without violating encapsulation. The object itself decides what to save and how to restore it.</p></div>
+
+  <div class="diagram-wrapper">
+    <svg viewBox="0 0 780 310" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+      <defs>
+        <linearGradient id="gm1" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#50fa7b" stop-opacity=".18"/><stop offset="100%" stop-color="#50fa7b" stop-opacity=".04"/></linearGradient>
+        <marker id="am1" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#6b7394"/></marker>
+        <marker id="am1g" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#50fa7b"/></marker>
+      </defs>
+      <!-- Originator -->
+      <rect x="20" y="20" width="240" height="110" rx="10" fill="url(#gm1)" stroke="#50fa7b" stroke-width="1.5"/>
+      <text x="140" y="45" text-anchor="middle" fill="#50fa7b" font-weight="700" font-size="14">TextEditor (Originator)</text>
+      <line x1="40" y1="52" x2="240" y2="52" stroke="#50fa7b" stroke-opacity=".3"/>
+      <text x="140" y="72" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">_content, _cursor</text>
+      <text x="140" y="88" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">Save() → IMemento</text>
+      <text x="140" y="104" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">Restore(IMemento)</text>
+      <text x="140" y="122" text-anchor="middle" fill="#50fa7b" font-size="9" font-style="italic">only one that reads memento</text>
+      <!-- IMemento -->
+      <rect x="310" y="30" width="200" height="80" rx="10" fill="rgba(255,215,0,.08)" stroke="#ffd700" stroke-width="1.2"/>
+      <text x="410" y="55" text-anchor="middle" fill="#ffd700" font-weight="700" font-size="13">«interface» IMemento</text>
+      <line x1="330" y1="62" x2="490" y2="62" stroke="#ffd700" stroke-opacity=".3"/>
+      <text x="410" y="82" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">GetDate() : string</text>
+      <text x="410" y="98" text-anchor="middle" fill="#ffd700" font-size="9" font-style="italic">opaque — state hidden inside</text>
+      <!-- ConcreteMemento -->
+      <rect x="310" y="160" width="200" height="70" rx="10" fill="rgba(255,215,0,.05)" stroke="#ffd700" stroke-width="1" stroke-opacity=".5"/>
+      <text x="410" y="185" text-anchor="middle" fill="#ffd700" font-weight="600" font-size="12">EditorMemento</text>
+      <line x1="330" y1="192" x2="490" y2="192" stroke="#ffd700" stroke-opacity=".2"/>
+      <text x="410" y="210" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">_content, _cursorPos, _date</text>
+      <text x="410" y="224" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">GetState() / GetDate()</text>
+      <!-- Caretaker -->
+      <rect x="560" y="20" width="200" height="100" rx="10" fill="rgba(80,250,123,.06)" stroke="#50fa7b" stroke-width="1" stroke-opacity=".6"/>
+      <text x="660" y="45" text-anchor="middle" fill="#50fa7b" font-weight="600" font-size="13">HistoryManager</text>
+      <text x="660" y="58" text-anchor="middle" fill="#50fa7b" font-size="10">(Caretaker)</text>
+      <line x1="580" y1="66" x2="740" y2="66" stroke="#50fa7b" stroke-opacity=".2"/>
+      <text x="660" y="86" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">_history: Stack&lt;IMemento&gt;</text>
+      <text x="660" y="102" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">Backup() / Undo()</text>
+      <text x="660" y="118" text-anchor="middle" fill="#50fa7b" font-size="9" font-style="italic">never reads memento contents</text>
+      <!-- Arrows -->
+      <path d="M260,75 L310,65" fill="none" stroke="#50fa7b" stroke-width="1.2" stroke-dasharray="5 3" marker-end="url(#am1g)"/>
+      <text x="285" y="62" fill="#50fa7b" font-size="9">creates</text>
+      <path d="M560,70 L510,60" fill="none" stroke="#6b7394" stroke-width="1" stroke-dasharray="5 3" marker-end="url(#am1)"/>
+      <text x="535" y="56" fill="#6b7394" font-size="9">stores</text>
+      <line x1="410" y1="160" x2="410" y2="110" stroke="#6b7394" stroke-width="1" marker-end="url(#am1)"/>
+      <text x="425" y="138" fill="#6b7394" font-size="9">implements</text>
+      <!-- Flow note -->
+      <rect x="100" y="270" width="560" height="28" rx="8" fill="rgba(80,250,123,.05)" stroke="rgba(80,250,123,.15)" stroke-width="1"/>
+      <text x="380" y="288" text-anchor="middle" fill="#50fa7b" font-size="10">Flow: Originator.Save() → Caretaker stores → Caretaker.Undo() → Originator.Restore()</text>
+    </svg>
+  </div>
+
+  <div class="card"><h3>Three Roles</h3><div class="table-wrap"><table><thead><tr><th>Role</th><th>Responsibility</th></tr></thead><tbody>
+    <tr><td><strong>Originator</strong></td><td>Creates mementos (Save) and restores from them (Restore). Only one that can read memento internals.</td></tr>
+    <tr><td><strong>IMemento</strong></td><td>Opaque snapshot. Caretaker can only see metadata like GetDate(). Never the state inside.</td></tr>
+    <tr><td><strong>Caretaker</strong></td><td>Stores and retrieves mementos via a history stack. Never reads the contents.</td></tr>
+  </tbody></table></div></div>
+
+  <button class="collapsible-trigger" onclick="toggleCollapsible(this)">C# Implementation <span class="chevron">▼</span></button>
+  <div class="collapsible-body"><div class="inner">
+    <div class="code-block"><div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span>Memento + Originator + Caretaker</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="kw">public interface</span> <span class="tp">IMemento</span> { <span class="kw">string</span> <span class="fn">GetDate</span>(); }
+
+<span class="kw">public class</span> <span class="tp">EditorMemento</span> : <span class="tp">IMemento</span>
+{
+    <span class="kw">private readonly string</span> _content; <span class="kw">private readonly int</span> _cursorPos;
+    <span class="kw">private readonly string</span> _date;
+    <span class="kw">public</span> <span class="fn">EditorMemento</span>(<span class="kw">string</span> content, <span class="kw">int</span> cursorPos)
+    { _content = content; _cursorPos = cursorPos; _date = <span class="tp">DateTime</span>.Now.<span class="fn">ToString</span>(<span class="str">"HH:mm:ss"</span>); }
+    <span class="kw">public</span> (<span class="kw">string</span>, <span class="kw">int</span>) <span class="fn">GetState</span>() => (_content, _cursorPos);
+    <span class="kw">public string</span> <span class="fn">GetDate</span>() => _date;
+}
+
+<span class="kw">public class</span> <span class="tp">TextEditor</span> <span class="cm">// Originator</span>
+{
+    <span class="kw">private string</span> _content = <span class="kw">string</span>.Empty; <span class="kw">private int</span> _cursor = <span class="num">0</span>;
+    <span class="kw">public void</span> <span class="fn">Type</span>(<span class="kw">string</span> t) { _content += t; _cursor += t.Length; }
+    <span class="kw">public</span> <span class="tp">IMemento</span> <span class="fn">Save</span>() => <span class="kw">new</span> <span class="tp">EditorMemento</span>(_content, _cursor);
+    <span class="kw">public void</span> <span class="fn">Restore</span>(<span class="tp">IMemento</span> m)
+    { <span class="kw">var</span> (c, cur) = ((<span class="tp">EditorMemento</span>)m).<span class="fn">GetState</span>(); _content = c; _cursor = cur; }
+}
+
+<span class="kw">public class</span> <span class="tp">HistoryManager</span> <span class="cm">// Caretaker</span>
+{
+    <span class="kw">private readonly</span> <span class="tp">Stack</span>&lt;<span class="tp">IMemento</span>&gt; _history = <span class="kw">new</span>();
+    <span class="kw">private readonly</span> <span class="tp">TextEditor</span> _editor;
+    <span class="kw">public</span> <span class="fn">HistoryManager</span>(<span class="tp">TextEditor</span> editor) { _editor = editor; }
+    <span class="kw">public void</span> <span class="fn">Backup</span>() => _history.<span class="fn">Push</span>(_editor.<span class="fn">Save</span>());
+    <span class="kw">public void</span> <span class="fn">Undo</span>()
+    { <span class="kw">if</span> (_history.Count == <span class="num">0</span>) <span class="kw">return</span>; _editor.<span class="fn">Restore</span>(_history.<span class="fn">Pop</span>()); }
+}</pre>
+    </div>
+  </div></div>
+
+  <button class="collapsible-trigger" onclick="toggleCollapsible(this)">Interview Q&A <span class="chevron">▼</span></button>
+  <div class="collapsible-body"><div class="inner">
+    <div class="qa-block"><div class="qa-q" onclick="toggleQA(this)"><span class="arrow">▶</span>Why use IMemento instead of exposing the state directly?</div><div class="qa-a">If the Caretaker could read the state, the Originator's internal representation would leak out — violating encapsulation. IMemento hides everything. The Caretaker only sees metadata.</div></div>
+    <div class="qa-block"><div class="qa-q" onclick="toggleQA(this)"><span class="arrow">▶</span>When would you choose Memento over Command for undo?</div><div class="qa-a">Use Memento when the state is complex and individual changes are hard to reverse — for example a drawing canvas. Use Command when operations are discrete and clearly reversible.</div></div>
+  </div></div>
+
+  <div class="card"><h3>Memento vs Command for Undo</h3><div class="table-wrap"><table><thead><tr><th></th><th>Memento</th><th>Command</th></tr></thead><tbody>
+    <tr><td><strong>What is saved</strong></td><td>Full state snapshot</td><td>The operation + data to reverse it</td></tr>
+    <tr><td><strong>Memory cost</strong></td><td>High — stores everything</td><td>Low — stores only what changed</td></tr>
+    <tr><td><strong>Best for</strong></td><td>Complex state hard to reverse (canvas)</td><td>Discrete reversible operations (insert, delete)</td></tr>
+  </tbody></table></div></div>
+
+  <div class="use-avoid">
+    <div class="use-col"><h4>✅ Use When</h4><ul><li>You need undo and the state is complex</li><li>Save checkpoints without exposing internals</li><li>History of states must be maintained</li></ul></div>
+    <div class="avoid-col"><h4>❌ Avoid When</h4><ul><li>State is very large — snapshots are too expensive</li><li>Objects hold external resources that cannot be snapshotted</li><li>Command-based undo is sufficient</li></ul></div>
+  </div>
+</section>
+
+<!-- PATTERN 6 — OBSERVER -->
+<section id="observer" class="pattern-section p6">
+  <div class="pattern-header"><div class="pattern-num">06</div><h2>👁️ Observer</h2></div>
+  <div class="pattern-subtitle">Notify many objects automatically when one object changes state.</div>
+  <div class="card"><h3>Intent</h3><p>Define a one-to-many dependency so that when one object changes state, all dependents are notified and updated automatically.</p></div>
+
+  <div class="diagram-wrapper">
+    <svg viewBox="0 0 780 300" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+      <defs>
+        <marker id="ao1" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#6b7394"/></marker>
+        <marker id="ao1o" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#ff9f43"/></marker>
+      </defs>
+      <!-- IPublisher -->
+      <rect x="20" y="20" width="260" height="100" rx="10" fill="rgba(255,159,67,.1)" stroke="#ff9f43" stroke-width="1.5"/>
+      <text x="150" y="45" text-anchor="middle" fill="#ff9f43" font-weight="700" font-size="13">«interface» IPublisher</text>
+      <line x1="40" y1="52" x2="260" y2="52" stroke="#ff9f43" stroke-opacity=".3"/>
+      <text x="150" y="72" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">Subscribe(IObserver)</text>
+      <text x="150" y="88" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">Unsubscribe(IObserver)</text>
+      <text x="150" y="104" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">NotifyObservers()</text>
+      <!-- IObserver -->
+      <rect x="480" y="20" width="260" height="70" rx="10" fill="rgba(123,104,238,.1)" stroke="#7b68ee" stroke-width="1.5"/>
+      <text x="610" y="45" text-anchor="middle" fill="#7b68ee" font-weight="700" font-size="13">«interface» IObserver</text>
+      <line x1="500" y1="52" x2="720" y2="52" stroke="#7b68ee" stroke-opacity=".3"/>
+      <text x="610" y="72" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">Update(product, quantity)</text>
+      <!-- One-to-many arrow -->
+      <path d="M280,55 L480,50" fill="none" stroke="#ff9f43" stroke-width="1.5" marker-end="url(#ao1o)"/>
+      <text x="380" y="42" text-anchor="middle" fill="#ff9f43" font-size="10" font-weight="600">1 → many</text>
+      <text x="380" y="70" text-anchor="middle" fill="#6b7394" font-size="9">List&lt;IObserver&gt; _observers</text>
+      <!-- Store (concrete publisher) -->
+      <rect x="50" y="170" width="200" height="55" rx="10" fill="rgba(255,159,67,.06)" stroke="#ff9f43" stroke-width="1" stroke-opacity=".5"/>
+      <text x="150" y="195" text-anchor="middle" fill="#ff9f43" font-weight="600" font-size="12">Store</text>
+      <text x="150" y="215" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">AddStock() → NotifyAll</text>
+      <!-- Concrete observers -->
+      <rect x="400" y="145" width="160" height="42" rx="8" fill="rgba(123,104,238,.06)" stroke="#7b68ee" stroke-width="1" stroke-opacity=".4"/>
+      <text x="480" y="170" text-anchor="middle" fill="#7b68ee" font-weight="600" font-size="11">EmailNotifier</text>
+      <rect x="580" y="145" width="160" height="42" rx="8" fill="rgba(123,104,238,.06)" stroke="#7b68ee" stroke-width="1" stroke-opacity=".4"/>
+      <text x="660" y="170" text-anchor="middle" fill="#7b68ee" font-weight="600" font-size="11">SMSNotifier</text>
+      <rect x="490" y="205" width="160" height="42" rx="8" fill="rgba(123,104,238,.06)" stroke="#7b68ee" stroke-width="1" stroke-opacity=".4"/>
+      <text x="570" y="230" text-anchor="middle" fill="#7b68ee" font-weight="600" font-size="11">LoggingObserver</text>
+      <!-- Extends arrows -->
+      <line x1="150" y1="170" x2="150" y2="120" stroke="#6b7394" stroke-width="1" marker-end="url(#ao1)"/>
+      <line x1="480" y1="145" x2="570" y2="90" stroke="#6b7394" stroke-width="1" marker-end="url(#ao1)"/>
+      <line x1="660" y1="145" x2="640" y2="90" stroke="#6b7394" stroke-width="1" marker-end="url(#ao1)"/>
+      <line x1="570" y1="205" x2="610" y2="90" stroke="#6b7394" stroke-width="1" marker-end="url(#ao1)"/>
+      <!-- C# events note -->
+      <rect x="100" y="265" width="560" height="26" rx="8" fill="rgba(123,104,238,.05)" stroke="rgba(123,104,238,.15)" stroke-width="1"/>
+      <text x="380" y="282" text-anchor="middle" fill="#7b68ee" font-size="10">C# event += is Subscribe(), -= is Unsubscribe(), invoke is NotifyObservers()</text>
+    </svg>
+  </div>
+
+  <div class="card"><h3>Push vs Pull Models</h3><div class="table-wrap"><table><thead><tr><th></th><th>Push Model</th><th>Pull Model</th></tr></thead><tbody>
+    <tr><td><strong>Update signature</strong></td><td>Update(product, qty, ...)</td><td>Update(IPublisher publisher)</td></tr>
+    <tr><td><strong>Data delivery</strong></td><td>Publisher sends all data</td><td>Observer pulls only what it needs</td></tr>
+    <tr><td><strong>Use when</strong></td><td>All observers need same data</td><td>Different observers need different parts</td></tr>
+  </tbody></table></div></div>
+
+  <button class="collapsible-trigger" onclick="toggleCollapsible(this)">C# Implementation <span class="chevron">▼</span></button>
+  <div class="collapsible-body"><div class="inner">
+    <div class="code-block"><div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span>Observer + C# events</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm">// Manual implementation</span>
+<span class="kw">public interface</span> <span class="tp">IObserver</span> { <span class="kw">void</span> <span class="fn">Update</span>(<span class="kw">string</span> product, <span class="kw">int</span> quantity); }
+<span class="kw">public interface</span> <span class="tp">IPublisher</span>
+{
+    <span class="kw">void</span> <span class="fn">Subscribe</span>(<span class="tp">IObserver</span> observer);
+    <span class="kw">void</span> <span class="fn">Unsubscribe</span>(<span class="tp">IObserver</span> observer);
+    <span class="kw">void</span> <span class="fn">NotifyObservers</span>();
+}
+
+<span class="kw">public class</span> <span class="tp">Store</span> : <span class="tp">IPublisher</span>
+{
+    <span class="kw">private readonly</span> <span class="tp">List</span>&lt;<span class="tp">IObserver</span>&gt; _observers = <span class="kw">new</span>();
+    <span class="kw">private string</span> _product; <span class="kw">private int</span> _quantity;
+    <span class="kw">public void</span> <span class="fn">Subscribe</span>(<span class="tp">IObserver</span> o) => _observers.<span class="fn">Add</span>(o);
+    <span class="kw">public void</span> <span class="fn">Unsubscribe</span>(<span class="tp">IObserver</span> o) => _observers.<span class="fn">Remove</span>(o);
+    <span class="kw">public void</span> <span class="fn">NotifyObservers</span>() => _observers.<span class="fn">ForEach</span>(o => o.<span class="fn">Update</span>(_product, _quantity));
+    <span class="kw">public void</span> <span class="fn">AddStock</span>(<span class="kw">string</span> product, <span class="kw">int</span> qty)
+    { _product = product; _quantity = qty; <span class="fn">NotifyObservers</span>(); }
+}
+
+<span class="cm">// C# event = Observer built into the language</span>
+<span class="kw">public class</span> <span class="tp">Store</span>
+{
+    <span class="kw">public event</span> <span class="tp">Action</span>&lt;<span class="kw">string</span>, <span class="kw">int</span>&gt; StockArrived;
+    <span class="kw">public void</span> <span class="fn">AddStock</span>(<span class="kw">string</span> p, <span class="kw">int</span> q) => StockArrived?.<span class="fn">Invoke</span>(p, q);
+}
+store.StockArrived += (p, q) => <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">$"Email: {p}"</span>); <span class="cm">// Subscribe</span>
+store.StockArrived -= handler; <span class="cm">// Unsubscribe</span></pre>
+    </div>
+  </div></div>
+  <div class="note"><span class="bulb">💡</span><span>Memory leak warning: if observers subscribe but never unsubscribe, the publisher holds references preventing garbage collection. Always unsubscribe when an observer is no longer needed.</span></div>
+
+  <button class="collapsible-trigger" onclick="toggleCollapsible(this)">Interview Q&A <span class="chevron">▼</span></button>
+  <div class="collapsible-body"><div class="inner">
+    <div class="qa-block"><div class="qa-q" onclick="toggleQA(this)"><span class="arrow">▶</span>What is the difference between Observer and event/delegate in C#?</div><div class="qa-a">They are the same pattern. C# <code>event</code> is the language-level implementation. <code>+=</code> is Subscribe(), <code>-=</code> is Unsubscribe(), and invoking the event is NotifyObservers().</div></div>
+    <div class="qa-block"><div class="qa-q" onclick="toggleQA(this)"><span class="arrow">▶</span>What is the difference between push and pull models?</div><div class="qa-a">Push: publisher sends all data in Update(). Observer receives everything. Pull: publisher sends just a signal. Observer calls back to pull only what it needs. Push is simpler, pull gives more control.</div></div>
+  </div></div>
+
+  <div class="use-avoid">
+    <div class="use-col"><h4>✅ Use When</h4><ul><li>A change in one object needs to notify many others</li><li>Subscribers should register/unregister at runtime</li><li>Follow OCP — add subscribers without touching publisher</li></ul></div>
+    <div class="avoid-col"><h4>❌ Avoid When</h4><ul><li>The set of dependents is small and fixed</li><li>Unexpected update chains cause hard-to-trace bugs</li><li>Memory leaks from forgotten subscriptions are a concern</li></ul></div>
+  </div>
+</section>
+
+<!-- PATTERN 7 — STATE -->
+<section id="state" class="pattern-section p7">
+  <div class="pattern-header"><div class="pattern-num">07</div><h2>🔄 State</h2></div>
+  <div class="pattern-subtitle">Change an object's behavior when its internal state changes.</div>
+  <div class="card"><h3>Intent</h3><p>Allow an object to alter its behavior when its internal state changes. The object appears to change its class. Each state becomes its own class — eliminating massive if/else chains.</p></div>
+
+  <div class="diagram-wrapper">
+    <svg viewBox="0 0 700 320" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+      <defs>
+        <marker id="arrow7" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#00bfff"/></marker>
+        <marker id="arrow7g" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#6b7394"/></marker>
+      </defs>
+      <!-- Context -->
+      <rect x="240" y="20" width="220" height="80" rx="10" fill="rgba(0,191,255,.1)" stroke="#00bfff" stroke-width="1.5"/>
+      <text x="350" y="48" text-anchor="middle" fill="#00bfff" font-weight="700" font-size="14">VendingMachine</text>
+      <line x1="260" y1="56" x2="440" y2="56" stroke="#00bfff" stroke-opacity=".3"/>
+      <text x="350" y="76" text-anchor="middle" fill="#8890a8" font-size="11" font-family="JetBrains Mono,monospace">_state: IState</text>
+      <text x="350" y="92" text-anchor="middle" fill="#8890a8" font-size="11" font-family="JetBrains Mono,monospace">InsertCoin() / PressButton()</text>
+      <!-- States -->
+      <rect x="40" y="200" width="180" height="60" rx="10" fill="rgba(0,191,255,.06)" stroke="#00bfff" stroke-width="1" stroke-opacity=".5"/>
+      <text x="130" y="225" text-anchor="middle" fill="#00bfff" font-weight="600" font-size="12">IdleState</text>
+      <text x="130" y="248" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">InsertCoin() / PressButton()</text>
+
+      <rect x="260" y="200" width="180" height="60" rx="10" fill="rgba(0,191,255,.06)" stroke="#00bfff" stroke-width="1" stroke-opacity=".5"/>
+      <text x="350" y="225" text-anchor="middle" fill="#00bfff" font-weight="600" font-size="12">HasMoneyState</text>
+      <text x="350" y="248" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">InsertCoin() / PressButton()</text>
+
+      <rect x="480" y="200" width="180" height="60" rx="10" fill="rgba(0,191,255,.06)" stroke="#00bfff" stroke-width="1" stroke-opacity=".5"/>
+      <text x="570" y="225" text-anchor="middle" fill="#00bfff" font-weight="600" font-size="12">DispensingState</text>
+      <text x="570" y="248" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">InsertCoin() / PressButton()</text>
+      <!-- Extends -->
+      <line x1="130" y1="200" x2="300" y2="100" stroke="#6b7394" stroke-width="1" marker-end="url(#arrow7g)"/>
+      <line x1="350" y1="200" x2="350" y2="100" stroke="#6b7394" stroke-width="1" marker-end="url(#arrow7g)"/>
+      <line x1="570" y1="200" x2="400" y2="100" stroke="#6b7394" stroke-width="1" marker-end="url(#arrow7g)"/>
+      <!-- Transition arrows -->
+      <path d="M220,225 L260,225" fill="none" stroke="#00bfff" stroke-width="1.5" marker-end="url(#arrow7)"/>
+      <text x="240" y="218" fill="#00bfff" font-size="9">coin</text>
+      <path d="M440,225 L480,225" fill="none" stroke="#00bfff" stroke-width="1.5" marker-end="url(#arrow7)"/>
+      <text x="460" y="218" fill="#00bfff" font-size="9">press</text>
+      <path d="M570,260 C570,300 130,300 130,260" fill="none" stroke="#00bfff" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#arrow7)"/>
+      <text x="350" y="296" text-anchor="middle" fill="#00bfff" font-size="9">dispensed → reset</text>
+    </svg>
+  </div>
+
+  <button class="collapsible-trigger" onclick="toggleCollapsible(this)">C# Implementation <span class="chevron">▼</span></button>
+  <div class="collapsible-body"><div class="inner">
+    <div class="code-block"><div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span>Vending Machine State Pattern</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="kw">public interface</span> <span class="tp">IState</span>
+{
+    <span class="kw">void</span> <span class="fn">InsertCoin</span>(<span class="tp">VendingMachine</span> machine);
+    <span class="kw">void</span> <span class="fn">PressButton</span>(<span class="tp">VendingMachine</span> machine);
+}</pre>
+    </div>
+    <div class="code-block">
+      <div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span>Step 2 — Context</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="kw">public class</span> <span class="tp">VendingMachine</span>
+{
+    <span class="kw">private</span> <span class="tp">IState</span> _state;
+    <span class="kw">public</span> <span class="tp">IState</span> IdleState { <span class="kw">get</span>; } = <span class="kw">new</span> <span class="tp">IdleState</span>();
+    <span class="kw">public</span> <span class="tp">IState</span> HasMoneyState { <span class="kw">get</span>; } = <span class="kw">new</span> <span class="tp">HasMoneyState</span>();
+    <span class="kw">public</span> <span class="tp">IState</span> DispensingState { <span class="kw">get</span>; } = <span class="kw">new</span> <span class="tp">DispensingState</span>();
+    <span class="kw">public</span> <span class="fn">VendingMachine</span>() { _state = IdleState; }
+
+    <span class="kw">public void</span> <span class="fn">SetState</span>(<span class="tp">IState</span> state)
+    { <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">$" [Transition: {_state.GetType().Name} → {state.GetType().Name}]"</span>);
+      _state = state; }
+
+    <span class="kw">public void</span> <span class="fn">InsertCoin</span>() => _state.<span class="fn">InsertCoin</span>(<span class="kw">this</span>);
+    <span class="kw">public void</span> <span class="fn">PressButton</span>() => _state.<span class="fn">PressButton</span>(<span class="kw">this</span>);
+}</pre>
+    </div>
+    <div class="code-block">
+      <div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span>Step 3 — Concrete States</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="kw">public class</span> <span class="tp">IdleState</span> : <span class="tp">IState</span>
+{
+    <span class="kw">public void</span> <span class="fn">InsertCoin</span>(<span class="tp">VendingMachine</span> m)
+    { <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">"Coin accepted."</span>); m.<span class="fn">SetState</span>(m.HasMoneyState); }
+    <span class="kw">public void</span> <span class="fn">PressButton</span>(<span class="tp">VendingMachine</span> m) =>
+        <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">"Insert coin first."</span>);
+}
+
+<span class="kw">public class</span> <span class="tp">HasMoneyState</span> : <span class="tp">IState</span>
+{
+    <span class="kw">public void</span> <span class="fn">InsertCoin</span>(<span class="tp">VendingMachine</span> m) =>
+        <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">"Already inserted."</span>);
+    <span class="kw">public void</span> <span class="fn">PressButton</span>(<span class="tp">VendingMachine</span> m)
+    { <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">"Dispensing..."</span>);
+      m.<span class="fn">SetState</span>(m.DispensingState); }
+}
+
+<span class="kw">public class</span> <span class="tp">DispensingState</span> : <span class="tp">IState</span>
+{
+    <span class="kw">public void</span> <span class="fn">InsertCoin</span>(<span class="tp">VendingMachine</span> m) =>
+        <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">"Please wait."</span>);
+    <span class="kw">public void</span> <span class="fn">PressButton</span>(<span class="tp">VendingMachine</span> m)
+    { <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">"Product dispensed."</span>); m.<span class="fn">SetState</span>(m.IdleState); }
+}</pre>
+    </div>
+  </div></div>
+
+  <button class="collapsible-trigger" onclick="toggleCollapsible(this)">Interview Q&A <span class="chevron">▼</span></button>
+  <div class="collapsible-body"><div class="inner">
+    <div class="qa-block"><div class="qa-q" onclick="toggleQA(this)"><span class="arrow">▶</span>Who is responsible for state transitions — Context or State?</div><div class="qa-a">Either can do it. If states transition themselves they couple to each other but Context stays clean. If Context manages transitions, state classes are simpler but Context accumulates logic. Most real implementations let states handle their own transitions.</div></div>
+    <div class="qa-block"><div class="qa-q" onclick="toggleQA(this)"><span class="arrow">▶</span>What is the difference between State and enum + switch?</div><div class="qa-a">A switch statement adds every new state to every method — violating OCP. State gives each state its own class — adding a new state means one new class, zero changes to Context or existing states.</div></div>
+  </div></div>
+
+  <div class="card"><h3>State vs Strategy</h3><div class="table-wrap"><table><thead><tr><th></th><th>State</th><th>Strategy</th></tr></thead><tbody>
+    <tr><td><strong>Who swaps</strong></td><td>State — internally via Context</td><td>Client — explicitly from outside</td></tr>
+    <tr><td><strong>Awareness</strong></td><td>States know about each other</td><td>Strategies are independent</td></tr>
+    <tr><td><strong>Transitions</strong></td><td>Core part of the pattern</td><td>No concept of transitions</td></tr>
+    <tr><td><strong>Example</strong></td><td>Vending machine, TCP connection</td><td>Sort algorithm, payment method</td></tr>
+  </tbody></table></div></div>
+
+  <div class="use-avoid">
+    <div class="use-col"><h4>✅ Use When</h4><ul><li>Object's behavior changes dramatically based on state</li><li>State-specific behavior would create massive if/else chains</li><li>Adding new states should not change existing code</li></ul></div>
+    <div class="avoid-col"><h4>❌ Avoid When</h4><ul><li>Only two or three states with simple logic</li><li>States rarely change — extra classes add overhead</li><li>A boolean flag is sufficient</li></ul></div>
+  </div>
+</section>
+
+<!-- PATTERN 8 — STRATEGY -->
+<section id="strategy" class="pattern-section p8">
+  <div class="pattern-header"><div class="pattern-num">08</div><h2>♟️ Strategy</h2></div>
+  <div class="pattern-subtitle">Define a family of algorithms and make them interchangeable at runtime.</div>
+  <div class="card"><h3>Intent</h3><p>Define a family of algorithms, encapsulate each one, and make them interchangeable. Strategy lets the algorithm vary independently from the clients that use it.</p></div>
+
+  <div class="diagram-wrapper">
+    <svg viewBox="0 0 780 290" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+      <defs>
+        <marker id="as8" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#6b7394"/></marker>
+        <marker id="as8p" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#da70d6"/></marker>
+      </defs>
+      <!-- Context -->
+      <rect x="20" y="30" width="240" height="95" rx="10" fill="rgba(218,112,214,.08)" stroke="#da70d6" stroke-width="1.2"/>
+      <text x="140" y="55" text-anchor="middle" fill="#da70d6" font-weight="700" font-size="14">Navigator (Context)</text>
+      <line x1="40" y1="62" x2="240" y2="62" stroke="#da70d6" stroke-opacity=".3"/>
+      <text x="140" y="82" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">_strategy : IRouteStrategy</text>
+      <text x="140" y="98" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">SetStrategy(s)</text>
+      <text x="140" y="114" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">BuildRoute(from, to)</text>
+      <!-- IStrategy -->
+      <rect x="360" y="30" width="260" height="70" rx="10" fill="rgba(218,112,214,.12)" stroke="#da70d6" stroke-width="1.5"/>
+      <text x="490" y="55" text-anchor="middle" fill="#da70d6" font-weight="700" font-size="13">«interface» IRouteStrategy</text>
+      <line x1="380" y1="62" x2="600" y2="62" stroke="#da70d6" stroke-opacity=".3"/>
+      <text x="490" y="82" text-anchor="middle" fill="#8890a8" font-size="11" font-family="JetBrains Mono,monospace">BuildRoute(from, to)</text>
+      <!-- Arrow: Context → Strategy -->
+      <path d="M260,70 L360,65" fill="none" stroke="#da70d6" stroke-width="1.5" marker-end="url(#as8p)"/>
+      <text x="310" y="60" fill="#da70d6" font-size="9" font-weight="600">delegates</text>
+      <!-- Concrete strategies -->
+      <rect x="300" y="170" width="150" height="48" rx="10" fill="rgba(218,112,214,.06)" stroke="#da70d6" stroke-width="1" stroke-opacity=".4"/>
+      <text x="375" y="198" text-anchor="middle" fill="#da70d6" font-weight="600" font-size="11">FastestRoute</text>
+      <rect x="470" y="170" width="155" height="48" rx="10" fill="rgba(218,112,214,.06)" stroke="#da70d6" stroke-width="1" stroke-opacity=".4"/>
+      <text x="548" y="198" text-anchor="middle" fill="#da70d6" font-weight="600" font-size="11">ShortestRoute</text>
+      <rect x="645" y="170" width="120" height="48" rx="10" fill="rgba(218,112,214,.06)" stroke="#da70d6" stroke-width="1" stroke-opacity=".4"/>
+      <text x="705" y="192" text-anchor="middle" fill="#da70d6" font-weight="600" font-size="11">HighwayFree</text>
+      <text x="705" y="206" text-anchor="middle" fill="#da70d6" font-weight="600" font-size="11">Route</text>
+      <!-- Implements arrows -->
+      <line x1="375" y1="170" x2="440" y2="100" stroke="#6b7394" stroke-width="1" marker-end="url(#as8)"/>
+      <line x1="548" y1="170" x2="500" y2="100" stroke="#6b7394" stroke-width="1" marker-end="url(#as8)"/>
+      <line x1="705" y1="170" x2="550" y2="100" stroke="#6b7394" stroke-width="1" marker-end="url(#as8)"/>
+      <!-- Client injection note -->
+      <rect x="30" y="160" width="220" height="28" rx="8" fill="rgba(218,112,214,.05)" stroke="rgba(218,112,214,.15)" stroke-width="1"/>
+      <text x="140" y="178" text-anchor="middle" fill="#da70d6" font-size="10">Client injects strategy from outside</text>
+      <!-- Swap note -->
+      <rect x="140" y="250" width="500" height="26" rx="8" fill="rgba(218,112,214,.05)" stroke="rgba(218,112,214,.15)" stroke-width="1"/>
+      <text x="390" y="267" text-anchor="middle" fill="#da70d6" font-size="10">nav.SetStrategy(new ShortestRoute()) — swap algorithm at runtime, zero code changes</text>
+    </svg>
+  </div>
+
+  <button class="collapsible-trigger" onclick="toggleCollapsible(this)">C# Implementation <span class="chevron">▼</span></button>
+  <div class="collapsible-body"><div class="inner">
+    <div class="code-block"><div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span>Route Strategy Navigator</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="kw">public interface</span> <span class="tp">IRouteStrategy</span>
+{
+    <span class="kw">void</span> <span class="fn">BuildRoute</span>(<span class="kw">string</span> from, <span class="kw">string</span> to);
+}
+
+<span class="kw">public class</span> <span class="tp">FastestRoute</span> : <span class="tp">IRouteStrategy</span>
+{ <span class="kw">public void</span> <span class="fn">BuildRoute</span>(<span class="kw">string</span> f, <span class="kw">string</span> t) =>
+    <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">$"Fastest: {f} to {t} via highways."</span>); }
+
+<span class="kw">public class</span> <span class="tp">ShortestRoute</span> : <span class="tp">IRouteStrategy</span>
+{ <span class="kw">public void</span> <span class="fn">BuildRoute</span>(<span class="kw">string</span> f, <span class="kw">string</span> t) =>
+    <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">$"Shortest: {f} to {t}."</span>); }
+
+<span class="kw">public class</span> <span class="tp">HighwayFreeRoute</span> : <span class="tp">IRouteStrategy</span>
+{ <span class="kw">public void</span> <span class="fn">BuildRoute</span>(<span class="kw">string</span> f, <span class="kw">string</span> t) =>
+    <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">$"Highway-free: {f} to {t}."</span>); }
+
+<span class="kw">public class</span> <span class="tp">Navigator</span>
+{
+    <span class="kw">private</span> <span class="tp">IRouteStrategy</span> _strategy;
+    <span class="kw">public</span> <span class="fn">Navigator</span>(<span class="tp">IRouteStrategy</span> strategy) { _strategy = strategy; }
+    <span class="kw">public void</span> <span class="fn">SetStrategy</span>(<span class="tp">IRouteStrategy</span> s) { _strategy = s; }
+    <span class="kw">public void</span> <span class="fn">BuildRoute</span>(<span class="kw">string</span> from, <span class="kw">string</span> to) =>
+        _strategy.<span class="fn">BuildRoute</span>(from, to);
+}
+
+<span class="kw">var</span> nav = <span class="kw">new</span> <span class="tp">Navigator</span>(<span class="kw">new</span> <span class="tp">FastestRoute</span>());
+nav.<span class="fn">BuildRoute</span>(<span class="str">"Cairo"</span>, <span class="str">"Alexandria"</span>); <span class="cm">// Fastest</span>
+nav.<span class="fn">SetStrategy</span>(<span class="kw">new</span> <span class="tp">ShortestRoute</span>());
+nav.<span class="fn">BuildRoute</span>(<span class="str">"Cairo"</span>, <span class="str">"Alexandria"</span>); <span class="cm">// Shortest</span></pre>
+    </div>
+  </div></div>
+  <div class="note"><span class="bulb">💡</span><span>Passing a <code>Func&lt;T&gt;</code> or <code>Action&lt;T&gt;</code> in C# is a lightweight Strategy. For simple cases a lambda is cleaner. For complex algorithms that need their own state, a full Strategy class is more appropriate.</span></div>
+
+  <button class="collapsible-trigger" onclick="toggleCollapsible(this)">Interview Q&A <span class="chevron">▼</span></button>
+  <div class="collapsible-body"><div class="inner">
+    <div class="qa-block"><div class="qa-q" onclick="toggleQA(this)"><span class="arrow">▶</span>What is the difference between Strategy and if/else?</div><div class="qa-a">An if/else hardcodes all algorithms in one place — adding a new one edits existing code, violating OCP. Strategy gives each algorithm its own class — adding one means adding one class, zero changes to existing code.</div></div>
+    <div class="qa-block"><div class="qa-q" onclick="toggleQA(this)"><span class="arrow">▶</span>Can a Context have a default strategy?</div><div class="qa-a">Yes — and this is good practice. The Context should always have a valid strategy to prevent null reference exceptions.</div></div>
+  </div></div>
+
+  <div class="use-avoid">
+    <div class="use-col"><h4>✅ Use When</h4><ul><li>Multiple algorithm variants need to be swappable</li><li>Algorithms should be independently testable</li><li>OCP — add new algorithms without changing existing code</li></ul></div>
+    <div class="avoid-col"><h4>❌ Avoid When</h4><ul><li>Only one algorithm — pattern adds unnecessary complexity</li><li>Algorithms are simple one-liners — a lambda is cleaner</li><li>Clients never need to switch algorithms</li></ul></div>
+  </div>
+</section>
+
+<!-- PATTERN 9 — TEMPLATE METHOD -->
+<section id="template" class="pattern-section p9">
+  <div class="pattern-header"><div class="pattern-num">09</div><h2>📐 Template Method</h2></div>
+  <div class="pattern-subtitle">Define a skeleton algorithm in a base class; subclasses fill in the steps.</div>
+  <div class="card"><h3>Intent</h3><p>Define the skeleton of an algorithm in a base class, deferring some steps to subclasses. Template Method lets subclasses redefine certain steps without changing the overall structure.</p></div>
+
+  <div class="diagram-wrapper">
+    <svg viewBox="0 0 780 320" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+      <defs>
+        <marker id="at9" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#6b7394"/></marker>
+      </defs>
+      <!-- Abstract class -->
+      <rect x="210" y="10" width="360" height="150" rx="10" fill="rgba(32,178,170,.1)" stroke="#20b2aa" stroke-width="1.5"/>
+      <text x="390" y="35" text-anchor="middle" fill="#20b2aa" font-weight="700" font-size="14">DataMiner «abstract»</text>
+      <line x1="230" y1="42" x2="550" y2="42" stroke="#20b2aa" stroke-opacity=".3"/>
+      <!-- Template method -->
+      <text x="390" y="62" text-anchor="middle" fill="#20b2aa" font-size="10" font-family="JetBrains Mono,monospace" font-weight="700">sealed Mine(filePath)  ← template method</text>
+      <line x1="240" y1="70" x2="540" y2="70" stroke="#20b2aa" stroke-opacity=".15"/>
+      <!-- Step types with color coding -->
+      <text x="250" y="88" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">OpenFile()      </text><text x="430" y="88" fill="#6b7394" font-size="9">← common (fixed)</text>
+      <text x="250" y="104" fill="#ff6b9d" font-size="10" font-family="JetBrains Mono,monospace" font-weight="600">ExtractData()   </text><text x="430" y="104" fill="#ff6b9d" font-size="9">← abstract (mandatory)</text>
+      <text x="250" y="120" fill="#ff6b9d" font-size="10" font-family="JetBrains Mono,monospace" font-weight="600">ParseData()     </text><text x="430" y="120" fill="#ff6b9d" font-size="9">← abstract (mandatory)</text>
+      <text x="250" y="136" fill="#ffd700" font-size="10" font-family="JetBrains Mono,monospace">OnDataParsed()  </text><text x="430" y="136" fill="#ffd700" font-size="9">← hook (optional)</text>
+      <text x="250" y="152" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">AnalyzeData()   </text><text x="430" y="152" fill="#6b7394" font-size="9">← common (fixed)</text>
+      <!-- Concrete subclasses -->
+      <rect x="100" y="220" width="220" height="70" rx="10" fill="rgba(32,178,170,.06)" stroke="#20b2aa" stroke-width="1" stroke-opacity=".5"/>
+      <text x="210" y="245" text-anchor="middle" fill="#20b2aa" font-weight="600" font-size="12">PDFMiner</text>
+      <line x1="120" y1="252" x2="300" y2="252" stroke="#20b2aa" stroke-opacity=".2"/>
+      <text x="210" y="270" text-anchor="middle" fill="#ff6b9d" font-size="9" font-family="JetBrains Mono,monospace">ExtractData() → "raw PDF"</text>
+      <text x="210" y="284" text-anchor="middle" fill="#ffd700" font-size="9" font-family="JetBrains Mono,monospace">OnDataParsed() → validates</text>
+      <rect x="380" y="220" width="220" height="70" rx="10" fill="rgba(32,178,170,.06)" stroke="#20b2aa" stroke-width="1" stroke-opacity=".5"/>
+      <text x="490" y="245" text-anchor="middle" fill="#20b2aa" font-weight="600" font-size="12">CSVMiner</text>
+      <line x1="400" y1="252" x2="580" y2="252" stroke="#20b2aa" stroke-opacity=".2"/>
+      <text x="490" y="270" text-anchor="middle" fill="#ff6b9d" font-size="9" font-family="JetBrains Mono,monospace">ExtractData() → "raw CSV"</text>
+      <text x="490" y="284" text-anchor="middle" fill="#6b7394" font-size="9" font-family="JetBrains Mono,monospace">no hook override — uses default</text>
+      <!-- Extends arrows -->
+      <line x1="210" y1="220" x2="340" y2="160" stroke="#6b7394" stroke-width="1" marker-end="url(#at9)"/>
+      <line x1="490" y1="220" x2="430" y2="160" stroke="#6b7394" stroke-width="1" marker-end="url(#at9)"/>
+      <text x="250" y="195" fill="#6b7394" font-size="9">extends</text>
+      <text x="470" y="195" fill="#6b7394" font-size="9">extends</text>
+      <!-- Legend -->
+      <rect x="610" y="70" width="150" height="80" rx="8" fill="rgba(32,178,170,.04)" stroke="rgba(32,178,170,.15)" stroke-width="1"/>
+      <text x="685" y="90" text-anchor="middle" fill="#c8cdd8" font-size="10" font-weight="600">Legend</text>
+      <text x="625" y="108" fill="#8890a8" font-size="9">■ Common (sealed)</text>
+      <text x="625" y="124" fill="#ff6b9d" font-size="9">■ Abstract (must override)</text>
+      <text x="625" y="140" fill="#ffd700" font-size="9">■ Hook (can override)</text>
+    </svg>
+  </div>
+
+  <div class="card"><h3>Three Step Types</h3><div class="table-wrap"><table><thead><tr><th>Type</th><th>Description</th><th>Override?</th></tr></thead><tbody>
+    <tr><td><strong>Common step</strong></td><td>Implemented in AbstractClass — same for all subclasses</td><td>No — sealed</td></tr>
+    <tr><td><strong>Abstract step</strong></td><td>No implementation in base — subclass MUST override</td><td>Mandatory</td></tr>
+    <tr><td><strong>Hook</strong></td><td>Default empty implementation — subclass CAN override optionally</td><td>Optional</td></tr>
+  </tbody></table></div></div>
+
+  <button class="collapsible-trigger" onclick="toggleCollapsible(this)">C# Implementation <span class="chevron">▼</span></button>
+  <div class="collapsible-body"><div class="inner">
+    <div class="code-block"><div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span>DataMiner Template</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="kw">public abstract class</span> <span class="tp">DataMiner</span>
+{
+    <span class="cm">// Template Method — sealed, defines the skeleton</span>
+    <span class="kw">public sealed void</span> <span class="fn">Mine</span>(<span class="kw">string</span> filePath)
+    {
+        <span class="fn">OpenFile</span>(filePath);       <span class="cm">// common</span>
+        <span class="kw">var</span> raw = <span class="fn">ExtractData</span>();  <span class="cm">// abstract</span>
+        <span class="kw">var</span> parsed = <span class="fn">ParseData</span>(raw); <span class="cm">// abstract</span>
+        <span class="fn">OnDataParsed</span>(parsed);    <span class="cm">// hook (optional)</span>
+        <span class="kw">var</span> report = <span class="fn">AnalyzeData</span>(parsed); <span class="cm">// common</span>
+        <span class="fn">SendReport</span>(report);      <span class="cm">// common</span>
+        <span class="fn">CloseFile</span>();             <span class="cm">// common</span>
+    }
+    <span class="kw">private void</span> <span class="fn">OpenFile</span>(<span class="kw">string</span> p) => <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">$"Opening: {p}"</span>);
+    <span class="kw">private void</span> <span class="fn">CloseFile</span>() => <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">"Closing."</span>);
+    <span class="kw">protected abstract string</span> <span class="fn">ExtractData</span>();
+    <span class="kw">protected abstract string</span> <span class="fn">ParseData</span>(<span class="kw">string</span> raw);
+    <span class="kw">protected virtual void</span> <span class="fn">OnDataParsed</span>(<span class="kw">string</span> data) { } <span class="cm">// hook</span>
+}
+
+<span class="kw">public class</span> <span class="tp">PDFMiner</span> : <span class="tp">DataMiner</span>
+{
+    <span class="kw">protected override string</span> <span class="fn">ExtractData</span>() => <span class="str">"raw PDF"</span>;
+    <span class="kw">protected override string</span> <span class="fn">ParseData</span>(<span class="kw">string</span> r) => <span class="str">$"parsed({r})"</span>;
+    <span class="kw">protected override void</span> <span class="fn">OnDataParsed</span>(<span class="kw">string</span> d) <span class="cm">// overrides hook</span>
+        => <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">$"PDF Hook: Validating {d}"</span>);
+}
+
+<span class="kw">public class</span> <span class="tp">CSVMiner</span> : <span class="tp">DataMiner</span>
+{
+    <span class="kw">protected override string</span> <span class="fn">ExtractData</span>()
+    { <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">"CSV: Reading rows..."</span>); <span class="kw">return</span> <span class="str">"raw CSV"</span>; }
+    <span class="kw">protected override string</span> <span class="fn">ParseData</span>(<span class="kw">string</span> r)
+    { <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">"CSV: Splitting..."</span>); <span class="kw">return</span> <span class="str">$"parsed({r})"</span>; }
+    <span class="cm">// No hook override — default empty is fine</span>
+}</pre>
+    </div>
+  </div></div>
+  <div class="note"><span class="bulb">💡</span><span>The template method is <code>sealed</code> to prevent subclasses from changing the order of steps. Hooks give optional extension points without making them mandatory.</span></div>
+
+  <button class="collapsible-trigger" onclick="toggleCollapsible(this)">Interview Q&A <span class="chevron">▼</span></button>
+  <div class="collapsible-body"><div class="inner">
+    <div class="qa-block"><div class="qa-q" onclick="toggleQA(this)"><span class="arrow">▶</span>What is a hook in Template Method?</div><div class="qa-a">A hook is a method with a default empty implementation in the abstract class. Subclasses can override it to add optional behavior — but they are not forced to. It gives extension points without making them mandatory.</div></div>
+    <div class="qa-block"><div class="qa-q" onclick="toggleQA(this)"><span class="arrow">▶</span>Why is the template method marked sealed?</div><div class="qa-a">To prevent subclasses from changing the order of steps. The skeleton is fixed — only the variable steps change. If subclasses could override the template method itself they could break the algorithm structure.</div></div>
+  </div></div>
+
+  <div class="use-avoid">
+    <div class="use-col"><h4>✅ Use When</h4><ul><li>Multiple classes share the same algorithm structure</li><li>Avoid code duplication across similar classes</li><li>Control extension points via hooks</li></ul></div>
+    <div class="avoid-col"><h4>❌ Avoid When</h4><ul><li>Steps have nothing in common — Strategy is cleaner</li><li>The algorithm has only one or two steps</li><li>Deep inheritance hierarchies make code hard to follow</li></ul></div>
+  </div>
+</section>
+
+<!-- PATTERN 10 — VISITOR -->
+<section id="visitor" class="pattern-section p10">
+  <div class="pattern-header"><div class="pattern-num">10</div><h2>🧳 Visitor</h2></div>
+  <div class="pattern-subtitle">Add new operations to existing object structures without modifying them.</div>
+  <div class="card"><h3>Intent</h3><p>Let you add new operations to existing object structures without modifying the classes of those objects. The operation is separated from the objects it operates on.</p></div>
+
+  <div class="diagram-wrapper">
+    <svg viewBox="0 0 780 340" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+      <defs>
+        <marker id="av10" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#6b7394"/></marker>
+        <marker id="av10r" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#f08080"/></marker>
+      </defs>
+      <!-- IVisitable -->
+      <rect x="20" y="15" width="240" height="70" rx="10" fill="rgba(240,128,128,.1)" stroke="#f08080" stroke-width="1.5"/>
+      <text x="140" y="40" text-anchor="middle" fill="#f08080" font-weight="700" font-size="13">«interface» IVisitable</text>
+      <line x1="40" y1="47" x2="240" y2="47" stroke="#f08080" stroke-opacity=".3"/>
+      <text x="140" y="68" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">Accept(IVisitor v)</text>
+      <!-- IVisitor -->
+      <rect x="460" y="15" width="280" height="80" rx="10" fill="rgba(123,104,238,.1)" stroke="#7b68ee" stroke-width="1.5"/>
+      <text x="600" y="40" text-anchor="middle" fill="#7b68ee" font-weight="700" font-size="13">«interface» IVisitor</text>
+      <line x1="480" y1="47" x2="720" y2="47" stroke="#7b68ee" stroke-opacity=".3"/>
+      <text x="600" y="68" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">VisitCircle(Circle c)</text>
+      <text x="600" y="84" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">VisitRectangle(Rectangle r)</text>
+      <!-- Accept uses visitor arrow -->
+      <path d="M260,50 L460,50" fill="none" stroke="#f08080" stroke-width="1.5" marker-end="url(#av10r)"/>
+      <text x="360" y="42" text-anchor="middle" fill="#f08080" font-size="10" font-weight="600">Accept → visit</text>
+      <text x="360" y="68" text-anchor="middle" fill="#6b7394" font-size="9">double dispatch</text>
+      <!-- Concrete elements -->
+      <rect x="20" y="140" width="160" height="60" rx="10" fill="rgba(240,128,128,.06)" stroke="#f08080" stroke-width="1" stroke-opacity=".5"/>
+      <text x="100" y="165" text-anchor="middle" fill="#f08080" font-weight="600" font-size="12">Circle</text>
+      <text x="100" y="185" text-anchor="middle" fill="#8890a8" font-size="9" font-family="JetBrains Mono,monospace">Accept → v.VisitCircle(this)</text>
+      <rect x="200" y="140" width="160" height="60" rx="10" fill="rgba(240,128,128,.06)" stroke="#f08080" stroke-width="1" stroke-opacity=".5"/>
+      <text x="280" y="165" text-anchor="middle" fill="#f08080" font-weight="600" font-size="12">Rectangle</text>
+      <text x="280" y="185" text-anchor="middle" fill="#8890a8" font-size="9" font-family="JetBrains Mono,monospace">Accept → v.VisitRect(this)</text>
+      <!-- Concrete visitors -->
+      <rect x="440" y="140" width="170" height="55" rx="10" fill="rgba(123,104,238,.06)" stroke="#7b68ee" stroke-width="1" stroke-opacity=".5"/>
+      <text x="525" y="165" text-anchor="middle" fill="#7b68ee" font-weight="600" font-size="11">XMLExportVisitor</text>
+      <text x="525" y="183" text-anchor="middle" fill="#8890a8" font-size="9" font-family="JetBrains Mono,monospace">&lt;circle r="5"/&gt;</text>
+      <rect x="630" y="140" width="140" height="55" rx="10" fill="rgba(123,104,238,.06)" stroke="#7b68ee" stroke-width="1" stroke-opacity=".5"/>
+      <text x="700" y="165" text-anchor="middle" fill="#7b68ee" font-weight="600" font-size="11">AreaCalculator</text>
+      <text x="700" y="183" text-anchor="middle" fill="#8890a8" font-size="9" font-family="JetBrains Mono,monospace">π × r²</text>
+      <!-- Implements arrows -->
+      <line x1="100" y1="140" x2="120" y2="85" stroke="#6b7394" stroke-width="1" marker-end="url(#av10)"/>
+      <line x1="280" y1="140" x2="170" y2="85" stroke="#6b7394" stroke-width="1" marker-end="url(#av10)"/>
+      <line x1="525" y1="140" x2="560" y2="95" stroke="#6b7394" stroke-width="1" marker-end="url(#av10)"/>
+      <line x1="700" y1="140" x2="640" y2="95" stroke="#6b7394" stroke-width="1" marker-end="url(#av10)"/>
+      <!-- Double dispatch flow -->
+      <rect x="40" y="230" width="700" height="50" rx="10" fill="rgba(240,128,128,.04)" stroke="rgba(240,128,128,.12)" stroke-width="1"/>
+      <text x="390" y="250" text-anchor="middle" fill="#f08080" font-size="10" font-weight="600">Double Dispatch Flow:</text>
+      <text x="390" y="270" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">shape.Accept(visitor) → Circle.Accept() → visitor.VisitCircle(this) → XMLExporter.VisitCircle()</text>
+      <!-- Scale note -->
+      <rect x="100" y="300" width="560" height="26" rx="8" fill="rgba(123,104,238,.05)" stroke="rgba(123,104,238,.15)" stroke-width="1"/>
+      <text x="380" y="317" text-anchor="middle" fill="#7b68ee" font-size="10">New operation = 1 new Visitor class, zero changes to element classes</text>
+    </svg>
+  </div>
+
+  <div class="card"><h3>Double Dispatch — The Core Mechanism</h3>
+    <p style="margin-bottom:12px">Single dispatch picks a method based on one type. Double dispatch picks based on two — the receiver AND the argument.</p>
+    <div class="code-block"><div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span>Double dispatch explained</span></div>
+      <pre><span class="cm">// Double dispatch explained:</span>
+shape.<span class="fn">Accept</span>(visitor);
+<span class="cm">// Dispatch 1: 'shape is Circle'  → Circle.Accept()</span>
+<span class="cm">// Dispatch 2: inside Accept()    → visitor.VisitCircle(this)</span>
+<span class="cm">//   'visitor is XMLExporter'     → XMLExporter.VisitCircle()</span>
+<span class="cm">// Result: correct method for every shape × visitor combination</span></pre>
+    </div>
+  </div>
+
+  <button class="collapsible-trigger" onclick="toggleCollapsible(this)">C# Implementation <span class="chevron">▼</span></button>
+  <div class="collapsible-body"><div class="inner">
+    <div class="code-block"><div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span>Visitor with Shapes</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="kw">public interface</span> <span class="tp">IVisitor</span> { <span class="kw">void</span> <span class="fn">VisitCircle</span>(<span class="tp">Circle</span> c); <span class="kw">void</span> <span class="fn">VisitRectangle</span>(<span class="tp">Rectangle</span> r); }
+<span class="kw">public interface</span> <span class="tp">IVisitable</span> { <span class="kw">void</span> <span class="fn">Accept</span>(<span class="tp">IVisitor</span> v); }</pre>
+    </div>
+    <div class="code-block"><div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span>Step 2 — Elements</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="kw">public class</span> <span class="tp">Circle</span> : <span class="tp">IVisitable</span>
+{
+    <span class="kw">public float</span> Radius { <span class="kw">get</span>; }
+    <span class="kw">public</span> <span class="fn">Circle</span>(<span class="kw">float</span> r) { Radius = r; }
+    <span class="kw">public void</span> <span class="fn">Accept</span>(<span class="tp">IVisitor</span> v) => v.<span class="fn">VisitCircle</span>(<span class="kw">this</span>); <span class="cm">// double dispatch</span>
+}
+
+<span class="kw">public class</span> <span class="tp">Rectangle</span> : <span class="tp">IVisitable</span>
+{
+    <span class="kw">public float</span> Width { <span class="kw">get</span>; } <span class="kw">public float</span> Height { <span class="kw">get</span>; }
+    <span class="kw">public</span> <span class="fn">Rectangle</span>(<span class="kw">float</span> w, <span class="kw">float</span> h) { Width = w; Height = h; }
+    <span class="kw">public void</span> <span class="fn">Accept</span>(<span class="tp">IVisitor</span> v) => v.<span class="fn">VisitRectangle</span>(<span class="kw">this</span>);
+}</pre>
+    </div>
+    <div class="code-block"><div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span>Step 3 — Concrete Visitors</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="kw">public class</span> <span class="tp">XMLExportVisitor</span> : <span class="tp">IVisitor</span>
+{
+    <span class="kw">public void</span> <span class="fn">VisitCircle</span>(<span class="tp">Circle</span> c) =>
+        <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">$"&lt;circle r=\"{c.Radius}\"/&gt;"</span>);
+    <span class="kw">public void</span> <span class="fn">VisitRectangle</span>(<span class="tp">Rectangle</span> r) =>
+        <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">$"&lt;rect w=\"{r.Width}\" h=\"{r.Height}\"/&gt;"</span>);
+}
+
+<span class="kw">public class</span> <span class="tp">AreaCalculatorVisitor</span> : <span class="tp">IVisitor</span>
+{
+    <span class="kw">public float</span> TotalArea { <span class="kw">get</span>; <span class="kw">private set</span>; }
+    <span class="kw">public void</span> <span class="fn">VisitCircle</span>(<span class="tp">Circle</span> c) { TotalArea += <span class="tp">MathF</span>.PI * c.Radius * c.Radius; }
+    <span class="kw">public void</span> <span class="fn">VisitRectangle</span>(<span class="tp">Rectangle</span> r) { TotalArea += r.Width * r.Height; }
+}
+
+<span class="cm">// Adding new operation = one new class, zero changes to shape classes</span></pre>
+    </div>
+    <div class="code-block"><div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span>Step 4 — Client code</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="kw">var</span> shapes = <span class="kw">new</span> <span class="tp">List</span>&lt;<span class="tp">IVisitable</span>&gt; { <span class="kw">new</span> <span class="tp">Circle</span>(<span class="num">5</span>), <span class="kw">new</span> <span class="tp">Rectangle</span>(<span class="num">4</span>,<span class="num">6</span>), <span class="kw">new</span> <span class="tp">Circle</span>(<span class="num">3</span>) };
+
+shapes.<span class="fn">ForEach</span>(s => s.<span class="fn">Accept</span>(<span class="kw">new</span> <span class="tp">XMLExportVisitor</span>()));
+
+<span class="kw">var</span> calc = <span class="kw">new</span> <span class="tp">AreaCalculatorVisitor</span>();
+shapes.<span class="fn">ForEach</span>(s => s.<span class="fn">Accept</span>(calc));
+<span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">$"Total area: {calc.TotalArea:F2}"</span>);</pre>
+    </div>
+  </div></div>
+  <div class="note"><span class="bulb">💡</span><span>Visitor works best when the element hierarchy is stable and new operations are added frequently. Adding new element types requires updating every Visitor class — that is the main drawback.</span></div>
+
+  <button class="collapsible-trigger" onclick="toggleCollapsible(this)">Interview Q&A <span class="chevron">▼</span></button>
+  <div class="collapsible-body"><div class="inner">
+    <div class="qa-block"><div class="qa-q" onclick="toggleQA(this)"><span class="arrow">▶</span>What is double dispatch and why does Visitor need it?</div><div class="qa-a">Single dispatch picks a method based on one type. Double dispatch picks based on two. Visitor needs this because the right operation depends on both the shape type and the visitor type. Accept() resolves the shape, VisitXxx(this) resolves the visitor.</div></div>
+    <div class="qa-block"><div class="qa-q" onclick="toggleQA(this)"><span class="arrow">▶</span>What is the main drawback of Visitor?</div><div class="qa-a">Adding a new element type requires updating every Visitor class. With 10 visitors and a new Triangle shape, you must add VisitTriangle() to all 10. Visitor scales for new operations but poorly for new elements.</div></div>
+  </div></div>
+
+  <div class="use-avoid">
+    <div class="use-col"><h4>✅ Use When</h4><ul><li>Many distinct operations on a stable object structure</li><li>Keep unrelated operations out of element classes</li><li>New operations are added frequently</li></ul></div>
+    <div class="avoid-col"><h4>❌ Avoid When</h4><ul><li>Element hierarchy changes frequently</li><li>Operations need access to private fields</li><li>Double dispatch adds unnecessary complexity</li></ul></div>
+  </div>
+</section>
+
+<!-- PATTERN 11 — INTERPRETER -->
+<section id="interpreter" class="pattern-section p11">
+  <div class="pattern-header"><div class="pattern-num">11</div><h2>📖 Interpreter</h2></div>
+  <div class="pattern-subtitle">Define a grammar and provide an interpreter to evaluate it.</div>
+  <div class="card"><h3>Intent</h3><p>Define a grammar for a language and provide an interpreter to evaluate sentences in that language. Each grammar rule maps to a class. Complex expressions become trees of simple expression objects.</p></div>
+
+  <div class="note"><span class="bulb">💡</span><span>The Interpreter pattern is from the original GoF book. It is NOT covered in <em>Dive Into Design Patterns</em> by Alexander Shvets. It appears in C# as LINQ expression trees, regex, and SQL parsers.</span></div>
+
+  <div class="diagram-wrapper">
+    <svg viewBox="0 0 780 320" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+      <defs>
+        <marker id="ai11" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#6b7394"/></marker>
+        <marker id="ai11b" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#87ceeb"/></marker>
+      </defs>
+      <!-- IExpression -->
+      <rect x="260" y="10" width="260" height="65" rx="10" fill="rgba(135,206,235,.1)" stroke="#87ceeb" stroke-width="1.5"/>
+      <text x="390" y="35" text-anchor="middle" fill="#87ceeb" font-weight="700" font-size="13">«interface» IExpression</text>
+      <line x1="280" y1="42" x2="500" y2="42" stroke="#87ceeb" stroke-opacity=".3"/>
+      <text x="390" y="62" text-anchor="middle" fill="#8890a8" font-size="11" font-family="JetBrains Mono,monospace">Interpret() : int</text>
+      <!-- Terminal -->
+      <rect x="40" y="130" width="220" height="65" rx="10" fill="rgba(135,206,235,.06)" stroke="#87ceeb" stroke-width="1" stroke-opacity=".5"/>
+      <text x="150" y="150" text-anchor="middle" fill="#87ceeb" font-weight="600" font-size="12">NumberExpression</text>
+      <text x="150" y="163" text-anchor="middle" fill="#87ceeb" font-size="9">(Terminal — leaf)</text>
+      <line x1="60" y1="170" x2="240" y2="170" stroke="#87ceeb" stroke-opacity=".2"/>
+      <text x="150" y="187" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">_value → returns it</text>
+      <!-- NonTerminals -->
+      <rect x="310" y="130" width="150" height="55" rx="10" fill="rgba(135,206,235,.06)" stroke="#87ceeb" stroke-width="1" stroke-opacity=".5"/>
+      <text x="385" y="155" text-anchor="middle" fill="#87ceeb" font-weight="600" font-size="11">AddExpression</text>
+      <text x="385" y="175" text-anchor="middle" fill="#8890a8" font-size="9" font-family="JetBrains Mono,monospace">_left + _right</text>
+      <rect x="480" y="130" width="150" height="55" rx="10" fill="rgba(135,206,235,.06)" stroke="#87ceeb" stroke-width="1" stroke-opacity=".5"/>
+      <text x="555" y="155" text-anchor="middle" fill="#87ceeb" font-weight="600" font-size="11">SubtractExpr</text>
+      <text x="555" y="175" text-anchor="middle" fill="#8890a8" font-size="9" font-family="JetBrains Mono,monospace">_left - _right</text>
+      <rect x="650" y="130" width="120" height="55" rx="10" fill="rgba(135,206,235,.06)" stroke="#87ceeb" stroke-width="1" stroke-opacity=".5"/>
+      <text x="710" y="155" text-anchor="middle" fill="#87ceeb" font-weight="600" font-size="11">MultiplyExpr</text>
+      <text x="710" y="175" text-anchor="middle" fill="#8890a8" font-size="9" font-family="JetBrains Mono,monospace">_left × _right</text>
+      <!-- Implements arrows -->
+      <line x1="150" y1="130" x2="330" y2="75" stroke="#6b7394" stroke-width="1" marker-end="url(#ai11)"/>
+      <line x1="385" y1="130" x2="380" y2="75" stroke="#6b7394" stroke-width="1" marker-end="url(#ai11)"/>
+      <line x1="555" y1="130" x2="420" y2="75" stroke="#6b7394" stroke-width="1" marker-end="url(#ai11)"/>
+      <line x1="710" y1="130" x2="460" y2="75" stroke="#6b7394" stroke-width="1" marker-end="url(#ai11)"/>
+      <!-- NonTerminal self-ref (has children) -->
+      <path d="M460,155 C490,120 530,120 480,155" fill="none" stroke="#87ceeb" stroke-width="1" stroke-dasharray="4 3"/>
+      <text x="510" y="118" fill="#87ceeb" font-size="8">_left, _right : IExpression</text>
+      <!-- Expression tree example -->
+      <rect x="120" y="220" width="540" height="85" rx="10" fill="rgba(135,206,235,.04)" stroke="rgba(135,206,235,.12)" stroke-width="1"/>
+      <text x="390" y="242" text-anchor="middle" fill="#87ceeb" font-size="11" font-weight="600">Expression Tree: (5 + 3) - 2</text>
+      <!-- Tree drawing -->
+      <text x="390" y="262" text-anchor="middle" fill="#ff6b9d" font-size="11" font-family="JetBrains Mono,monospace" font-weight="600">Subtract</text>
+      <text x="300" y="282" text-anchor="middle" fill="#ff6b9d" font-size="10" font-family="JetBrains Mono,monospace">Add</text>
+      <text x="480" y="282" text-anchor="middle" fill="#87ceeb" font-size="10" font-family="JetBrains Mono,monospace">2</text>
+      <text x="250" y="298" text-anchor="middle" fill="#87ceeb" font-size="10" font-family="JetBrains Mono,monospace">5</text>
+      <text x="350" y="298" text-anchor="middle" fill="#87ceeb" font-size="10" font-family="JetBrains Mono,monospace">3</text>
+      <!-- Tree lines -->
+      <line x1="380" y1="265" x2="310" y2="275" stroke="#6b7394" stroke-width="1"/>
+      <line x1="400" y1="265" x2="470" y2="275" stroke="#6b7394" stroke-width="1"/>
+      <line x1="290" y1="285" x2="255" y2="292" stroke="#6b7394" stroke-width="1"/>
+      <line x1="310" y1="285" x2="345" y2="292" stroke="#6b7394" stroke-width="1"/>
+      <!-- Result -->
+      <text x="580" y="275" fill="#50fa7b" font-size="12" font-weight="700">= 6</text>
+    </svg>
+  </div>
+
+  <div class="card"><h3>Terminal vs NonTerminal</h3><div class="table-wrap"><table><thead><tr><th></th><th>TerminalExpression</th><th>NonTerminalExpression</th></tr></thead><tbody>
+    <tr><td><strong>Children</strong></td><td>None — leaf node</td><td>Has _left and _right children</td></tr>
+    <tr><td><strong>Interpret()</strong></td><td>Returns its own value directly</td><td>Delegates to children and combines results</td></tr>
+    <tr><td><strong>Example</strong></td><td>NumberExpression — holds a number</td><td>AddExpression, SubtractExpression</td></tr>
+  </tbody></table></div></div>
+
+  <button class="collapsible-trigger" onclick="toggleCollapsible(this)">C# Implementation <span class="chevron">▼</span></button>
+  <div class="collapsible-body"><div class="inner">
+    <div class="code-block"><div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span>Step 1 — AbstractExpression</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="kw">public interface</span> <span class="tp">IExpression</span> { <span class="kw">int</span> <span class="fn">Interpret</span>(); }</pre>
+    </div>
+    <div class="code-block"><div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span>Step 2 — Terminal and NonTerminal Expressions</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm">// Terminal — leaf node, no children</span>
+<span class="kw">public class</span> <span class="tp">NumberExpression</span> : <span class="tp">IExpression</span>
+{
+    <span class="kw">private readonly int</span> _value;
+    <span class="kw">public</span> <span class="fn">NumberExpression</span>(<span class="kw">int</span> value) { _value = value; }
+    <span class="kw">public int</span> <span class="fn">Interpret</span>() => _value;
+}
+
+<span class="cm">// NonTerminal — delegates to children</span>
+<span class="kw">public class</span> <span class="tp">AddExpression</span> : <span class="tp">IExpression</span>
+{
+    <span class="kw">private readonly</span> <span class="tp">IExpression</span> _left, _right;
+    <span class="kw">public</span> <span class="fn">AddExpression</span>(<span class="tp">IExpression</span> l, <span class="tp">IExpression</span> r) { _left = l; _right = r; }
+    <span class="kw">public int</span> <span class="fn">Interpret</span>() => _left.<span class="fn">Interpret</span>() + _right.<span class="fn">Interpret</span>();
+}
+
+<span class="kw">public class</span> <span class="tp">SubtractExpression</span> : <span class="tp">IExpression</span>
+{
+    <span class="kw">private readonly</span> <span class="tp">IExpression</span> _left, _right;
+    <span class="kw">public</span> <span class="fn">SubtractExpression</span>(<span class="tp">IExpression</span> l, <span class="tp">IExpression</span> r) { _left = l; _right = r; }
+    <span class="kw">public int</span> <span class="fn">Interpret</span>() => _left.<span class="fn">Interpret</span>() - _right.<span class="fn">Interpret</span>();
+}
+
+<span class="kw">public class</span> <span class="tp">MultiplyExpression</span> : <span class="tp">IExpression</span>
+{
+    <span class="kw">private readonly</span> <span class="tp">IExpression</span> _left, _right;
+    <span class="kw">public</span> <span class="fn">MultiplyExpression</span>(<span class="tp">IExpression</span> l, <span class="tp">IExpression</span> r) { _left = l; _right = r; }
+    <span class="kw">public int</span> <span class="fn">Interpret</span>() => _left.<span class="fn">Interpret</span>() * _right.<span class="fn">Interpret</span>();
+}</pre>
+    </div>
+    <div class="code-block"><div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span>Step 3 — Client builds the expression tree</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><span class="cm">// Expression: (5 + 3) - 2 = 6</span>
+<span class="tp">IExpression</span> expr = <span class="kw">new</span> <span class="tp">SubtractExpression</span>(
+    <span class="kw">new</span> <span class="tp">AddExpression</span>(<span class="kw">new</span> <span class="tp">NumberExpression</span>(<span class="num">5</span>), <span class="kw">new</span> <span class="tp">NumberExpression</span>(<span class="num">3</span>)),
+    <span class="kw">new</span> <span class="tp">NumberExpression</span>(<span class="num">2</span>)
+);
+<span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">$"(5+3)-2 = {expr.Interpret()}"</span>); <span class="cm">// 6</span>
+
+<span class="cm">// Expression: (4 * 2) + (10 - 3) = 15</span>
+<span class="tp">IExpression</span> expr2 = <span class="kw">new</span> <span class="tp">AddExpression</span>(
+    <span class="kw">new</span> <span class="tp">MultiplyExpression</span>(<span class="kw">new</span> <span class="tp">NumberExpression</span>(<span class="num">4</span>), <span class="kw">new</span> <span class="tp">NumberExpression</span>(<span class="num">2</span>)),
+    <span class="kw">new</span> <span class="tp">SubtractExpression</span>(<span class="kw">new</span> <span class="tp">NumberExpression</span>(<span class="num">10</span>), <span class="kw">new</span> <span class="tp">NumberExpression</span>(<span class="num">3</span>))
+);
+<span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">$"(4*2)+(10-3) = {expr2.Interpret()}"</span>); <span class="cm">// 15</span></pre>
+    </div>
+  </div></div>
+
+  <button class="collapsible-trigger" onclick="toggleCollapsible(this)">Interview Q&A <span class="chevron">▼</span></button>
+  <div class="collapsible-body"><div class="inner">
+    <div class="qa-block"><div class="qa-q" onclick="toggleQA(this)"><span class="arrow">▶</span>What is the relationship between Interpreter and Composite?</div><div class="qa-a">Interpreter is Composite applied to a grammar. NonTerminalExpression is a Composite node, TerminalExpression is a Leaf. The expression tree is a Composite tree where each node also knows how to interpret itself.</div></div>
+    <div class="qa-block"><div class="qa-q" onclick="toggleQA(this)"><span class="arrow">▶</span>When should you NOT use Interpreter?</div><div class="qa-a">When the grammar is complex — a SQL parser would need hundreds of classes. For complex grammars use a dedicated parser library. Interpreter works well for simple DSLs with fewer than 10-15 rules.</div></div>
+    <div class="qa-block"><div class="qa-q" onclick="toggleQA(this)"><span class="arrow">▶</span>How does LINQ use Interpreter?</div><div class="qa-a">Every lambda like <code>x => x > 5</code> compiles into a tree of BinaryExpression, ParameterExpression, and ConstantExpression nodes. Entity Framework walks this tree and translates it to SQL.</div></div>
+  </div></div>
+
+  <div class="card"><h3>Interpreter vs Composite</h3><div class="table-wrap"><table><thead><tr><th></th><th>Composite</th><th>Interpreter</th></tr></thead><tbody>
+    <tr><td><strong>Node types</strong></td><td>Leaf and Composite</td><td>Terminal and NonTerminal</td></tr>
+    <tr><td><strong>Purpose</strong></td><td>Represent part-whole hierarchy</td><td>Represent and evaluate grammar rules</td></tr>
+    <tr><td><strong>Relationship</strong></td><td>General tree pattern</td><td>Interpreter IS Composite applied to grammars</td></tr>
+  </tbody></table></div></div>
+
+  <div class="use-avoid">
+    <div class="use-col"><h4>✅ Use When</h4><ul><li>You have a simple language or grammar to interpret</li><li>Grammar rules map cleanly to a class hierarchy</li><li>You need to build and evaluate expressions at runtime</li></ul></div>
+    <div class="avoid-col"><h4>❌ Avoid When</h4><ul><li>The grammar is complex — too many classes</li><li>Performance is critical — tree traversal is slow</li><li>A parser library or regex solves it more simply</li></ul></div>
+  </div>
+</section>
+
+<!-- ═══ CHOOSING THE RIGHT PATTERN ═══ -->
+<section class="summary-section">
+  <h2>Choosing the Right Pattern</h2>
+  <div class="card">
+    <div class="table-wrap"><table>
+      <thead><tr><th>If you need to...</th><th>Use this pattern</th></tr></thead>
+      <tbody>
+        <tr><td>Pass a request along a chain until someone handles it</td><td><strong>Chain of Responsibility</strong></td></tr>
+        <tr><td>Encapsulate a request — support undo, queue, or log</td><td><strong>Command</strong></td></tr>
+        <tr><td>Traverse a collection without exposing its structure</td><td><strong>Iterator</strong></td></tr>
+        <tr><td>Centralize communication between many objects</td><td><strong>Mediator</strong></td></tr>
+        <tr><td>Save and restore an object's state for undo</td><td><strong>Memento</strong></td></tr>
+        <tr><td>Notify many objects when one object changes</td><td><strong>Observer</strong></td></tr>
+        <tr><td>Change behavior dynamically as internal state evolves</td><td><strong>State</strong></td></tr>
+        <tr><td>Swap algorithms at runtime without changing the client</td><td><strong>Strategy</strong></td></tr>
+        <tr><td>Define a skeleton algorithm with optional overridable steps</td><td><strong>Template Method</strong></td></tr>
+        <tr><td>Add new operations without modifying object classes</td><td><strong>Visitor</strong></td></tr>
+        <tr><td>Define and evaluate a simple grammar or expression language</td><td><strong>Interpreter (GoF bonus)</strong></td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</section>
+
+<button class="back-top" id="backTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+<footer>
+  <p>Behavioral Design Patterns — C# Interactive Study Guide</p>
+</footer>
+
+<script>
+// Collapsible sections
+function toggleCollapsible(btn) {
+  btn.classList.toggle('open');
+  const body = btn.nextElementSibling;
+  body.classList.toggle('open');
+}
+
+// Q&A accordion
+function toggleQA(el) {
+  el.classList.toggle('open');
+  el.nextElementSibling.classList.toggle('open');
+}
+
+// Copy code
+function copyCode(btn) {
+  const pre = btn.closest('.code-block').querySelector('pre');
+  const text = pre.textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = 'Copy', 1500);
+  });
+}
+
+// Back to top
+window.addEventListener('scroll', () => {
+  document.getElementById('backTop').classList.toggle('show', window.scrollY > 400);
+});
+</script>
+</body>
+</html>

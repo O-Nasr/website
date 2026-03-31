@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GeoDNS — Geo-Routed DNS Interactive Study Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=DM+Sans:ital,wght@0,400;0,500;0,700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#060810;--bg-card:#0d0f18;--bg-code:#090b12;--bg-el:#151828;--border:#191d30;--border-gl:#242840;--text:#c2c8d8;--text-dim:#5c6486;--text-br:#e4eaf4;--c1:#3b82f6;--c2:#10b981;--c3:#f59e0b;--c4:#a855f7;--c5:#06b6d4;--c6:#ef4444;--c7:#ec4899;--r:12px}
+*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.72;overflow-x:hidden}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border-gl);border-radius:3px}
+.hero{position:relative;min-height:44vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:80px 24px 50px;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 500px 350px at 25% 40%,rgba(59,130,246,.1),transparent),radial-gradient(ellipse 400px 300px at 75% 55%,rgba(16,185,129,.07),transparent)}
+.hero-badge{position:relative;display:inline-flex;align-items:center;gap:8px;padding:6px 18px;border:1px solid var(--c1);border-radius:100px;font-size:.8rem;color:var(--c1);letter-spacing:.08em;text-transform:uppercase;margin-bottom:20px}
+.hero h1{position:relative;font-family:'Playfair Display',serif;font-size:clamp(2.4rem,6vw,4rem);font-weight:900;line-height:1.15;color:var(--text-br);max-width:700px}
+.hero h1 span{background:linear-gradient(135deg,var(--c1),var(--c2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{position:relative;max-width:640px;margin-top:16px;color:var(--text-dim);font-size:1.05rem}
+.np{position:relative;display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:28px}
+.np a{display:inline-block;padding:6px 14px;border:1px solid var(--border-gl);border-radius:100px;color:var(--text-dim);text-decoration:none;font-size:.82rem;transition:all .25s}
+.np a:hover{border-color:var(--c1);color:var(--c1);background:rgba(59,130,246,.06)}
+.sec{max-width:1000px;margin:0 auto 70px;padding:0 24px;scroll-margin-top:32px}
+.sh{display:flex;align-items:center;gap:16px;margin-bottom:8px}
+.sn{display:flex;align-items:center;justify-content:center;width:46px;height:46px;border-radius:14px;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:1rem;flex-shrink:0;background:color-mix(in srgb,var(--pat) 16%,transparent);color:var(--pat);border:1px solid color-mix(in srgb,var(--pat) 28%,transparent)}
+.sh h2{font-family:'Playfair Display',serif;font-size:1.55rem;font-weight:700;color:var(--text-br)}
+.ss{color:var(--text-dim);font-style:italic;margin-bottom:24px;padding-left:62px;font-size:.93rem}
+.s1{--pat:var(--c1)}.s2{--pat:var(--c5)}.s3{--pat:var(--c2)}.s4{--pat:var(--c4)}.s5{--pat:var(--c3)}
+.card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r);padding:22px;margin-bottom:18px}
+.card h3{font-size:.95rem;color:var(--text-br);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card h3::before{content:'';display:inline-block;width:3px;height:16px;border-radius:2px;background:var(--pat,var(--c1))}
+.dw{background:var(--bg-code);border:1px solid var(--border);border-radius:var(--r);padding:24px;margin-bottom:18px;overflow-x:auto}
+.dw svg{display:block;margin:0 auto;max-width:100%;height:auto}
+.tw{overflow-x:auto;margin-bottom:18px}table{width:100%;border-collapse:collapse;font-size:.84rem}
+thead th{background:var(--bg-el);color:var(--text-br);padding:11px 14px;text-align:left;font-weight:600;border-bottom:2px solid var(--border-gl);white-space:nowrap}
+tbody td{padding:9px 14px;border-bottom:1px solid var(--border);vertical-align:top}tbody tr:hover{background:rgba(59,130,246,.03)}
+.tip{display:flex;gap:12px;padding:14px 16px;border-radius:var(--r);margin-bottom:18px;font-size:.87rem}
+.tip-b{background:rgba(59,130,246,.06);border:1px solid rgba(59,130,246,.16)}.tip-b .ic{color:var(--c1)}
+.tip-g{background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.16)}.tip-g .ic{color:var(--c2)}
+.tip-y{background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.16)}.tip-y .ic{color:var(--c3)}
+.tip .ic{font-size:1.2rem;flex-shrink:0}
+.qa-b{margin-bottom:10px}
+.qa-q{display:flex;align-items:start;gap:10px;padding:13px 16px;background:var(--bg-el);border:1px solid var(--border);border-radius:var(--r);cursor:pointer;color:var(--text-br);font-size:.88rem;font-weight:500;transition:all .25s;user-select:none}
+.qa-q:hover{border-color:var(--c1)}.qa-q .ar{flex-shrink:0;transition:transform .3s;color:var(--c1);font-size:.8rem}.qa-q.open .ar{transform:rotate(90deg)}
+.qa-a{max-height:0;overflow:hidden;transition:max-height .35s ease,padding .35s;padding:0 16px;color:var(--text);font-size:.86rem;line-height:1.7;background:var(--bg-card);border:1px solid var(--border);border-top:none;border-radius:0 0 var(--r) var(--r)}
+.qa-a.open{max-height:600px;padding:14px 16px}
+.bt{position:fixed;bottom:24px;right:24px;width:44px;height:44px;border-radius:50%;background:var(--c1);color:#fff;border:none;cursor:pointer;font-size:1.2rem;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s,transform .3s;box-shadow:0 4px 16px rgba(59,130,246,.35);z-index:100;font-weight:700}
+.bt.show{opacity:1;pointer-events:auto}.bt:hover{transform:scale(1.1)}
+footer{text-align:center;padding:36px 24px;color:var(--text-dim);font-size:.8rem;border-top:1px solid var(--border);margin-top:40px}
+.sum{max-width:1000px;margin:0 auto 60px;padding:0 24px}.sum h2{font-family:'Playfair Display',serif;font-size:1.55rem;color:var(--text-br);margin-bottom:20px;text-align:center}
+@media(max-width:768px){.ss{padding-left:0}}
+</style>
+</head>
+<body>
+
+<section class="hero">
+  <div class="hero-badge">System Design — Networking</div>
+  <h1><span>GeoDNS</span></h1>
+  <p>A DNS-based routing technique that resolves domain names to different IP addresses based on the geographic location of the user — routing them to the nearest data center.</p>
+  <div class="np">
+    <a href="#what">What Is GeoDNS</a><a href="#how">How It Works</a><a href="#routing">Geo-Routing</a><a href="#vs">GeoDNS vs LB</a><a href="#tradeoffs">Tradeoffs</a>
+  </div>
+</section>
+
+<!-- ═══════ 1. WHAT IS GEODNS ═══════ -->
+<section id="what" class="sec s1">
+  <div class="sh"><div class="sn">1</div><h2>What Is GeoDNS?</h2></div>
+  <div class="ss">Resolve a domain to different IPs based on where the user is located — before the HTTP request even happens.</div>
+
+  <div class="card"><h3>Definition</h3><p><strong>GeoDNS</strong> (Geo-Routed DNS) is a DNS-based routing technique that resolves a domain name to <strong>different IP addresses based on the geographic location of the user</strong>. When a user requests <code>example.com</code>, GeoDNS looks at where the user is located and returns the IP address of the <strong>nearest or most appropriate data center</strong>.</p></div>
+
+  <div class="tip tip-b"><span class="ic">🧠</span><span>This happens <strong>before</strong> the actual HTTP request — during the <strong>DNS resolution phase</strong>. The user's browser never knows it was routed geographically.</span></div>
+</section>
+
+<!-- ═══════ 2. HOW IT WORKS ═══════ -->
+<section id="how" class="sec s2">
+  <div class="sh"><div class="sn">2</div><h2>How GeoDNS Works</h2></div>
+  <div class="ss">5-step DNS resolution with geographic intelligence baked in.</div>
+
+  <div class="dw">
+    <svg viewBox="0 0 780 310" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+      <defs><marker id="ag" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#06b6d4"/></marker><marker id="agr" viewBox="0 0 10 6" refX="0" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M10,0 L0,3 L10,6z" fill="#10b981"/></marker></defs>
+      <!-- Step 1: User types URL -->
+      <rect x="30" y="30" width="130" height="55" rx="10" fill="rgba(236,72,153,.08)" stroke="#ec4899" stroke-width="1.2"/>
+      <text x="95" y="52" text-anchor="middle" fill="#ec4899" font-weight="600" font-size="11">User (Germany)</text>
+      <text x="95" y="72" text-anchor="middle" fill="#8890a8" font-size="9" font-family="JetBrains Mono,monospace">example.com</text>
+      <!-- Step 2: DNS Resolver -->
+      <path d="M160,57 L220,57" fill="none" stroke="#06b6d4" stroke-width="1.5" marker-end="url(#ag)"/>
+      <circle cx="190" cy="47" r="10" fill="#06b6d4"/><text x="190" y="51" text-anchor="middle" fill="#fff" font-size="8" font-weight="700">1</text>
+      <rect x="220" y="30" width="140" height="55" rx="10" fill="rgba(6,182,212,.08)" stroke="#06b6d4" stroke-width="1.2"/>
+      <text x="290" y="52" text-anchor="middle" fill="#06b6d4" font-weight="600" font-size="11">DNS Resolver</text>
+      <text x="290" y="72" text-anchor="middle" fill="#8890a8" font-size="9">recursive lookup</text>
+      <!-- Step 3: GeoDNS Server -->
+      <path d="M360,57 L430,57" fill="none" stroke="#06b6d4" stroke-width="1.5" marker-end="url(#ag)"/>
+      <circle cx="395" cy="47" r="10" fill="#06b6d4"/><text x="395" y="51" text-anchor="middle" fill="#fff" font-size="8" font-weight="700">2</text>
+      <rect x="430" y="20" width="200" height="75" rx="12" fill="rgba(59,130,246,.1)" stroke="#3b82f6" stroke-width="2"/>
+      <text x="530" y="45" text-anchor="middle" fill="#3b82f6" font-weight="700" font-size="14">GeoDNS Server</text>
+      <text x="530" y="62" text-anchor="middle" fill="#8890a8" font-size="9">checks requester IP</text>
+      <text x="530" y="78" text-anchor="middle" fill="#3b82f6" font-size="9" font-family="JetBrains Mono,monospace">GeoIP → Germany → EU</text>
+      <circle cx="530" cy="10" r="10" fill="#3b82f6"/><text x="530" y="14" text-anchor="middle" fill="#fff" font-size="8" font-weight="700">3</text>
+      <!-- Step 4: Returns nearest DC IP -->
+      <path d="M530,95 L530,130" fill="none" stroke="#10b981" stroke-width="1.5" marker-end="url(#ag)"/>
+      <circle cx="540" cy="112" r="10" fill="#10b981"/><text x="540" y="116" text-anchor="middle" fill="#fff" font-size="8" font-weight="700">4</text>
+      <rect x="440" y="130" width="180" height="42" rx="8" fill="rgba(16,185,129,.1)" stroke="#10b981" stroke-width="1.5"/>
+      <text x="530" y="148" text-anchor="middle" fill="#10b981" font-weight="700" font-size="11" font-family="JetBrains Mono,monospace">→ 45.67.89.10</text>
+      <text x="530" y="165" text-anchor="middle" fill="#10b981" font-size="9">(Frankfurt DC)</text>
+      <!-- Step 5: Browser connects -->
+      <path d="M440,155 L95,155 L95,100" fill="none" stroke="#10b981" stroke-width="1.2" stroke-dasharray="6 4"/>
+      <path d="M95,155 L95,200" fill="none" stroke="#10b981" stroke-width="1.5" marker-end="url(#ag)"/>
+      <circle cx="85" cy="178" r="10" fill="#10b981"/><text x="85" y="182" text-anchor="middle" fill="#fff" font-size="8" font-weight="700">5</text>
+      <rect x="30" y="200" width="130" height="45" rx="10" fill="rgba(16,185,129,.08)" stroke="#10b981" stroke-width="1.2"/>
+      <text x="95" y="218" text-anchor="middle" fill="#10b981" font-weight="600" font-size="10">Connects to</text>
+      <text x="95" y="236" text-anchor="middle" fill="#10b981" font-size="10" font-weight="700">Frankfurt DC ✓</text>
+      <!-- Summary -->
+      <rect x="100" y="270" width="560" height="30" rx="8" fill="rgba(59,130,246,.05)" stroke="rgba(59,130,246,.15)" stroke-width="1"/>
+      <text x="380" y="289" text-anchor="middle" fill="#3b82f6" font-size="10">Routing happens at DNS level — before any HTTP connection. User gets nearest DC automatically.</text>
+    </svg>
+  </div>
+
+  <div class="card"><h3>The 5 Steps</h3>
+    <p>1. User types <code>example.com</code> in browser. 2. DNS resolver sends query to authoritative DNS server. 3. GeoDNS checks the IP address of the requester (GeoIP lookup). 4. Based on location, returns the closest data center's IP. 5. Browser connects to that IP — faster response, lower latency.</p>
+  </div>
+</section>
+
+<!-- ═══════ 3. GEO-ROUTING MAP ═══════ -->
+<section id="routing" class="sec s3">
+  <div class="sh"><div class="sn">3</div><h2>Geographic Routing</h2></div>
+  <div class="ss">Same domain, different IP — based on where you are in the world.</div>
+
+  <div class="dw">
+    <svg viewBox="0 0 780 340" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+      <defs><marker id="ar2" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#5c6486"/></marker></defs>
+      <!-- GeoDNS central -->
+      <rect x="280" y="10" width="220" height="65" rx="14" fill="rgba(59,130,246,.1)" stroke="#3b82f6" stroke-width="2"/>
+      <text x="390" y="35" text-anchor="middle" fill="#3b82f6" font-weight="900" font-size="16">GeoDNS</text>
+      <text x="390" y="55" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">example.com → ?</text>
+      <text x="390" y="68" text-anchor="middle" fill="#3b82f6" font-size="9">routes by location</text>
+      <!-- USA -->
+      <rect x="30" y="140" width="200" height="80" rx="12" fill="rgba(59,130,246,.08)" stroke="#3b82f6" stroke-width="1.5"/>
+      <text x="130" y="165" text-anchor="middle" fill="#3b82f6" font-weight="700" font-size="13">🇺🇸 New York DC</text>
+      <text x="130" y="185" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">12.34.56.78</text>
+      <text x="130" y="210" text-anchor="middle" fill="#3b82f6" font-size="9">serves Americas</text>
+      <path d="M300,75 L150,140" fill="none" stroke="#3b82f6" stroke-width="1.2" marker-end="url(#ar2)"/>
+      <!-- EU -->
+      <rect x="290" y="140" width="200" height="80" rx="12" fill="rgba(16,185,129,.08)" stroke="#10b981" stroke-width="1.5"/>
+      <text x="390" y="165" text-anchor="middle" fill="#10b981" font-weight="700" font-size="13">🇩🇪 Frankfurt DC</text>
+      <text x="390" y="185" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">45.67.89.10</text>
+      <text x="390" y="210" text-anchor="middle" fill="#10b981" font-size="9">serves Europe / Africa</text>
+      <path d="M390,75 L390,140" fill="none" stroke="#10b981" stroke-width="1.2" marker-end="url(#ar2)"/>
+      <!-- Asia -->
+      <rect x="550" y="140" width="200" height="80" rx="12" fill="rgba(245,158,11,.08)" stroke="#f59e0b" stroke-width="1.5"/>
+      <text x="650" y="165" text-anchor="middle" fill="#f59e0b" font-weight="700" font-size="13">🇸🇬 Singapore DC</text>
+      <text x="650" y="185" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">98.76.54.32</text>
+      <text x="650" y="210" text-anchor="middle" fill="#f59e0b" font-size="9">serves Asia-Pacific</text>
+      <path d="M480,75 L630,140" fill="none" stroke="#f59e0b" stroke-width="1.2" marker-end="url(#ar2)"/>
+      <!-- Users -->
+      <rect x="30" y="260" width="130" height="38" rx="8" fill="rgba(59,130,246,.05)" stroke="#3b82f6" stroke-width="1" stroke-opacity=".5"/>
+      <text x="95" y="283" text-anchor="middle" fill="#3b82f6" font-size="10">User in USA → NY</text>
+      <path d="M95,260 L120,220" fill="none" stroke="#3b82f6" stroke-width="1" stroke-dasharray="4 3"/>
+      <rect x="270" y="260" width="160" height="38" rx="8" fill="rgba(16,185,129,.05)" stroke="#10b981" stroke-width="1" stroke-opacity=".5"/>
+      <text x="350" y="283" text-anchor="middle" fill="#10b981" font-size="10">User in Germany → FFM</text>
+      <path d="M350,260 L390,220" fill="none" stroke="#10b981" stroke-width="1" stroke-dasharray="4 3"/>
+      <rect x="550" y="260" width="170" height="38" rx="8" fill="rgba(245,158,11,.05)" stroke="#f59e0b" stroke-width="1" stroke-opacity=".5"/>
+      <text x="635" y="283" text-anchor="middle" fill="#f59e0b" font-size="10">User in Malaysia → SG</text>
+      <path d="M635,260 L650,220" fill="none" stroke="#f59e0b" stroke-width="1" stroke-dasharray="4 3"/>
+      <!-- Summary -->
+      <rect x="150" y="310" width="480" height="26" rx="8" fill="rgba(59,130,246,.05)" stroke="rgba(59,130,246,.15)" stroke-width="1"/>
+      <text x="390" y="327" text-anchor="middle" fill="#3b82f6" font-size="10" font-weight="600">Same domain, different IP — users always hit the nearest data center</text>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════ 4. GEODNS vs LOAD BALANCER ═══════ -->
+<section id="vs" class="sec s4">
+  <div class="sh"><div class="sn">4</div><h2>GeoDNS vs Load Balancer</h2></div>
+  <div class="ss">GeoDNS routes between data centers. Load balancers distribute within a data center.</div>
+
+  <div class="dw">
+    <svg viewBox="0 0 780 270" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+      <defs><marker id="alb" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#5c6486"/></marker></defs>
+      <!-- GeoDNS side -->
+      <text x="195" y="22" text-anchor="middle" fill="#3b82f6" font-weight="700" font-size="14">GeoDNS (Between DCs)</text>
+      <rect x="30" y="35" width="330" height="200" rx="12" fill="rgba(59,130,246,.03)" stroke="#3b82f6" stroke-width="1" stroke-dasharray="6 4"/>
+      <!-- User -->
+      <rect x="140" y="48" width="110" height="32" rx="8" fill="rgba(236,72,153,.08)" stroke="#ec4899" stroke-width="1"/>
+      <text x="195" y="68" text-anchor="middle" fill="#ec4899" font-size="10">EU User</text>
+      <!-- GeoDNS box -->
+      <rect x="135" y="100" width="120" height="35" rx="8" fill="rgba(59,130,246,.1)" stroke="#3b82f6" stroke-width="1.5"/>
+      <text x="195" y="122" text-anchor="middle" fill="#3b82f6" font-weight="700" font-size="11">GeoDNS</text>
+      <path d="M195,80 L195,100" fill="none" stroke="#5c6486" stroke-width="1" marker-end="url(#alb)"/>
+      <!-- Two DCs -->
+      <rect x="50" y="165" width="100" height="35" rx="8" fill="rgba(59,130,246,.06)" stroke="#3b82f6" stroke-width="1" stroke-opacity=".5"/>
+      <text x="100" y="187" text-anchor="middle" fill="#3b82f6" font-size="9">🇺🇸 NY DC</text>
+      <rect x="240" y="165" width="100" height="35" rx="8" fill="rgba(16,185,129,.1)" stroke="#10b981" stroke-width="1.5"/>
+      <text x="290" y="187" text-anchor="middle" fill="#10b981" font-size="9" font-weight="600">🇩🇪 FFM DC ✓</text>
+      <path d="M175,135 L110,165" fill="none" stroke="#5c6486" stroke-width="1" stroke-opacity=".4" stroke-dasharray="3 3"/>
+      <path d="M215,135 L280,165" fill="none" stroke="#10b981" stroke-width="1.5" marker-end="url(#alb)"/>
+      <text x="195" y="155" fill="#3b82f6" font-size="8">routes to nearest DC</text>
+      <!-- Load Balancer side -->
+      <text x="585" y="22" text-anchor="middle" fill="#a855f7" font-weight="700" font-size="14">Load Balancer (Within DC)</text>
+      <rect x="420" y="35" width="330" height="200" rx="12" fill="rgba(168,85,247,.03)" stroke="#a855f7" stroke-width="1" stroke-dasharray="6 4"/>
+      <!-- Traffic arrives at DC -->
+      <rect x="525" y="48" width="120" height="32" rx="8" fill="rgba(16,185,129,.08)" stroke="#10b981" stroke-width="1"/>
+      <text x="585" y="68" text-anchor="middle" fill="#10b981" font-size="10">Traffic → FFM DC</text>
+      <!-- Load Balancer box -->
+      <rect x="525" y="100" width="120" height="35" rx="8" fill="rgba(168,85,247,.1)" stroke="#a855f7" stroke-width="1.5"/>
+      <text x="585" y="122" text-anchor="middle" fill="#a855f7" font-weight="700" font-size="11">Load Balancer</text>
+      <path d="M585,80 L585,100" fill="none" stroke="#5c6486" stroke-width="1" marker-end="url(#alb)"/>
+      <!-- Servers inside DC -->
+      <rect x="440" y="165" width="80" height="35" rx="8" fill="rgba(168,85,247,.06)" stroke="#a855f7" stroke-width="1" stroke-opacity=".5"/>
+      <text x="480" y="187" text-anchor="middle" fill="#a855f7" font-size="9">Server A</text>
+      <rect x="545" y="165" width="80" height="35" rx="8" fill="rgba(168,85,247,.06)" stroke="#a855f7" stroke-width="1" stroke-opacity=".5"/>
+      <text x="585" y="187" text-anchor="middle" fill="#a855f7" font-size="9">Server B</text>
+      <rect x="650" y="165" width="80" height="35" rx="8" fill="rgba(168,85,247,.06)" stroke="#a855f7" stroke-width="1" stroke-opacity=".5"/>
+      <text x="690" y="187" text-anchor="middle" fill="#a855f7" font-size="9">Server C</text>
+      <path d="M555,135 L490,165" fill="none" stroke="#a855f7" stroke-width="1" marker-end="url(#alb)"/>
+      <path d="M585,135 L585,165" fill="none" stroke="#a855f7" stroke-width="1" marker-end="url(#alb)"/>
+      <path d="M615,135 L680,165" fill="none" stroke="#a855f7" stroke-width="1" marker-end="url(#alb)"/>
+      <text x="585" y="155" fill="#a855f7" font-size="8">distributes within DC</text>
+      <!-- Summary bar -->
+      <rect x="80" y="250" width="620" height="20" rx="6" fill="rgba(59,130,246,.05)" stroke="rgba(59,130,246,.12)" stroke-width="1"/>
+      <text x="390" y="264" text-anchor="middle" fill="#5c6486" font-size="9">GeoDNS picks the right DC. Load Balancer picks the right server inside that DC. They work together.</text>
+    </svg>
+  </div>
+
+  <div class="card"><h3>Full Comparison</h3><div class="tw"><table>
+    <thead><tr><th>Feature</th><th>GeoDNS</th><th>Load Balancer</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Routing Layer</strong></td><td>DNS level (before connection)</td><td>Network/Application level (after connection)</td></tr>
+      <tr><td><strong>Decision Based On</strong></td><td>User's geographic location</td><td>Server health, load, session, etc.</td></tr>
+      <tr><td><strong>Use Case</strong></td><td>Route users to nearest data center</td><td>Distribute traffic among servers in a DC</td></tr>
+      <tr><td><strong>Example</strong></td><td>Route EU users to Frankfurt DC</td><td>Balance between Server A and B in Frankfurt</td></tr>
+      <tr><td><strong>Granularity</strong></td><td>Region / continent level</td><td>Server / instance level</td></tr>
+      <tr><td><strong>When It Happens</strong></td><td>During DNS resolution</td><td>During HTTP request routing</td></tr>
+    </tbody>
+  </table></div></div>
+
+  <div class="tip tip-g"><span class="ic">💡</span><span>In production, <strong>GeoDNS and Load Balancers work together</strong>: GeoDNS routes the user to the correct region, then the Load Balancer inside that region distributes the request to the healthiest server.</span></div>
+</section>
+
+<!-- ═══════ 5. BENEFITS & TRADEOFFS ═══════ -->
+<section id="tradeoffs" class="sec s5">
+  <div class="sh"><div class="sn">5</div><h2>Benefits &amp; Considerations</h2></div>
+
+  <div class="card"><h3>Benefits</h3><div class="tw"><table>
+    <thead><tr><th>Benefit</th><th>Explanation</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Faster performance</strong></td><td>Users connect to nearby servers — shorter network paths</td></tr>
+      <tr><td><strong>Global scalability</strong></td><td>Distribute traffic across regions worldwide</td></tr>
+      <tr><td><strong>Fault tolerance</strong></td><td>Redirect users if a region goes down</td></tr>
+      <tr><td><strong>Reduced latency</strong></td><td>Lower round-trip times for all users</td></tr>
+    </tbody>
+  </table></div></div>
+
+  <div class="card"><h3>Considerations</h3><div class="tw"><table>
+    <thead><tr><th>Challenge</th><th>Explanation</th></tr></thead>
+    <tbody>
+      <tr><td><strong>GeoIP accuracy</strong></td><td>GeoIP databases may not be 100% precise — VPNs can mislead</td></tr>
+      <tr><td><strong>DNS caching</strong></td><td>Changes may take time to propagate due to TTL caching</td></tr>
+      <tr><td><strong>Complexity</strong></td><td>Requires smart DNS configuration and monitoring</td></tr>
+    </tbody>
+  </table></div></div>
+
+  <div class="card"><h3>Related Concepts</h3><div class="tw"><table>
+    <thead><tr><th>Concept</th><th>Relationship to GeoDNS</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Anycast</strong></td><td>Similar goal, but works at the IP routing level — same IP, network routes to nearest</td></tr>
+      <tr><td><strong>CDNs</strong></td><td>Often use GeoDNS internally to route users to edge nodes (e.g. Cloudflare, Akamai)</td></tr>
+      <tr><td><strong>Load Balancers</strong></td><td>Work with GeoDNS — LB distributes within a DC after GeoDNS picks the DC</td></tr>
+      <tr><td><strong>AWS Route 53</strong></td><td>Amazon's DNS service with built-in GeoDNS (geolocation routing policy)</td></tr>
+    </tbody>
+  </table></div></div>
+</section>
+
+<!-- ═══════ INTERVIEW Q&A ═══════ -->
+<section class="sum">
+  <h2>Interview Questions</h2>
+  <div style="max-width:1000px;margin:0 auto">
+    <div class="qa-b"><div class="qa-q" onclick="toggleQA(this)"><span class="ar">▶</span>What is GeoDNS and when would you use it?</div><div class="qa-a">GeoDNS is a DNS-based routing technique that returns different IP addresses based on the requester's geographic location. Use it when you have <strong>multiple data centers globally</strong> and want users to automatically connect to the nearest one for lower latency, better performance, and fault tolerance.</div></div>
+    <div class="qa-b"><div class="qa-q" onclick="toggleQA(this)"><span class="ar">▶</span>How does GeoDNS differ from a Load Balancer?</div><div class="qa-a">GeoDNS operates at the <strong>DNS level</strong> (before any HTTP connection) and routes based on <strong>geographic location</strong> — it picks the right data center. A Load Balancer operates at the <strong>network/application level</strong> (after connection) and distributes based on <strong>server health and load</strong> — it picks the right server within a data center. They work together in production.</div></div>
+    <div class="qa-b"><div class="qa-q" onclick="toggleQA(this)"><span class="ar">▶</span>What's the difference between GeoDNS and Anycast?</div><div class="qa-a">Both route users to nearby servers, but at different layers. <strong>GeoDNS</strong> resolves a domain to different IPs based on GeoIP lookup during DNS resolution. <strong>Anycast</strong> uses the same IP address everywhere, but the network's BGP routing automatically directs packets to the nearest instance. Anycast is common for DNS servers themselves and CDN edge nodes.</div></div>
+    <div class="qa-b"><div class="qa-q" onclick="toggleQA(this)"><span class="ar">▶</span>What happens if a GeoDNS data center goes down?</div><div class="qa-a">GeoDNS can be configured with health checks. If a data center is unhealthy, GeoDNS returns the IP of the <strong>next nearest healthy data center</strong> instead. This provides automatic failover at the DNS level — users are rerouted transparently.</div></div>
+  </div>
+</section>
+
+<button class="bt" id="backTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+<footer><p>GeoDNS — Geo-Routed DNS Interactive Study Guide</p></footer>
+
+<script>
+function toggleQA(el){el.classList.toggle('open');el.nextElementSibling.classList.toggle('open')}
+window.addEventListener('scroll',()=>{document.getElementById('backTop').classList.toggle('show',window.scrollY>400)})
+</script>
+</body>
+</html>

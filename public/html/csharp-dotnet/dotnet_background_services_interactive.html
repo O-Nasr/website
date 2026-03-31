@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>.NET Background Services — Interactive Study Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0808;--surface:#1a1412;--surface2:#261e1a;--border:#3e3028;--text:#eae2da;--text-dim:#9a8878;--accent:#f59e0b;--accent2:#d97706;--green:#4ade80;--red:#f87171;--orange:#fb923c;--yellow:#fbbf24;--blue:#60a5fa;--purple:#c084fc;--teal:#2dd4bf;--code-bg:#120e0a;--glow:rgba(245,158,11,.12)}
+*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;min-height:100vh}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 20% 5%,rgba(245,158,11,.04)0%,transparent 55%),radial-gradient(ellipse at 80% 95%,rgba(217,119,6,.03)0%,transparent 55%);pointer-events:none;z-index:0}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.container{max-width:920px;margin:0 auto;padding:2rem 1.5rem 4rem;position:relative;z-index:1}
+.hero{text-align:center;padding:3rem 0 2.5rem}
+.hero-badge{display:inline-block;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-weight:700;font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;padding:.35rem 1rem;border-radius:99px;margin-bottom:1.2rem}
+.hero h1{font-size:2.3rem;font-weight:800;background:linear-gradient(135deg,#fff 30%,var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1.15;margin-bottom:.5rem}
+.hero p{color:var(--text-dim);font-size:1.05rem}
+.nav{display:flex;flex-wrap:wrap;gap:.5rem;justify-content:center;margin-bottom:2.5rem;position:sticky;top:0;z-index:10;background:rgba(10,8,8,.88);backdrop-filter:blur(12px);padding:.75rem 0;border-bottom:1px solid var(--border)}
+.nav a{color:var(--text-dim);text-decoration:none;font-size:.76rem;font-weight:600;padding:.4rem .8rem;border-radius:8px;transition:all .2s;border:1px solid transparent}
+.nav a:hover,.nav a.active{color:var(--accent);background:rgba(245,158,11,.08);border-color:rgba(245,158,11,.2)}
+.section{margin-bottom:3rem;animation:fadeUp .5s ease both}
+.section-header{display:flex;align-items:center;gap:.75rem;margin-bottom:1.2rem;padding-bottom:.8rem;border-bottom:1px solid var(--border)}
+.section-num{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.85rem;color:#fff;flex-shrink:0}
+.section-header h2{font-size:1.35rem;font-weight:700}
+.callout{background:linear-gradient(135deg,rgba(245,158,11,.07),rgba(217,119,6,.04));border-left:3px solid var(--accent);border-radius:0 10px 10px 0;padding:1rem 1.2rem;margin:1rem 0;font-size:.92rem}
+.callout.green{border-left-color:var(--green);background:linear-gradient(135deg,rgba(74,222,128,.07),rgba(74,222,128,.03))}
+.callout.red{border-left-color:var(--red);background:linear-gradient(135deg,rgba(248,113,113,.07),rgba(248,113,113,.03))}
+.callout.blue{border-left-color:var(--blue);background:linear-gradient(135deg,rgba(96,165,250,.07),rgba(96,165,250,.03))}
+pre{background:var(--code-bg);border:1px solid var(--border);border-radius:10px;padding:1.2rem;overflow-x:auto;margin:.8rem 0;font-family:'JetBrains Mono',monospace;font-size:.78rem;line-height:1.65;position:relative}
+pre .label{position:absolute;top:.5rem;right:.6rem;font-size:.6rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em;font-family:'Outfit',sans-serif;font-weight:600;background:var(--surface);padding:.15rem .5rem;border-radius:4px}
+.kw{color:var(--accent)}.tp{color:var(--blue)}.cm{color:#5a4a38;font-style:italic}.st{color:var(--green)}.fn{color:var(--yellow)}.nu{color:var(--orange)}.er{color:var(--red)}
+.table-wrap{overflow-x:auto;margin:.8rem 0;border-radius:10px;border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:.83rem}
+th{background:var(--surface2);color:var(--accent);font-weight:600;text-align:left;padding:.7rem 1rem;white-space:nowrap}
+td{padding:.6rem 1rem;border-top:1px solid var(--border)}
+tr:hover td{background:rgba(245,158,11,.03)}
+.accordion{margin:.8rem 0}
+.accordion-btn{width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:600;padding:.9rem 1.2rem;border-radius:10px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;transition:all .2s}
+.accordion-btn:hover{border-color:var(--accent);background:var(--surface2)}
+.accordion-btn .arrow{transition:transform .3s;font-size:.8rem;color:var(--accent)}
+.accordion-btn.open .arrow{transform:rotate(180deg)}
+.accordion-body{max-height:0;overflow:hidden;transition:max-height .4s ease;background:var(--surface);border:1px solid var(--border);border-top:none;border-radius:0 0 10px 10px;padding:0 1.2rem}
+.accordion-body.open{max-height:4000px;padding:1.2rem}
+.tabs{display:flex;gap:.4rem;margin-bottom:0;flex-wrap:wrap}
+.tab-btn{background:var(--surface);border:1px solid var(--border);color:var(--text-dim);font-family:'Outfit',sans-serif;font-size:.76rem;font-weight:600;padding:.5rem 1rem;border-radius:8px 8px 0 0;cursor:pointer;transition:all .2s}
+.tab-btn:hover{color:var(--text)}.tab-btn.active{color:var(--accent);background:var(--surface2);border-bottom-color:var(--surface2)}
+.tab-panel{display:none;background:var(--surface2);border:1px solid var(--border);border-radius:0 10px 10px 10px;padding:1.2rem}
+.tab-panel.active{display:block}
+
+/* Startup flow sim */
+.startup-sim{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.5rem;margin:1rem 0}
+.ss-controls{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.8rem}
+.ss-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);font-family:'Outfit',sans-serif;font-size:.76rem;font-weight:600;padding:.5rem 1rem;border-radius:8px;cursor:pointer;transition:all .2s}
+.ss-btn:hover{color:var(--text);border-color:var(--accent)}
+.ss-btn.active{background:rgba(245,158,11,.12);border-color:var(--accent);color:var(--accent)}
+.ss-services{display:flex;gap:.4rem;flex-wrap:wrap;margin:.8rem 0}
+.ss-svc{padding:.5rem 1rem;border-radius:10px;font-size:.78rem;font-weight:600;border:2px solid var(--border);background:var(--surface2);transition:all .4s;min-width:120px;text-align:center}
+.ss-svc.waiting{border-color:var(--border);color:var(--text-dim)}
+.ss-svc.running{border-color:var(--green);color:var(--green);background:rgba(74,222,128,.08);animation:pulse 1s ease infinite}
+.ss-svc.blocked{border-color:var(--red);color:var(--red);background:rgba(248,113,113,.08)}
+.ss-svc.done{border-color:var(--green);color:var(--green);opacity:.6}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(74,222,128,.2)}50%{box-shadow:0 0 0 6px rgba(74,222,128,0)}}
+.ss-log{background:var(--code-bg);border:1px solid var(--border);border-radius:10px;padding:.8rem;font-family:'JetBrains Mono',monospace;font-size:.7rem;line-height:1.7;max-height:220px;overflow-y:auto;margin-top:.6rem}
+.ss-log .ok{color:var(--green)}.ss-log .bad{color:var(--red)}.ss-log .warn{color:var(--orange)}.ss-log .dim{color:var(--text-dim)}.ss-log .hl{color:var(--accent)}
+
+/* Quiz */
+.quiz-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.5rem;margin-bottom:1rem}
+.quiz-card h3{font-size:.95rem;margin-bottom:1rem;color:var(--accent)}
+.quiz-option{display:block;width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'Outfit',sans-serif;font-size:.83rem;padding:.7rem 1rem;border-radius:8px;cursor:pointer;margin-bottom:.4rem;text-align:left;transition:all .2s}
+.quiz-option:hover{border-color:var(--accent);transform:translateX(4px)}
+.quiz-option.correct{background:rgba(74,222,128,.15);border-color:var(--green);color:var(--green)}
+.quiz-option.wrong{background:rgba(248,113,113,.1);border-color:var(--red);color:var(--red)}
+.quiz-option:disabled{cursor:default;transform:none}
+.quiz-explanation{margin-top:.7rem;padding:.8rem;border-radius:8px;background:rgba(245,158,11,.06);font-size:.83rem;display:none;line-height:1.6}
+.quiz-explanation.show{display:block}
+.quiz-score{text-align:center;padding:1.5rem;background:var(--surface);border:1px solid var(--accent);border-radius:14px;margin-top:1rem}
+.quiz-score .big{font-size:2.2rem;font-weight:800;color:var(--accent)}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:640px){.hero h1{font-size:1.6rem}.container{padding:1rem}}
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="hero">
+  <div class="hero-badge">.NET Interview Study Guide</div>
+  <h1>Background Services</h1>
+  <p>ThreadPool, startup blocking, Task.Yield & the right patterns</p>
+</div>
+
+<nav class="nav">
+  <a href="#s1">Separate Threads?</a>
+  <a href="#s2">Task.Yield</a>
+  <a href="#s3">Startup Sim</a>
+  <a href="#s4">Better Approach</a>
+  <a href="#s5">Quiz</a>
+</nav>
+
+<!-- S1 -->
+<div class="section" id="s1">
+  <div class="section-header"><div class="section-num">1</div><h2>Do Background Services Run on Separate Threads?</h2></div>
+  <p style="margin-bottom:.8rem"><strong>No, not necessarily.</strong> When you register multiple <code>BackgroundService</code> instances via <code>AddHostedService</code>, they do NOT automatically get dedicated threads.</p>
+
+  <div class="callout red">ASP.NET Core uses the <strong>ThreadPool</strong> to run these services. Each <code>ExecuteAsync</code> starts as a Task scheduled on the ThreadPool. If your method blocks synchronously, it <strong>occupies a ThreadPool thread</strong>, preventing other tasks from starting.</div>
+
+  <div class="callout blue"><strong>Why not dedicated threads?</strong> ASP.NET Core relies on the ThreadPool for scalability. Creating dedicated threads for every service would be inefficient and hard to manage.</div>
+</div>
+
+<!-- S2: Task.Yield -->
+<div class="section" id="s2">
+  <div class="section-header"><div class="section-num">2</div><h2>Why <code>await Task.Yield()</code> Helps</h2></div>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="openTab(event,'tab-without')">❌ Without Task.Yield()</button>
+    <button class="tab-btn" onclick="openTab(event,'tab-with')">✅ With Task.Yield()</button>
+  </div>
+  <div class="tab-panel active" id="tab-without">
+    <p style="font-size:.88rem;margin-bottom:.6rem">Without <code>await Task.Yield()</code>, the method immediately enters a <code>while</code> loop and starts calling synchronously. The thread <strong>never returns to the ThreadPool</strong>, so the host thinks the service is still initializing. Other services wait.</p>
+<pre><span class="cm">// ❌ Blocks the ThreadPool thread</span>
+<span class="kw">protected override async</span> <span class="tp">Task</span> <span class="fn">ExecuteAsync</span>(...)
+{
+    <span class="cm">// Immediately enters blocking loop — thread never freed</span>
+    <span class="kw">while</span> (!stoppingToken.IsCancellationRequested)
+    {
+        _kafkaProvider.<span class="fn">Subscribe</span>(...); <span class="er">// synchronous — blocks!</span>
+    }
+}</pre>
+  </div>
+  <div class="tab-panel" id="tab-with">
+    <p style="font-size:.88rem;margin-bottom:.6rem"><code>await Task.Yield()</code> yields control back to the caller (ASP.NET Core host), frees the current thread so other services can start, then continues asynchronously later.</p>
+<pre><span class="cm">// ✅ Yields first — other services can start</span>
+<span class="kw">protected override async</span> <span class="tp">Task</span> <span class="fn">ExecuteAsync</span>(...)
+{
+    <span class="kw">await</span> <span class="tp">Task</span>.<span class="fn">Yield</span>(); <span class="cm">// free the thread → host continues</span>
+
+    <span class="kw">while</span> (!stoppingToken.IsCancellationRequested)
+    {
+        _kafkaProvider.<span class="fn">Subscribe</span>(...);
+    }
+}</pre>
+  </div>
+
+  <div class="callout"><strong>Key Insight:</strong> <code>BackgroundService.ExecuteAsync</code> is awaited by the host during startup. If your method doesn't yield, the <strong>host startup pipeline is delayed</strong>. Even though services run "in the background," their startup is sequential in terms of thread usage.</div>
+</div>
+
+<!-- S3: Startup Simulator -->
+<div class="section" id="s3">
+  <div class="section-header"><div class="section-num">3</div><h2>Startup Flow — Live Simulator</h2></div>
+  <p style="margin-bottom:.8rem;font-size:.9rem">Watch how 3 background services start with and without yielding:</p>
+
+  <div class="startup-sim">
+    <div class="ss-controls">
+      <button class="ss-btn" onclick="runStartup('blocked')">❌ Without Task.Yield()</button>
+      <button class="ss-btn" onclick="runStartup('yield')">✅ With Task.Yield()</button>
+      <button class="ss-btn" onclick="runStartup('taskrun')">✅ With Task.Run()</button>
+    </div>
+    <div class="ss-services">
+      <div class="ss-svc" id="svc-1">KafkaConsumer</div>
+      <div class="ss-svc" id="svc-2">Formatter</div>
+      <div class="ss-svc" id="svc-3">KafkaProducer</div>
+    </div>
+    <div class="ss-log" id="ss-log"><span class="dim">Click a scenario to see startup behavior...</span></div>
+  </div>
+</div>
+
+<!-- S4: Better Approach -->
+<div class="section" id="s4">
+  <div class="section-header"><div class="section-num">4</div><h2>Better Approach — Task.Run()</h2></div>
+  <p style="margin-bottom:.8rem;font-size:.88rem">Instead of relying on <code>Task.Yield()</code>, offload the long-running loop to a separate task so <code>ExecuteAsync</code> returns quickly:</p>
+
+<pre><span class="label">C#</span><span class="kw">private async</span> <span class="tp">Task</span> <span class="fn">ConsumeMessagesAsync</span>(<span class="tp">CancellationToken</span> stoppingToken)
+{
+    <span class="fn">InitializeKafka</span>();
+
+    <span class="cm">// Start the loop in a fire-and-forget Task</span>
+    _ = <span class="tp">Task</span>.<span class="fn">Run</span>(() =>
+    {
+        <span class="kw">while</span> (!stoppingToken.IsCancellationRequested)
+        {
+            _kafkaProvider.<span class="fn">Subscribe</span>(SubscribeCallback);
+        }
+    }, stoppingToken);
+}</pre>
+
+  <div class="callout green"><code>ExecuteAsync</code> returns quickly → other services can start without waiting. The consuming loop runs independently on a ThreadPool thread.</div>
+
+  <div class="callout" style="margin-top:1rem">
+    <strong>Summary:</strong><br>
+    • <code>await Task.Yield()</code> introduces an async boundary, freeing the thread<br>
+    • Background services <strong>share the ThreadPool</strong>, not dedicated threads<br>
+    • Long-running loops in <code>ExecuteAsync</code> can <strong>block startup</strong> unless you yield or offload<br>
+    • <code>Task.Run()</code> is the cleanest approach for synchronous blocking work
+  </div>
+</div>
+
+<!-- S5: Quiz -->
+<div class="section" id="s5">
+  <div class="section-header"><div class="section-num">5</div><h2>Test Yourself</h2></div>
+
+  <div class="quiz-card" id="q1">
+    <h3>Q1: Do background services each get their own dedicated thread?</h3>
+    <button class="quiz-option" onclick="answer(this,'q1',false)">Yes — each service runs on its own thread</button>
+    <button class="quiz-option" onclick="answer(this,'q1',true)">No — they share the ThreadPool; ExecuteAsync is a Task</button>
+    <div class="quiz-explanation" id="q1-exp">ASP.NET Core uses the ThreadPool, not dedicated threads. Each <code>ExecuteAsync</code> is scheduled as a Task on the pool. Creating dedicated threads per service would be wasteful and doesn't scale.</div>
+  </div>
+  <div class="quiz-card" id="q2">
+    <h3>Q2: What happens if ExecuteAsync enters a blocking while loop without yielding?</h3>
+    <button class="quiz-option" onclick="answer(this,'q2',true)">It blocks the thread — other services can't start, startup is delayed</button>
+    <button class="quiz-option" onclick="answer(this,'q2',false)">Nothing — the host handles it automatically</button>
+    <div class="quiz-explanation" id="q2-exp"><code>ExecuteAsync</code> is awaited by the host during startup. If it never yields or returns, the startup pipeline stalls — other hosted services wait for ThreadPool threads, causing delayed or sequential startup.</div>
+  </div>
+  <div class="quiz-card" id="q3">
+    <h3>Q3: What does <code>await Task.Yield()</code> do in this context?</h3>
+    <button class="quiz-option" onclick="answer(this,'q3',false)">It cancels the current task</button>
+    <button class="quiz-option" onclick="answer(this,'q3',true)">It yields control back to the caller, freeing the thread for other services to start</button>
+    <button class="quiz-option" onclick="answer(this,'q3',false)">It creates a new thread</button>
+    <div class="quiz-explanation" id="q3-exp"><code>Task.Yield()</code> introduces an async boundary — it returns control to the caller (the host) immediately, allowing the continuation to be scheduled later. This frees the thread so other services can initialize.</div>
+  </div>
+  <div class="quiz-card" id="q4">
+    <h3>Q4: What's the cleanest way to run a synchronous blocking loop inside ExecuteAsync?</h3>
+    <button class="quiz-option" onclick="answer(this,'q4',false)">Just run it directly in ExecuteAsync</button>
+    <button class="quiz-option" onclick="answer(this,'q4',false)">Use Thread.Sleep between iterations</button>
+    <button class="quiz-option" onclick="answer(this,'q4',true)">Wrap it in Task.Run() so ExecuteAsync returns quickly</button>
+    <div class="quiz-explanation" id="q4-exp"><code>Task.Run()</code> offloads the blocking work to a ThreadPool thread and lets <code>ExecuteAsync</code> return immediately. The host startup pipeline continues, and other services start without delay.</div>
+  </div>
+
+  <div class="quiz-score" id="score-box" style="display:none"><div class="big" id="score-text"></div><p style="color:var(--text-dim);margin-top:.3rem">Background Services Quiz</p></div>
+</div>
+
+</div>
+
+<script>
+function toggleAcc(btn){btn.classList.toggle('open');btn.nextElementSibling.classList.toggle('open')}
+function openTab(e,id){const s=e.target.closest('.section')||document;s.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));s.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));e.target.classList.add('active');document.getElementById(id).classList.add('active')}
+
+// Startup sim
+let ssTimer=null;
+function resetSS(){
+  clearInterval(ssTimer);
+  ['svc-1','svc-2','svc-3'].forEach(id=>{const el=document.getElementById(id);el.className='ss-svc';});
+  document.getElementById('ss-log').innerHTML='<span class="dim">Click a scenario...</span>';
+  document.querySelectorAll('.ss-btn').forEach(b=>b.classList.remove('active'));
+}
+function runStartup(mode){
+  resetSS();event.target.classList.add('active');
+  const log=document.getElementById('ss-log');log.innerHTML='';
+  const steps=[];
+
+  if(mode==='blocked'){
+    steps.push({act:()=>{document.getElementById('svc-1').className='ss-svc running'},log:'<span class="hl">Host starts KafkaConsumer.ExecuteAsync()</span>'});
+    steps.push({act:()=>{},log:'<span class="warn">→ Enters while loop immediately — synchronous Subscribe()</span>'});
+    steps.push({act:()=>{document.getElementById('svc-1').className='ss-svc blocked'},log:'<span class="bad">→ Thread BLOCKED — never returns to ThreadPool</span>'});
+    steps.push({act:()=>{document.getElementById('svc-2').className='ss-svc waiting'},log:'<span class="bad">→ Formatter waiting for ThreadPool thread...</span>'});
+    steps.push({act:()=>{document.getElementById('svc-3').className='ss-svc waiting'},log:'<span class="bad">→ KafkaProducer waiting for ThreadPool thread...</span>'});
+    steps.push({act:()=>{},log:'<span class="dim">→ ...time passes...</span>'});
+    steps.push({act:()=>{document.getElementById('svc-2').className='ss-svc running'},log:'<span class="warn">→ ThreadPool eventually grows — Formatter starts (delayed!)</span>'});
+    steps.push({act:()=>{document.getElementById('svc-3').className='ss-svc running'},log:'<span class="warn">→ KafkaProducer starts (delayed!)</span>'});
+    steps.push({act:()=>{},log:'<span class="bad">⚠ Startup delayed — services started sequentially due to thread starvation</span>'});
+  } else if(mode==='yield'){
+    steps.push({act:()=>{document.getElementById('svc-1').className='ss-svc running'},log:'<span class="hl">Host starts KafkaConsumer.ExecuteAsync()</span>'});
+    steps.push({act:()=>{},log:'<span class="ok">→ await Task.Yield() — thread returned to pool ✅</span>'});
+    steps.push({act:()=>{document.getElementById('svc-2').className='ss-svc running'},log:'<span class="hl">Host starts Formatter.ExecuteAsync()</span>'});
+    steps.push({act:()=>{},log:'<span class="ok">→ await Task.Yield() — thread returned ✅</span>'});
+    steps.push({act:()=>{document.getElementById('svc-3').className='ss-svc running'},log:'<span class="hl">Host starts KafkaProducer.ExecuteAsync()</span>'});
+    steps.push({act:()=>{},log:'<span class="ok">→ All three services running concurrently ✅</span>'});
+    steps.push({act:()=>{['svc-1','svc-2','svc-3'].forEach(id=>document.getElementById(id).className='ss-svc done')},log:'<span class="ok">✅ All started quickly — no blocking!</span>'});
+  } else {
+    steps.push({act:()=>{document.getElementById('svc-1').className='ss-svc running'},log:'<span class="hl">KafkaConsumer: Task.Run(() => while loop)</span>'});
+    steps.push({act:()=>{document.getElementById('svc-1').className='ss-svc done'},log:'<span class="ok">→ ExecuteAsync returns immediately ✅</span>'});
+    steps.push({act:()=>{document.getElementById('svc-2').className='ss-svc running'},log:'<span class="hl">Formatter: ExecuteAsync starts</span>'});
+    steps.push({act:()=>{document.getElementById('svc-2').className='ss-svc done'},log:'<span class="ok">→ Returns quickly ✅</span>'});
+    steps.push({act:()=>{document.getElementById('svc-3').className='ss-svc running'},log:'<span class="hl">KafkaProducer: ExecuteAsync starts</span>'});
+    steps.push({act:()=>{document.getElementById('svc-3').className='ss-svc done'},log:'<span class="ok">→ Returns quickly ✅</span>'});
+    steps.push({act:()=>{},log:'<span class="ok">✅ All running independently on ThreadPool — cleanest pattern</span>'});
+  }
+
+  let i=0;
+  ssTimer=setInterval(()=>{
+    if(i>=steps.length){clearInterval(ssTimer);return}
+    const s=steps[i];
+    s.act();
+    log.innerHTML+=s.log+'\n';
+    log.scrollTop=log.scrollHeight;
+    i++;
+  },600);
+}
+
+// Quiz
+let answered=0,correct=0,total=4;
+function answer(btn,qId,isCorrect){const card=document.getElementById(qId);if(card.dataset.answered)return;card.dataset.answered='1';answered++;if(isCorrect){btn.classList.add('correct');correct++;}else btn.classList.add('wrong');card.querySelectorAll('.quiz-option').forEach(o=>o.disabled=true);document.getElementById(qId+'-exp').classList.add('show');if(answered===total){document.getElementById('score-box').style.display='block';document.getElementById('score-text').textContent=correct+' / '+total;}}
+const sections=document.querySelectorAll('.section');const navLinks=document.querySelectorAll('.nav a');
+window.addEventListener('scroll',()=>{let c='';sections.forEach(s=>{if(window.scrollY>=s.offsetTop-120)c=s.id});navLinks.forEach(a=>{a.classList.remove('active');if(a.getAttribute('href')==='#'+c)a.classList.add('active')})});
+</script>
+</body>
+</html>

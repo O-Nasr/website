@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Structural Design Patterns — C# Interactive Study Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=DM+Sans:ital,wght@0,400;0,500;0,700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg-deep:#060a10;--bg-card:#0e1219;--bg-code:#090d13;--bg-elevated:#161b28;--border:#1a1f32;--border-glow:#252c44;--text:#c2c8d8;--text-dim:#5e6888;--text-bright:#e4e9f4;--accent-1:#10b981;--accent-2:#6366f1;--accent-3:#f59e0b;--accent-4:#ec4899;--accent-5:#06b6d4;--accent-6:#8b5cf6;--accent-7:#ef4444;--syntax-keyword:#c678dd;--syntax-string:#98c379;--syntax-type:#61afef;--syntax-number:#d19a66;--syntax-comment:#5c6370;--syntax-method:#e5c07b;--radius:12px}
+*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg-deep);color:var(--text);line-height:1.72;overflow-x:hidden}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg-deep)}::-webkit-scrollbar-thumb{background:var(--border-glow);border-radius:3px}
+.hero{position:relative;min-height:52vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:80px 24px 56px;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 550px 380px at 30% 40%,rgba(16,185,129,.1),transparent),radial-gradient(ellipse 450px 320px at 70% 55%,rgba(99,102,241,.07),transparent),radial-gradient(ellipse 350px 250px at 50% 80%,rgba(245,158,11,.05),transparent)}
+.hero-badge{position:relative;display:inline-flex;align-items:center;gap:8px;padding:6px 18px;border:1px solid var(--accent-1);border-radius:100px;font-size:.8rem;color:var(--accent-1);letter-spacing:.08em;text-transform:uppercase;margin-bottom:24px}
+.hero h1{position:relative;font-family:'Playfair Display',serif;font-size:clamp(2.4rem,6vw,4.2rem);font-weight:900;line-height:1.15;color:var(--text-bright);max-width:700px}
+.hero h1 span{background:linear-gradient(135deg,var(--accent-1),var(--accent-5));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{position:relative;max-width:620px;margin-top:20px;color:var(--text-dim);font-size:1.05rem}
+.pattern-pills{position:relative;display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:32px;max-width:750px}
+.pattern-pills a{display:inline-block;padding:6px 14px;border:1px solid var(--border-glow);border-radius:100px;color:var(--text-dim);text-decoration:none;font-size:.82rem;transition:all .25s}
+.pattern-pills a:hover{border-color:var(--accent-1);color:var(--accent-1);background:rgba(16,185,129,.06)}
+.overview-section{max-width:1100px;margin:0 auto 60px;padding:0 24px}
+.overview-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.overview-card{display:grid;grid-template-columns:40px 1fr;gap:14px;padding:18px 20px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;transition:all .3s;text-decoration:none;color:inherit}
+.overview-card:hover{border-color:var(--accent-1);transform:translateY(-2px);box-shadow:0 6px 24px rgba(16,185,129,.1)}
+.overview-card .icon{font-size:1.5rem;display:flex;align-items:start;justify-content:center;padding-top:2px}
+.overview-card h3{font-size:.93rem;color:var(--text-bright);margin-bottom:4px}.overview-card .intent{font-size:.82rem;color:var(--text-dim)}
+.overview-card .key-idea{grid-column:1/-1;font-size:.78rem;padding:8px 12px;background:var(--bg-elevated);border-radius:8px;color:var(--accent-5);font-family:'JetBrains Mono',monospace;font-style:italic}
+.pattern-section{max-width:1000px;margin:0 auto 80px;padding:0 24px;scroll-margin-top:32px}
+.pattern-header{display:flex;align-items:center;gap:16px;margin-bottom:8px}
+.pattern-num{display:flex;align-items:center;justify-content:center;width:48px;height:48px;border-radius:14px;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:1.1rem;flex-shrink:0}
+.pattern-header h2{font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:700;color:var(--text-bright)}
+.pattern-subtitle{color:var(--text-dim);font-style:italic;margin-bottom:28px;padding-left:64px;font-size:.95rem}
+.p1{--pat:#10b981}.p2{--pat:#6366f1}.p3{--pat:#f59e0b}.p4{--pat:#ec4899}.p5{--pat:#06b6d4}.p6{--pat:#8b5cf6}.p7{--pat:#ef4444}
+.pattern-num{background:color-mix(in srgb,var(--pat) 16%,transparent);color:var(--pat);border:1px solid color-mix(in srgb,var(--pat) 28%,transparent)}
+.card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:20px}
+.card h3{font-size:1rem;color:var(--text-bright);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.card h3::before{content:'';display:inline-block;width:3px;height:18px;border-radius:2px;background:var(--pat,var(--accent-1))}
+.diagram-wrapper{background:var(--bg-code);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:20px;overflow-x:auto}
+.diagram-wrapper svg{display:block;margin:0 auto;max-width:100%;height:auto}
+.code-block{position:relative;background:var(--bg-code);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:16px;overflow:hidden}
+.code-header{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:var(--bg-elevated);border-bottom:1px solid var(--border);font-size:.78rem;color:var(--text-dim);font-family:'JetBrains Mono',monospace}
+.code-header .dots{display:flex;gap:6px}.code-header .dots span{width:10px;height:10px;border-radius:50%}
+.code-header .dots span:nth-child(1){background:#ff5f57}.code-header .dots span:nth-child(2){background:#febc2e}.code-header .dots span:nth-child(3){background:#28c840}
+.copy-btn{background:none;border:1px solid var(--border-glow);color:var(--text-dim);padding:3px 10px;border-radius:6px;cursor:pointer;font-size:.72rem;font-family:'JetBrains Mono',monospace;transition:all .2s}
+.copy-btn:hover{border-color:var(--accent-5);color:var(--accent-5)}
+.code-block pre{padding:18px 20px;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:.82rem;line-height:1.65;color:var(--text)}
+.kw{color:var(--syntax-keyword)}.tp{color:var(--syntax-type)}.str{color:var(--syntax-string)}.num{color:var(--syntax-number)}.cm{color:var(--syntax-comment);font-style:italic}.fn{color:var(--syntax-method)}
+.table-wrap{overflow-x:auto;margin-bottom:20px}table{width:100%;border-collapse:collapse;font-size:.85rem}
+thead th{background:var(--bg-elevated);color:var(--text-bright);padding:12px 16px;text-align:left;font-weight:600;border-bottom:2px solid var(--border-glow);white-space:nowrap}
+tbody td{padding:10px 16px;border-bottom:1px solid var(--border);vertical-align:top}tbody tr:hover{background:rgba(16,185,129,.03)}
+.qa-block{margin-bottom:10px}
+.qa-q{display:flex;align-items:start;gap:10px;padding:14px 18px;background:var(--bg-elevated);border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;color:var(--text-bright);font-size:.9rem;font-weight:500;transition:all .25s;user-select:none}
+.qa-q:hover{border-color:var(--accent-1)}.qa-q .arrow{flex-shrink:0;width:20px;height:20px;display:flex;align-items:center;justify-content:center;transition:transform .3s;color:var(--accent-1);font-size:.8rem}
+.qa-q.open .arrow{transform:rotate(90deg)}
+.qa-a{max-height:0;overflow:hidden;transition:max-height .35s ease,padding .35s;padding:0 18px;color:var(--text);font-size:.88rem;line-height:1.7;background:var(--bg-card);border:1px solid var(--border);border-top:none;border-radius:0 0 var(--radius) var(--radius)}
+.qa-a.open{max-height:500px;padding:16px 18px}
+.use-avoid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
+@media(max-width:600px){.use-avoid{grid-template-columns:1fr}}
+.use-col,.avoid-col{padding:16px 18px;border-radius:var(--radius);font-size:.85rem}
+.use-col{background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.18)}.avoid-col{background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.18)}
+.use-col h4{color:var(--accent-1);margin-bottom:8px}.avoid-col h4{color:var(--accent-7);margin-bottom:8px}
+.use-col li,.avoid-col li{margin-bottom:6px;list-style:none;padding-left:18px;position:relative}
+.use-col li::before{content:'✓';position:absolute;left:0;color:var(--accent-1);font-weight:700}
+.avoid-col li::before{content:'✗';position:absolute;left:0;color:var(--accent-7);font-weight:700}
+.note{display:flex;gap:12px;padding:16px 18px;background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.16);border-radius:var(--radius);margin-bottom:20px;font-size:.88rem}
+.note .bulb{font-size:1.2rem;flex-shrink:0}
+.collapsible-trigger{display:flex;align-items:center;justify-content:space-between;width:100%;padding:16px 20px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;color:var(--text-bright);font-size:.95rem;font-weight:600;margin-bottom:4px;transition:all .25s}
+.collapsible-trigger:hover{border-color:var(--accent-1)}.collapsible-trigger .chevron{transition:transform .3s;color:var(--text-dim)}.collapsible-trigger.open .chevron{transform:rotate(180deg)}
+.collapsible-body{max-height:0;overflow:hidden;transition:max-height .4s ease}.collapsible-body.open{max-height:15000px}.collapsible-body>.inner{padding:16px 0}
+.back-top{position:fixed;bottom:24px;right:24px;width:44px;height:44px;border-radius:50%;background:var(--accent-1);color:#000;border:none;cursor:pointer;font-size:1.2rem;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s,transform .3s;box-shadow:0 4px 16px rgba(16,185,129,.35);z-index:100;font-weight:700}
+.back-top.show{opacity:1;pointer-events:auto}.back-top:hover{transform:scale(1.1)}
+footer{text-align:center;padding:40px 24px;color:var(--text-dim);font-size:.8rem;border-top:1px solid var(--border);margin-top:40px}
+.summary-section{max-width:1000px;margin:0 auto 60px;padding:0 24px}
+.summary-section h2{font-family:'Playfair Display',serif;font-size:1.8rem;color:var(--text-bright);margin-bottom:24px;text-align:center}
+@media(max-width:768px){.overview-grid{grid-template-columns:1fr}.pattern-subtitle{padding-left:0}}
+</style>
+</head>
+<body>
+
+<section class="hero">
+  <div class="hero-badge">C# Design Patterns</div>
+  <h1>Structural <span>Patterns</span></h1>
+  <p>How classes and objects compose to form larger structures — using inheritance and composition to create flexible, efficient architectures.</p>
+  <div class="pattern-pills">
+    <a href="#adapter">🔌 Adapter</a><a href="#bridge">🌉 Bridge</a><a href="#composite">🌿 Composite</a><a href="#decorator">🎨 Decorator</a><a href="#facade">🏛️ Facade</a><a href="#flyweight">🪶 Flyweight</a><a href="#proxy">🔒 Proxy</a>
+  </div>
+</section>
+
+<section class="overview-section"><div class="overview-grid">
+  <a class="overview-card" href="#adapter"><div class="icon">🔌</div><div><h3>Adapter</h3><div class="intent">Make incompatible interfaces work together</div></div><div class="key-idea">Translator between two interfaces</div></a>
+  <a class="overview-card" href="#bridge"><div class="icon">🌉</div><div><h3>Bridge</h3><div class="intent">Decouple abstraction from implementation</div></div><div class="key-idea">Two independent hierarchies linked by reference</div></a>
+  <a class="overview-card" href="#composite"><div class="icon">🌿</div><div><h3>Composite</h3><div class="intent">Treat individual objects and groups uniformly</div></div><div class="key-idea">Tree structure, same interface for Leaf and Composite</div></a>
+  <a class="overview-card" href="#decorator"><div class="icon">🎨</div><div><h3>Decorator</h3><div class="intent">Add behavior dynamically without subclassing</div></div><div class="key-idea">Wrap objects in layers, same interface</div></a>
+  <a class="overview-card" href="#facade"><div class="icon">🏛️</div><div><h3>Facade</h3><div class="intent">Simplify a complex subsystem behind one interface</div></div><div class="key-idea">Single entry point hiding internal complexity</div></a>
+  <a class="overview-card" href="#flyweight"><div class="icon">🪶</div><div><h3>Flyweight</h3><div class="intent">Share objects to reduce memory for many instances</div></div><div class="key-idea">Intrinsic shared state, extrinsic passed in</div></a>
+  <a class="overview-card" href="#proxy"><div class="icon">🔒</div><div><h3>Proxy</h3><div class="intent">Control access to an object</div></div><div class="key-idea">Surrogate — same interface, added control</div></a>
+</div></section>
+
+<!-- ═══ PATTERN 1 — ADAPTER ═══ -->
+<section id="adapter" class="pattern-section p1">
+  <div class="pattern-header"><div class="pattern-num">01</div><h2>🔌 Adapter</h2></div>
+  <div class="pattern-subtitle">Convert the interface of a class into another interface that clients expect.</div>
+  <div class="card"><h3>Intent</h3><p>Make two incompatible interfaces work together by placing a translator — the Adapter — between them. The client talks to the Adapter through the interface it expects, and the Adapter translates the call to the incompatible class.</p></div>
+  <div class="card"><h3>The Problem It Solves</h3><p>You want to use a third-party class but its interface does not match what your code expects. You cannot change either side. The Adapter sits in the middle and translates.</p></div>
+
+  <div class="diagram-wrapper">
+    <svg viewBox="0 0 780 200" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+      <defs><marker id="a1" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#10b981"/></marker><marker id="a1g" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#5e6888"/></marker></defs>
+      <rect x="20" y="60" width="140" height="60" rx="10" fill="#161b28" stroke="#5e6888" stroke-width="1"/>
+      <text x="90" y="85" text-anchor="middle" fill="#c2c8d8" font-weight="600" font-size="13">Client</text>
+      <text x="90" y="104" text-anchor="middle" fill="#5e6888" font-size="10" font-family="JetBrains Mono,monospace">MediaApp</text>
+      <rect x="220" y="40" width="180" height="50" rx="10" fill="rgba(16,185,129,.1)" stroke="#10b981" stroke-width="1.5"/>
+      <text x="310" y="62" text-anchor="middle" fill="#10b981" font-weight="700" font-size="13">«interface» IMediaPlayer</text>
+      <text x="310" y="80" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">Play(fileName)</text>
+      <rect x="220" y="120" width="180" height="50" rx="10" fill="rgba(16,185,129,.06)" stroke="#10b981" stroke-width="1" stroke-opacity=".5"/>
+      <text x="310" y="142" text-anchor="middle" fill="#10b981" font-weight="600" font-size="12">AudioPlayerAdapter</text>
+      <text x="310" y="160" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">Play() → PlayAudio()</text>
+      <rect x="500" y="100" width="240" height="70" rx="10" fill="rgba(245,158,11,.08)" stroke="#f59e0b" stroke-width="1"/>
+      <text x="620" y="125" text-anchor="middle" fill="#f59e0b" font-weight="600" font-size="13">AdvancedAudioPlayer</text>
+      <text x="620" y="142" text-anchor="middle" fill="#5e6888" font-size="10">(third-party — cannot modify)</text>
+      <text x="620" y="160" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">PlayAudio(fileName)</text>
+      <line x1="160" y1="90" x2="220" y2="65" stroke="#5e6888" stroke-width="1" marker-end="url(#a1g)"/>
+      <text x="190" y="72" fill="#5e6888" font-size="9">uses</text>
+      <line x1="310" y1="120" x2="310" y2="90" stroke="#5e6888" stroke-width="1" marker-end="url(#a1g)"/>
+      <text x="325" y="108" fill="#5e6888" font-size="9">implements</text>
+      <path d="M400,145 L500,140" fill="none" stroke="#10b981" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#a1)"/>
+      <text x="450" y="136" fill="#10b981" font-size="9">wraps / translates</text>
+    </svg>
+  </div>
+
+  <button class="collapsible-trigger" onclick="toggleCollapsible(this)">C# Implementation <span class="chevron">▼</span></button>
+  <div class="collapsible-body"><div class="inner">
+    <div class="code-block"><div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span>Step 1 — Target interface</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><span class="kw">public interface</span> <span class="tp">IMediaPlayer</span>
+{
+    <span class="kw">void</span> <span class="fn">Play</span>(<span class="kw">string</span> fileName);
+}</pre></div>
+    <div class="code-block"><div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span>Step 2 — Client</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><span class="kw">public class</span> <span class="tp">MediaApp</span>
+{
+    <span class="kw">private readonly</span> <span class="tp">IMediaPlayer</span> _player;
+    <span class="kw">public</span> <span class="fn">MediaApp</span>(<span class="tp">IMediaPlayer</span> player) { _player = player; }
+    <span class="kw">public void</span> <span class="fn">PlaySong</span>(<span class="kw">string</span> file) { _player.<span class="fn">Play</span>(file); }
+}</pre></div>
+    <div class="code-block"><div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span>Step 3 — Adaptee (third-party, cannot modify)</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><span class="cm">// Third-party — cannot be modified</span>
+<span class="kw">public class</span> <span class="tp">AdvancedAudioPlayer</span>
+{
+    <span class="kw">public void</span> <span class="fn">PlayAudio</span>(<span class="kw">string</span> fileName)
+        => <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">$"Advanced player: {fileName}"</span>);
+}</pre></div>
+    <div class="code-block"><div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span>Step 4 — The Adapter (translator)</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><span class="kw">public class</span> <span class="tp">AudioPlayerAdapter</span> : <span class="tp">IMediaPlayer</span>
+{
+    <span class="kw">private readonly</span> <span class="tp">AdvancedAudioPlayer</span> _advanced;
+    <span class="kw">public</span> <span class="fn">AudioPlayerAdapter</span>(<span class="tp">AdvancedAudioPlayer</span> advanced)
+        => _advanced = advanced;
+
+    <span class="cm">// Translates Play() → PlayAudio()</span>
+    <span class="kw">public void</span> <span class="fn">Play</span>(<span class="kw">string</span> fileName)
+        => _advanced.<span class="fn">PlayAudio</span>(fileName);
+}</pre></div>
+    <div class="code-block"><div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span>Step 5 — Client code</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><span class="kw">var</span> advanced = <span class="kw">new</span> <span class="tp">AdvancedAudioPlayer</span>();
+<span class="tp">IMediaPlayer</span> player = <span class="kw">new</span> <span class="tp">AudioPlayerAdapter</span>(advanced);
+<span class="kw">var</span> app = <span class="kw">new</span> <span class="tp">MediaApp</span>(player);
+app.<span class="fn">PlaySong</span>(<span class="str">"song.mp3"</span>);
+<span class="cm">// MediaApp never changed. AdvancedAudioPlayer never changed.</span>
+<span class="cm">// Only the Adapter is new code.</span></pre></div>
+  </div></div>
+
+  <div class="note"><span class="bulb">💡</span><span>Object Adapter (uses composition) is the standard in C# because C# does not support multiple class inheritance. Class Adapter would require extending both Target and Adaptee simultaneously.</span></div>
+
+  <button class="collapsible-trigger" onclick="toggleCollapsible(this)">Interview Q&A <span class="chevron">▼</span></button>
+  <div class="collapsible-body"><div class="inner">
+    <div class="qa-block"><div class="qa-q" onclick="toggleQA(this)"><span class="arrow">▶</span>What is the difference between Object Adapter and Class Adapter?</div><div class="qa-a">Object Adapter uses composition — wraps the adaptee as a field. Class Adapter uses inheritance — extends the adaptee. In C#, Object Adapter is standard because C# does not support multiple class inheritance.</div></div>
+    <div class="qa-block"><div class="qa-q" onclick="toggleQA(this)"><span class="arrow">▶</span>When would you use Adapter vs Facade?</div><div class="qa-a">Use Adapter when you need to match a specific existing interface your client already expects. Use Facade when you want to simplify a complex system — with no existing interface contract to match.</div></div>
+    <div class="qa-block"><div class="qa-q" onclick="toggleQA(this)"><span class="arrow">▶</span>Does Adapter change the behavior of the adaptee?</div><div class="qa-a">No. Adapter only translates the interface — it does not add, remove, or modify the underlying logic. If you need to add behavior, combine Adapter with Decorator.</div></div>
+  </div></div>
+
+  <div class="use-avoid">
+    <div class="use-col"><h4>✅ Use When</h4><ul><li>Use an existing class but its interface does not match</li><li>Integrating third-party or legacy code you cannot modify</li><li>Your system needs to work with multiple incompatible sources</li></ul></div>
+    <div class="avoid-col"><h4>❌ Avoid When</h4><ul><li>You control both classes — just change one directly</li><li>The interface difference is so large that adaptation is a full rewrite</li><li>Wrapping adds unnecessary complexity for a simple call</li></ul></div>
+  </div>
+</section>
+
+<!-- ═══ PATTERN 2 — BRIDGE ═══ -->
+<section id="bridge" class="pattern-section p2">
+  <div class="pattern-header"><div class="pattern-num">02</div><h2>🌉 Bridge</h2></div>
+  <div class="pattern-subtitle">Decouple an abstraction from its implementation so the two can vary independently.</div>
+  <div class="card"><h3>Intent</h3><p>Separate a class into two independent hierarchies — abstraction and implementation — connected by a reference (the bridge). This prevents class explosion when two dimensions vary independently.</p></div>
+  <div class="card"><h3>The Problem — Class Explosion</h3><p>When two dimensions combine via inheritance, adding one new thing forces many new classes. Bridge replaces <strong>m × n</strong> subclasses with <strong>m + n</strong> classes.</p></div>
+
+  <div class="diagram-wrapper">
+    <svg viewBox="0 0 780 280" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+      <defs><marker id="a2" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#6366f1"/></marker><marker id="a2g" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#5e6888"/></marker></defs>
+      <!-- Abstraction side -->
+      <rect x="20" y="20" width="240" height="70" rx="10" fill="rgba(99,102,241,.1)" stroke="#6366f1" stroke-width="1.5"/>
+      <text x="140" y="45" text-anchor="middle" fill="#6366f1" font-weight="700" font-size="13">Notification «abstract»</text>
+      <text x="140" y="65" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">_sender : IMessageSender</text>
+      <text x="140" y="80" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">Notify(message)</text>
+      <!-- Impl side -->
+      <rect x="460" y="20" width="260" height="60" rx="10" fill="rgba(16,185,129,.1)" stroke="#10b981" stroke-width="1.5"/>
+      <text x="590" y="45" text-anchor="middle" fill="#10b981" font-weight="700" font-size="13">«interface» IMessageSender</text>
+      <text x="590" y="65" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">SendMessage(message)</text>
+      <!-- Bridge arrow -->
+      <path d="M260,50 L460,50" fill="none" stroke="#6366f1" stroke-width="2" marker-end="url(#a2)"/>
+      <text x="360" y="42" text-anchor="middle" fill="#6366f1" font-weight="700" font-size="11">THE BRIDGE</text>
+      <!-- Concrete abstractions -->
+      <rect x="20" y="150" width="150" height="45" rx="8" fill="rgba(99,102,241,.06)" stroke="#6366f1" stroke-width="1" stroke-opacity=".5"/>
+      <text x="95" y="178" text-anchor="middle" fill="#6366f1" font-weight="600" font-size="12">AlertNotification</text>
+      <rect x="190" y="150" width="170" height="45" rx="8" fill="rgba(99,102,241,.06)" stroke="#6366f1" stroke-width="1" stroke-opacity=".5"/>
+      <text x="275" y="178" text-anchor="middle" fill="#6366f1" font-weight="600" font-size="12">ReminderNotification</text>
+      <!-- Concrete implementations -->
+      <rect x="440" y="130" width="110" height="38" rx="8" fill="rgba(16,185,129,.06)" stroke="#10b981" stroke-width="1" stroke-opacity=".5"/>
+      <text x="495" y="154" text-anchor="middle" fill="#10b981" font-size="11" font-weight="600">EmailSender</text>
+      <rect x="565" y="130" width="100" height="38" rx="8" fill="rgba(16,185,129,.06)" stroke="#10b981" stroke-width="1" stroke-opacity=".5"/>
+      <text x="615" y="154" text-anchor="middle" fill="#10b981" font-size="11" font-weight="600">SMSSender</text>
+      <rect x="680" y="130" width="100" height="38" rx="8" fill="rgba(16,185,129,.06)" stroke="#10b981" stroke-width="1" stroke-opacity=".5"/>
+      <text x="730" y="154" text-anchor="middle" fill="#10b981" font-size="11" font-weight="600">PushSender</text>
+      <!-- extends -->
+      <line x1="95" y1="150" x2="120" y2="90" stroke="#5e6888" stroke-width="1" marker-end="url(#a2g)"/>
+      <line x1="275" y1="150" x2="170" y2="90" stroke="#5e6888" stroke-width="1" marker-end="url(#a2g)"/>
+      <line x1="495" y1="130" x2="550" y2="80" stroke="#5e6888" stroke-width="1" marker-end="url(#a2g)"/>
+      <line x1="615" y1="130" x2="590" y2="80" stroke="#5e6888" stroke-width="1" marker-end="url(#a2g)"/>
+      <line x1="730" y1="130" x2="630" y2="80" stroke="#5e6888" stroke-width="1" marker-end="url(#a2g)"/>
+      <!-- Benefit note -->
+      <rect x="80" y="230" width="600" height="32" rx="8" fill="rgba(16,185,129,.05)" stroke="rgba(16,185,129,.15)" stroke-width="1"/>
+      <text x="380" y="250" text-anchor="middle" fill="#10b981" font-size="11">2 notification types × 3 channels = 5 classes instead of 6 (m+n vs m×n)</text>
+    </svg>
+  </div>
+
+  <button class="collapsible-trigger" onclick="toggleCollapsible(this)">C# Implementation <span class="chevron">▼</span></button>
+  <div class="collapsible-body"><div class="inner">
+    <div class="code-block"><div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span>Step 1 — Implementation interface (right side)</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><span class="kw">public interface</span> <span class="tp">IMessageSender</span>
+{
+    <span class="kw">void</span> <span class="fn">SendMessage</span>(<span class="kw">string</span> message);
+}
+
+<span class="kw">public class</span> <span class="tp">EmailSender</span> : <span class="tp">IMessageSender</span>
+{ <span class="kw">public void</span> <span class="fn">SendMessage</span>(<span class="kw">string</span> msg) =>
+    <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">$"Email: {msg}"</span>); }
+
+<span class="kw">public class</span> <span class="tp">SMSSender</span> : <span class="tp">IMessageSender</span>
+{ <span class="kw">public void</span> <span class="fn">SendMessage</span>(<span class="kw">string</span> msg) => <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">$"SMS: {msg}"</span>); }
+
+<span class="kw">public class</span> <span class="tp">PushSender</span> : <span class="tp">IMessageSender</span>
+{ <span class="kw">public void</span> <span class="fn">SendMessage</span>(<span class="kw">string</span> msg) => <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">$"Push: {msg}"</span>); }</pre></div>
+    <div class="code-block"><div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span>Step 2 — Abstraction (left side) with bridge reference</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><span class="kw">public abstract class</span> <span class="tp">Notification</span>
+{
+    <span class="cm">// The bridge — Association to the implementation side</span>
+    <span class="kw">protected readonly</span> <span class="tp">IMessageSender</span> _sender;
+    <span class="kw">protected</span> <span class="fn">Notification</span>(<span class="tp">IMessageSender</span> sender)
+        => _sender = sender;
+    <span class="kw">public abstract void</span> <span class="fn">Notify</span>(<span class="kw">string</span> message);
+}
+
+<span class="kw">public class</span> <span class="tp">AlertNotification</span> : <span class="tp">Notification</span>
+{
+    <span class="kw">public</span> <span class="fn">AlertNotification</span>(<span class="tp">IMessageSender</span> sender) : <span class="kw">base</span>(sender) { }
+    <span class="kw">public override void</span> <span class="fn">Notify</span>(<span class="kw">string</span> message)
+        => _sender.<span class="fn">SendMessage</span>(<span class="str">$"ALERT: {message}"</span>);
+}
+
+<span class="kw">public class</span> <span class="tp">ReminderNotification</span> : <span class="tp">Notification</span>
+{
+    <span class="kw">public</span> <span class="fn">ReminderNotification</span>(<span class="tp">IMessageSender</span> sender) : <span class="kw">base</span>(sender) { }
+    <span class="kw">public override void</span> <span class="fn">Notify</span>(<span class="kw">string</span> message)
+        => _sender.<span class="fn">SendMessage</span>(<span class="str">$"REMINDER: {message}"</span>);
+}</pre></div>
+    <div class="code-block"><div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span>Step 3 — Client code — mix and match freely</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><span class="tp">Notification</span> n1 = <span class="kw">new</span> <span class="tp">AlertNotification</span>(<span class="kw">new</span> <span class="tp">EmailSender</span>());
+<span class="tp">Notification</span> n2 = <span class="kw">new</span> <span class="tp">AlertNotification</span>(<span class="kw">new</span> <span class="tp">SMSSender</span>());
+<span class="tp">Notification</span> n3 = <span class="kw">new</span> <span class="tp">AlertNotification</span>(<span class="kw">new</span> <span class="tp">PushSender</span>());
+<span class="tp">Notification</span> n4 = <span class="kw">new</span> <span class="tp">ReminderNotification</span>(<span class="kw">new</span> <span class="tp">EmailSender</span>());
+
+n1.<span class="fn">Notify</span>(<span class="str">"Server is down!"</span>); <span class="cm">// Email: ALERT: Server is down!</span>
+n2.<span class="fn">Notify</span>(<span class="str">"Server is down!"</span>); <span class="cm">// SMS: ALERT: Server is down!</span>
+n3.<span class="fn">Notify</span>(<span class="str">"Meeting at 3pm"</span>); <span class="cm">// Push: REMINDER: Meeting at 3pm</span></pre></div>
+  </div></div>
+
+  <div class="note"><span class="bulb">💡</span><span>The book uses the word 'composition' to mean 'hold a reference instead of inheriting'. The precise UML relation in Bridge is Association: the sender is injected, not owned.</span></div>
+
+  <div class="card"><h3>Bridge vs Adapter</h3><div class="table-wrap"><table><thead><tr><th></th><th>Bridge</th><th>Adapter</th></tr></thead><tbody>
+    <tr><td><strong>Purpose</strong></td><td>Prevent class explosion</td><td>Fix interface mismatch</td></tr>
+    <tr><td><strong>When designed</strong></td><td>Proactive — designed upfront</td><td>Reactive — added after mismatch found</td></tr>
+    <tr><td><strong>Intent</strong></td><td>Two hierarchies vary independently</td><td>Make incompatible interfaces compatible</td></tr>
+  </tbody></table></div></div>
+
+  <button class="collapsible-trigger" onclick="toggleCollapsible(this)">Interview Q&A <span class="chevron">▼</span></button>
+  <div class="collapsible-body"><div class="inner">
+    <div class="qa-block"><div class="qa-q" onclick="toggleQA(this)"><span class="arrow">▶</span>What does 'the bridge' literally refer to in code?</div><div class="qa-a">The bridge is the reference field — <code>_sender</code> inside Notification. It connects the two hierarchies at runtime. It is a single injected reference that allows any abstraction to work with any implementation.</div></div>
+    <div class="qa-block"><div class="qa-q" onclick="toggleQA(this)"><span class="arrow">▶</span>How is Bridge related to 'favor composition over inheritance'?</div><div class="qa-a">Bridge is a direct application of that principle. Instead of creating m × n subclasses, it uses a composed reference to connect two independent hierarchies — replacing class explosion with a clean m + n structure.</div></div>
+  </div></div>
+
+  <div class="use-avoid">
+    <div class="use-col"><h4>✅ Use When</h4><ul><li>Two dimensions of a class vary independently</li><li>You want to avoid class explosion from combining hierarchies</li><li>You want to switch implementations at runtime</li></ul></div>
+    <div class="avoid-col"><h4>❌ Avoid When</h4><ul><li>Only one dimension varies — plain inheritance is fine</li><li>Abstraction and implementation are always paired together</li><li>The system is small enough that the pattern adds unnecessary complexity</li></ul></div>
+  </div>
+</section>
+
+<!-- ═══ PATTERN 3 — COMPOSITE ═══ -->
+<section id="composite" class="pattern-section p3">
+  <div class="pattern-header"><div class="pattern-num">03</div><h2>🌿 Composite</h2></div>
+  <div class="pattern-subtitle">Compose objects into tree structures and treat individual objects and compositions uniformly.</div>
+  <div class="card"><h3>Intent</h3><p>Compose objects into tree structures to represent part-whole hierarchies. The client treats a single object (Leaf) and a group of objects (Composite) through the same interface — with no type checking needed.</p></div>
+
+  <div class="diagram-wrapper">
+    <svg viewBox="0 0 700 260" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+      <defs><marker id="a3" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#5e6888"/></marker></defs>
+      <rect x="230" y="10" width="240" height="65" rx="10" fill="rgba(245,158,11,.1)" stroke="#f59e0b" stroke-width="1.5"/>
+      <text x="350" y="35" text-anchor="middle" fill="#f59e0b" font-weight="700" font-size="13">«interface» IOrderItem</text>
+      <text x="350" y="55" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">GetPrice() / Print()</text>
+      <rect x="60" y="140" width="180" height="55" rx="10" fill="rgba(245,158,11,.06)" stroke="#f59e0b" stroke-width="1" stroke-opacity=".5"/>
+      <text x="150" y="162" text-anchor="middle" fill="#f59e0b" font-weight="600" font-size="12">Product (Leaf)</text>
+      <text x="150" y="182" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">returns own price</text>
+      <rect x="380" y="130" width="240" height="70" rx="10" fill="rgba(245,158,11,.06)" stroke="#f59e0b" stroke-width="1" stroke-opacity=".5"/>
+      <text x="500" y="152" text-anchor="middle" fill="#f59e0b" font-weight="600" font-size="12">Box (Composite)</text>
+      <text x="500" y="172" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">List&lt;IOrderItem&gt; _items</text>
+      <text x="500" y="189" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">delegates to children</text>
+      <line x1="150" y1="140" x2="300" y2="75" stroke="#5e6888" stroke-width="1" marker-end="url(#a3)"/>
+      <line x1="500" y1="130" x2="400" y2="75" stroke="#5e6888" stroke-width="1" marker-end="url(#a3)"/>
+      <text x="200" y="112" fill="#5e6888" font-size="9">implements</text>
+      <text x="470" y="105" fill="#5e6888" font-size="9">implements</text>
+      <!-- Self-ref -->
+      <path d="M620,165 C670,165 670,45 470,45" fill="none" stroke="#f59e0b" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#a3)"/>
+      <text x="665" y="105" fill="#f59e0b" font-size="9">contains</text>
+      <rect x="130" y="225" width="440" height="28" rx="8" fill="rgba(245,158,11,.05)" stroke="rgba(245,158,11,.15)" stroke-width="1"/>
+      <text x="350" y="243" text-anchor="middle" fill="#f59e0b" font-size="10">Client calls GetPrice() once on root → propagates through entire tree</text>
+    </svg>
+  </div>
+
+  <button class="collapsible-trigger" onclick="toggleCollapsible(this)">C# Implementation <span class="chevron">▼</span></button>
+  <div class="collapsible-body"><div class="inner">
+    <div class="code-block"><div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span>Step 1 — Component interface</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><span class="kw">public interface</span> <span class="tp">IOrderItem</span>
+{
+    <span class="kw">string</span> Name { <span class="kw">get</span>; }
+    <span class="kw">double</span> <span class="fn">GetPrice</span>();
+    <span class="kw">void</span> <span class="fn">Print</span>(<span class="kw">string</span> indent = <span class="str">""</span>);
+}</pre></div>
+    <div class="code-block"><div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span>Step 2 — Leaf (individual product)</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><span class="kw">public class</span> <span class="tp">Product</span> : <span class="tp">IOrderItem</span>
+{
+    <span class="kw">public string</span> Name { <span class="kw">get</span>; }
+    <span class="kw">private double</span> _price;
+    <span class="kw">public</span> <span class="fn">Product</span>(<span class="kw">string</span> name, <span class="kw">double</span> price) { Name = name; _price = price; }
+    <span class="kw">public double</span> <span class="fn">GetPrice</span>() => _price;
+    <span class="kw">public void</span> <span class="fn">Print</span>(<span class="kw">string</span> indent = <span class="str">""</span>)
+        => <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">$"{indent}Product: {Name} = ${_price}"</span>);
+}</pre></div>
+    <div class="code-block"><div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span>Step 3 — Composite (box containing items)</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><span class="kw">public class</span> <span class="tp">Box</span> : <span class="tp">IOrderItem</span>
+{
+    <span class="kw">public string</span> Name { <span class="kw">get</span>; }
+    <span class="kw">private readonly</span> <span class="tp">List</span>&lt;<span class="tp">IOrderItem</span>&gt; _items = <span class="kw">new</span>();
+    <span class="kw">public</span> <span class="fn">Box</span>(<span class="kw">string</span> name) { Name = name; }
+    <span class="kw">public void</span> <span class="fn">Add</span>(<span class="tp">IOrderItem</span> item) => _items.<span class="fn">Add</span>(item);
+    <span class="kw">public void</span> <span class="fn">Remove</span>(<span class="tp">IOrderItem</span> item) => _items.<span class="fn">Remove</span>(item);
+
+    <span class="cm">// Delegates to all children — doesn't care if Leaf or Composite</span>
+    <span class="kw">public double</span> <span class="fn">GetPrice</span>() => _items.<span class="fn">Sum</span>(i => i.<span class="fn">GetPrice</span>());
+    <span class="kw">public void</span> <span class="fn">Print</span>(<span class="kw">string</span> indent = <span class="str">""</span>)
+    {
+        <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">$"{indent}Box: {Name}"</span>);
+        <span class="kw">foreach</span> (<span class="kw">var</span> item <span class="kw">in</span> _items)
+            item.<span class="fn">Print</span>(indent + <span class="str">"  "</span>);
+    }
+}</pre></div>
+    <div class="code-block"><div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span>Step 4 — Client code</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><span class="kw">var</span> phone = <span class="kw">new</span> <span class="tp">Product</span>(<span class="str">"Phone"</span>, <span class="num">699.99</span>);
+<span class="kw">var</span> charger = <span class="kw">new</span> <span class="tp">Product</span>(<span class="str">"Charger"</span>, <span class="num">29.99</span>);
+<span class="kw">var</span> earbuds = <span class="kw">new</span> <span class="tp">Product</span>(<span class="str">"Earbuds"</span>, <span class="num">49.99</span>);
+<span class="kw">var</span> giftCard = <span class="kw">new</span> <span class="tp">Product</span>(<span class="str">"Gift Card"</span>, <span class="num">50.00</span>);
+
+<span class="kw">var</span> accessoryBox = <span class="kw">new</span> <span class="tp">Box</span>(<span class="str">"Accessory Box"</span>);
+accessoryBox.<span class="fn">Add</span>(charger);
+accessoryBox.<span class="fn">Add</span>(earbuds);
+
+<span class="kw">var</span> orderBox = <span class="kw">new</span> <span class="tp">Box</span>(<span class="str">"Order Box"</span>);
+orderBox.<span class="fn">Add</span>(phone);
+orderBox.<span class="fn">Add</span>(accessoryBox); <span class="cm">// box inside a box</span>
+orderBox.<span class="fn">Add</span>(giftCard);
+
+<span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">$"Total: ${orderBox.GetPrice()}"</span>);
+orderBox.<span class="fn">Print</span>();
+<span class="cm">// Total: $829.97</span>
+<span class="cm">// Box: Order Box</span>
+<span class="cm">//   Product: Phone = $699.99</span>
+<span class="cm">//   Box: Accessory Box</span>
+<span class="cm">//     Product: Charger = $29.99</span>
+<span class="cm">//     Product: Earbuds = $49.99</span>
+<span class="cm">//   Product: Gift Card = $50.00</span></pre></div>
+  </div></div>
+
+  <div class="note"><span class="bulb">💡</span><span>The client called <code>GetPrice()</code> once on the root. The call propagated down the entire tree automatically — through boxes and products — without the client knowing or caring about the structure.</span></div>
+
+  <button class="collapsible-trigger" onclick="toggleCollapsible(this)">Interview Q&A <span class="chevron">▼</span></button>
+  <div class="collapsible-body"><div class="inner">
+    <div class="qa-block"><div class="qa-q" onclick="toggleQA(this)"><span class="arrow">▶</span>What is the difference between a Leaf and a Composite?</div><div class="qa-a">A Leaf is an end node — it has no children and performs the operation directly. A Composite holds a collection of children and delegates the operation to them recursively. Both implement the same interface so the client cannot tell them apart.</div></div>
+    <div class="qa-block"><div class="qa-q" onclick="toggleQA(this)"><span class="arrow">▶</span>What UML relation exists between a Composite and its children?</div><div class="qa-a">Aggregation — the children are added from outside via <code>Add()</code> and can exist independently. The Composite holds a collection reference but does not own the lifecycle of its children.</div></div>
+  </div></div>
+
+  <div class="use-avoid">
+    <div class="use-col"><h4>✅ Use When</h4><ul><li>You have a part-whole tree structure</li><li>Clients should treat leaves and composites uniformly</li><li>Operations need to propagate recursively through the tree</li></ul></div>
+    <div class="avoid-col"><h4>❌ Avoid When</h4><ul><li>Your structure is flat — no nesting needed</li><li>Leaf and Composite are too different to share an interface</li><li>The tree is fixed and simple — the pattern adds unnecessary complexity</li></ul></div>
+  </div>
+</section>
+
+<!-- ═══ PATTERN 4 — DECORATOR ═══ -->
+<section id="decorator" class="pattern-section p4">
+  <div class="pattern-header"><div class="pattern-num">04</div><h2>🎨 Decorator</h2></div>
+  <div class="pattern-subtitle">Attach additional behavior to an object dynamically without modifying the original class.</div>
+  <div class="card"><h3>Intent</h3><p>Wrap an object inside another object that adds behavior, while keeping the same interface. Decorators can be stacked in any combination — solving the class explosion problem that inheritance creates for behavior combinations.</p></div>
+
+  <div class="diagram-wrapper">
+    <svg viewBox="0 0 780 370" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+      <defs>
+        <linearGradient id="gd1" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#ec4899" stop-opacity=".18"/><stop offset="100%" stop-color="#ec4899" stop-opacity=".04"/></linearGradient>
+        <marker id="ad1" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#5e6888"/></marker>
+        <marker id="ad2" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#ec4899"/></marker>
+      </defs>
+      <!-- ICoffee interface -->
+      <rect x="260" y="10" width="260" height="70" rx="10" fill="url(#gd1)" stroke="#ec4899" stroke-width="1.5"/>
+      <text x="390" y="35" text-anchor="middle" fill="#ec4899" font-weight="700" font-size="13">«interface» ICoffee</text>
+      <line x1="280" y1="42" x2="500" y2="42" stroke="#ec4899" stroke-opacity=".3"/>
+      <text x="390" y="62" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">GetDescription() / GetCost()</text>
+      <!-- SimpleCoffee -->
+      <rect x="50" y="140" width="180" height="50" rx="10" fill="rgba(236,72,153,.06)" stroke="#ec4899" stroke-width="1" stroke-opacity=".5"/>
+      <text x="140" y="162" text-anchor="middle" fill="#ec4899" font-weight="600" font-size="12">SimpleCoffee</text>
+      <text x="140" y="180" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">"Simple Coffee" / $1.00</text>
+      <!-- CoffeeDecorator (abstract) -->
+      <rect x="310" y="130" width="260" height="70" rx="10" fill="url(#gd1)" stroke="#ec4899" stroke-width="1.5"/>
+      <text x="440" y="152" text-anchor="middle" fill="#ec4899" font-weight="700" font-size="12">CoffeeDecorator «abstract»</text>
+      <line x1="330" y1="160" x2="550" y2="160" stroke="#ec4899" stroke-opacity=".3"/>
+      <text x="440" y="178" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">_coffee : ICoffee</text>
+      <text x="440" y="192" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">delegates to wrapped object</text>
+      <!-- Wraps arrow (decorator → interface) -->
+      <path d="M570,165 C620,165 640,45 520,45" fill="none" stroke="#ec4899" stroke-width="1.2" stroke-dasharray="5 3" marker-end="url(#ad2)"/>
+      <text x="610" y="100" fill="#ec4899" font-size="9" font-weight="600">wraps</text>
+      <!-- Concrete decorators -->
+      <rect x="200" y="270" width="140" height="50" rx="10" fill="rgba(236,72,153,.06)" stroke="#ec4899" stroke-width="1" stroke-opacity=".4"/>
+      <text x="270" y="292" text-anchor="middle" fill="#ec4899" font-weight="600" font-size="11">MilkDecorator</text>
+      <text x="270" y="308" text-anchor="middle" fill="#8890a8" font-size="9" font-family="JetBrains Mono,monospace">+$0.25</text>
+      <rect x="360" y="270" width="140" height="50" rx="10" fill="rgba(236,72,153,.06)" stroke="#ec4899" stroke-width="1" stroke-opacity=".4"/>
+      <text x="430" y="292" text-anchor="middle" fill="#ec4899" font-weight="600" font-size="11">SugarDecorator</text>
+      <text x="430" y="308" text-anchor="middle" fill="#8890a8" font-size="9" font-family="JetBrains Mono,monospace">+$0.10</text>
+      <rect x="520" y="270" width="150" height="50" rx="10" fill="rgba(236,72,153,.06)" stroke="#ec4899" stroke-width="1" stroke-opacity=".4"/>
+      <text x="595" y="292" text-anchor="middle" fill="#ec4899" font-weight="600" font-size="11">VanillaDecorator</text>
+      <text x="595" y="308" text-anchor="middle" fill="#8890a8" font-size="9" font-family="JetBrains Mono,monospace">+$0.50</text>
+      <!-- Implements arrows -->
+      <line x1="140" y1="140" x2="330" y2="80" stroke="#5e6888" stroke-width="1" marker-end="url(#ad1)"/>
+      <text x="210" y="108" fill="#5e6888" font-size="9">implements</text>
+      <line x1="380" y1="130" x2="390" y2="80" stroke="#5e6888" stroke-width="1" marker-end="url(#ad1)"/>
+      <text x="400" y="108" fill="#5e6888" font-size="9">implements</text>
+      <!-- Extends arrows -->
+      <line x1="270" y1="270" x2="390" y2="200" stroke="#5e6888" stroke-width="1" marker-end="url(#ad1)"/>
+      <line x1="430" y1="270" x2="440" y2="200" stroke="#5e6888" stroke-width="1" marker-end="url(#ad1)"/>
+      <line x1="595" y1="270" x2="480" y2="200" stroke="#5e6888" stroke-width="1" marker-end="url(#ad1)"/>
+      <!-- Stacking illustration -->
+      <rect x="50" y="340" width="680" height="26" rx="8" fill="rgba(236,72,153,.05)" stroke="rgba(236,72,153,.15)" stroke-width="1"/>
+      <text x="390" y="357" text-anchor="middle" fill="#ec4899" font-size="10">Stacking: Vanilla( Sugar( Milk( SimpleCoffee ) ) ) → "Simple Coffee, Milk, Sugar, Vanilla" = $1.85</text>
+    </svg>
+  </div>
+
+  <button class="collapsible-trigger" onclick="toggleCollapsible(this)">C# Implementation <span class="chevron">▼</span></button>
+  <div class="collapsible-body"><div class="inner">
+    <div class="code-block"><div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span>Step 1 — Component interface</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><span class="kw">public interface</span> <span class="tp">ICoffee</span>
+{
+    <span class="kw">string</span> <span class="fn">GetDescription</span>();
+    <span class="kw">double</span> <span class="fn">GetCost</span>();
+}</pre></div>
+    <div class="code-block"><div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span>Step 2 — Concrete Component</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><span class="kw">public class</span> <span class="tp">SimpleCoffee</span> : <span class="tp">ICoffee</span>
+{
+    <span class="kw">public string</span> <span class="fn">GetDescription</span>() => <span class="str">"Simple Coffee"</span>;
+    <span class="kw">public double</span> <span class="fn">GetCost</span>() => <span class="num">1.00</span>;
+}</pre></div>
+    <div class="code-block"><div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span>Step 3 — Base Decorator</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><span class="kw">public abstract class</span> <span class="tp">CoffeeDecorator</span> : <span class="tp">ICoffee</span>
+{
+    <span class="kw">private readonly</span> <span class="tp">ICoffee</span> _coffee;
+    <span class="kw">protected</span> <span class="fn">CoffeeDecorator</span>(<span class="tp">ICoffee</span> coffee) => _coffee = coffee;
+    <span class="kw">public virtual string</span> <span class="fn">GetDescription</span>() => _coffee.<span class="fn">GetDescription</span>();
+    <span class="kw">public virtual double</span> <span class="fn">GetCost</span>() => _coffee.<span class="fn">GetCost</span>();
+}</pre></div>
+    <div class="code-block"><div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span>Step 4 — Concrete Decorators</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><span class="kw">public class</span> <span class="tp">MilkDecorator</span> : <span class="tp">CoffeeDecorator</span>
+{
+    <span class="kw">public</span> <span class="fn">MilkDecorator</span>(<span class="tp">ICoffee</span> coffee) : <span class="kw">base</span>(coffee) { }
+    <span class="kw">public override string</span> <span class="fn">GetDescription</span>() => <span class="kw">base</span>.<span class="fn">GetDescription</span>() + <span class="str">", Milk"</span>;
+    <span class="kw">public override double</span> <span class="fn">GetCost</span>() => <span class="kw">base</span>.<span class="fn">GetCost</span>() + <span class="num">0.25</span>;
+}
+
+<span class="kw">public class</span> <span class="tp">SugarDecorator</span> : <span class="tp">CoffeeDecorator</span>
+{
+    <span class="kw">public</span> <span class="fn">SugarDecorator</span>(<span class="tp">ICoffee</span> coffee) : <span class="kw">base</span>(coffee) { }
+    <span class="kw">public override string</span> <span class="fn">GetDescription</span>() => <span class="kw">base</span>.<span class="fn">GetDescription</span>() + <span class="str">", Sugar"</span>;
+    <span class="kw">public override double</span> <span class="fn">GetCost</span>() => <span class="kw">base</span>.<span class="fn">GetCost</span>() + <span class="num">0.10</span>;
+}
+
+<span class="kw">public class</span> <span class="tp">VanillaDecorator</span> : <span class="tp">CoffeeDecorator</span>
+{
+    <span class="kw">public</span> <span class="fn">VanillaDecorator</span>(<span class="tp">ICoffee</span> coffee) : <span class="kw">base</span>(coffee) { }
+    <span class="kw">public override string</span> <span class="fn">GetDescription</span>() => <span class="kw">base</span>.<span class="fn">GetDescription</span>() + <span class="str">", Vanilla"</span>;
+    <span class="kw">public override double</span> <span class="fn">GetCost</span>() => <span class="kw">base</span>.<span class="fn">GetCost</span>() + <span class="num">0.50</span>;
+}</pre></div>
+    <div class="code-block"><div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span>Step 5 — Client code</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><span class="tp">ICoffee</span> coffee = <span class="kw">new</span> <span class="tp">SimpleCoffee</span>();
+coffee = <span class="kw">new</span> <span class="tp">MilkDecorator</span>(coffee);
+coffee = <span class="kw">new</span> <span class="tp">SugarDecorator</span>(coffee);
+coffee = <span class="kw">new</span> <span class="tp">VanillaDecorator</span>(coffee);
+
+<span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">$"{coffee.GetDescription()} = ${coffee.GetCost()}"</span>);
+<span class="cm">// Simple Coffee, Milk, Sugar, Vanilla = $1.85</span>
+
+<span class="cm">// Stack in any combination</span>
+<span class="tp">ICoffee</span> doubleSugar = <span class="kw">new</span> <span class="tp">SugarDecorator</span>(<span class="kw">new</span> <span class="tp">SugarDecorator</span>(<span class="kw">new</span> <span class="tp">SimpleCoffee</span>()));
+<span class="cm">// Simple Coffee, Sugar, Sugar = $1.20</span></pre></div>
+  </div></div>
+
+  <div class="note"><span class="bulb">💡</span><span>Decorator and Proxy look structurally identical — both wrap one object behind the same interface. The difference is intent: Decorator <strong>adds behavior</strong>, Proxy <strong>controls access</strong>. This is a very common interview question.</span></div>
+
+  <div class="card"><h3>Decorator vs Inheritance</h3><div class="table-wrap"><table><thead><tr><th></th><th>Inheritance</th><th>Decorator</th></tr></thead><tbody>
+    <tr><td><strong>When decided</strong></td><td>Compile time — fixed</td><td>Runtime — dynamic</td></tr>
+    <tr><td><strong>Combinations</strong></td><td>m × n subclasses</td><td>m + n classes</td></tr>
+    <tr><td><strong>Reversible?</strong></td><td>No</td><td>Yes — unwrap at runtime</td></tr>
+  </tbody></table></div></div>
+
+  <button class="collapsible-trigger" onclick="toggleCollapsible(this)">Interview Q&A <span class="chevron">▼</span></button>
+  <div class="collapsible-body"><div class="inner">
+    <div class="qa-block"><div class="qa-q" onclick="toggleQA(this)"><span class="arrow">▶</span>What is the difference between Decorator and inheritance?</div><div class="qa-a">Inheritance adds behavior at compile time and creates a fixed class hierarchy. Decorator adds behavior at runtime by wrapping objects dynamically — avoiding class explosion for behavior combinations.</div></div>
+    <div class="qa-block"><div class="qa-q" onclick="toggleQA(this)"><span class="arrow">▶</span>Why does the Base Decorator exist?</div><div class="qa-a">It holds the wrapped reference and provides default delegation to the wrapped object. Without it, every concrete decorator would duplicate that logic. It is optional for simple cases but important when you have many decorators.</div></div>
+  </div></div>
+
+  <div class="use-avoid">
+    <div class="use-col"><h4>✅ Use When</h4><ul><li>Add behavior to objects at runtime</li><li>Many optional feature combinations are needed</li><li>You want to follow OCP — add behavior without modifying existing code</li></ul></div>
+    <div class="avoid-col"><h4>❌ Avoid When</h4><ul><li>Number of decorators is fixed and small — subclassing is simpler</li><li>Heavily stacked decorators make debugging hard to follow</li><li>Client needs to know the specific concrete type</li></ul></div>
+  </div>
+</section>
+
+<!-- ═══ PATTERN 5 — FACADE ═══ -->
+<section id="facade" class="pattern-section p5">
+  <div class="pattern-header"><div class="pattern-num">05</div><h2>🏛️ Facade</h2></div>
+  <div class="pattern-subtitle">Provide a simplified interface to a complex subsystem.</div>
+  <div class="card"><h3>Intent</h3><p>Provide a single entry point that hides the complexity of a subsystem. The client talks to the Facade instead of coordinating many subsystem classes directly. Facade does not add new functionality — it simplifies access.</p></div>
+
+  <div class="diagram-wrapper">
+    <svg viewBox="0 0 780 310" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+      <defs>
+        <marker id="af5" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#06b6d4"/></marker>
+        <marker id="af5g" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#5e6888"/></marker>
+      </defs>
+      <!-- Client -->
+      <rect x="20" y="110" width="120" height="55" rx="10" fill="#161b28" stroke="#5e6888" stroke-width="1"/>
+      <text x="80" y="133" text-anchor="middle" fill="#c2c8d8" font-weight="600" font-size="13">Client</text>
+      <text x="80" y="152" text-anchor="middle" fill="#5e6888" font-size="10" font-family="JetBrains Mono,monospace">WatchMovie()</text>
+      <!-- Facade -->
+      <rect x="220" y="80" width="240" height="110" rx="12" fill="rgba(6,182,212,.1)" stroke="#06b6d4" stroke-width="2"/>
+      <text x="340" y="108" text-anchor="middle" fill="#06b6d4" font-weight="700" font-size="14">HomeTheaterFacade</text>
+      <line x1="240" y1="116" x2="440" y2="116" stroke="#06b6d4" stroke-opacity=".3"/>
+      <text x="340" y="138" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">WatchMovie(movie)</text>
+      <text x="340" y="155" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">EndMovie()</text>
+      <text x="340" y="180" text-anchor="middle" fill="#06b6d4" font-size="9" font-style="italic">one simple call for the client</text>
+      <!-- Arrow: Client → Facade -->
+      <line x1="140" y1="138" x2="220" y2="138" stroke="#06b6d4" stroke-width="1.5" marker-end="url(#af5)"/>
+      <text x="180" y="130" fill="#06b6d4" font-size="9">uses</text>
+      <!-- Subsystem box -->
+      <rect x="520" y="20" width="240" height="275" rx="10" fill="rgba(139,92,246,.04)" stroke="#8b5cf6" stroke-width="1" stroke-dasharray="6 4"/>
+      <text x="640" y="42" text-anchor="middle" fill="#8b5cf6" font-size="11" font-weight="600" font-style="italic">Subsystem</text>
+      <!-- Subsystem classes -->
+      <rect x="545" y="56" width="190" height="38" rx="8" fill="#161b28" stroke="#8b5cf6" stroke-width="1" stroke-opacity=".4"/>
+      <text x="640" y="80" text-anchor="middle" fill="#c2c8d8" font-size="11" font-weight="600">Amplifier</text>
+      <rect x="545" y="106" width="190" height="38" rx="8" fill="#161b28" stroke="#8b5cf6" stroke-width="1" stroke-opacity=".4"/>
+      <text x="640" y="130" text-anchor="middle" fill="#c2c8d8" font-size="11" font-weight="600">DVDPlayer</text>
+      <rect x="545" y="156" width="190" height="38" rx="8" fill="#161b28" stroke="#8b5cf6" stroke-width="1" stroke-opacity=".4"/>
+      <text x="640" y="180" text-anchor="middle" fill="#c2c8d8" font-size="11" font-weight="600">Projector</text>
+      <rect x="545" y="206" width="190" height="38" rx="8" fill="#161b28" stroke="#8b5cf6" stroke-width="1" stroke-opacity=".4"/>
+      <text x="640" y="230" text-anchor="middle" fill="#c2c8d8" font-size="11" font-weight="600">Lights</text>
+      <!-- Facade → Subsystem arrows -->
+      <line x1="460" y1="110" x2="545" y2="75" stroke="#5e6888" stroke-width="1" marker-end="url(#af5g)"/>
+      <line x1="460" y1="130" x2="545" y2="125" stroke="#5e6888" stroke-width="1" marker-end="url(#af5g)"/>
+      <line x1="460" y1="150" x2="545" y2="175" stroke="#5e6888" stroke-width="1" marker-end="url(#af5g)"/>
+      <line x1="460" y1="170" x2="545" y2="225" stroke="#5e6888" stroke-width="1" marker-end="url(#af5g)"/>
+      <text x="490" y="100" fill="#5e6888" font-size="8">coordinates</text>
+      <!-- Convenience note -->
+      <text x="640" y="270" text-anchor="middle" fill="#8b5cf6" font-size="9" font-style="italic">Power users can still access directly</text>
+    </svg>
+  </div>
+
+  <button class="collapsible-trigger" onclick="toggleCollapsible(this)">C# Implementation <span class="chevron">▼</span></button>
+  <div class="collapsible-body"><div class="inner">
+    <div class="code-block"><div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span>Step 1 — Complex subsystem classes</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><span class="kw">public class</span> <span class="tp">Amplifier</span>
+{
+    <span class="kw">public void</span> <span class="fn">TurnOn</span>() => <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">"Amplifier: On"</span>);
+    <span class="kw">public void</span> <span class="fn">TurnOff</span>() => <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">"Amplifier: Off"</span>);
+    <span class="kw">public void</span> <span class="fn">SetVolume</span>(<span class="kw">int</span> vol) => <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">$"Volume: {vol}"</span>);
+}
+
+<span class="kw">public class</span> <span class="tp">DVDPlayer</span>
+{
+    <span class="kw">public void</span> <span class="fn">TurnOn</span>() => <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">"DVD: On"</span>);
+    <span class="kw">public void</span> <span class="fn">TurnOff</span>() => <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">"DVD: Off"</span>);
+    <span class="kw">public void</span> <span class="fn">SetDisk</span>(<span class="kw">string</span> disk) => <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">$"Disk: {disk}"</span>);
+    <span class="kw">public void</span> <span class="fn">Play</span>() => <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">"DVD: Playing"</span>);
+    <span class="kw">public void</span> <span class="fn">Stop</span>() => <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">"DVD: Stopped"</span>);
+}
+
+<span class="kw">public class</span> <span class="tp">Projector</span>
+{
+    <span class="kw">public void</span> <span class="fn">TurnOn</span>() => <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">"Projector: On"</span>);
+    <span class="kw">public void</span> <span class="fn">TurnOff</span>() => <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">"Projector: Off"</span>);
+    <span class="kw">public void</span> <span class="fn">SetWideScreenMode</span>() => <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">"Widescreen mode"</span>);
+}
+
+<span class="kw">public class</span> <span class="tp">Lights</span>
+{
+    <span class="kw">public void</span> <span class="fn">Dim</span>(<span class="kw">int</span> level) => <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">$"Lights: {level}%"</span>);
+    <span class="kw">public void</span> <span class="fn">TurnOn</span>() => <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">"Lights: Full"</span>);
+}</pre></div>
+    <div class="code-block"><div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span>Step 2 — The Facade</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><span class="kw">public class</span> <span class="tp">HomeTheaterFacade</span>
+{
+    <span class="kw">private readonly</span> <span class="tp">Amplifier</span> _amp;
+    <span class="kw">private readonly</span> <span class="tp">DVDPlayer</span> _dvd;
+    <span class="kw">private readonly</span> <span class="tp">Projector</span> _proj;
+    <span class="kw">private readonly</span> <span class="tp">Lights</span> _lights;
+
+    <span class="kw">public</span> <span class="fn">HomeTheaterFacade</span>(<span class="tp">Amplifier</span> amp, <span class="tp">DVDPlayer</span> dvd,
+        <span class="tp">Projector</span> proj, <span class="tp">Lights</span> lights)
+    { _amp = amp; _dvd = dvd; _proj = proj; _lights = lights; }
+
+    <span class="kw">public void</span> <span class="fn">WatchMovie</span>(<span class="kw">string</span> movie)
+    {
+        _lights.<span class="fn">Dim</span>(<span class="num">30</span>);
+        _amp.<span class="fn">TurnOn</span>(); _amp.<span class="fn">SetVolume</span>(<span class="num">10</span>);
+        _proj.<span class="fn">TurnOn</span>(); _proj.<span class="fn">SetWideScreenMode</span>();
+        _dvd.<span class="fn">TurnOn</span>(); _dvd.<span class="fn">SetDisk</span>(movie); _dvd.<span class="fn">Play</span>();
+    }
+
+    <span class="kw">public void</span> <span class="fn">EndMovie</span>()
+    {
+        _dvd.<span class="fn">Stop</span>(); _dvd.<span class="fn">TurnOff</span>();
+        _proj.<span class="fn">TurnOff</span>(); _amp.<span class="fn">TurnOff</span>();
+        _lights.<span class="fn">TurnOn</span>();
+    }
+}</pre></div>
+    <div class="code-block"><div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span>Step 3 — Client code</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><span class="kw">var</span> facade = <span class="kw">new</span> <span class="tp">HomeTheaterFacade</span>(
+    <span class="kw">new</span> <span class="tp">Amplifier</span>(), <span class="kw">new</span> <span class="tp">DVDPlayer</span>(),
+    <span class="kw">new</span> <span class="tp">Projector</span>(), <span class="kw">new</span> <span class="tp">Lights</span>());
+
+facade.<span class="fn">WatchMovie</span>(<span class="str">"Inception"</span>);
+<span class="cm">// Lights: 30%, Amplifier: On, Volume: 10</span>
+<span class="cm">// Projector: On, Widescreen mode</span>
+<span class="cm">// DVD: On, Disk: Inception, Playing</span>
+
+facade.<span class="fn">EndMovie</span>();
+<span class="cm">// DVD: Stopped, DVD: Off, Projector: Off</span>
+<span class="cm">// Amplifier: Off, Lights: Full</span></pre></div>
+  </div></div>
+
+  <div class="note"><span class="bulb">💡</span><span>Facade does not lock clients out of the subsystem. A power user can still access Amplifier or DVDPlayer directly for fine-grained control. Facade is a convenience, not a restriction.</span></div>
+
+  <button class="collapsible-trigger" onclick="toggleCollapsible(this)">Interview Q&A <span class="chevron">▼</span></button>
+  <div class="collapsible-body"><div class="inner">
+    <div class="qa-block"><div class="qa-q" onclick="toggleQA(this)"><span class="arrow">▶</span>What is the difference between Facade and Adapter?</div><div class="qa-a">Adapter makes two incompatible interfaces work together — it matches an existing expected interface. Facade creates a new simpler interface over a complex subsystem — there is no existing interface contract to match.</div></div>
+    <div class="qa-block"><div class="qa-q" onclick="toggleQA(this)"><span class="arrow">▶</span>What is the difference between Facade and Mediator?</div><div class="qa-a">Facade provides a simplified interface to a subsystem — subsystem classes do not know about the Facade. Mediator centralizes two-way communication between objects that are aware of the Mediator. Facade is one-directional simplification, Mediator is two-directional coordination.</div></div>
+  </div></div>
+
+  <div class="use-avoid">
+    <div class="use-col"><h4>✅ Use When</h4><ul><li>A subsystem has grown too complex for clients to use directly</li><li>You want a simple interface for the most common use cases</li><li>Decouple clients from subsystem internals</li></ul></div>
+    <div class="avoid-col"><h4>❌ Avoid When</h4><ul><li>The subsystem is already simple — Facade adds no value</li><li>All clients need fine-grained control — Facade would just be bypassed</li><li>Facade needs to expose too many methods — it becomes the subsystem</li></ul></div>
+  </div>
+</section>
+
+<!-- ═══ PATTERN 6 — FLYWEIGHT ═══ -->
+<section id="flyweight" class="pattern-section p6">
+  <div class="pattern-header"><div class="pattern-num">06</div><h2>🪶 Flyweight</h2></div>
+  <div class="pattern-subtitle">Use sharing to support large numbers of fine-grained objects efficiently.</div>
+  <div class="card"><h3>Intent</h3><p>When you need millions of similar objects, instead of creating each from scratch, share the common state across all of them. Split object data into intrinsic (shared, immutable) and extrinsic (unique per instance) state.</p></div>
+  <div class="card"><h3>Intrinsic vs Extrinsic State</h3><div class="table-wrap"><table><thead><tr><th></th><th>Intrinsic State</th><th>Extrinsic State</th></tr></thead><tbody>
+    <tr><td><strong>Where stored</strong></td><td>Inside the Flyweight</td><td>Outside — passed in at runtime</td></tr>
+    <tr><td><strong>Shared?</strong></td><td>Yes — same object reused</td><td>No — unique per instance</td></tr>
+    <tr><td><strong>Mutable?</strong></td><td>Never — must be immutable</td><td>Can change</td></tr>
+    <tr><td><strong>Example</strong></td><td>Tree name, color, texture</td><td>Tree position X, Y</td></tr>
+  </tbody></table></div></div>
+
+  <div class="diagram-wrapper">
+    <svg viewBox="0 0 780 320" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+      <defs>
+        <marker id="af6" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#8b5cf6"/></marker>
+        <marker id="af6g" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#5e6888"/></marker>
+      </defs>
+      <!-- Flyweight Factory -->
+      <rect x="250" y="10" width="280" height="80" rx="10" fill="rgba(139,92,246,.1)" stroke="#8b5cf6" stroke-width="1.5"/>
+      <text x="390" y="35" text-anchor="middle" fill="#8b5cf6" font-weight="700" font-size="13">TreeTypeFactory</text>
+      <line x1="270" y1="42" x2="510" y2="42" stroke="#8b5cf6" stroke-opacity=".3"/>
+      <text x="390" y="62" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">_cache: Dictionary&lt;string, TreeType&gt;</text>
+      <text x="390" y="78" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">GetTreeType(name, color, texture)</text>
+      <!-- TreeType (Flyweight) -->
+      <rect x="280" y="140" width="220" height="90" rx="10" fill="rgba(139,92,246,.08)" stroke="#8b5cf6" stroke-width="1.2"/>
+      <text x="390" y="165" text-anchor="middle" fill="#8b5cf6" font-weight="700" font-size="12">TreeType (Flyweight)</text>
+      <line x1="300" y1="172" x2="480" y2="172" stroke="#8b5cf6" stroke-opacity=".3"/>
+      <text x="390" y="190" text-anchor="middle" fill="#10b981" font-size="10" font-family="JetBrains Mono,monospace">Name, Color, Texture</text>
+      <text x="390" y="205" text-anchor="middle" fill="#10b981" font-size="9">⬆ intrinsic (shared, immutable)</text>
+      <text x="390" y="222" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">Draw(x, y) ← extrinsic passed in</text>
+      <!-- Factory → TreeType -->
+      <line x1="390" y1="90" x2="390" y2="140" stroke="#5e6888" stroke-width="1" marker-end="url(#af6g)"/>
+      <text x="405" y="118" fill="#5e6888" font-size="9">manages/caches</text>
+      <!-- Tree (Context) objects -->
+      <rect x="40" y="160" width="170" height="70" rx="10" fill="rgba(245,158,11,.06)" stroke="#f59e0b" stroke-width="1"/>
+      <text x="125" y="185" text-anchor="middle" fill="#f59e0b" font-weight="600" font-size="12">Tree (Context)</text>
+      <line x1="55" y1="192" x2="195" y2="192" stroke="#f59e0b" stroke-opacity=".3"/>
+      <text x="125" y="210" text-anchor="middle" fill="#ef4444" font-size="10" font-family="JetBrains Mono,monospace">X, Y  ← extrinsic (unique)</text>
+      <text x="125" y="224" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">_treeType : TreeType</text>
+      <!-- Tree → TreeType reference -->
+      <path d="M210,195 L280,185" fill="none" stroke="#8b5cf6" stroke-width="1.2" stroke-dasharray="5 3" marker-end="url(#af6)"/>
+      <text x="245" y="182" fill="#8b5cf6" font-size="9">ref</text>
+      <!-- Multiple tree instances -->
+      <rect x="40" y="262" width="60" height="28" rx="6" fill="#161b28" stroke="#f59e0b" stroke-width="1" stroke-opacity=".4"/>
+      <text x="70" y="280" text-anchor="middle" fill="#c2c8d8" font-size="9">(1,5)</text>
+      <rect x="110" y="262" width="60" height="28" rx="6" fill="#161b28" stroke="#f59e0b" stroke-width="1" stroke-opacity=".4"/>
+      <text x="140" y="280" text-anchor="middle" fill="#c2c8d8" font-size="9">(10,20)</text>
+      <rect x="180" y="262" width="60" height="28" rx="6" fill="#161b28" stroke="#f59e0b" stroke-width="1" stroke-opacity=".4"/>
+      <text x="210" y="280" text-anchor="middle" fill="#c2c8d8" font-size="9">(30,15)</text>
+      <!-- Summary -->
+      <rect x="290" y="262" width="440" height="28" rx="8" fill="rgba(139,92,246,.05)" stroke="rgba(139,92,246,.15)" stroke-width="1"/>
+      <text x="510" y="280" text-anchor="middle" fill="#8b5cf6" font-size="10">5 Tree objects → only 2 TreeType objects in memory (Oak + Pine)</text>
+      <!-- Annotations -->
+      <text x="125" y="300" text-anchor="middle" fill="#f59e0b" font-size="9">all share same TreeType ref</text>
+    </svg>
+  </div>
+
+  <button class="collapsible-trigger" onclick="toggleCollapsible(this)">C# Implementation <span class="chevron">▼</span></button>
+  <div class="collapsible-body"><div class="inner">
+    <div class="code-block"><div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span>Step 1 — Flyweight (shared intrinsic state)</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><span class="kw">public class</span> <span class="tp">TreeType</span>
+{
+    <span class="kw">public string</span> Name { <span class="kw">get</span>; }
+    <span class="kw">public string</span> Color { <span class="kw">get</span>; }
+    <span class="kw">public string</span> Texture { <span class="kw">get</span>; } <span class="cm">// heavy shared data</span>
+
+    <span class="kw">public</span> <span class="fn">TreeType</span>(<span class="kw">string</span> name, <span class="kw">string</span> color, <span class="kw">string</span> texture)
+    { Name = name; Color = color; Texture = texture; }
+
+    <span class="cm">// Extrinsic state passed in — not stored here</span>
+    <span class="kw">public void</span> <span class="fn">Draw</span>(<span class="kw">int</span> x, <span class="kw">int</span> y)
+        => <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">$"{Name}[{Color}] at ({x},{y})"</span>);
+}</pre></div>
+    <div class="code-block"><div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span>Step 2 — Flyweight Factory (the cache gatekeeper)</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><span class="kw">public class</span> <span class="tp">TreeTypeFactory</span>
+{
+    <span class="kw">private readonly</span> <span class="tp">Dictionary</span>&lt;<span class="kw">string</span>, <span class="tp">TreeType</span>&gt; _cache = <span class="kw">new</span>();
+
+    <span class="kw">public</span> <span class="tp">TreeType</span> <span class="fn">GetTreeType</span>(<span class="kw">string</span> name, <span class="kw">string</span> color, <span class="kw">string</span> texture)
+    {
+        <span class="kw">string</span> key = <span class="str">$"{name}_{color}_{texture}"</span>;
+        <span class="kw">if</span> (!_cache.<span class="fn">ContainsKey</span>(key))
+            _cache[key] = <span class="kw">new</span> <span class="tp">TreeType</span>(name, color, texture);
+        <span class="kw">return</span> _cache[key]; <span class="cm">// always returns shared instance</span>
+    }
+}</pre></div>
+    <div class="code-block"><div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span>Step 3 — Context (stores unique extrinsic state)</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><span class="kw">public class</span> <span class="tp">Tree</span>
+{
+    <span class="kw">public int</span> X { <span class="kw">get</span>; }
+    <span class="kw">public int</span> Y { <span class="kw">get</span>; }
+    <span class="kw">private readonly</span> <span class="tp">TreeType</span> _treeType; <span class="cm">// reference, not a copy</span>
+
+    <span class="kw">public</span> <span class="fn">Tree</span>(<span class="kw">int</span> x, <span class="kw">int</span> y, <span class="tp">TreeType</span> treeType)
+    { X = x; Y = y; _treeType = treeType; }
+
+    <span class="kw">public void</span> <span class="fn">Draw</span>() => _treeType.<span class="fn">Draw</span>(X, Y);
+}</pre></div>
+    <div class="code-block"><div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span>Step 4 — Client code</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><span class="kw">var</span> factory = <span class="kw">new</span> <span class="tp">TreeTypeFactory</span>();
+
+<span class="cm">// 5 trees, only 2 unique types created</span>
+<span class="kw">var</span> trees = <span class="kw">new</span> <span class="tp">List</span>&lt;<span class="tp">Tree</span>&gt;
+{
+    <span class="kw">new</span> <span class="tp">Tree</span>(<span class="num">1</span>, <span class="num">5</span>, factory.<span class="fn">GetTreeType</span>(<span class="str">"Oak"</span>, <span class="str">"Green"</span>, <span class="str">"oak.png"</span>)),
+    <span class="kw">new</span> <span class="tp">Tree</span>(<span class="num">10</span>, <span class="num">20</span>, factory.<span class="fn">GetTreeType</span>(<span class="str">"Oak"</span>, <span class="str">"Green"</span>, <span class="str">"oak.png"</span>)),  <span class="cm">// reused</span>
+    <span class="kw">new</span> <span class="tp">Tree</span>(<span class="num">30</span>, <span class="num">15</span>, factory.<span class="fn">GetTreeType</span>(<span class="str">"Oak"</span>, <span class="str">"Green"</span>, <span class="str">"oak.png"</span>)),  <span class="cm">// reused</span>
+    <span class="kw">new</span> <span class="tp">Tree</span>(<span class="num">5</span>, <span class="num">40</span>, factory.<span class="fn">GetTreeType</span>(<span class="str">"Pine"</span>, <span class="str">"Dark"</span>, <span class="str">"pine.png"</span>)),
+    <span class="kw">new</span> <span class="tp">Tree</span>(<span class="num">25</span>, <span class="num">60</span>, factory.<span class="fn">GetTreeType</span>(<span class="str">"Pine"</span>, <span class="str">"Dark"</span>, <span class="str">"pine.png"</span>)), <span class="cm">// reused</span>
+};
+
+trees.<span class="fn">ForEach</span>(t => t.<span class="fn">Draw</span>());
+<span class="cm">// 5 trees drawn — only 2 TreeType objects exist in memory</span></pre></div>
+  </div></div>
+
+  <div class="note"><span class="bulb">💡</span><span>Flyweights must be immutable because they are shared across many contexts simultaneously. If one context could modify the flyweight's state, it would affect all other contexts sharing the same object.</span></div>
+
+  <button class="collapsible-trigger" onclick="toggleCollapsible(this)">Interview Q&A <span class="chevron">▼</span></button>
+  <div class="collapsible-body"><div class="inner">
+    <div class="qa-block"><div class="qa-q" onclick="toggleQA(this)"><span class="arrow">▶</span>What is the difference between Flyweight and Singleton?</div><div class="qa-a">Singleton guarantees one instance of a class for the entire application. Flyweight manages a pool of multiple shared instances — one per unique intrinsic state. Singleton is one object, Flyweight factory manages many shared objects.</div></div>
+    <div class="qa-block"><div class="qa-q" onclick="toggleQA(this)"><span class="arrow">▶</span>When does Flyweight not help?</div><div class="qa-a">When objects have very little shared state — most data is extrinsic and unique per instance. If everything differs between objects, there is nothing worth sharing and the pattern adds complexity for no gain.</div></div>
+  </div></div>
+
+  <div class="use-avoid">
+    <div class="use-col"><h4>✅ Use When</h4><ul><li>Huge number of similar objects consuming too much memory</li><li>Most object state can be made extrinsic and passed in</li><li>You can clearly separate intrinsic from extrinsic state</li></ul></div>
+    <div class="avoid-col"><h4>❌ Avoid When</h4><ul><li>Small number of objects — pattern adds complexity for no gain</li><li>Most state is unique per object — little to share</li><li>Objects need to carry their own fully independent mutable state</li></ul></div>
+  </div>
+</section>
+
+<!-- ═══ PATTERN 7 — PROXY ═══ -->
+<section id="proxy" class="pattern-section p7">
+  <div class="pattern-header"><div class="pattern-num">07</div><h2>🔒 Proxy</h2></div>
+  <div class="pattern-subtitle">Provide a surrogate for another object to control access to it.</div>
+  <div class="card"><h3>Intent</h3><p>A Proxy sits between the client and the real object — intercepting calls and adding behavior like lazy loading, access control, logging, or caching. The client never knows it is talking to a proxy.</p></div>
+  <div class="card"><h3>The Four Types of Proxy</h3><div class="table-wrap"><table><thead><tr><th>Type</th><th>Problem Solved</th><th>Key Behavior</th></tr></thead><tbody>
+    <tr><td><strong>Virtual</strong></td><td>Object is expensive to create</td><td>Creates real object only on first access</td></tr>
+    <tr><td><strong>Protection</strong></td><td>Object needs access control</td><td>Checks permissions before forwarding</td></tr>
+    <tr><td><strong>Caching</strong></td><td>Operation is expensive to repeat</td><td>Returns cached result on repeated calls</td></tr>
+    <tr><td><strong>Remote</strong></td><td>Object lives on another server</td><td>Handles network communication transparently</td></tr>
+  </tbody></table></div></div>
+
+  <div class="diagram-wrapper">
+    <svg viewBox="0 0 780 310" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+      <defs>
+        <linearGradient id="gp1" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#ef4444" stop-opacity=".18"/><stop offset="100%" stop-color="#ef4444" stop-opacity=".04"/></linearGradient>
+        <marker id="ap7" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#5e6888"/></marker>
+        <marker id="ap7r" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#ef4444"/></marker>
+      </defs>
+      <!-- ISubject interface -->
+      <rect x="250" y="10" width="260" height="70" rx="10" fill="url(#gp1)" stroke="#ef4444" stroke-width="1.5"/>
+      <text x="380" y="35" text-anchor="middle" fill="#ef4444" font-weight="700" font-size="13">«interface» IImage</text>
+      <line x1="270" y1="42" x2="490" y2="42" stroke="#ef4444" stroke-opacity=".3"/>
+      <text x="380" y="62" text-anchor="middle" fill="#8890a8" font-size="11" font-family="JetBrains Mono,monospace">Display()</text>
+      <!-- Client -->
+      <rect x="30" y="30" width="120" height="50" rx="10" fill="#161b28" stroke="#5e6888" stroke-width="1"/>
+      <text x="90" y="60" text-anchor="middle" fill="#c2c8d8" font-weight="600" font-size="13">Client</text>
+      <line x1="150" y1="55" x2="250" y2="45" stroke="#5e6888" stroke-width="1" marker-end="url(#ap7)"/>
+      <text x="200" y="42" fill="#5e6888" font-size="9">uses</text>
+      <!-- Proxy -->
+      <rect x="140" y="140" width="250" height="90" rx="10" fill="rgba(239,68,68,.08)" stroke="#ef4444" stroke-width="1.2"/>
+      <text x="265" y="165" text-anchor="middle" fill="#ef4444" font-weight="700" font-size="13">ImageProxy</text>
+      <line x1="160" y1="172" x2="370" y2="172" stroke="#ef4444" stroke-opacity=".3"/>
+      <text x="265" y="192" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">_realImage : HighResolutionImage</text>
+      <text x="265" y="208" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">Display() → lazy load + delegate</text>
+      <!-- RealSubject -->
+      <rect x="460" y="140" width="260" height="90" rx="10" fill="rgba(239,68,68,.06)" stroke="#ef4444" stroke-width="1" stroke-opacity=".5"/>
+      <text x="590" y="165" text-anchor="middle" fill="#ef4444" font-weight="600" font-size="13">HighResolutionImage</text>
+      <line x1="480" y1="172" x2="700" y2="172" stroke="#ef4444" stroke-opacity=".2"/>
+      <text x="590" y="192" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">_filePath : string</text>
+      <text x="590" y="208" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">Display() → actual work</text>
+      <!-- Implements arrows -->
+      <line x1="265" y1="140" x2="340" y2="80" stroke="#5e6888" stroke-width="1" marker-end="url(#ap7)"/>
+      <line x1="590" y1="140" x2="430" y2="80" stroke="#5e6888" stroke-width="1" marker-end="url(#ap7)"/>
+      <text x="280" y="112" fill="#5e6888" font-size="9">implements</text>
+      <text x="520" y="112" fill="#5e6888" font-size="9">implements</text>
+      <!-- Proxy → Real arrow -->
+      <path d="M390,185 L460,185" fill="none" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#ap7r)"/>
+      <text x="425" y="178" fill="#ef4444" font-size="9" font-weight="600">delegates</text>
+      <!-- Type badges -->
+      <rect x="60" y="260" width="170" height="32" rx="8" fill="rgba(239,68,68,.05)" stroke="rgba(239,68,68,.15)" stroke-width="1"/>
+      <text x="145" y="280" text-anchor="middle" fill="#ef4444" font-size="10">🔄 Virtual: lazy load</text>
+      <rect x="250" y="260" width="190" height="32" rx="8" fill="rgba(239,68,68,.05)" stroke="rgba(239,68,68,.15)" stroke-width="1"/>
+      <text x="345" y="280" text-anchor="middle" fill="#ef4444" font-size="10">🛡️ Protection: access check</text>
+      <rect x="460" y="260" width="180" height="32" rx="8" fill="rgba(239,68,68,.05)" stroke="rgba(239,68,68,.15)" stroke-width="1"/>
+      <text x="550" y="280" text-anchor="middle" fill="#ef4444" font-size="10">💾 Caching: store results</text>
+    </svg>
+  </div>
+
+  <button class="collapsible-trigger" onclick="toggleCollapsible(this)">C# Implementation — All Three Proxy Types <span class="chevron">▼</span></button>
+  <div class="collapsible-body"><div class="inner">
+    <div class="code-block"><div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span>Virtual Proxy — Lazy Loading</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><span class="kw">public interface</span> <span class="tp">IImage</span> { <span class="kw">void</span> <span class="fn">Display</span>(); }
+
+<span class="kw">public class</span> <span class="tp">HighResolutionImage</span> : <span class="tp">IImage</span>
+{
+    <span class="kw">private readonly string</span> _filePath;
+    <span class="kw">public</span> <span class="fn">HighResolutionImage</span>(<span class="kw">string</span> path)
+    { _filePath = path; <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">$"Loading: {path}"</span>); }
+    <span class="kw">public void</span> <span class="fn">Display</span>() => <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">$"Displaying: {_filePath}"</span>);
+}
+
+<span class="kw">public class</span> <span class="tp">ImageProxy</span> : <span class="tp">IImage</span>
+{
+    <span class="kw">private readonly string</span> _filePath;
+    <span class="kw">private</span> <span class="tp">HighResolutionImage</span> _realImage; <span class="cm">// null until needed</span>
+    <span class="kw">public</span> <span class="fn">ImageProxy</span>(<span class="kw">string</span> path) { _filePath = path; }
+    <span class="kw">public void</span> <span class="fn">Display</span>()
+    {
+        <span class="kw">if</span> (_realImage == <span class="kw">null</span>)
+            _realImage = <span class="kw">new</span> <span class="tp">HighResolutionImage</span>(_filePath);
+        _realImage.<span class="fn">Display</span>();
+    }
+}
+
+<span class="tp">IImage</span> image = <span class="kw">new</span> <span class="tp">ImageProxy</span>(<span class="str">"photo.jpg"</span>);
+<span class="cm">// No loading yet</span>
+image.<span class="fn">Display</span>(); <span class="cm">// Loading: photo.jpg → Displaying: photo.jpg</span>
+image.<span class="fn">Display</span>(); <span class="cm">// Displaying: photo.jpg (no reload)</span></pre></div>
+    <div class="code-block"><div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span>Protection Proxy — Access Control</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><span class="kw">public interface</span> <span class="tp">IDocument</span> { <span class="kw">void</span> <span class="fn">View</span>(); <span class="kw">void</span> <span class="fn">Edit</span>(); <span class="kw">void</span> <span class="fn">Delete</span>(); }
+
+<span class="kw">public class</span> <span class="tp">Document</span> : <span class="tp">IDocument</span>
+{
+    <span class="kw">public void</span> <span class="fn">View</span>() => <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">"Viewing."</span>);
+    <span class="kw">public void</span> <span class="fn">Edit</span>() => <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">"Editing."</span>);
+    <span class="kw">public void</span> <span class="fn">Delete</span>() => <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">"Deleting."</span>);
+}
+
+<span class="kw">public class</span> <span class="tp">DocumentProxy</span> : <span class="tp">IDocument</span>
+{
+    <span class="kw">private readonly</span> <span class="tp">Document</span> _doc;
+    <span class="kw">private readonly string</span> _role;
+    <span class="kw">public</span> <span class="fn">DocumentProxy</span>(<span class="kw">string</span> role) { _doc = <span class="kw">new</span> <span class="tp">Document</span>(); _role = role; }
+    <span class="kw">public void</span> <span class="fn">View</span>() => _doc.<span class="fn">View</span>();
+    <span class="kw">public void</span> <span class="fn">Edit</span>()
+    {
+        <span class="kw">if</span> (_role == <span class="str">"Editor"</span> || _role == <span class="str">"Admin"</span>) _doc.<span class="fn">Edit</span>();
+        <span class="kw">else</span> <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">"Access denied: Edit requires Editor role."</span>);
+    }
+    <span class="kw">public void</span> <span class="fn">Delete</span>()
+    {
+        <span class="kw">if</span> (_role == <span class="str">"Admin"</span>) _doc.<span class="fn">Delete</span>();
+        <span class="kw">else</span> <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">"Access denied: Delete requires Admin role."</span>);
+    }
+}
+
+<span class="tp">IDocument</span> viewer = <span class="kw">new</span> <span class="tp">DocumentProxy</span>(<span class="str">"Viewer"</span>);
+viewer.<span class="fn">Edit</span>();   <span class="cm">// Access denied: Edit requires Editor role.</span>
+viewer.<span class="fn">Delete</span>(); <span class="cm">// Access denied: Delete requires Admin role.</span></pre></div>
+    <div class="code-block"><div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span>Caching Proxy</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><span class="kw">public interface</span> <span class="tp">IWeatherService</span> { <span class="kw">string</span> <span class="fn">GetWeather</span>(<span class="kw">string</span> city); }
+
+<span class="kw">public class</span> <span class="tp">WeatherService</span> : <span class="tp">IWeatherService</span>
+{
+    <span class="kw">public string</span> <span class="fn">GetWeather</span>(<span class="kw">string</span> city)
+    {
+        <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">$"Calling API for {city}..."</span>);
+        <span class="kw">return</span> <span class="str">$"Sunny, 28 in {city}"</span>;
+    }
+}
+
+<span class="kw">public class</span> <span class="tp">WeatherServiceProxy</span> : <span class="tp">IWeatherService</span>
+{
+    <span class="kw">private readonly</span> <span class="tp">IWeatherService</span> _service;
+    <span class="kw">private readonly</span> <span class="tp">Dictionary</span>&lt;<span class="kw">string</span>,<span class="kw">string</span>&gt; _cache = <span class="kw">new</span>();
+    <span class="kw">public</span> <span class="fn">WeatherServiceProxy</span>(<span class="tp">IWeatherService</span> service)
+        => _service = service;
+
+    <span class="kw">public string</span> <span class="fn">GetWeather</span>(<span class="kw">string</span> city)
+    {
+        <span class="kw">if</span> (_cache.<span class="fn">ContainsKey</span>(city))
+        { <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">$"Cache hit: {city}"</span>); <span class="kw">return</span> _cache[city]; }
+        _cache[city] = _service.<span class="fn">GetWeather</span>(city);
+        <span class="kw">return</span> _cache[city];
+    }
+}
+
+<span class="tp">IWeatherService</span> svc = <span class="kw">new</span> <span class="tp">WeatherServiceProxy</span>(<span class="kw">new</span> <span class="tp">WeatherService</span>());
+svc.<span class="fn">GetWeather</span>(<span class="str">"Cairo"</span>);  <span class="cm">// Calling API for Cairo...</span>
+svc.<span class="fn">GetWeather</span>(<span class="str">"Cairo"</span>);  <span class="cm">// Cache hit: Cairo</span>
+svc.<span class="fn">GetWeather</span>(<span class="str">"London"</span>); <span class="cm">// Calling API for London...</span></pre></div>
+  </div></div>
+
+  <div class="note"><span class="bulb">💡</span><span>Proxy and Decorator look structurally identical — both wrap one object behind the same interface. Decorator <strong>adds new behavior</strong>. Proxy <strong>controls access</strong>. This is the most common interview question about Proxy.</span></div>
+
+  <div class="card"><h3>Proxy vs Decorator</h3><div class="table-wrap"><table><thead><tr><th></th><th>Proxy</th><th>Decorator</th></tr></thead><tbody>
+    <tr><td><strong>Intent</strong></td><td>Control access</td><td>Add behavior</td></tr>
+    <tr><td><strong>Knows real object?</strong></td><td>Often creates it itself</td><td>Always receives from outside</td></tr>
+    <tr><td><strong>Stackable?</strong></td><td>Rarely</td><td>Designed to be stacked</td></tr>
+  </tbody></table></div></div>
+
+  <button class="collapsible-trigger" onclick="toggleCollapsible(this)">Interview Q&A <span class="chevron">▼</span></button>
+  <div class="collapsible-body"><div class="inner">
+    <div class="qa-block"><div class="qa-q" onclick="toggleQA(this)"><span class="arrow">▶</span>What is the difference between Proxy and Facade?</div><div class="qa-a">Facade simplifies a complex subsystem — wraps multiple classes behind one simple interface. Proxy controls access to a single object — it has the same interface as the object it wraps. Facade reduces complexity, Proxy controls access.</div></div>
+    <div class="qa-block"><div class="qa-q" onclick="toggleQA(this)"><span class="arrow">▶</span>What is the difference between Virtual Proxy and Lazy initialization?</div><div class="qa-a">Lazy initialization is the technique — delay object creation until first use. Virtual Proxy is the pattern that applies this technique while maintaining the same interface as the real object. <code>Lazy&lt;T&gt;</code> in C# is essentially a built-in Virtual Proxy.</div></div>
+  </div></div>
+
+  <div class="use-avoid">
+    <div class="use-col"><h4>✅ Use When</h4><ul><li>Object creation is expensive and should be deferred</li><li>You need access control without modifying the real object</li><li>Results are expensive to compute and can be cached</li></ul></div>
+    <div class="avoid-col"><h4>❌ Avoid When</h4><ul><li>The real object is cheap — lazy loading adds no value</li><li>Simple method guards inside the real class are sufficient</li><li>The added indirection makes debugging unnecessarily harder</li></ul></div>
+  </div>
+</section>
+
+<!-- ═══ COMPARING ALL 7 ═══ -->
+<section class="summary-section">
+  <h2>Comparing All 7 Structural Patterns</h2>
+  <div class="card"><div class="table-wrap"><table>
+    <thead><tr><th>Pattern</th><th>Problem Solved</th><th>Interface</th><th>Key Trait</th></tr></thead>
+    <tbody>
+      <tr><td><strong>🔌 Adapter</strong></td><td>Fix interface mismatch</td><td>Matches an existing expected interface</td><td>After the fact — reactive</td></tr>
+      <tr><td><strong>🌉 Bridge</strong></td><td>Prevent class explosion</td><td>New interface designed upfront</td><td>Designed in — proactive</td></tr>
+      <tr><td><strong>🌿 Composite</strong></td><td>Uniform tree operations</td><td>Same interface for leaf and container</td><td>Tree / part-whole hierarchy</td></tr>
+      <tr><td><strong>🎨 Decorator</strong></td><td>Add behavior dynamically</td><td>Same interface, adds behavior</td><td>Wraps one object, stackable</td></tr>
+      <tr><td><strong>🏛️ Facade</strong></td><td>Simplify subsystem</td><td>New simpler interface over many classes</td><td>Hides complexity</td></tr>
+      <tr><td><strong>🪶 Flyweight</strong></td><td>Save memory for many objects</td><td>Shared intrinsic + unique extrinsic</td><td>Memory optimization</td></tr>
+      <tr><td><strong>🔒 Proxy</strong></td><td>Control access to single object</td><td>Same interface as real object</td><td>Guards / defers / caches</td></tr>
+    </tbody>
+  </table></div></div>
+</section>
+
+<section class="summary-section">
+  <h2>Choosing the Right Pattern</h2>
+  <div class="card"><div class="table-wrap"><table>
+    <thead><tr><th>If you need to...</th><th>Use this pattern</th></tr></thead>
+    <tbody>
+      <tr><td>Use a class with an incompatible interface</td><td><strong>🔌 Adapter</strong></td></tr>
+      <tr><td>Two dimensions vary independently — avoid class explosion</td><td><strong>🌉 Bridge</strong></td></tr>
+      <tr><td>Have a tree structure and need uniform operations</td><td><strong>🌿 Composite</strong></td></tr>
+      <tr><td>Add optional behaviors to objects at runtime</td><td><strong>🎨 Decorator</strong></td></tr>
+      <tr><td>A subsystem is too complex — need a simple entry point</td><td><strong>🏛️ Facade</strong></td></tr>
+      <tr><td>Have millions of similar objects and need to save memory</td><td><strong>🪶 Flyweight</strong></td></tr>
+      <tr><td>Control, defer, or cache access to an object</td><td><strong>🔒 Proxy</strong></td></tr>
+    </tbody>
+  </table></div></div>
+</section>
+
+<button class="back-top" id="backTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+<footer><p>Structural Design Patterns — C# Interactive Study Guide</p></footer>
+
+<script>
+function toggleCollapsible(btn){btn.classList.toggle('open');btn.nextElementSibling.classList.toggle('open')}
+function toggleQA(el){el.classList.toggle('open');el.nextElementSibling.classList.toggle('open')}
+function copyCode(btn){const pre=btn.closest('.code-block').querySelector('pre');navigator.clipboard.writeText(pre.textContent).then(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',1500)})}
+window.addEventListener('scroll',()=>{document.getElementById('backTop').classList.toggle('show',window.scrollY>400)})
+</script>
+</body>
+</html>

@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>.NET LINQ + Deferred Execution — Interactive Study Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a100f;--surface:#131f1d;--surface2:#1a2d2a;--border:#264038;--text:#e2e8f0;--text-dim:#7fa098;--accent:#2dd4bf;--accent2:#22d3ee;--green:#34d399;--red:#f87171;--orange:#fb923c;--yellow:#fbbf24;--purple:#a78bfa;--code-bg:#0b1412;--glow:rgba(45,212,191,.12)}
+*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;min-height:100vh}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 20% 0%,rgba(45,212,191,.05)0%,transparent 60%),radial-gradient(ellipse at 80% 100%,rgba(34,211,238,.04)0%,transparent 60%);pointer-events:none;z-index:0}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.container{max-width:900px;margin:0 auto;padding:2rem 1.5rem 4rem;position:relative;z-index:1}
+.hero{text-align:center;padding:3rem 0 2.5rem}
+.hero-badge{display:inline-block;background:linear-gradient(135deg,var(--accent),var(--accent2));color:var(--bg);font-weight:700;font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;padding:.35rem 1rem;border-radius:99px;margin-bottom:1.2rem}
+.hero h1{font-size:2.6rem;font-weight:800;background:linear-gradient(135deg,#fff 30%,var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1.15;margin-bottom:.5rem}
+.hero p{color:var(--text-dim);font-size:1.05rem}
+.nav{display:flex;flex-wrap:wrap;gap:.5rem;justify-content:center;margin-bottom:2.5rem;position:sticky;top:0;z-index:10;background:rgba(10,16,15,.88);backdrop-filter:blur(12px);padding:.75rem 0;border-bottom:1px solid var(--border)}
+.nav a{color:var(--text-dim);text-decoration:none;font-size:.78rem;font-weight:600;padding:.4rem .9rem;border-radius:8px;transition:all .2s;border:1px solid transparent;letter-spacing:.02em}
+.nav a:hover,.nav a.active{color:var(--accent);background:rgba(45,212,191,.08);border-color:rgba(45,212,191,.2)}
+.section{margin-bottom:3rem;animation:fadeUp .5s ease both}
+.section-header{display:flex;align-items:center;gap:.75rem;margin-bottom:1.2rem;padding-bottom:.8rem;border-bottom:1px solid var(--border)}
+.section-num{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.85rem;color:var(--bg);flex-shrink:0}
+.section-header h2{font-size:1.4rem;font-weight:700}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.5rem;margin-bottom:1rem;transition:border-color .3s}
+.card:hover{border-color:rgba(45,212,191,.25)}
+.callout{background:linear-gradient(135deg,rgba(45,212,191,.07),rgba(34,211,238,.04));border-left:3px solid var(--accent);border-radius:0 10px 10px 0;padding:1rem 1.2rem;margin:1rem 0;font-size:.92rem}
+.callout.warn{border-left-color:var(--orange);background:linear-gradient(135deg,rgba(251,146,60,.07),rgba(251,146,60,.03))}
+.callout.green{border-left-color:var(--green);background:linear-gradient(135deg,rgba(52,211,153,.07),rgba(52,211,153,.03))}
+.callout.red{border-left-color:var(--red);background:linear-gradient(135deg,rgba(248,113,113,.07),rgba(248,113,113,.03))}
+pre{background:var(--code-bg);border:1px solid var(--border);border-radius:10px;padding:1.2rem;overflow-x:auto;margin:.8rem 0;font-family:'JetBrains Mono',monospace;font-size:.8rem;line-height:1.65;position:relative}
+pre .label{position:absolute;top:.5rem;right:.6rem;font-size:.6rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em;font-family:'Outfit',sans-serif;font-weight:600;background:var(--surface);padding:.15rem .5rem;border-radius:4px}
+.kw{color:var(--purple)}.tp{color:var(--accent2)}.cm{color:#3a5c54;font-style:italic}.st{color:var(--green)}.fn{color:var(--yellow)}.nu{color:var(--orange)}.er{color:var(--red)}
+.table-wrap{overflow-x:auto;margin:.8rem 0;border-radius:10px;border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{background:var(--surface2);color:var(--accent);font-weight:600;text-align:left;padding:.7rem 1rem;white-space:nowrap}
+td{padding:.6rem 1rem;border-top:1px solid var(--border)}
+tr:hover td{background:rgba(45,212,191,.03)}
+.accordion{margin:.8rem 0}
+.accordion-btn{width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:'Outfit',sans-serif;font-size:.9rem;font-weight:600;padding:.9rem 1.2rem;border-radius:10px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;transition:all .2s}
+.accordion-btn:hover{border-color:var(--accent);background:var(--surface2)}
+.accordion-btn .arrow{transition:transform .3s;font-size:.8rem;color:var(--accent)}
+.accordion-btn.open .arrow{transform:rotate(180deg)}
+.accordion-body{max-height:0;overflow:hidden;transition:max-height .4s ease;background:var(--surface);border:1px solid var(--border);border-top:none;border-radius:0 0 10px 10px;padding:0 1.2rem}
+.accordion-body.open{max-height:3000px;padding:1.2rem}
+
+/* Method reference cards */
+.method-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:.5rem;margin:1rem 0}
+.method-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:.8rem 1rem;transition:all .2s;cursor:default}
+.method-card:hover{border-color:var(--accent);transform:translateY(-2px)}
+.method-card .name{font-family:'JetBrains Mono',monospace;font-size:.82rem;font-weight:600;color:var(--accent);margin-bottom:.2rem}
+.method-card .desc{font-size:.75rem;color:var(--text-dim)}
+.method-card.deferred{border-left:3px solid var(--orange)}
+.method-card.immediate{border-left:3px solid var(--green)}
+
+/* Deferred execution demo */
+.exec-demo{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.5rem;margin:1rem 0}
+.exec-controls{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.8rem}
+.exec-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);font-family:'Outfit',sans-serif;font-size:.78rem;font-weight:600;padding:.5rem 1rem;border-radius:8px;cursor:pointer;transition:all .2s}
+.exec-btn:hover{color:var(--text);border-color:var(--accent)}
+.exec-btn.active{background:rgba(45,212,191,.12);border-color:var(--accent);color:var(--accent)}
+.exec-log{background:var(--code-bg);border:1px solid var(--border);border-radius:10px;padding:1rem;font-family:'JetBrains Mono',monospace;font-size:.76rem;line-height:1.8;min-height:80px;max-height:260px;overflow-y:auto}
+.exec-log .step{color:var(--accent)}.exec-log .warn{color:var(--orange)}.exec-log .ok{color:var(--green)}.exec-log .bad{color:var(--red)}.exec-log .dim{color:var(--text-dim)}
+
+/* IEnumerable vs IQueryable visual */
+.vs-split{display:grid;grid-template-columns:1fr auto 1fr;gap:1rem;align-items:start;margin:1rem 0}
+.vs-col{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.2rem}
+.vs-col h3{font-size:.95rem;margin-bottom:.8rem}
+.vs-divider{display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.5rem;color:var(--text-dim)}
+.data-flow{display:flex;flex-direction:column;gap:.3rem;align-items:center;margin:.6rem 0}
+.data-node{padding:.4rem .8rem;border-radius:8px;font-size:.75rem;font-weight:600;text-align:center;width:100%}
+.data-node.db{background:rgba(45,212,191,.1);border:1px solid var(--accent);color:var(--accent)}
+.data-node.transfer{background:rgba(251,146,60,.1);border:1px solid var(--orange);color:var(--orange)}
+.data-node.mem{background:rgba(167,139,250,.1);border:1px solid var(--purple);color:var(--purple)}
+.data-node.result{background:rgba(52,211,153,.1);border:1px solid var(--green);color:var(--green)}
+.data-arrow{color:var(--text-dim);font-size:.7rem}
+
+/* Quiz */
+.quiz-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.5rem;margin-bottom:1rem}
+.quiz-card h3{font-size:1rem;margin-bottom:1rem;color:var(--accent)}
+.quiz-option{display:block;width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'Outfit',sans-serif;font-size:.85rem;padding:.7rem 1rem;border-radius:8px;cursor:pointer;margin-bottom:.4rem;text-align:left;transition:all .2s}
+.quiz-option:hover{border-color:var(--accent);transform:translateX(4px)}
+.quiz-option.correct{background:rgba(52,211,153,.15);border-color:var(--green);color:var(--green)}
+.quiz-option.wrong{background:rgba(248,113,113,.1);border-color:var(--red);color:var(--red)}
+.quiz-option:disabled{cursor:default;transform:none}
+.quiz-explanation{margin-top:.7rem;padding:.8rem;border-radius:8px;background:rgba(45,212,191,.06);font-size:.85rem;display:none;line-height:1.6}
+.quiz-explanation.show{display:block}
+.quiz-score{text-align:center;padding:1.5rem;background:var(--surface);border:1px solid var(--accent);border-radius:14px;margin-top:1rem}
+.quiz-score .big{font-size:2.2rem;font-weight:800;color:var(--accent)}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:720px){.hero h1{font-size:1.8rem}.container{padding:1rem}.vs-split{grid-template-columns:1fr;gap:.5rem}.vs-divider{transform:rotate(90deg);padding:.5rem}}
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="hero">
+  <div class="hero-badge">.NET Interview Study Guide</div>
+  <h1>LINQ + Deferred Execution</h1>
+  <p>Unified querying with lazy evaluation superpowers</p>
+</div>
+
+<nav class="nav">
+  <a href="#s1">What is LINQ</a>
+  <a href="#s2">Methods</a>
+  <a href="#s3">GroupBy</a>
+  <a href="#s4">Deferred Execution</a>
+  <a href="#s5">IEnum vs IQuery</a>
+  <a href="#s6">Quiz</a>
+</nav>
+
+<!-- S1 -->
+<div class="section" id="s1">
+  <div class="section-header"><div class="section-num">1</div><h2>What is LINQ?</h2></div>
+  <p style="margin-bottom:.8rem">LINQ provides a <strong>unified way to query</strong> collections, databases, and other data sources using method syntax or query syntax — both produce identical results.</p>
+<pre><span class="label">C#</span><span class="cm">// Method syntax — preferred</span>
+<span class="kw">var</span> result = numbers.<span class="fn">Where</span>(n => n > <span class="nu">3</span>).<span class="fn">Select</span>(n => n * <span class="nu">2</span>).<span class="fn">ToList</span>();
+
+<span class="cm">// Query syntax — same result</span>
+<span class="kw">var</span> result = (<span class="kw">from</span> n <span class="kw">in</span> numbers <span class="kw">where</span> n > <span class="nu">3</span> <span class="kw">select</span> n * <span class="nu">2</span>).<span class="fn">ToList</span>();</pre>
+</div>
+
+<!-- S2 -->
+<div class="section" id="s2">
+  <div class="section-header"><div class="section-num">2</div><h2>Most Common LINQ Methods</h2></div>
+  <p style="margin-bottom:.8rem;font-size:.88rem"><span style="color:var(--orange);font-weight:600">Orange border</span> = deferred execution &nbsp; <span style="color:var(--green);font-weight:600">Green border</span> = immediate execution</p>
+  <div class="method-grid">
+    <div class="method-card deferred"><div class="name">.Where()</div><div class="desc">Filter elements</div></div>
+    <div class="method-card deferred"><div class="name">.Select()</div><div class="desc">Transform/project</div></div>
+    <div class="method-card deferred"><div class="name">.OrderBy()</div><div class="desc">Sort ascending</div></div>
+    <div class="method-card deferred"><div class="name">.GroupBy()</div><div class="desc">Group elements</div></div>
+    <div class="method-card deferred"><div class="name">.Skip() / .Take()</div><div class="desc">Pagination</div></div>
+    <div class="method-card deferred"><div class="name">.Distinct()</div><div class="desc">Remove duplicates</div></div>
+    <div class="method-card immediate"><div class="name">.ToList()</div><div class="desc">Execute → List</div></div>
+    <div class="method-card immediate"><div class="name">.ToArray()</div><div class="desc">Execute → Array</div></div>
+    <div class="method-card immediate"><div class="name">.First()</div><div class="desc">First match (throws)</div></div>
+    <div class="method-card immediate"><div class="name">.FirstOrDefault()</div><div class="desc">First or default</div></div>
+    <div class="method-card immediate"><div class="name">.Count()</div><div class="desc">Count matches</div></div>
+    <div class="method-card immediate"><div class="name">.Any()</div><div class="desc">True/false check</div></div>
+    <div class="method-card immediate"><div class="name">.All()</div><div class="desc">All match?</div></div>
+    <div class="method-card immediate"><div class="name">.Sum()</div><div class="desc">Sum all values</div></div>
+  </div>
+</div>
+
+<!-- S3 -->
+<div class="section" id="s3">
+  <div class="section-header"><div class="section-num">3</div><h2>GroupBy — Common Interview Question</h2></div>
+<pre><span class="label">C#</span><span class="kw">var</span> grouped = employees
+    .<span class="fn">GroupBy</span>(e => e.Department)
+    .<span class="fn">Select</span>(g => <span class="kw">new</span>
+    {
+        Department = g.Key,
+        Count      = g.<span class="fn">Count</span>(),
+        AvgSalary  = g.<span class="fn">Average</span>(e => e.Salary)
+    });
+
+<span class="cm">// Output:</span>
+<span class="cm">// IT: 3 employees, avg salary 5500</span>
+<span class="cm">// HR: 2 employees, avg salary 5000</span></pre>
+</div>
+
+<!-- S4: Deferred Execution -->
+<div class="section" id="s4">
+  <div class="section-header"><div class="section-num">4</div><h2>Deferred Execution — Most Important Concept</h2></div>
+  <p style="margin-bottom:.8rem">A LINQ query does <strong>NOT execute when defined</strong>. It only executes when you iterate. The query is a recipe — writing it doesn't cook the food.</p>
+
+  <div class="callout warn">⚠️ <strong>Danger #1:</strong> If the list changes after defining the query but before iterating, the changes ARE reflected.<br>
+  ⚠️ <strong>Danger #2:</strong> Iterating multiple times = multiple executions. With EF, that means multiple SQL queries!</div>
+
+  <!-- Interactive Demo -->
+  <div class="exec-demo">
+    <p style="font-size:.85rem;font-weight:600;margin-bottom:.6rem;color:var(--accent)">Deferred Execution Simulator</p>
+    <div class="exec-controls">
+      <button class="exec-btn" onclick="runExec('deferred')">Deferred (no ToList)</button>
+      <button class="exec-btn" onclick="runExec('modified')">Deferred + List Modified</button>
+      <button class="exec-btn" onclick="runExec('immediate')">Immediate (ToList)</button>
+      <button class="exec-btn" onclick="runExec('double')">Multiple Enumeration</button>
+    </div>
+    <div class="exec-log" id="exec-log"><span class="dim">Choose a scenario to see what happens...</span></div>
+  </div>
+
+  <div class="callout green" style="margin-top:1rem"><strong>Fix:</strong> Call <code>.ToList()</code> to force immediate execution and store a snapshot. No re-execution, no surprise mutations.</div>
+
+  <div class="table-wrap" style="margin-top:1rem">
+    <table>
+      <tr><th></th><th>Deferred</th><th>Immediate</th></tr>
+      <tr><td><strong>Methods</strong></td><td>Where, Select, OrderBy, GroupBy, Skip, Take</td><td>ToList, ToArray, Count, First, Sum, Any</td></tr>
+      <tr><td><strong>Executes when?</strong></td><td>When iterated</td><td>Right away</td></tr>
+      <tr><td><strong>Re-executes?</strong></td><td style="color:var(--red)">Every iteration</td><td style="color:var(--green)">No — stored in memory</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- S5: IEnumerable vs IQueryable -->
+<div class="section" id="s5">
+  <div class="section-header"><div class="section-num">5</div><h2>IEnumerable vs IQueryable</h2></div>
+
+  <div class="vs-split">
+    <div class="vs-col">
+      <h3 style="color:var(--red)">IEnumerable — In Memory</h3>
+      <div class="data-flow">
+        <div class="data-node db">Database: 1M rows</div>
+        <div class="data-arrow">↓ transfers ALL</div>
+        <div class="data-node transfer">1,000,000 rows sent</div>
+        <div class="data-arrow">↓ filters in C#</div>
+        <div class="data-node mem">Where(Salary > 5000)</div>
+        <div class="data-arrow">↓</div>
+        <div class="data-node result">10 results</div>
+      </div>
+<pre style="font-size:.72rem;margin-top:.5rem"><span class="cm">// SQL generated:</span>
+SELECT * FROM Employees
+<span class="er">← transfers everything!</span></pre>
+    </div>
+    <div class="vs-divider">vs</div>
+    <div class="vs-col">
+      <h3 style="color:var(--green)">IQueryable — In Database</h3>
+      <div class="data-flow">
+        <div class="data-node db">Database: 1M rows</div>
+        <div class="data-arrow">↓ SQL WHERE clause</div>
+        <div class="data-node transfer" style="background:rgba(52,211,153,.1);border-color:var(--green);color:var(--green)">10 rows sent</div>
+        <div class="data-arrow">↓</div>
+        <div class="data-node result">10 results</div>
+      </div>
+<pre style="font-size:.72rem;margin-top:.5rem"><span class="cm">// SQL generated:</span>
+SELECT * FROM Employees
+WHERE Salary > <span class="nu">5000</span>
+<span class="ok">← efficient!</span></pre>
+    </div>
+  </div>
+
+  <div class="callout red">⚠️ With 1 million employees and only 10 matching: IEnumerable transfers <strong>1,000,000 rows</strong> then filters in memory. IQueryable transfers only <strong>10 rows</strong>. Always use IQueryable with Entity Framework.</div>
+</div>
+
+<!-- S6: Quiz -->
+<div class="section" id="s6">
+  <div class="section-header"><div class="section-num">6</div><h2>Test Yourself</h2></div>
+
+  <div class="quiz-card" id="q1">
+    <h3>Q1: When does a LINQ query with <code>.Where()</code> execute?</h3>
+    <button class="quiz-option" onclick="answer(this,'q1',false)">Immediately when defined</button>
+    <button class="quiz-option" onclick="answer(this,'q1',true)">When the results are iterated (foreach, ToList, etc.)</button>
+    <button class="quiz-option" onclick="answer(this,'q1',false)">At the end of the method</button>
+    <div class="quiz-explanation" id="q1-exp"><code>.Where()</code> is deferred — it builds a query plan but doesn't execute. Execution happens when you iterate (foreach) or call a materializing method (ToList, Count, First, etc.).</div>
+  </div>
+
+  <div class="quiz-card" id="q2">
+    <h3>Q2: You define a query, then <code>.Add(10)</code> to the source list, then iterate. Is 10 included?</h3>
+    <button class="quiz-option" onclick="answer(this,'q2',true)">Yes — deferred execution runs against the modified list</button>
+    <button class="quiz-option" onclick="answer(this,'q2',false)">No — the query captured a snapshot at definition time</button>
+    <div class="quiz-explanation" id="q2-exp">Because the query is deferred, it doesn't snapshot the data. When you finally iterate, it runs against the <strong>current</strong> state of the list — including the added element. Use <code>.ToList()</code> to capture a snapshot.</div>
+  </div>
+
+  <div class="quiz-card" id="q3">
+    <h3>Q3: What's the key difference between IEnumerable and IQueryable?</h3>
+    <button class="quiz-option" onclick="answer(this,'q3',false)">IEnumerable is faster</button>
+    <button class="quiz-option" onclick="answer(this,'q3',false)">IQueryable doesn't support LINQ</button>
+    <button class="quiz-option" onclick="answer(this,'q3',true)">IQueryable translates to SQL and filters at the database; IEnumerable filters in memory</button>
+    <div class="quiz-explanation" id="q3-exp">IQueryable translates LINQ expressions into SQL, so filtering happens at the database — only matching rows transfer. IEnumerable pulls ALL data first, then filters in C# memory. For large datasets, IQueryable is dramatically more efficient.</div>
+  </div>
+
+  <div class="quiz-card" id="q4">
+    <h3>Q4: You call <code>.Count()</code> then <code>foreach</code> on a deferred query against Entity Framework. How many SQL queries fire?</h3>
+    <button class="quiz-option" onclick="answer(this,'q4',false)">1 — it reuses the result</button>
+    <button class="quiz-option" onclick="answer(this,'q4',true)">2 — each enumeration fires a separate query</button>
+    <button class="quiz-option" onclick="answer(this,'q4',false)">0 — LINQ never touches the database</button>
+    <div class="quiz-explanation" id="q4-exp">Each enumeration of a deferred query is a separate execution. <code>.Count()</code> iterates once (query #1), <code>foreach</code> iterates again (query #2). Fix: call <code>.ToList()</code> first, then work with the materialized list.</div>
+  </div>
+
+  <div class="quiz-score" id="score-box" style="display:none">
+    <div class="big" id="score-text"></div>
+    <p style="color:var(--text-dim);margin-top:.3rem">LINQ Quiz</p>
+  </div>
+</div>
+
+<!-- Interview Answers -->
+<div class="section" id="s7">
+  <div class="section-header"><div class="section-num">★</div><h2>Interview Answer Bank</h2></div>
+  <div class="accordion"><button class="accordion-btn" onclick="toggleAcc(this)"><span>Q: What is deferred execution in LINQ?</span><span class="arrow">▼</span></button><div class="accordion-body"><div class="callout green">A LINQ query is not executed when defined — it only executes when you iterate over the results. If the underlying collection changes between defining and iterating, the changes are reflected. Calling ToList() or ToArray() forces immediate execution and stores a snapshot, preventing re-execution on every iteration.</div></div></div>
+  <div class="accordion"><button class="accordion-btn" onclick="toggleAcc(this)"><span>Q: IEnumerable vs IQueryable?</span><span class="arrow">▼</span></button><div class="accordion-body"><div class="callout green">IEnumerable executes filtering in C# memory — pulls all data from DB first then filters. IQueryable translates LINQ to SQL and filters at the database level — only matching rows transfer. For large datasets IQueryable is dramatically more efficient. Always use IQueryable with Entity Framework.</div></div></div>
+</div>
+
+</div>
+
+<script>
+function toggleAcc(btn){btn.classList.toggle('open');btn.nextElementSibling.classList.toggle('open')}
+
+// Deferred Execution Simulator
+function runExec(mode){
+  const log=document.getElementById('exec-log');
+  log.innerHTML='';
+  document.querySelectorAll('.exec-btn').forEach(b=>b.classList.remove('active'));
+  event.target.classList.add('active');
+  const lines=[];
+  if(mode==='deferred'){
+    lines.push({c:'dim',t:'numbers = [1, 2, 3, 4, 5]'});
+    lines.push({c:'step',t:'var query = numbers.Where(n => n > 3);'});
+    lines.push({c:'warn',t:'⏸ No execution yet — query is just a plan'});
+    lines.push({c:'dim',t:''});
+    lines.push({c:'step',t:'foreach (int n in query)  // execution NOW'});
+    lines.push({c:'ok',t:'→ 4'});
+    lines.push({c:'ok',t:'→ 5'});
+    lines.push({c:'dim',t:'✅ Query ran against [1, 2, 3, 4, 5]'});
+  } else if(mode==='modified'){
+    lines.push({c:'dim',t:'numbers = [1, 2, 3, 4, 5]'});
+    lines.push({c:'step',t:'var query = numbers.Where(n => n > 3);'});
+    lines.push({c:'warn',t:'⏸ No execution yet'});
+    lines.push({c:'dim',t:''});
+    lines.push({c:'bad',t:'numbers.Add(10);  // modify AFTER query defined'});
+    lines.push({c:'bad',t:'numbers.Add(11);'});
+    lines.push({c:'dim',t:''});
+    lines.push({c:'step',t:'foreach (int n in query)  // runs against MODIFIED list'});
+    lines.push({c:'ok',t:'→ 4'});
+    lines.push({c:'ok',t:'→ 5'});
+    lines.push({c:'bad',t:'→ 10  ← surprise!'});
+    lines.push({c:'bad',t:'→ 11  ← surprise!'});
+    lines.push({c:'warn',t:'⚠ Changes included! Query saw [1,2,3,4,5,10,11]'});
+  } else if(mode==='immediate'){
+    lines.push({c:'dim',t:'numbers = [1, 2, 3, 4, 5]'});
+    lines.push({c:'step',t:'var result = numbers.Where(n => n > 3).ToList();'});
+    lines.push({c:'ok',t:'✅ Executed immediately → result = [4, 5]'});
+    lines.push({c:'dim',t:''});
+    lines.push({c:'dim',t:'numbers.Add(10);  // modify source'});
+    lines.push({c:'dim',t:''});
+    lines.push({c:'step',t:'foreach (int n in result)'});
+    lines.push({c:'ok',t:'→ 4'});
+    lines.push({c:'ok',t:'→ 5'});
+    lines.push({c:'ok',t:'✅ 10 NOT included — result was a snapshot'});
+  } else if(mode==='double'){
+    lines.push({c:'dim',t:'// Entity Framework scenario'});
+    lines.push({c:'step',t:'var query = db.Products.Where(p => p.Price > 50);'});
+    lines.push({c:'warn',t:'⏸ No execution yet'});
+    lines.push({c:'dim',t:''});
+    lines.push({c:'step',t:'int count = query.Count();'});
+    lines.push({c:'bad',t:'🔥 SQL Query #1 fired: SELECT COUNT(*) FROM Products WHERE Price > 50'});
+    lines.push({c:'dim',t:''});
+    lines.push({c:'step',t:'foreach (var p in query)'});
+    lines.push({c:'bad',t:'🔥 SQL Query #2 fired: SELECT * FROM Products WHERE Price > 50'});
+    lines.push({c:'dim',t:''});
+    lines.push({c:'bad',t:'⚠ 2 separate SQL queries! Fix: .ToList() first, then .Count on the list'});
+  }
+  let i=0;
+  const timer=setInterval(()=>{
+    if(i>=lines.length){clearInterval(timer);return}
+    const l=lines[i];
+    log.innerHTML+=`<span class="${l.c}">${l.t}</span>\n`;
+    log.scrollTop=log.scrollHeight;
+    i++;
+  },250);
+}
+
+// Quiz
+let answered=0,correct=0,total=4;
+function answer(btn,qId,isCorrect){const card=document.getElementById(qId);if(card.dataset.answered)return;card.dataset.answered='1';answered++;if(isCorrect){btn.classList.add('correct');correct++;}else btn.classList.add('wrong');card.querySelectorAll('.quiz-option').forEach(o=>o.disabled=true);document.getElementById(qId+'-exp').classList.add('show');if(answered===total){document.getElementById('score-box').style.display='block';document.getElementById('score-text').textContent=correct+' / '+total;}}
+
+const sections=document.querySelectorAll('.section');const navLinks=document.querySelectorAll('.nav a');
+window.addEventListener('scroll',()=>{let c='';sections.forEach(s=>{if(window.scrollY>=s.offsetTop-120)c=s.id});navLinks.forEach(a=>{a.classList.remove('active');if(a.getAttribute('href')==='#'+c)a.classList.add('active')})});
+</script>
+</body>
+</html>

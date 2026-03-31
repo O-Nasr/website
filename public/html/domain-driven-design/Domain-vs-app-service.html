@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DDD Deep Dive — Domain Service vs Application Service</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=DM+Sans:wght@400;500;700&family=Fraunces:wght@700;900&display=swap');
+
+  :root {
+    --bg: #0c0e13;
+    --surface: #14171e;
+    --surface2: #1a1e28;
+    --surface3: #1f2330;
+    --border: #262c3a;
+    --text: #d4dae8;
+    --text-dim: #7a8298;
+    --accent: #58cc8f;
+    --accent-dim: rgba(88, 204, 143, 0.12);
+    --warn: #e8a755;
+    --warn-dim: rgba(232, 167, 85, 0.12);
+    --danger: #e06070;
+    --danger-dim: rgba(224, 96, 112, 0.10);
+    --blue: #5fa8e8;
+    --blue-dim: rgba(95, 168, 232, 0.12);
+    --purple: #a388e8;
+    --purple-dim: rgba(163, 136, 232, 0.12);
+    --coral: #e08860;
+    --coral-dim: rgba(224, 136, 96, 0.12);
+    --code-bg: #0f1118;
+    --radius: 10px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    line-height: 1.75;
+    padding: 2rem;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 900;
+    font-size: 2.2rem;
+    color: #fff;
+    margin-bottom: 0.25rem;
+  }
+  .subtitle {
+    color: var(--text-dim);
+    font-size: 0.95rem;
+    margin-bottom: 2.5rem;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 1.5rem;
+  }
+
+  /* ── MAIN TABS ── */
+  .main-tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+  }
+  .main-tab {
+    padding: 0.65rem 1.3rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text-dim);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.88rem;
+  }
+  .main-tab:hover { border-color: var(--accent); color: var(--text); }
+  .main-tab.active {
+    background: var(--accent-dim);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .main-panel { display: none; }
+  .main-panel.active { display: block; }
+
+  /* ── SECTION TABS ── */
+  .section-tabs {
+    display: flex;
+    gap: 0.4rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+  }
+  .sec-tab {
+    padding: 0.45rem 0.9rem;
+    background: var(--surface2);
+    border: 1px solid transparent;
+    border-radius: 6px;
+    color: var(--text-dim);
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .sec-tab:hover { color: var(--text); background: var(--surface); }
+  .sec-tab.active {
+    background: var(--blue-dim);
+    border-color: var(--blue);
+    color: var(--blue);
+  }
+  .sec-panel { display: none; }
+  .sec-panel.active { display: block; }
+
+  /* ── CONTENT ── */
+  h2 {
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    font-size: 1.45rem;
+    color: #fff;
+    margin-bottom: 1rem;
+  }
+  h3 {
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: var(--accent);
+    margin: 1.5rem 0 0.6rem;
+  }
+  p { margin-bottom: 1rem; }
+  strong { color: #fff; }
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.84em;
+    background: var(--surface2);
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+    color: var(--accent);
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.4rem;
+    margin-bottom: 1.2rem;
+  }
+  .card-title {
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 0.6rem;
+    font-size: 1rem;
+  }
+
+  .hbox {
+    border-left: 3px solid var(--accent);
+    background: var(--accent-dim);
+    padding: 1rem 1.2rem;
+    border-radius: 0 var(--radius) var(--radius) 0;
+    margin-bottom: 1.2rem;
+  }
+  .hbox.warn   { border-left-color: var(--warn);   background: var(--warn-dim); }
+  .hbox.danger  { border-left-color: var(--danger); background: var(--danger-dim); }
+  .hbox.blue    { border-left-color: var(--blue);   background: var(--blue-dim); }
+  .hbox.purple  { border-left-color: var(--purple); background: var(--purple-dim); }
+  .hbox.coral   { border-left-color: var(--coral);  background: var(--coral-dim); }
+
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.2rem;
+    overflow-x: auto;
+    margin-bottom: 1.2rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem;
+    line-height: 1.65;
+    color: var(--text);
+  }
+  .kw { color: var(--blue); }
+  .tp { color: var(--accent); }
+  .st { color: var(--warn); }
+  .cm { color: var(--text-dim); font-style: italic; }
+  .fn { color: var(--purple); }
+  .num { color: var(--danger); }
+
+  /* ── FLOW DIAGRAMS ── */
+  .flow {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    flex-wrap: wrap;
+    margin: 1.5rem 0;
+    justify-content: center;
+  }
+  .flow-box {
+    padding: 0.6rem 1rem;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    white-space: nowrap;
+    text-align: center;
+    border: 1px solid;
+  }
+  .flow-arrow {
+    font-size: 1.2rem;
+    color: var(--text-dim);
+    margin: 0 0.3rem;
+  }
+  .fb-green  { background: var(--accent-dim); color: var(--accent); border-color: rgba(88,204,143,0.3); }
+  .fb-blue   { background: var(--blue-dim);   color: var(--blue);   border-color: rgba(95,168,232,0.3); }
+  .fb-purple { background: var(--purple-dim); color: var(--purple); border-color: rgba(163,136,232,0.3); }
+  .fb-warn   { background: var(--warn-dim);   color: var(--warn);   border-color: rgba(232,167,85,0.3); }
+  .fb-danger { background: var(--danger-dim); color: var(--danger); border-color: rgba(224,96,112,0.3); }
+  .fb-coral  { background: var(--coral-dim);  color: var(--coral);  border-color: rgba(224,136,96,0.3); }
+
+  /* ── COMPARE TABLE ── */
+  .compare-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin: 1.2rem 0;
+  }
+  .compare-col {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.2rem;
+  }
+  .compare-col h4 {
+    font-weight: 700;
+    margin-bottom: 0.7rem;
+    font-size: 0.95rem;
+  }
+  .compare-col p { font-size: 0.88rem; }
+
+  /* ── LAYER STACK ── */
+  .layer-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin: 1.5rem auto;
+    max-width: 520px;
+  }
+  .layer {
+    text-align: center;
+    padding: 0.85rem;
+    font-weight: 600;
+    font-size: 0.85rem;
+  }
+  .layer:first-child { border-radius: var(--radius) var(--radius) 0 0; }
+  .layer:last-child  { border-radius: 0 0 var(--radius) var(--radius); }
+  .layer-label {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 400;
+    opacity: 0.7;
+    margin-top: 2px;
+  }
+  .l-api    { background: #1e3a5f; color: var(--blue);   border: 1px solid rgba(95,168,232,0.3); }
+  .l-app    { background: #2a2040; color: var(--purple); border: 1px solid rgba(163,136,232,0.3); border-top: none; }
+  .l-domain { background: #1a3028; color: var(--accent); border: 1px solid rgba(88,204,143,0.3); border-top: none; }
+  .l-infra  { background: #3a2a1a; color: var(--warn);   border: 1px solid rgba(232,167,85,0.3); border-top: none; }
+
+  .tag {
+    display: inline-block;
+    padding: 0.15rem 0.55rem;
+    border-radius: 4px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    vertical-align: middle;
+  }
+  .tag-green  { background: var(--accent-dim); color: var(--accent); }
+  .tag-blue   { background: var(--blue-dim); color: var(--blue); }
+  .tag-purple { background: var(--purple-dim); color: var(--purple); }
+  .tag-warn   { background: var(--warn-dim); color: var(--warn); }
+  .tag-coral  { background: var(--coral-dim); color: var(--coral); }
+
+  /* ── Q&A BLOCKS ── */
+  .qa {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 1.2rem;
+    overflow: hidden;
+  }
+  .qa-q {
+    padding: 1rem 1.2rem;
+    background: var(--surface2);
+    font-weight: 700;
+    color: #fff;
+    font-size: 0.92rem;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .qa-q::after {
+    content: '+';
+    font-size: 1.2rem;
+    color: var(--text-dim);
+    transition: transform 0.2s;
+  }
+  .qa.open .qa-q::after {
+    content: '\2212';
+  }
+  .qa-a {
+    display: none;
+    padding: 1.2rem;
+    font-size: 0.9rem;
+    line-height: 1.7;
+  }
+  .qa.open .qa-a { display: block; }
+
+  /* ── QUIZ ── */
+  .quiz {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.4rem;
+    margin: 1.5rem 0;
+  }
+  .quiz-q {
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 0.8rem;
+    font-size: 0.95rem;
+  }
+  .quiz-options { display: flex; flex-direction: column; gap: 0.4rem; }
+  .quiz-opt {
+    padding: 0.55rem 1rem;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+  }
+  .quiz-opt:hover { border-color: var(--blue); }
+  .quiz-opt.correct {
+    background: var(--accent-dim);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .quiz-opt.wrong {
+    background: var(--danger-dim);
+    border-color: var(--danger);
+    color: var(--danger);
+  }
+  .quiz-explain {
+    display: none;
+    margin-top: 0.8rem;
+    padding: 0.8rem 1rem;
+    background: var(--accent-dim);
+    border-radius: 6px;
+    font-size: 0.85rem;
+    line-height: 1.6;
+  }
+
+  /* ── STEPS ── */
+  .step-num {
+    display: inline-flex;
+    width: 28px;
+    height: 28px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-weight: 700;
+    font-size: 0.82rem;
+    margin-right: 0.5rem;
+    flex-shrink: 0;
+  }
+  .sn-green  { background: var(--accent-dim); color: var(--accent); }
+  .sn-purple { background: var(--purple-dim); color: var(--purple); }
+  .sn-warn   { background: var(--warn-dim);   color: var(--warn); }
+
+  .step-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    margin-bottom: 0.8rem;
+  }
+
+  @media (max-width: 700px) {
+    body { padding: 1rem; }
+    h1 { font-size: 1.6rem; }
+    .compare-grid { grid-template-columns: 1fr; }
+    .flow { flex-direction: column; }
+    .flow-arrow { transform: rotate(90deg); margin: 0.2rem 0; }
+  }
+</style>
+</head>
+<body>
+
+<h1>Domain Service vs Application Service</h1>
+<p class="subtitle">DDD Deep Dive — When logic doesn't belong to a single entity, and who does the loading vs the thinking. Full Socratic walkthrough with C#/.NET examples.</p>
+
+<!-- ═══════ MAIN TOPIC TABS ═══════ -->
+<div class="main-tabs">
+  <div class="main-tab active" onclick="switchMain(0)">1. The Problem</div>
+  <div class="main-tab" onclick="switchMain(1)">2. Brain vs Hands</div>
+  <div class="main-tab" onclick="switchMain(2)">3. Three Layers</div>
+  <div class="main-tab" onclick="switchMain(3)">4. The Three Nevers</div>
+  <div class="main-tab" onclick="switchMain(4)">5. Interface Trick</div>
+  <div class="main-tab" onclick="switchMain(5)">6. Full Code</div>
+  <div class="main-tab" onclick="switchMain(6)">7. Q&amp;A Deep Dive</div>
+  <div class="main-tab" onclick="switchMain(7)">8. Challenge</div>
+</div>
+
+<!-- ╔══════════════════════════════════════╗ -->
+<!-- ║  PANEL 0 — THE PROBLEM               ║ -->
+<!-- ╚══════════════════════════════════════╝ -->
+<div class="main-panel active" id="mp0">
+  <h2>The Homeless Logic Problem</h2>
+
+  <p>In DDD, the <strong>Entity</strong> is king. Business logic lives on the Entity: <code>Order.AddItem()</code>, <code>Order.Cancel()</code>, <code>Customer.Deactivate()</code>. The entity owns its own rules. That's the default home for business logic.</p>
+
+  <p>But here's the problem: <strong>some business logic doesn't belong to any single entity.</strong></p>
+
+  <div class="section-tabs">
+    <div class="sec-tab active" onclick="switchSec(0,0)">Easy case</div>
+    <div class="sec-tab" onclick="switchSec(0,1)">The problem</div>
+    <div class="sec-tab" onclick="switchSec(0,2)">The answer</div>
+  </div>
+
+  <!-- SEC 0-0: Easy case -->
+  <div class="sec-panel active" data-main="0">
+    <h3>When Logic Has a Home</h3>
+    <p>When <code>Order.AddItem()</code> runs, it only needs data that already lives <strong>inside the Order</strong> — its items list, its max count rule. The entity owns everything it needs. No problem.</p>
+
+    <div class="flow">
+      <div class="flow-box fb-green">Order (Root)</div>
+      <span class="flow-arrow">&rarr;</span>
+      <div class="flow-box fb-green">AddItem()</div>
+      <span class="flow-arrow">&rarr;</span>
+      <div class="flow-box fb-green">Cancel()</div>
+    </div>
+
+    <div class="hbox">
+      <strong>Key point:</strong> These methods only need data that lives INSIDE the Order. The Order owns its items. The Order owns its status. The logic has a clear home.
+    </div>
+  </div>
+
+  <!-- SEC 0-1: The problem -->
+  <div class="sec-panel" data-main="0">
+    <h3>When Logic Is Homeless</h3>
+
+    <p>Consider this business question: <em>"Can this customer afford this order?"</em></p>
+
+    <p>This question needs the <strong>Order's total</strong> (from the Order aggregate) AND the <strong>Customer's credit limit</strong> (from the Customer aggregate). Neither entity can see the other.</p>
+
+    <div class="flow">
+      <div class="flow-box fb-green">Order</div>
+      <span class="flow-arrow">has GetTotal()</span>
+      <div class="flow-box fb-coral">???</div>
+      <span class="flow-arrow">has CreditLimit</span>
+      <div class="flow-box fb-purple">Customer</div>
+    </div>
+
+    <div class="hbox warn">
+      <strong>The question can't live on Order</strong> — it doesn't know about the Customer's credit. <strong>It can't live on Customer</strong> — it doesn't know the Order's total. The logic is homeless. Where does it go?
+    </div>
+  </div>
+
+  <!-- SEC 0-2: The answer -->
+  <div class="sec-panel" data-main="0">
+    <h3>The Answer: Domain Service</h3>
+
+    <p>A <strong>Domain Service</strong> receives both aggregates as method parameters and makes the business decision using both. It doesn't go fetch them from a database. It doesn't save anything. Someone else hands them in, and the service just <em>thinks</em>.</p>
+
+    <div class="flow">
+      <div class="flow-box fb-green">Order</div>
+      <span class="flow-arrow">passed in &rarr;</span>
+      <div class="flow-box fb-warn">CreditCheckService</div>
+      <span class="flow-arrow">&larr; passed in</span>
+      <div class="flow-box fb-purple">Customer</div>
+    </div>
+
+    <div class="hbox">
+      <strong>Both aggregates are handed IN as parameters.</strong> The service makes the business decision using both. It doesn't load them. It doesn't save anything. Just pure logic.
+    </div>
+
+    <p>That "someone else" who does the fetching and saving — that's the <strong>Application Service</strong>. Let's look at that next.</p>
+  </div>
+</div>
+
+<!-- ╔══════════════════════════════════════╗ -->
+<!-- ║  PANEL 1 — BRAIN VS HANDS             ║ -->
+<!-- ╚══════════════════════════════════════╝ -->
+<div class="main-panel" id="mp1">
+  <h2>The Brain vs Hands Mental Model</h2>
+
+  <p>The simplest way to remember the difference:</p>
+
+  <div class="compare-grid">
+    <div class="compare-col">
+      <h4 style="color: var(--accent);">Domain Service = The Brain</h4>
+      <p>You hand it ingredients, it does something smart with them, and it hands you back a result. It doesn't go shopping for the ingredients itself — someone else does that.</p>
+      <p style="margin-bottom:0;">Think of a <strong>head chef</strong>. You put the raw chicken and spices on the counter, they cook something brilliant. They never walk to the grocery store. They never wash dishes. They just cook.</p>
+    </div>
+    <div class="compare-col">
+      <h4 style="color: var(--purple);">Application Service = The Hands</h4>
+      <p>It fetches things, hands them to the brain, saves the result, and handles side effects. Zero business decisions.</p>
+      <p style="margin-bottom:0;">Think of a <strong>kitchen manager</strong>. They go to the store (repository), buy ingredients (load aggregates), put them on the counter for the chef (call domain service), clean up after (save changes), and serve the plate (return DTO).</p>
+    </div>
+  </div>
+
+  <h3>The "Would a Business Expert Care?" Test</h3>
+
+  <p>For every step in a use case, ask: <em>"Would a banker, a product manager — a domain expert — care about this step?"</em> If yes, it's <strong>business logic</strong> (Domain layer). If no, it's <strong>plumbing</strong> (Application Service).</p>
+
+  <div class="card">
+    <div class="card-title">Use Case: "Place an order with credit check"</div>
+
+    <div class="step-row">
+      <span class="step-num sn-purple">1</span>
+      <span><strong>Load the Customer from the database</strong> — Would a banker care? <strong>No.</strong> <span class="tag tag-purple">plumbing</span></span>
+    </div>
+    <div class="step-row">
+      <span class="step-num sn-green">2</span>
+      <span><strong>Build the Order with its items</strong> — Would a banker care? <strong>Yes.</strong> <span class="tag tag-green">business</span></span>
+    </div>
+    <div class="step-row">
+      <span class="step-num sn-green">3</span>
+      <span><strong>Can this customer afford it?</strong> — Would a banker care? <strong>Yes.</strong> <span class="tag tag-green">business</span></span>
+    </div>
+    <div class="step-row">
+      <span class="step-num sn-purple">4</span>
+      <span><strong>Save the Order to the database</strong> — Would a banker care? <strong>No.</strong> <span class="tag tag-purple">plumbing</span></span>
+    </div>
+    <div class="step-row">
+      <span class="step-num sn-purple">5</span>
+      <span><strong>Send confirmation email</strong> — Would a banker care? <strong>No.</strong> <span class="tag tag-purple">plumbing</span></span>
+    </div>
+  </div>
+
+  <div class="hbox">
+    <strong>Bottom line:</strong> Plumbing = Application Service (the hands). Business decisions = Domain layer (the brain). Steps 1, 4, 5 are hands work. Steps 2, 3 are brain work.
+  </div>
+
+  <h3>The Full Wiring</h3>
+  <p>The entire use case lives inside the Application Service, but it <strong>delegates</strong> the business steps to Domain objects. It calls <code>order.AddItem()</code> (Entity logic) and <code>creditCheckService.Validate(customer, order)</code> (Domain Service logic). It doesn't make those decisions itself. It just loads, calls, saves, notifies.</p>
+
+  <div class="flow">
+    <div class="flow-box fb-purple">App Service</div>
+    <span class="flow-arrow">&rarr;</span>
+    <div class="flow-box fb-blue">Load Aggregates</div>
+    <span class="flow-arrow">&rarr;</span>
+    <div class="flow-box fb-green">Domain Logic</div>
+    <span class="flow-arrow">&rarr;</span>
+    <div class="flow-box fb-warn">Save (UoW)</div>
+    <span class="flow-arrow">&rarr;</span>
+    <div class="flow-box fb-danger">Side Effects</div>
+  </div>
+</div>
+
+<!-- ╔══════════════════════════════════════╗ -->
+<!-- ║  PANEL 2 — THREE LAYERS              ║ -->
+<!-- ╚══════════════════════════════════════╝ -->
+<div class="main-panel" id="mp2">
+  <h2>Three Layers of Logic Ownership</h2>
+
+  <p>There isn't just a two-way split. Business logic itself has two homes — the Entity and the Domain Service — and they do different things. Here's the full hierarchy:</p>
+
+  <div class="layer-stack">
+    <div class="layer l-app">
+      Application Service <span class="tag tag-purple">zero business rules</span>
+      <span class="layer-label">Loads, calls, saves, notifies — just orchestration</span>
+    </div>
+    <div class="layer l-domain">
+      Domain Service <span class="tag tag-green">cross-aggregate rules</span>
+      <span class="layer-label">Coordinates multiple entities for a business decision</span>
+    </div>
+    <div class="layer l-domain" style="border-top: none; opacity: 0.85;">
+      Entity / Aggregate Root <span class="tag tag-green">single-aggregate rules</span>
+      <span class="layer-label">Owns invariants within its own boundary</span>
+    </div>
+    <div class="layer l-infra">
+      Infrastructure
+      <span class="layer-label">Repositories, email senders, message queues</span>
+    </div>
+  </div>
+
+  <h3>How the Domain Service Delegates to Entities</h3>
+
+  <p>The Domain Service doesn't do <em>everything</em> — it <strong>coordinates</strong> the entities, and each entity still owns its own single-aggregate rules. Consider the money transfer:</p>
+
+<pre><span class="cm">// Domain Service — coordinates two aggregates</span>
+<span class="kw">public class</span> <span class="tp">MoneyTransferService</span>
+{
+    <span class="kw">public void</span> <span class="fn">Transfer</span>(
+        <span class="tp">Account</span> from,
+        <span class="tp">Account</span> to,
+        <span class="tp">Money</span> amount)
+    {
+        <span class="cm">// Business rule: check frozen status (cross-aggregate concern)</span>
+        <span class="kw">if</span> (from.IsFrozen || to.IsFrozen)
+            <span class="kw">throw new</span> <span class="tp">AccountFrozenException</span>();
+
+        <span class="cm">// Delegate to each entity — they own their own invariants</span>
+        from.<span class="fn">Debit</span>(amount);   <span class="cm">// Account internally checks balance &gt;= 0</span>
+        to.<span class="fn">Credit</span>(amount);     <span class="cm">// Account internally updates balance</span>
+    }
+}</pre>
+
+  <div class="hbox blue">
+    <strong>Key insight:</strong> <code>from.Debit(amount)</code> internally checks "do I have enough balance?" and throws if not. The Domain Service doesn't duplicate that check — it just orchestrates the sequence: verify not frozen, debit one, credit the other. Each entity still protects its own invariant.
+  </div>
+
+  <h3>The Hierarchy of Logic Ownership</h3>
+  <div class="card">
+    <div class="card-title">Who Owns What — Quick Reference</div>
+    <p><strong>"Can this order be cancelled?"</strong> &rarr; <span class="tag tag-green">Entity</span> — single aggregate, <code>order.Cancel()</code> checks its own status.</p>
+    <p><strong>"Is the total price correct given this customer's tier?"</strong> &rarr; <span class="tag tag-green">Domain Service</span> — needs Order + Customer data.</p>
+    <p><strong>"Debit one account, credit another, check both aren't frozen"</strong> &rarr; <span class="tag tag-green">Domain Service</span> — coordinates two entities.</p>
+    <p><strong>"Load the order, cancel it, save, send email"</strong> &rarr; <span class="tag tag-purple">Application Service</span> — just orchestration verbs.</p>
+    <p style="margin-bottom:0;"><strong>"Log the HTTP request and return a response"</strong> &rarr; <span class="tag tag-blue">Controller</span> — presentation layer, not even business-adjacent.</p>
+  </div>
+</div>
+
+<!-- ╔══════════════════════════════════════╗ -->
+<!-- ║  PANEL 3 — THE THREE NEVERS          ║ -->
+<!-- ╚══════════════════════════════════════╝ -->
+<div class="main-panel" id="mp3">
+  <h2>The Three Nevers of a Domain Service</h2>
+
+  <p>A Domain Service is a <strong>pure brain</strong>. It thinks, but it never reaches out into the outside world. All three of these rules follow from that principle:</p>
+
+  <div class="card">
+    <div class="card-title" style="color: var(--danger);">Never #1: Access the Database</div>
+    <p>No repositories, no <code>DbContext</code>, no SQL. If the Domain Service needs data, it receives it as parameters (aggregates passed in by the Application Service) or through a Domain-layer interface like <code>IEmailUniquenessChecker</code> (covered in Tab 5). It never directly reaches into the database.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title" style="color: var(--danger);">Never #2: Call SaveChangesAsync()</div>
+    <p>The Domain Service can mutate the objects it receives (like calling <code>account.Debit(amount)</code>), but it never persists anything. The Application Service decides when to commit — this is what makes the Unit of Work pattern possible. Bundling multiple changes into one transaction only works if no one saves prematurely.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title" style="color: var(--danger);">Never #3: Trigger Side Effects</div>
+    <p>No sending emails, no publishing to message queues, no calling external HTTP APIs directly. If placing an order should send a confirmation email, that happens in the Application Service <em>after</em> the Domain Service finishes its business logic. The Domain Service's world ends at the boundary of the domain objects it was given.</p>
+  </div>
+
+  <div class="hbox warn">
+    <strong>One sentence to remember:</strong> The Domain Service never reaches out. It only works with what's placed on its desk. Loading is reaching out. Saving is reaching out. Sending an email is reaching out.
+  </div>
+
+  <h3>Complete Responsibility Split</h3>
+
+  <div class="compare-grid">
+    <div class="compare-col">
+      <h4 style="color: var(--accent);">Domain Service (brain)</h4>
+      <p>&rarr; Cross-aggregate business rules</p>
+      <p>&rarr; Coordinate entity methods</p>
+      <p>&rarr; Validate + throw if invalid</p>
+      <p style="margin-bottom:0;">&rarr; Call domain-layer interfaces (e.g., <code>IEmailUniquenessChecker</code>)</p>
+    </div>
+    <div class="compare-col">
+      <h4 style="color: var(--purple);">Application Service (hands)</h4>
+      <p>&rarr; Load from repositories</p>
+      <p>&rarr; Call <code>SaveChangesAsync()</code></p>
+      <p>&rarr; Send emails / notifications</p>
+      <p>&rarr; Map DTOs to domain objects</p>
+      <p style="margin-bottom:0;">&rarr; Publish to message queues</p>
+    </div>
+  </div>
+</div>
+
+<!-- ╔══════════════════════════════════════╗ -->
+<!-- ║  PANEL 4 — THE INTERFACE TRICK       ║ -->
+<!-- ╚══════════════════════════════════════╝ -->
+<div class="main-panel" id="mp4">
+  <h2>The Interface Trick — When Domain Needs DB Access</h2>
+
+  <div class="section-tabs">
+    <div class="sec-tab active" onclick="switchSec(4,0)">The Problem</div>
+    <div class="sec-tab" onclick="switchSec(4,1)">Wrong Approach</div>
+    <div class="sec-tab" onclick="switchSec(4,2)">Right Approach</div>
+    <div class="sec-tab" onclick="switchSec(4,3)">Why It Matters</div>
+  </div>
+
+  <!-- SEC 4-0 -->
+  <div class="sec-panel active" data-main="4">
+    <h3>The Scenario</h3>
+    <p><em>"Before creating a new Customer, check that no other customer already has this email address."</em></p>
+
+    <p>This is clearly a <strong>business rule</strong> — a domain expert cares about it. But to answer it, you need to <strong>query the database</strong> to check if any existing customer has this email. The Domain Service can't touch the database. So what do you do?</p>
+
+    <div class="hbox coral">
+      <strong>The tension:</strong> The rule belongs in the Domain layer (it's a business rule). But answering it requires database access (which the Domain layer can't do). How do we resolve this?
+    </div>
+  </div>
+
+  <!-- SEC 4-1 -->
+  <div class="sec-panel" data-main="4">
+    <h3>Wrong Approach: Application Service Does the Check</h3>
+
+    <p>You might think: "The Application Service can query the repository and pass the result to the Domain Service." Like this:</p>
+
+<pre><span class="cm">// Application Service — doing the check itself</span>
+<span class="kw">var</span> existingCustomer = <span class="kw">await</span> _customerRepo.<span class="fn">GetByEmailAsync</span>(email);
+<span class="kw">if</span> (existingCustomer != <span class="kw">null</span>)
+    <span class="kw">throw new</span> <span class="tp">EmailAlreadyTakenException</span>();</pre>
+
+    <p>This has <strong>two problems:</strong></p>
+
+    <div class="card">
+      <div class="card-title" style="color: var(--danger);">Problem 1: Business Logic Leaks Into the Application Service</div>
+      <p>That <code>if (existingCustomer != null)</code> is a <strong>business decision</strong>. The Application Service decided that <code>!= null</code> means "email is taken" and that this should throw an exception. That's brain work sitting in the hands layer. The Application Service is now <strong>interpreting a query result</strong> — and interpreting data to make a business decision is the Domain layer's job.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title" style="color: var(--danger);">Problem 2: Repository Gets Shaped Around a Business Rule</div>
+      <p>Putting <code>GetByEmailAsync</code> on the Repository shapes the Repository's interface around a specific business rule rather than around Aggregate retrieval. The Repository's job is to be a clean, collection-like abstraction: "give me this Order," "save this Customer." It starts accumulating query methods that only exist to serve individual business checks — <code>GetByEmail</code>, <code>GetByPhone</code>, <code>GetByTaxId</code> — and slowly becomes a general-purpose query layer.</p>
+    </div>
+  </div>
+
+  <!-- SEC 4-2 -->
+  <div class="sec-panel" data-main="4">
+    <h3>Right Approach: Domain-Layer Interface</h3>
+
+    <p>The Domain layer defines an <strong>interface</strong> — a contract that says "I need the ability to check if an email is taken." The Domain Service depends on that interface. Infrastructure implements it.</p>
+
+<pre><span class="cm">// ── Domain Layer ──</span>
+
+<span class="cm">// The interface lives HERE, in the Domain</span>
+<span class="kw">public interface</span> <span class="tp">IEmailUniquenessChecker</span>
+{
+    <span class="tp">Task</span>&lt;<span class="kw">bool</span>&gt; <span class="fn">IsEmailTakenAsync</span>(<span class="kw">string</span> email);
+}
+
+<span class="cm">// The Domain Service depends on the interface</span>
+<span class="kw">public class</span> <span class="tp">CustomerRegistrationService</span>
+{
+    <span class="kw">private readonly</span> <span class="tp">IEmailUniquenessChecker</span> _checker;
+
+    <span class="kw">public</span> <span class="fn">CustomerRegistrationService</span>(
+        <span class="tp">IEmailUniquenessChecker</span> checker) =&gt; _checker = checker;
+
+    <span class="kw">public async</span> <span class="tp">Task</span>&lt;<span class="tp">Customer</span>&gt; <span class="fn">RegisterAsync</span>(
+        <span class="kw">string</span> name, <span class="kw">string</span> email)
+    {
+        <span class="cm">// The ENTIRE business rule lives here in the Domain</span>
+        <span class="kw">if</span> (<span class="kw">await</span> _checker.<span class="fn">IsEmailTakenAsync</span>(email))
+            <span class="kw">throw new</span> <span class="tp">EmailAlreadyTakenException</span>(email);
+
+        <span class="kw">return new</span> <span class="tp">Customer</span>(name, email);
+    }
+}</pre>
+
+<pre><span class="cm">// ── Infrastructure Layer ──</span>
+
+<span class="cm">// The implementation lives HERE, in Infrastructure</span>
+<span class="kw">public class</span> <span class="tp">EfEmailUniquenessChecker</span> : <span class="tp">IEmailUniquenessChecker</span>
+{
+    <span class="kw">private readonly</span> <span class="tp">AppDbContext</span> _db;
+
+    <span class="kw">public</span> <span class="fn">EfEmailUniquenessChecker</span>(<span class="tp">AppDbContext</span> db) =&gt; _db = db;
+
+    <span class="kw">public async</span> <span class="tp">Task</span>&lt;<span class="kw">bool</span>&gt; <span class="fn">IsEmailTakenAsync</span>(<span class="kw">string</span> email)
+    {
+        <span class="kw">return await</span> _db.Customers
+            .<span class="fn">AnyAsync</span>(c =&gt; c.Email == email);
+    }
+}</pre>
+
+    <div class="hbox">
+      <strong>Same pattern as Repository:</strong> <code>IOrderRepository</code> lives in Domain, <code>OrderRepository</code> lives in Infrastructure. The <code>IEmailUniquenessChecker</code> is just another instance of Dependency Inversion — the Domain defines what it needs, Infrastructure conforms to it.
+    </div>
+  </div>
+
+  <!-- SEC 4-3 -->
+  <div class="sec-panel" data-main="4">
+    <h3>Why This Matters — The Deeper Reason</h3>
+
+    <p>Even if you remove the <code>if</code> statement and just pass data to the Domain Service, there's still a subtle problem. Imagine:</p>
+
+<pre><span class="cm">// Application Service — no if, just passing data</span>
+<span class="kw">var</span> existingCustomer = <span class="kw">await</span> _customerRepo.<span class="fn">GetByEmailAsync</span>(email);
+_registrationService.<span class="fn">Register</span>(newCustomerData, existingCustomer);</pre>
+
+    <p>The Application Service <strong>knows</strong> that it needs to search by email, and it <strong>knows why</strong> — because uniqueness matters. It's performing the <strong>first half</strong> of a business rule (gathering evidence for a uniqueness check) and letting the Domain Service perform the <strong>second half</strong> (making the judgment). The business rule has been <strong>split across two layers</strong>.</p>
+
+    <div class="hbox warn">
+      <strong>The split-rule problem:</strong> Half the logic ("search by email because uniqueness matters") lives in the Application Service. The other half ("if taken, reject") lives in the Domain Service. This makes the rule harder to understand, test, and maintain — because you can't see the whole business rule in one place.
+    </div>
+
+    <p>With the <code>IEmailUniquenessChecker</code> approach, the <strong>entire business rule</strong> — the "what to query," the "how to interpret it," and the "what to do about it" — lives as a single cohesive unit inside the Domain layer. The Application Service doesn't even know that a uniqueness check is happening. It just calls <code>registrationService.RegisterAsync(name, email)</code> and the Domain Service handles everything internally through its interface.</p>
+
+    <div class="hbox">
+      <strong>The principle:</strong> A business rule should be visible in <strong>one place</strong>. If you have to read two layers to understand "how does email uniqueness work?", the rule has been fragmented. The Domain-layer interface pattern keeps it cohesive.
+    </div>
+  </div>
+</div>
+
+<!-- ╔══════════════════════════════════════╗ -->
+<!-- ║  PANEL 5 — FULL CODE EXAMPLE         ║ -->
+<!-- ╚══════════════════════════════════════╝ -->
+<div class="main-panel" id="mp5">
+  <h2>Full Layered Example — Order Placement</h2>
+
+  <p>Everything wired together: Entity logic, Domain Service, Application Service, and Repository. Read the comments — they label every line as either orchestration or business logic.</p>
+
+  <div class="section-tabs">
+    <div class="sec-tab active" onclick="switchSec(5,0)">Domain Layer</div>
+    <div class="sec-tab" onclick="switchSec(5,1)">Application Layer</div>
+    <div class="sec-tab" onclick="switchSec(5,2)">DI Registration</div>
+  </div>
+
+  <!-- SEC 5-0 -->
+  <div class="sec-panel active" data-main="5">
+    <h3>Domain Layer — Entities, Domain Service, Interfaces</h3>
+<pre><span class="cm">// ── Aggregate Root ──</span>
+<span class="kw">public class</span> <span class="tp">Order</span> : <span class="tp">AggregateRoot</span>
+{
+    <span class="kw">private readonly</span> <span class="tp">List</span>&lt;<span class="tp">OrderItem</span>&gt; _items = <span class="kw">new</span>();
+    <span class="kw">public</span> <span class="tp">IReadOnlyList</span>&lt;<span class="tp">OrderItem</span>&gt; Items =&gt; _items;
+    <span class="kw">public</span> <span class="tp">CustomerId</span> CustomerId { <span class="kw">get</span>; }
+    <span class="kw">public</span> <span class="tp">OrderStatus</span> Status { <span class="kw">get</span>; <span class="kw">private set</span>; }
+
+    <span class="kw">public void</span> <span class="fn">AddItem</span>(<span class="tp">ProductId</span> productId, <span class="kw">int</span> qty, <span class="tp">Money</span> unitPrice)
+    {
+        <span class="cm">// Entity-level invariant — single aggregate rule</span>
+        <span class="kw">if</span> (_items.Count &gt;= <span class="num">20</span>)
+            <span class="kw">throw new</span> <span class="tp">DomainException</span>(<span class="st">"Max 20 items per order."</span>);
+        _items.<span class="fn">Add</span>(<span class="kw">new</span> <span class="tp">OrderItem</span>(productId, qty, unitPrice));
+    }
+
+    <span class="kw">public</span> <span class="tp">Money</span> <span class="fn">GetSubtotal</span>()
+        =&gt; _items.<span class="fn">Aggregate</span>(<span class="tp">Money</span>.Zero, (sum, i) =&gt; sum + i.LineTotal);
+}
+
+<span class="cm">// ── Domain Service — cross-aggregate business rule ──</span>
+<span class="kw">public class</span> <span class="tp">OrderPricingService</span>
+{
+    <span class="kw">public</span> <span class="tp">Money</span> <span class="fn">CalculateFinalPrice</span>(
+        <span class="tp">Order</span> order,
+        <span class="tp">Customer</span> customer,
+        <span class="tp">IReadOnlyList</span>&lt;<span class="tp">DiscountPolicy</span>&gt; policies)
+    {
+        <span class="cm">// Needs Order + Customer + Policies = cross-aggregate</span>
+        <span class="kw">var</span> total = order.<span class="fn">GetSubtotal</span>();
+        <span class="kw">foreach</span> (<span class="kw">var</span> p <span class="kw">in</span> policies)
+            total = p.<span class="fn">Apply</span>(total, customer.Tier);
+        <span class="kw">return</span> total;
+    }
+}
+
+<span class="cm">// ── Repository Interfaces — live in Domain ──</span>
+<span class="kw">public interface</span> <span class="tp">IOrderRepository</span> : <span class="tp">IRepository</span>&lt;<span class="tp">Order</span>&gt; { }
+<span class="kw">public interface</span> <span class="tp">ICustomerRepository</span> : <span class="tp">IRepository</span>&lt;<span class="tp">Customer</span>&gt; { }
+<span class="kw">public interface</span> <span class="tp">IDiscountPolicyRepository</span> : <span class="tp">IRepository</span>&lt;<span class="tp">DiscountPolicy</span>&gt;
+{
+    <span class="tp">Task</span>&lt;<span class="tp">IReadOnlyList</span>&lt;<span class="tp">DiscountPolicy</span>&gt;&gt; <span class="fn">GetActiveAsync</span>(<span class="tp">CancellationToken</span> ct);
+}</pre>
+  </div>
+
+  <!-- SEC 5-1 -->
+  <div class="sec-panel" data-main="5">
+    <h3>Application Layer — The Conductor</h3>
+<pre><span class="kw">public class</span> <span class="tp">PlaceOrderHandler</span>
+{
+    <span class="kw">private readonly</span> <span class="tp">IOrderRepository</span> _orders;
+    <span class="kw">private readonly</span> <span class="tp">ICustomerRepository</span> _customers;
+    <span class="kw">private readonly</span> <span class="tp">IDiscountPolicyRepository</span> _policies;
+    <span class="kw">private readonly</span> <span class="tp">OrderPricingService</span> _pricing;
+    <span class="kw">private readonly</span> <span class="tp">IUnitOfWork</span> _uow;
+    <span class="kw">private readonly</span> <span class="tp">INotificationService</span> _notifications;
+
+    <span class="kw">public async</span> <span class="tp">Task</span>&lt;<span class="tp">PlaceOrderResult</span>&gt; <span class="fn">HandleAsync</span>(<span class="tp">PlaceOrderCommand</span> cmd)
+    {
+        <span class="cm">// 1. LOAD — orchestration (hands)</span>
+        <span class="kw">var</span> customer = <span class="kw">await</span> _customers.<span class="fn">GetByIdAsync</span>(cmd.CustomerId);
+        <span class="kw">var</span> policies = <span class="kw">await</span> _policies.<span class="fn">GetActiveAsync</span>(<span class="kw">default</span>);
+
+        <span class="cm">// 2. BUILD AGGREGATE — entity domain logic (brain)</span>
+        <span class="kw">var</span> order = <span class="kw">new</span> <span class="tp">Order</span>(customer.Id);
+        <span class="kw">foreach</span> (<span class="kw">var</span> item <span class="kw">in</span> cmd.Items)
+            order.<span class="fn">AddItem</span>(item.ProductId, item.Quantity, item.UnitPrice);
+
+        <span class="cm">// 3. DOMAIN SERVICE — cross-aggregate rule (brain)</span>
+        <span class="kw">var</span> finalPrice = _pricing.<span class="fn">CalculateFinalPrice</span>(
+            order, customer, policies);
+
+        <span class="cm">// 4. PERSIST — orchestration (hands)</span>
+        <span class="kw">await</span> _orders.<span class="fn">AddAsync</span>(order);
+        <span class="kw">await</span> _uow.<span class="fn">SaveChangesAsync</span>();
+
+        <span class="cm">// 5. SIDE EFFECT — orchestration (hands)</span>
+        <span class="kw">await</span> _notifications.<span class="fn">SendAsync</span>(
+            customer.Id,
+            <span class="st">$"Order placed. Total: {finalPrice}"</span>);
+
+        <span class="cm">// 6. RETURN DTO — orchestration (hands)</span>
+        <span class="kw">return new</span> <span class="tp">PlaceOrderResult</span>(order.Id, finalPrice);
+    }
+}</pre>
+
+    <div class="hbox">
+      <strong>Audit the handler:</strong> Steps 1, 4, 5, 6 are pure orchestration (load, save, notify, map). Steps 2 and 3 are delegated to Domain objects. The Application Service contains <strong>zero</strong> business decisions — it's a conductor, not a musician.
+    </div>
+  </div>
+
+  <!-- SEC 5-2 -->
+  <div class="sec-panel" data-main="5">
+    <h3>DI Registration</h3>
+<pre><span class="cm">// Program.cs — wire everything together</span>
+
+<span class="cm">// Repositories (Infrastructure implements, Domain defines interface)</span>
+builder.Services.<span class="fn">AddScoped</span>&lt;<span class="tp">IOrderRepository</span>, <span class="tp">OrderRepository</span>&gt;();
+builder.Services.<span class="fn">AddScoped</span>&lt;<span class="tp">ICustomerRepository</span>, <span class="tp">CustomerRepository</span>&gt;();
+builder.Services.<span class="fn">AddScoped</span>&lt;<span class="tp">IDiscountPolicyRepository</span>, <span class="tp">DiscountPolicyRepository</span>&gt;();
+
+<span class="cm">// Unit of Work (DbContext already implements it)</span>
+builder.Services.<span class="fn">AddScoped</span>&lt;<span class="tp">IUnitOfWork</span>>(sp =&gt;
+    sp.<span class="fn">GetRequiredService</span>&lt;<span class="tp">AppDbContext</span>&gt;());
+
+<span class="cm">// Domain Service (no interface needed — it's pure logic)</span>
+builder.Services.<span class="fn">AddScoped</span>&lt;<span class="tp">OrderPricingService</span>&gt;();
+
+<span class="cm">// Domain-layer interface implementations</span>
+builder.Services.<span class="fn">AddScoped</span>&lt;<span class="tp">IEmailUniquenessChecker</span>, <span class="tp">EfEmailUniquenessChecker</span>&gt;();
+
+<span class="cm">// Application Service / Handler</span>
+builder.Services.<span class="fn">AddScoped</span>&lt;<span class="tp">PlaceOrderHandler</span>&gt;();</pre>
+
+    <div class="hbox blue">
+      <strong>Notice:</strong> The Domain Service (<code>OrderPricingService</code>) is registered <strong>without an interface</strong>. It's pure logic with no I/O — you can test it directly, no mocking needed. Only things that touch infrastructure (repositories, uniqueness checkers) need the interface-to-implementation split.
+    </div>
+  </div>
+</div>
+
+<!-- ╔══════════════════════════════════════╗ -->
+<!-- ║  PANEL 6 — Q&A DEEP DIVE             ║ -->
+<!-- ╚══════════════════════════════════════╝ -->
+<div class="main-panel" id="mp6">
+  <h2>Q&amp;A Deep Dive</h2>
+  <p>Key questions and detailed answers from the teaching session. Click each to expand.</p>
+
+  <div class="qa" onclick="this.classList.toggle('open')">
+    <div class="qa-q">Why can't the Domain Service just receive IOrderRepository and load aggregates itself?</div>
+    <div class="qa-a">
+      <p>If a <code>MoneyTransferService</code> received <code>IAccountRepository</code> in its constructor and called <code>await _accounts.GetByIdAsync(...)</code> internally, it would be doing I/O — reaching into the database. The moment a Domain Service talks to a database (even through a repository interface), it stops being pure business logic.</p>
+      <p>This creates three problems. First, it becomes harder to unit test — you now need to mock the repository. Second, its responsibility blurs with the Application Service's job (loading is orchestration, not business logic). Third, the Domain Service can no longer be understood as a pure function — it has hidden dependencies on the state of the database.</p>
+      <p>The correct approach: the Application Service loads both aggregates first, then passes them as parameters to the Domain Service's method. The Domain Service never knows repositories exist.</p>
+    </div>
+  </div>
+
+  <div class="qa" onclick="this.classList.toggle('open')">
+    <div class="qa-q">For uniqueness checks — why not have the Application Service search by email and pass the result to the Domain Service?</div>
+    <div class="qa-a">
+      <p>This approach has two problems:</p>
+      <p><strong>Problem 1 — Split business rule:</strong> Even without an <code>if</code> statement, the Application Service <em>knows</em> it needs to search by email and <em>knows why</em> — because uniqueness matters. It's performing the first half of a business rule (gathering evidence for a uniqueness check) and letting the Domain Service perform the second half (making the judgment). The business rule is now fragmented across two layers, making it harder to understand, test, and maintain.</p>
+      <p><strong>Problem 2 — Repository gets shaped by business rules:</strong> Putting <code>GetByEmailAsync</code> on the Repository shapes the Repository's interface around a specific business rule rather than around Aggregate retrieval. The Repository's job is a clean collection-like abstraction: "give me this Order," "save this Customer." Adding query methods for every business check (<code>GetByEmail</code>, <code>GetByPhone</code>, <code>GetByTaxId</code>) slowly turns it into a general-purpose query layer, which is not what it's for.</p>
+      <p><strong>The correct solution:</strong> Define an <code>IEmailUniquenessChecker</code> interface in the Domain layer. The Domain Service depends on it and owns the entire rule. Infrastructure implements it with EF Core. The Application Service never even knows a uniqueness check happens.</p>
+    </div>
+  </div>
+
+  <div class="qa" onclick="this.classList.toggle('open')">
+    <div class="qa-q">Is "transferring money" an Application Service task or a Domain Service task?</div>
+    <div class="qa-a">
+      <p>It's a <strong>Domain Service</strong> task. The word "transfer" sounds operational (like plumbing), but the act of moving money — debit one account, credit another, verify neither is frozen — is the <strong>core business operation</strong>. A banker would absolutely care about these rules.</p>
+      <p>Use the "would a business expert care?" test. A banker cares deeply about "you can't transfer from a frozen account" and "debit one, credit the other." A banker does NOT care about "load the account from row 47 in the database and commit a transaction." The transfer logic is brain work. The loading and saving is hands work.</p>
+      <p>The Application Service's role is: load both accounts from the repository, call <code>transferService.Transfer(from, to, amount)</code>, then call <code>SaveChangesAsync()</code>. Zero business decisions.</p>
+    </div>
+  </div>
+
+  <div class="qa" onclick="this.classList.toggle('open')">
+    <div class="qa-q">Does a Domain Service need an interface?</div>
+    <div class="qa-a">
+      <p>Usually <strong>no</strong>. A Domain Service is pure business logic with no I/O. You can test it directly by creating an instance and calling its methods with real domain objects — no mocking needed. Interfaces are for abstracting away infrastructure concerns (databases, HTTP, file systems).</p>
+      <p>You would create an interface for a Domain Service only if you needed to swap between multiple strategies at runtime (e.g., different pricing algorithms). But in most cases, you just register the concrete class directly: <code>services.AddScoped&lt;OrderPricingService&gt;()</code>.</p>
+    </div>
+  </div>
+
+  <div class="qa" onclick="this.classList.toggle('open')">
+    <div class="qa-q">What's the difference between a Domain Service and a Domain Event handler?</div>
+    <div class="qa-a">
+      <p>A <strong>Domain Service</strong> is called <em>synchronously</em> by the Application Service as part of a use case. It receives aggregates, applies a cross-aggregate business rule, and returns immediately. The caller controls when it runs.</p>
+      <p>A <strong>Domain Event handler</strong> is triggered <em>reactively</em> — it responds to something that already happened (e.g., <code>OrderPlacedEvent</code>). It's decoupled from the original use case. The original code doesn't call it directly; it just raises an event, and the handler reacts.</p>
+      <p>They're complementary patterns, not competing ones. A Domain Service makes decisions during a use case. A Domain Event handler reacts after a decision has been made.</p>
+    </div>
+  </div>
+
+  <div class="qa" onclick="this.classList.toggle('open')">
+    <div class="qa-q">Can an Application Service contain business logic if it's "simple enough"?</div>
+    <div class="qa-a">
+      <p><strong>No.</strong> The temptation is always "it's just one if-statement, I'll put it here." But this is how Anemic Domain Models are born — business logic slowly migrates into Application Services because each individual rule seems "too simple" for a Domain Service. Before you know it, your domain objects are just data bags and all the intelligence lives in fat Application Services.</p>
+      <p>Even a single <code>if (balance &lt; amount)</code> belongs on the Entity or Domain Service. The Application Service should contain <strong>only</strong> orchestration verbs: load, call, save, notify, map. If you can't describe a step with one of those verbs, it doesn't belong there.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ╔══════════════════════════════════════╗ -->
+<!-- ║  PANEL 7 — CHALLENGE QUESTIONS       ║ -->
+<!-- ╚══════════════════════════════════════╝ -->
+<div class="main-panel" id="mp7">
+  <h2>Challenge Questions</h2>
+  <p>Test yourself. Click your answer — you only get one shot per question.</p>
+
+  <div class="quiz" id="q1">
+    <div class="quiz-q">1. "Deduct the transfer amount from Account A and credit it to Account B" — where does this live?</div>
+    <div class="quiz-options">
+      <div class="quiz-opt" onclick="answer(this,'q1',false)">Application Service — it's orchestrating two operations</div>
+      <div class="quiz-opt" onclick="answer(this,'q1',true)">Domain Service — it's a cross-aggregate business rule</div>
+      <div class="quiz-opt" onclick="answer(this,'q1',false)">Entity — Account.Transfer(otherAccount, amount)</div>
+    </div>
+    <div class="quiz-explain">
+      <strong>Domain Service.</strong> The transfer coordinates two aggregates (debit one, credit the other). Neither Account should know about the other. The word "transfer" sounds operational, but it's pure business logic — a banker would care deeply about this rule. The Application Service only loads the accounts and saves afterward.
+    </div>
+  </div>
+
+  <div class="quiz" id="q2">
+    <div class="quiz-q">2. "Load Account A and Account B from the database" — where?</div>
+    <div class="quiz-options">
+      <div class="quiz-opt" onclick="answer(this,'q2',true)">Application Service — pure plumbing</div>
+      <div class="quiz-opt" onclick="answer(this,'q2',false)">Domain Service — it needs the accounts to do its job</div>
+      <div class="quiz-opt" onclick="answer(this,'q2',false)">Repository — it loads itself</div>
+    </div>
+    <div class="quiz-explain">
+      <strong>Application Service.</strong> Loading from the database is hands work. The Application Service calls the repository, gets the aggregates, then passes them to the Domain Service. The Domain Service never touches a repository.
+    </div>
+  </div>
+
+  <div class="quiz" id="q3">
+    <div class="quiz-q">3. "Check that neither account is frozen before allowing the transfer" — where?</div>
+    <div class="quiz-options">
+      <div class="quiz-opt" onclick="answer(this,'q3',false)">Application Service — it's a validation step before calling domain logic</div>
+      <div class="quiz-opt" onclick="answer(this,'q3',true)">Domain Service — it's a business rule that spans two aggregates</div>
+      <div class="quiz-opt" onclick="answer(this,'q3',false)">Entity — each Account checks its own frozen status</div>
+    </div>
+    <div class="quiz-explain">
+      <strong>Domain Service.</strong> "Neither account can be frozen" is a business rule involving two aggregates. A banker cares about this rule. While each Account could check its own <code>IsFrozen</code> property individually, the rule that BOTH must be checked before a transfer is a cross-aggregate coordination — that's the Domain Service's job.
+    </div>
+  </div>
+
+  <div class="quiz" id="q4">
+    <div class="quiz-q">4. A Domain Service needs real-time exchange rates from an external API to calculate a conversion. How do you handle it?</div>
+    <div class="quiz-options">
+      <div class="quiz-opt" onclick="answer(this,'q4',false)">Inject HttpClient into the Domain Service</div>
+      <div class="quiz-opt" onclick="answer(this,'q4',true)">Define IExchangeRateProvider in Domain, implement in Infrastructure</div>
+      <div class="quiz-opt" onclick="answer(this,'q4',false)">Have the Application Service call the API and pass the rate as a parameter</div>
+    </div>
+    <div class="quiz-explain">
+      <strong>Domain-layer interface.</strong> Same pattern as <code>IEmailUniquenessChecker</code>. The Domain Service defines what it needs (<code>IExchangeRateProvider</code>), and Infrastructure provides the HTTP implementation. The Domain Service stays pure — it never knows an HTTP call happened. Option C (passing the rate in) is sometimes acceptable for simple cases, but if the rate is needed to make a business decision, the interface approach keeps the entire rule cohesive in one place.
+    </div>
+  </div>
+
+  <div class="quiz" id="q5">
+    <div class="quiz-q">5. You see this code in an Application Service: <code>if (customer.CreditLimit &lt; order.GetTotal()) throw ...</code> — what's wrong?</div>
+    <div class="quiz-options">
+      <div class="quiz-opt" onclick="answer(this,'q5',false)">Nothing — the Application Service is just doing a quick validation</div>
+      <div class="quiz-opt" onclick="answer(this,'q5',true)">Business logic leaked — this comparison belongs in a Domain Service</div>
+      <div class="quiz-opt" onclick="answer(this,'q5',false)">It should use a specification pattern instead</div>
+    </div>
+    <div class="quiz-explain">
+      <strong>Business logic leaked.</strong> "Can this customer afford this order?" is a business decision involving two aggregates. It belongs in a Domain Service like <code>CreditCheckService.Validate(customer, order)</code>. The moment you see an <code>if</code> statement in the Application Service that a domain expert would care about, that logic needs to move down to the Domain layer. The Application Service should only contain orchestration verbs: load, call, save, notify.
+    </div>
+  </div>
+
+  <div class="quiz" id="q6">
+    <div class="quiz-q">6. For checking email uniqueness, why is <code>IEmailUniquenessChecker</code> better than putting <code>GetByEmailAsync</code> on the CustomerRepository?</div>
+    <div class="quiz-options">
+      <div class="quiz-opt" onclick="answer(this,'q6',false)">Performance — the checker uses a more optimized query</div>
+      <div class="quiz-opt" onclick="answer(this,'q6',false)">Testing — the checker is easier to mock</div>
+      <div class="quiz-opt" onclick="answer(this,'q6',true)">It keeps the business rule cohesive in Domain and keeps the Repository focused on aggregate retrieval</div>
+    </div>
+    <div class="quiz-explain">
+      <strong>Cohesion + Repository purity.</strong> Two reasons: First, the entire uniqueness rule (what to check, how to interpret it, what to do about it) stays in one place in the Domain layer instead of being split across Application and Domain. Second, the Repository stays focused on its collection-like abstraction (get/add/remove aggregates) rather than accumulating query methods for every individual business check.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ SCRIPTS ═══════ -->
+<script>
+  function switchMain(idx) {
+    document.querySelectorAll('.main-tab').forEach((t,i) => t.classList.toggle('active', i===idx));
+    document.querySelectorAll('.main-panel').forEach((p,i) => p.classList.toggle('active', i===idx));
+  }
+
+  function switchSec(mainIdx, secIdx) {
+    const panel = document.getElementById('mp' + mainIdx);
+    panel.querySelectorAll('.sec-tab').forEach((t,i) => t.classList.toggle('active', i===secIdx));
+    panel.querySelectorAll('.sec-panel').forEach((s,i) => s.classList.toggle('active', i===secIdx));
+  }
+
+  function answer(el, qid, correct) {
+    const quiz = document.getElementById(qid);
+    if (quiz.dataset.answered) return;
+    quiz.dataset.answered = 'true';
+    el.classList.add(correct ? 'correct' : 'wrong');
+    quiz.querySelector('.quiz-explain').style.display = 'block';
+  }
+</script>
+
+</body>
+</html>

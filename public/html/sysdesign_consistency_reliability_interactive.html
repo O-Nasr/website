@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Consistency vs Reliability vs Availability — Interactive Study Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#08080e;--surface:#101020;--surface2:#181830;--border:#282848;--text:#e0e0f4;--text-dim:#7070a0;--accent:#818cf8;--accent2:#6366f1;--green:#4ade80;--red:#f87171;--orange:#fb923c;--yellow:#fbbf24;--blue:#38bdf8;--purple:#c084fc;--teal:#2dd4bf;--code-bg:#0c0c18;--glow:rgba(129,140,248,.12)}
+*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;min-height:100vh}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 20% 5%,rgba(129,140,248,.05)0%,transparent 55%),radial-gradient(ellipse at 80% 95%,rgba(99,102,241,.03)0%,transparent 55%);pointer-events:none;z-index:0}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.container{max-width:920px;margin:0 auto;padding:2rem 1.5rem 4rem;position:relative;z-index:1}
+.hero{text-align:center;padding:3rem 0 2.5rem}.hero-badge{display:inline-block;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-weight:700;font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;padding:.35rem 1rem;border-radius:99px;margin-bottom:1.2rem}
+.hero h1{font-size:2rem;font-weight:800;background:linear-gradient(135deg,#fff 30%,var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1.15;margin-bottom:.5rem}.hero p{color:var(--text-dim);font-size:1rem}
+.nav{display:flex;flex-wrap:wrap;gap:.4rem;justify-content:center;margin-bottom:2.5rem;position:sticky;top:0;z-index:10;background:rgba(8,8,14,.88);backdrop-filter:blur(12px);padding:.7rem 0;border-bottom:1px solid var(--border)}
+.nav a{color:var(--text-dim);text-decoration:none;font-size:.74rem;font-weight:600;padding:.35rem .75rem;border-radius:8px;transition:all .2s;border:1px solid transparent}.nav a:hover,.nav a.active{color:var(--accent);background:rgba(129,140,248,.08);border-color:rgba(129,140,248,.2)}
+.section{margin-bottom:2.5rem;animation:fadeUp .5s ease both}.section-header{display:flex;align-items:center;gap:.75rem;margin-bottom:1rem;padding-bottom:.7rem;border-bottom:1px solid var(--border)}
+.section-num{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.8rem;color:#fff;flex-shrink:0}.section-header h2{font-size:1.25rem;font-weight:700}
+.callout{background:linear-gradient(135deg,rgba(129,140,248,.07),rgba(99,102,241,.04));border-left:3px solid var(--accent);border-radius:0 10px 10px 0;padding:.9rem 1.1rem;margin:.8rem 0;font-size:.88rem}
+.callout.green{border-left-color:var(--green);background:linear-gradient(135deg,rgba(74,222,128,.07),rgba(74,222,128,.03))}.callout.blue{border-left-color:var(--blue);background:linear-gradient(135deg,rgba(56,189,248,.07),rgba(56,189,248,.03))}.callout.warn{border-left-color:var(--orange);background:linear-gradient(135deg,rgba(251,146,60,.07),rgba(251,146,60,.03))}
+.table-wrap{overflow-x:auto;margin:.7rem 0;border-radius:10px;border:1px solid var(--border)}table{width:100%;border-collapse:collapse;font-size:.82rem}th{background:var(--surface2);color:var(--accent);font-weight:600;text-align:left;padding:.6rem .8rem;white-space:nowrap}td{padding:.5rem .8rem;border-top:1px solid var(--border)}tr:hover td{background:rgba(129,140,248,.03)}
+.accordion{margin:.7rem 0}.accordion-btn{width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:'Outfit',sans-serif;font-size:.85rem;font-weight:600;padding:.8rem 1rem;border-radius:10px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;transition:all .2s}.accordion-btn:hover{border-color:var(--accent);background:var(--surface2)}.accordion-btn .arrow{transition:transform .3s;font-size:.75rem;color:var(--accent)}.accordion-btn.open .arrow{transform:rotate(180deg)}.accordion-body{max-height:0;overflow:hidden;transition:max-height .4s ease;background:var(--surface);border:1px solid var(--border);border-top:none;border-radius:0 0 10px 10px;padding:0 1rem}.accordion-body.open{max-height:5000px;padding:1rem}
+
+/* Triple concept cards */
+.triple{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem;margin:1rem 0}
+.tri-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.1rem;transition:all .3s;cursor:pointer}
+.tri-card:hover{transform:translateY(-3px);box-shadow:0 6px 20px rgba(0,0,0,.3)}
+.tri-card.active{border-color:var(--accent);box-shadow:0 4px 16px var(--glow)}
+.tri-icon{font-size:1.6rem;margin-bottom:.3rem}
+.tri-card h3{font-size:.9rem;font-weight:700;margin-bottom:.3rem}
+.tri-card p{font-size:.78rem;color:var(--text-dim);line-height:1.5}
+.tri-detail{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.1rem;margin-top:.5rem;display:none}
+.tri-detail.show{display:block}
+.tri-example{background:var(--code-bg);border:1px solid var(--border);border-radius:8px;padding:.7rem;font-size:.82rem;margin-top:.5rem;line-height:1.6}
+
+/* Scenario sim */
+.scenario-sim{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.3rem;margin:1rem 0}
+.sc-controls{display:flex;gap:.3rem;flex-wrap:wrap;margin-bottom:.8rem}
+.sc-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);font-family:'Outfit',sans-serif;font-size:.74rem;font-weight:600;padding:.45rem .9rem;border-radius:8px;cursor:pointer;transition:all .2s}
+.sc-btn:hover{color:var(--text);border-color:var(--accent)}.sc-btn.active{background:rgba(129,140,248,.12);border-color:var(--accent);color:var(--accent)}
+.sc-log{background:var(--code-bg);border:1px solid var(--border);border-radius:10px;padding:.8rem;font-family:'JetBrains Mono',monospace;font-size:.7rem;line-height:1.8;max-height:220px;overflow-y:auto}
+.sc-log .ok{color:var(--green)}.sc-log .bad{color:var(--red)}.sc-log .warn{color:var(--orange)}.sc-log .dim{color:var(--text-dim)}.sc-log .hl{color:var(--accent)}.sc-log .blue{color:var(--blue)}
+
+/* Quiz */
+.quiz-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.3rem;margin-bottom:.8rem}.quiz-card h3{font-size:.9rem;margin-bottom:.8rem;color:var(--accent)}
+.quiz-option{display:block;width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'Outfit',sans-serif;font-size:.8rem;padding:.6rem .9rem;border-radius:8px;cursor:pointer;margin-bottom:.35rem;text-align:left;transition:all .2s}.quiz-option:hover{border-color:var(--accent);transform:translateX(4px)}.quiz-option.correct{background:rgba(74,222,128,.15);border-color:var(--green);color:var(--green)}.quiz-option.wrong{background:rgba(248,113,113,.1);border-color:var(--red);color:var(--red)}.quiz-option:disabled{cursor:default;transform:none}
+.quiz-explanation{margin-top:.6rem;padding:.7rem;border-radius:8px;background:rgba(129,140,248,.06);font-size:.8rem;display:none;line-height:1.6}.quiz-explanation.show{display:block}
+.quiz-score{text-align:center;padding:1.3rem;background:var(--surface);border:1px solid var(--accent);border-radius:14px;margin-top:.8rem}.quiz-score .big{font-size:2rem;font-weight:800;color:var(--accent)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:720px){.hero h1{font-size:1.4rem}.container{padding:1rem}.triple{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="container">
+<div class="hero"><div class="hero-badge">System Design Study Guide</div><h1>Consistency vs Reliability vs Availability</h1><p>Three pillars of distributed systems — and the CAP Theorem connection</p></div>
+<nav class="nav"><a href="#s1">The Three Concepts</a><a href="#s2">Comparison</a><a href="#s3">Scenario Sim</a><a href="#s4">Quiz</a></nav>
+
+<!-- S1: Three concepts -->
+<div class="section" id="s1"><div class="section-header"><div class="section-num">1</div><h2>The Three Concepts</h2></div>
+<p style="margin-bottom:.8rem">Click each card for a detailed example:</p>
+<div class="triple">
+<div class="tri-card" onclick="showTri('con')"><div class="tri-icon">🔒</div><h3>Consistency</h3><p>All users see the <strong>same data</strong> at the same time, no matter which server.</p></div>
+<div class="tri-card" onclick="showTri('avail')"><div class="tri-icon">🟢</div><h3>Availability</h3><p>System responds to <strong>every request</strong> with non-error, even during failures.</p></div>
+<div class="tri-card" onclick="showTri('rel')"><div class="tri-icon">🛡️</div><h3>Reliability</h3><p>System keeps <strong>working correctly</strong> over time, even in face of failures.</p></div>
+</div>
+<div class="tri-detail" id="tri-con">
+<h4 style="color:var(--accent);margin-bottom:.4rem">Consistency — Data Correctness Across Systems</h4>
+<p style="font-size:.85rem;margin-bottom:.5rem">If you update a user's profile on Server A, then immediately read from Server B, you should see the updated data. <strong>C in CAP Theorem.</strong></p>
+<div class="tri-example"><strong>Banking app:</strong> Transfer $100 from Account A to B. Both balances must reflect the change immediately everywhere. If Server 2 still shows old balance → inconsistent.</div>
+</div>
+<div class="tri-detail" id="tri-avail">
+<h4 style="color:var(--green);margin-bottom:.4rem">Availability — System Responsiveness</h4>
+<p style="font-size:.85rem;margin-bottom:.5rem">Every request gets a non-error response, even if some components fail. May return slightly stale data rather than blocking. <strong>A in CAP Theorem.</strong></p>
+<div class="tri-example"><strong>Social media feed:</strong> During a server outage, you still see posts (maybe cached/slightly outdated). The app doesn't show an error screen. Usable even if consistency is temporarily sacrificed.</div>
+</div>
+<div class="tri-detail" id="tri-rel">
+<h4 style="color:var(--blue);margin-bottom:.4rem">Reliability — Long-Term Correctness</h4>
+<p style="font-size:.85rem;margin-bottom:.5rem">System doesn't crash, doesn't lose data, responds as expected over time. About <strong>trustworthiness and fault tolerance</strong>. Broader concept than CAP.</p>
+<div class="tri-example"><strong>Messaging app:</strong> Never loses messages, even during a server crash or network issue. Every message sent is eventually delivered correctly.</div>
+</div></div>
+
+<!-- S2: Comparison -->
+<div class="section" id="s2"><div class="section-header"><div class="section-num">2</div><h2>Side-by-Side Comparison</h2></div>
+<div class="table-wrap"><table>
+<tr><th>Feature</th><th>Consistency</th><th>Availability</th><th>Reliability</th></tr>
+<tr><td><strong>Focus</strong></td><td>Data correctness</td><td>System responsiveness</td><td>Long-term correctness</td></tr>
+<tr><td><strong>Concerned With</strong></td><td>Latest data everywhere</td><td>Non-error responses</td><td>No data loss</td></tr>
+<tr><td><strong>Example</strong></td><td>Banking app</td><td>Social media feed</td><td>Messaging app</td></tr>
+<tr><td><strong>CAP Relation</strong></td><td style="color:var(--accent)"><strong>C</strong> in CAP</td><td style="color:var(--green)"><strong>A</strong> in CAP</td><td>Broader concept</td></tr>
+<tr><td><strong>During Failure</strong></td><td>May block to ensure correctness</td><td>Responds with stale data</td><td>Keeps working, no data loss</td></tr>
+</table></div>
+
+<div class="callout blue"><strong>CAP Theorem:</strong> In a distributed system experiencing a network partition (P), you must choose between Consistency (C) — all nodes see same data — or Availability (A) — every request gets a response. You can't have both during a partition.</div></div>
+
+<!-- S3: Scenario Sim -->
+<div class="section" id="s3"><div class="section-header"><div class="section-num">3</div><h2>Scenario Simulator</h2></div>
+<p style="margin-bottom:.8rem;font-size:.88rem">Watch what happens when a network partition occurs under different priorities:</p>
+<div class="scenario-sim">
+<div class="sc-controls">
+<button class="sc-btn" onclick="runSC('cp')">Choose Consistency (CP System)</button>
+<button class="sc-btn" onclick="runSC('ap')">Choose Availability (AP System)</button>
+<button class="sc-btn" onclick="runSC('reliable')">Reliable System (Crash Recovery)</button>
+</div>
+<div class="sc-log" id="sc-log"><span class="dim">Click a scenario to see the trade-off...</span></div>
+</div></div>
+
+<!-- S4: Quiz -->
+<div class="section" id="s4"><div class="section-header"><div class="section-num">4</div><h2>Test Yourself</h2></div>
+<div class="quiz-card" id="q1"><h3>Q1: User updates profile on Server A. Immediately reads from Server B and sees OLD data. Which property is violated?</h3>
+<button class="quiz-option" onclick="answer(this,'q1',true)">Consistency — servers are not synchronized</button>
+<button class="quiz-option" onclick="answer(this,'q1',false)">Availability — the system responded</button>
+<button class="quiz-option" onclick="answer(this,'q1',false)">Reliability — the system didn't crash</button>
+<div class="quiz-explanation" id="q1-exp">Consistency requires all users to see the same data at the same time. Server B returning stale data means the system is inconsistent — even though it's available (responded) and reliable (didn't crash).</div></div>
+
+<div class="quiz-card" id="q2"><h3>Q2: During a server outage, a social media app shows cached posts instead of an error. Which property is prioritized?</h3>
+<button class="quiz-option" onclick="answer(this,'q2',true)">Availability — responds with stale data rather than failing</button>
+<button class="quiz-option" onclick="answer(this,'q2',false)">Consistency — data is correct</button>
+<div class="quiz-explanation" id="q2-exp">The app stays usable (available) by serving cached content, even though the data may be slightly stale (sacrificing consistency). This is the classic AP trade-off.</div></div>
+
+<div class="quiz-card" id="q3"><h3>Q3: A messaging app never loses messages even during crashes. Which property does this demonstrate?</h3>
+<button class="quiz-option" onclick="answer(this,'q3',false)">Consistency</button>
+<button class="quiz-option" onclick="answer(this,'q3',false)">Availability</button>
+<button class="quiz-option" onclick="answer(this,'q3',true)">Reliability — system works correctly over time, no data loss</button>
+<div class="quiz-explanation" id="q3-exp">Reliability is about the system working correctly over time and not losing data — even during failures. It's the broader concept of trustworthiness and fault tolerance.</div></div>
+
+<div class="quiz-card" id="q4"><h3>Q4: In a banking transfer, what does the CAP theorem force you to choose during a network partition?</h3>
+<button class="quiz-option" onclick="answer(this,'q4',true)">Consistency (block until all nodes agree) OR Availability (respond with possibly stale data)</button>
+<button class="quiz-option" onclick="answer(this,'q4',false)">Both — modern databases handle this</button>
+<div class="quiz-explanation" id="q4-exp">During a network partition, you must choose: block the request until nodes synchronize (Consistency) or respond immediately with potentially stale data (Availability). Banking systems typically choose CP — correctness over speed.</div></div>
+
+<div class="quiz-score" id="score-box" style="display:none"><div class="big" id="score-text"></div><p style="color:var(--text-dim);margin-top:.3rem">System Design Quiz</p></div></div>
+
+</div>
+<script>
+function toggleAcc(btn){btn.classList.toggle('open');btn.nextElementSibling.classList.toggle('open')}
+function showTri(id){document.querySelectorAll('.tri-card').forEach(c=>c.classList.remove('active'));document.querySelectorAll('.tri-detail').forEach(d=>d.classList.remove('show'));event.target.closest('.tri-card').classList.add('active');document.getElementById('tri-'+id).classList.add('show')}
+
+let scTimer=null;
+function runSC(mode){
+  clearInterval(scTimer);const log=document.getElementById('sc-log');log.innerHTML='';
+  document.querySelectorAll('.sc-btn').forEach(b=>b.classList.remove('active'));event.target.classList.add('active');
+  const lines=[];
+  if(mode==='cp'){
+    lines.push({c:'hl',t:'🔒 CP System (Consistency + Partition Tolerance)'});
+    lines.push({c:'dim',t:'Example: Banking system'});
+    lines.push({c:'dim',t:''});
+    lines.push({c:'warn',t:'⚡ Network partition occurs between Server A and Server B'});
+    lines.push({c:'dim',t:''});
+    lines.push({c:'hl',t:'User writes: balance = $900 on Server A'});
+    lines.push({c:'warn',t:'Server A cannot replicate to Server B (partition!)'});
+    lines.push({c:'dim',t:''});
+    lines.push({c:'hl',t:'User reads balance from Server B...'});
+    lines.push({c:'bad',t:'❌ REQUEST BLOCKED — Server B refuses to serve stale data'});
+    lines.push({c:'bad',t:'User sees: "Service temporarily unavailable"'});
+    lines.push({c:'dim',t:''});
+    lines.push({c:'ok',t:'✅ Consistency preserved — no user ever sees wrong balance'});
+    lines.push({c:'warn',t:'⚠ But availability sacrificed — some requests fail'});
+  } else if(mode==='ap'){
+    lines.push({c:'hl',t:'🟢 AP System (Availability + Partition Tolerance)'});
+    lines.push({c:'dim',t:'Example: Social media feed'});
+    lines.push({c:'dim',t:''});
+    lines.push({c:'warn',t:'⚡ Network partition occurs between Server A and Server B'});
+    lines.push({c:'dim',t:''});
+    lines.push({c:'hl',t:'User posts: "Hello World" on Server A'});
+    lines.push({c:'warn',t:'Server A cannot replicate to Server B (partition!)'});
+    lines.push({c:'dim',t:''});
+    lines.push({c:'hl',t:'Another user reads feed from Server B...'});
+    lines.push({c:'ok',t:'✅ Server B responds with cached/stale feed (no "Hello World" yet)'});
+    lines.push({c:'ok',t:'User sees content — app is usable!'});
+    lines.push({c:'dim',t:''});
+    lines.push({c:'ok',t:'✅ Availability preserved — every request gets a response'});
+    lines.push({c:'warn',t:'⚠ But consistency sacrificed — users see different data temporarily'});
+  } else {
+    lines.push({c:'hl',t:'🛡️ Reliable System (Crash Recovery)'});
+    lines.push({c:'dim',t:'Example: Messaging app'});
+    lines.push({c:'dim',t:''});
+    lines.push({c:'blue',t:'User sends message: "Meeting at 3pm"'});
+    lines.push({c:'ok',t:'→ Message written to WAL / persistent queue ✅'});
+    lines.push({c:'ok',t:'→ Acknowledged to sender ✅'});
+    lines.push({c:'dim',t:''});
+    lines.push({c:'bad',t:'💥 SERVER CRASH'});
+    lines.push({c:'dim',t:'...'});
+    lines.push({c:'hl',t:'System restarts — replaying WAL...'});
+    lines.push({c:'ok',t:'→ Message "Meeting at 3pm" recovered from WAL ✅'});
+    lines.push({c:'ok',t:'→ Message delivered to recipient ✅'});
+    lines.push({c:'dim',t:''});
+    lines.push({c:'ok',t:'✅ Reliable — no message lost, system recovered correctly'});
+  }
+  let i=0;scTimer=setInterval(()=>{if(i>=lines.length){clearInterval(scTimer);return}const l=lines[i];log.innerHTML+=`<span class="${l.c}">${l.t}</span>\n`;log.scrollTop=log.scrollHeight;i++},300);
+}
+
+let answered=0,correct=0,total=4;
+function answer(btn,qId,isCorrect){const card=document.getElementById(qId);if(card.dataset.answered)return;card.dataset.answered='1';answered++;if(isCorrect){btn.classList.add('correct');correct++;}else btn.classList.add('wrong');card.querySelectorAll('.quiz-option').forEach(o=>o.disabled=true);document.getElementById(qId+'-exp').classList.add('show');if(answered===total){document.getElementById('score-box').style.display='block';document.getElementById('score-text').textContent=correct+' / '+total;}}
+const sections=document.querySelectorAll('.section');const navLinks=document.querySelectorAll('.nav a');
+window.addEventListener('scroll',()=>{let c='';sections.forEach(s=>{if(window.scrollY>=s.offsetTop-120)c=s.id});navLinks.forEach(a=>{a.classList.remove('active');if(a.getAttribute('href')==='#'+c)a.classList.add('active')})});
+</script>
+</body>
+</html>

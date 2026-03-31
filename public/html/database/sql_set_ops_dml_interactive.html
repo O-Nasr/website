@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Set Operations & DML — Interactive Study Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#06080a;--surface:#0e1418;--surface2:#161e24;--border:#243038;--text:#dce4e8;--text-dim:#6a8898;--accent:#0ea5e9;--accent2:#0284c7;--green:#4ade80;--red:#f87171;--orange:#fb923c;--yellow:#fbbf24;--purple:#a78bfa;--teal:#2dd4bf;--pink:#f472b6;--code-bg:#0a1014;--glow:rgba(14,165,233,.12)}
+*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;min-height:100vh}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 20% 5%,rgba(14,165,233,.04)0%,transparent 55%),radial-gradient(ellipse at 80% 95%,rgba(2,132,199,.03)0%,transparent 55%);pointer-events:none;z-index:0}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.container{max-width:920px;margin:0 auto;padding:2rem 1.5rem 4rem;position:relative;z-index:1}
+.hero{text-align:center;padding:3rem 0 2.5rem}.hero-badge{display:inline-block;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-weight:700;font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;padding:.35rem 1rem;border-radius:99px;margin-bottom:1.2rem}
+.hero h1{font-size:2rem;font-weight:800;background:linear-gradient(135deg,#fff 30%,var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1.15;margin-bottom:.5rem}.hero p{color:var(--text-dim);font-size:1rem}
+.nav{display:flex;flex-wrap:wrap;gap:.4rem;justify-content:center;margin-bottom:2.5rem;position:sticky;top:0;z-index:10;background:rgba(6,8,10,.88);backdrop-filter:blur(12px);padding:.7rem 0;border-bottom:1px solid var(--border)}
+.nav a{color:var(--text-dim);text-decoration:none;font-size:.7rem;font-weight:600;padding:.35rem .65rem;border-radius:8px;transition:all .2s;border:1px solid transparent}.nav a:hover,.nav a.active{color:var(--accent);background:rgba(14,165,233,.08);border-color:rgba(14,165,233,.2)}
+.section{margin-bottom:2.5rem;animation:fadeUp .5s ease both}.section-header{display:flex;align-items:center;gap:.75rem;margin-bottom:1rem;padding-bottom:.7rem;border-bottom:1px solid var(--border)}
+.section-num{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.8rem;color:#fff;flex-shrink:0}.section-header h2{font-size:1.2rem;font-weight:700}
+.callout{background:linear-gradient(135deg,rgba(14,165,233,.07),rgba(2,132,199,.04));border-left:3px solid var(--accent);border-radius:0 10px 10px 0;padding:.85rem 1rem;margin:.7rem 0;font-size:.86rem}
+.callout.green{border-left-color:var(--green);background:linear-gradient(135deg,rgba(74,222,128,.07),rgba(74,222,128,.03))}.callout.red{border-left-color:var(--red);background:linear-gradient(135deg,rgba(248,113,113,.07),rgba(248,113,113,.03))}.callout.warn{border-left-color:var(--orange);background:linear-gradient(135deg,rgba(251,146,60,.07),rgba(251,146,60,.03))}
+pre{background:var(--code-bg);border:1px solid var(--border);border-radius:10px;padding:.9rem;overflow-x:auto;margin:.6rem 0;font-family:'JetBrains Mono',monospace;font-size:.74rem;line-height:1.6;position:relative}
+pre .label{position:absolute;top:.4rem;right:.5rem;font-size:.56rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em;font-family:'Outfit',sans-serif;font-weight:600;background:var(--surface);padding:.1rem .4rem;border-radius:4px}
+.kw{color:var(--accent)}.cm{color:#3a5060;font-style:italic}.st{color:var(--green)}.fn{color:var(--yellow)}.nu{color:var(--orange)}.er{color:var(--red)}.tp{color:var(--purple)}
+.table-wrap{overflow-x:auto;margin:.6rem 0;border-radius:10px;border:1px solid var(--border)}table{width:100%;border-collapse:collapse;font-size:.78rem}th{background:var(--surface2);color:var(--accent);font-weight:600;text-align:left;padding:.55rem .7rem;white-space:nowrap}td{padding:.45rem .7rem;border-top:1px solid var(--border)}tr:hover td{background:rgba(14,165,233,.03)}
+.accordion{margin:.6rem 0}.accordion-btn{width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:'Outfit',sans-serif;font-size:.83rem;font-weight:600;padding:.75rem .9rem;border-radius:10px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;transition:all .2s}.accordion-btn:hover{border-color:var(--accent);background:var(--surface2)}.accordion-btn .arrow{transition:transform .3s;font-size:.7rem;color:var(--accent)}.accordion-btn.open .arrow{transform:rotate(180deg)}.accordion-body{max-height:0;overflow:hidden;transition:max-height .4s ease;background:var(--surface);border:1px solid var(--border);border-top:none;border-radius:0 0 10px 10px;padding:0 .9rem}.accordion-body.open{max-height:6000px;padding:.9rem}
+
+/* Set operation Venn diagram sim */
+.venn-sim{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.2rem;margin:.8rem 0}
+.vn-tabs{display:flex;gap:.3rem;flex-wrap:wrap;margin-bottom:.7rem}
+.vn-tab{background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);font-family:'Outfit',sans-serif;font-size:.7rem;font-weight:600;padding:.4rem .75rem;border-radius:8px;cursor:pointer;transition:all .2s}
+.vn-tab:hover{color:var(--text);border-color:var(--accent)}.vn-tab.active{background:rgba(14,165,233,.12);border-color:var(--accent);color:var(--accent)}
+.vn-display{display:flex;gap:1rem;align-items:center;flex-wrap:wrap;margin:.6rem 0}
+.vn-set{min-width:110px}
+.vn-set h4{font-size:.7rem;color:var(--text-dim);margin-bottom:.25rem;font-weight:600}
+.vn-items{display:flex;flex-wrap:wrap;gap:.2rem}
+.vn-item{font-family:'JetBrains Mono',monospace;font-size:.68rem;padding:.2rem .5rem;border-radius:5px;border:1px solid var(--border);background:var(--surface2);transition:all .3s}
+.vn-item.match{border-color:var(--green);background:rgba(74,222,128,.1);color:var(--green)}
+.vn-item.only-a{border-color:var(--accent);background:rgba(14,165,233,.1);color:var(--accent)}
+.vn-item.only-b{border-color:var(--orange);background:rgba(251,146,60,.1);color:var(--orange)}
+.vn-item.removed{opacity:.25;text-decoration:line-through}
+.vn-arrow{font-size:1.2rem;color:var(--text-dim)}
+.vn-result{margin-top:.5rem;padding:.6rem;background:var(--code-bg);border:1px solid var(--border);border-radius:8px;font-size:.78rem}
+.vn-result h4{font-size:.72rem;color:var(--accent);margin-bottom:.3rem}
+
+/* DML danger sim */
+.dml-sim{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.2rem;margin:.8rem 0}
+.dml-tabs{display:flex;gap:.3rem;flex-wrap:wrap;margin-bottom:.7rem}
+.dml-tab{background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);font-family:'Outfit',sans-serif;font-size:.7rem;font-weight:600;padding:.4rem .75rem;border-radius:8px;cursor:pointer;transition:all .2s}
+.dml-tab:hover{color:var(--text);border-color:var(--accent)}.dml-tab.active{background:rgba(14,165,233,.12);border-color:var(--accent);color:var(--accent)}
+.dml-log{background:var(--code-bg);border:1px solid var(--border);border-radius:10px;padding:.7rem;font-family:'JetBrains Mono',monospace;font-size:.68rem;line-height:1.8;max-height:200px;overflow-y:auto}
+.dml-log .ok{color:var(--green)}.dml-log .bad{color:var(--red)}.dml-log .warn{color:var(--orange)}.dml-log .dim{color:var(--text-dim)}.dml-log .hl{color:var(--accent)}
+
+/* Quiz */
+.quiz-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.2rem;margin-bottom:.7rem}.quiz-card h3{font-size:.88rem;margin-bottom:.7rem;color:var(--accent)}
+.quiz-option{display:block;width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'Outfit',sans-serif;font-size:.78rem;padding:.55rem .8rem;border-radius:8px;cursor:pointer;margin-bottom:.3rem;text-align:left;transition:all .2s}.quiz-option:hover{border-color:var(--accent);transform:translateX(4px)}.quiz-option.correct{background:rgba(74,222,128,.15);border-color:var(--green);color:var(--green)}.quiz-option.wrong{background:rgba(248,113,113,.1);border-color:var(--red);color:var(--red)}.quiz-option:disabled{cursor:default;transform:none}
+.quiz-explanation{margin-top:.5rem;padding:.6rem;border-radius:8px;background:rgba(14,165,233,.06);font-size:.78rem;display:none;line-height:1.6}.quiz-explanation.show{display:block}
+.quiz-score{text-align:center;padding:1.2rem;background:var(--surface);border:1px solid var(--accent);border-radius:14px;margin-top:.7rem}.quiz-score .big{font-size:2rem;font-weight:800;color:var(--accent)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:640px){.hero h1{font-size:1.4rem}.container{padding:1rem}.vn-display{flex-direction:column}.vn-arrow{transform:rotate(90deg)}}
+</style>
+</head>
+<body>
+<div class="container">
+<div class="hero"><div class="hero-badge">SQL Interview Study Guide</div><h1>Set Operations & DML</h1><p>UNION, INTERSECT, EXCEPT + INSERT, UPDATE, DELETE, MERGE</p></div>
+<nav class="nav"><a href="#s1">Set Ops Visualizer</a><a href="#s2">INSERT</a><a href="#s3">UPDATE & DELETE</a><a href="#s4">MERGE</a><a href="#s5">DML Dangers</a><a href="#s6">Quiz</a></nav>
+
+<!-- S1: Set Operations Visualizer -->
+<div class="section" id="s1"><div class="section-header"><div class="section-num">1</div><h2>Set Operations — Interactive Visualizer</h2></div>
+<p style="margin-bottom:.5rem;font-size:.86rem">Same two sets, four different operations. Click to see which items survive:</p>
+
+<div class="venn-sim">
+<div class="vn-tabs">
+<button class="vn-tab active" onclick="showVenn('union')">UNION</button>
+<button class="vn-tab" onclick="showVenn('unionall')">UNION ALL</button>
+<button class="vn-tab" onclick="showVenn('intersect')">INTERSECT</button>
+<button class="vn-tab" onclick="showVenn('except')">EXCEPT</button>
+</div>
+<div class="vn-display">
+<div class="vn-set"><h4>Query A (Egypt)</h4><div class="vn-items" id="vn-a"></div></div>
+<div class="vn-arrow">+</div>
+<div class="vn-set"><h4>Query B (UAE)</h4><div class="vn-items" id="vn-b"></div></div>
+</div>
+<div class="vn-result" id="vn-result"></div>
+</div>
+
+<div class="callout warn">⚠️ <strong>Golden Rule:</strong> Both queries must have the same number of columns with compatible types. Column names come from the first query. <strong>Always prefer UNION ALL</strong> unless you specifically need deduplication.</div>
+
+<div class="table-wrap"><table><tr><th>Operator</th><th>Returns</th><th>Duplicates</th><th>Use Case</th></tr>
+<tr><td><strong>UNION</strong></td><td>All from both</td><td style="color:var(--red)">Removed</td><td>Merge lists, no dupes</td></tr>
+<tr><td><strong>UNION ALL</strong></td><td>All from both</td><td style="color:var(--green)">Kept (faster!)</td><td>Merge lists, keep all</td></tr>
+<tr><td><strong>INTERSECT</strong></td><td>Common rows only</td><td style="color:var(--red)">Removed</td><td>Find overlap</td></tr>
+<tr><td><strong>EXCEPT</strong></td><td>First NOT in second</td><td style="color:var(--red)">Removed</td><td>Find differences</td></tr></table></div></div>
+
+<!-- S2: INSERT -->
+<div class="section" id="s2"><div class="section-header"><div class="section-num">2</div><h2>INSERT</h2></div>
+<div class="accordion"><button class="accordion-btn" onclick="toggleAcc(this)"><span>Single, Multiple & INSERT from SELECT</span><span class="arrow">▼</span></button><div class="accordion-body">
+<pre><span class="label">SQL</span><span class="cm">-- Single row</span>
+<span class="kw">INSERT INTO</span> customers (name, email) <span class="kw">VALUES</span> (<span class="st">'Omar'</span>, <span class="st">'omar@ex.com'</span>);
+
+<span class="cm">-- Multiple rows</span>
+<span class="kw">INSERT INTO</span> customers (name, email) <span class="kw">VALUES</span>
+    (<span class="st">'Ahmed'</span>, <span class="st">'ahmed@ex.com'</span>),
+    (<span class="st">'Sara'</span>,  <span class="st">'sara@ex.com'</span>);
+
+<span class="cm">-- INSERT from SELECT</span>
+<span class="kw">INSERT INTO</span> archive (name, email)
+<span class="kw">SELECT</span> name, email <span class="kw">FROM</span> customers <span class="kw">WHERE</span> status = <span class="st">'inactive'</span>;</pre></div></div>
+<div class="accordion"><button class="accordion-btn" onclick="toggleAcc(this)"><span>RETURNING / OUTPUT — Get IDs Back</span><span class="arrow">▼</span></button><div class="accordion-body">
+<pre><span class="label">SQL</span><span class="cm">-- PostgreSQL: RETURNING</span>
+<span class="kw">INSERT INTO</span> customers (name) <span class="kw">VALUES</span> (<span class="st">'Omar'</span>) <span class="kw">RETURNING</span> customer_id, name;
+
+<span class="cm">-- SQL Server: OUTPUT</span>
+<span class="kw">INSERT INTO</span> customers (name) <span class="kw">OUTPUT</span> INSERTED.customer_id <span class="kw">VALUES</span> (<span class="st">'Omar'</span>);</pre>
+<div class="callout green">Get auto-generated IDs without a separate SELECT — very useful in application code.</div></div></div></div>
+
+<!-- S3: UPDATE & DELETE -->
+<div class="section" id="s3"><div class="section-header"><div class="section-num">3</div><h2>UPDATE & DELETE</h2></div>
+<pre><span class="label">SQL</span><span class="cm">-- UPDATE with safety</span>
+<span class="kw">UPDATE</span> customers <span class="kw">SET</span> email = <span class="st">'new@ex.com'</span> <span class="kw">WHERE</span> customer_id = <span class="nu">5</span>;
+
+<span class="cm">-- DELETE with condition</span>
+<span class="kw">DELETE FROM</span> orders <span class="kw">WHERE</span> status = <span class="st">'cancelled'</span> <span class="kw">AND</span> order_date < <span class="st">'2022-01-01'</span>;</pre>
+<div class="callout red">⚠️ <strong>Without WHERE:</strong> UPDATE updates EVERY row. DELETE deletes EVERY row. Always write WHERE first, then SET. Run SELECT with the same WHERE to verify first!</div>
+
+<div class="table-wrap"><table><tr><th></th><th>DELETE</th><th>TRUNCATE</th></tr>
+<tr><td><strong>WHERE</strong></td><td style="color:var(--green)">✅ Can filter</td><td style="color:var(--red)">❌ All rows</td></tr>
+<tr><td><strong>Speed</strong></td><td>Slower (logs each row)</td><td style="color:var(--green)">Much faster</td></tr>
+<tr><td><strong>Triggers</strong></td><td style="color:var(--green)">✅ Fires triggers</td><td style="color:var(--red)">❌ No triggers</td></tr>
+<tr><td><strong>Identity</strong></td><td>Continues</td><td>Resets to seed</td></tr>
+<tr><td><strong>Rollback</strong></td><td style="color:var(--green)">✅</td><td style="color:var(--green)">✅ (in transaction)</td></tr></table></div></div>
+
+<!-- S4: MERGE -->
+<div class="section" id="s4"><div class="section-header"><div class="section-num">4</div><h2>MERGE — Upsert</h2></div>
+<p style="margin-bottom:.5rem;font-size:.86rem">INSERT + UPDATE + DELETE in one statement. If row exists → update. If not → insert.</p>
+<pre><span class="label">SQL</span><span class="kw">MERGE INTO</span> customers <span class="kw">AS</span> target
+<span class="kw">USING</span> new_customers <span class="kw">AS</span> source
+    <span class="kw">ON</span> target.customer_id = source.customer_id
+
+<span class="kw">WHEN MATCHED THEN</span>                  <span class="cm">-- exists in both → UPDATE</span>
+    <span class="kw">UPDATE SET</span> target.name = source.name
+
+<span class="kw">WHEN NOT MATCHED BY TARGET THEN</span>    <span class="cm">-- only in source → INSERT</span>
+    <span class="kw">INSERT</span> (customer_id, name) <span class="kw">VALUES</span> (source.customer_id, source.name)
+
+<span class="kw">WHEN NOT MATCHED BY SOURCE THEN</span>    <span class="cm">-- only in target → DELETE</span>
+    <span class="kw">DELETE</span>;</pre>
+
+<div class="accordion"><button class="accordion-btn" onclick="toggleAcc(this)"><span>PostgreSQL: INSERT ON CONFLICT (simpler upsert)</span><span class="arrow">▼</span></button><div class="accordion-body">
+<pre><span class="label">SQL</span><span class="kw">INSERT INTO</span> customers (customer_id, name, email)
+<span class="kw">VALUES</span> (<span class="nu">5</span>, <span class="st">'Omar'</span>, <span class="st">'omar@ex.com'</span>)
+<span class="kw">ON CONFLICT</span> (customer_id)
+<span class="kw">DO UPDATE SET</span>
+    name  = <span class="kw">EXCLUDED</span>.name,
+    email = <span class="kw">EXCLUDED</span>.email;
+<span class="cm">-- EXCLUDED = the row that failed to insert</span></pre>
+<div class="callout green">INSERT ON CONFLICT is the most common PostgreSQL upsert pattern. <code>EXCLUDED</code> refers to the conflicting row — a key detail for interviews.</div>
+</div></div></div>
+
+<!-- S5: DML Danger Sim -->
+<div class="section" id="s5"><div class="section-header"><div class="section-num">5</div><h2>DML Danger Simulator</h2></div>
+<div class="dml-sim">
+<div class="dml-tabs">
+<button class="dml-tab" onclick="runDML('safe')">✅ Safe UPDATE</button>
+<button class="dml-tab" onclick="runDML('danger')">💥 UPDATE without WHERE</button>
+<button class="dml-tab" onclick="runDML('merge')">🔄 MERGE Upsert</button>
+</div>
+<div class="dml-log" id="dml-log"><span class="dim">Click a scenario...</span></div>
+</div></div>
+
+<!-- S6: Quiz -->
+<div class="section" id="s6"><div class="section-header"><div class="section-num">6</div><h2>Test Yourself</h2></div>
+
+<div class="quiz-card" id="q1"><h3>Q1: UNION vs UNION ALL — which is faster and why?</h3>
+<button class="quiz-option" onclick="answer(this,'q1',true)">UNION ALL — skips the expensive deduplication sort/hash step</button>
+<button class="quiz-option" onclick="answer(this,'q1',false)">UNION — removing duplicates reduces the result size</button>
+<div class="quiz-explanation" id="q1-exp">UNION ALL simply appends rows — no sorting or hashing needed. UNION must find and remove duplicates, which requires an expensive sort or hash operation. Default to UNION ALL unless deduplication is a business requirement.</div></div>
+
+<div class="quiz-card" id="q2"><h3>Q2: Is <code>A EXCEPT B</code> the same as <code>B EXCEPT A</code>?</h3>
+<button class="quiz-option" onclick="answer(this,'q2',true)">No — EXCEPT is directional. A EXCEPT B = rows in A not in B. B EXCEPT A = rows in B not in A.</button>
+<button class="quiz-option" onclick="answer(this,'q2',false)">Yes — set operations are commutative</button>
+<div class="quiz-explanation" id="q2-exp">EXCEPT is directional: it returns rows from the <em>first</em> query not in the second. Swapping the queries gives completely different results. UNION and INTERSECT are commutative; EXCEPT is not.</div></div>
+
+<div class="quiz-card" id="q3"><h3>Q3: DELETE vs TRUNCATE — which fires triggers?</h3>
+<button class="quiz-option" onclick="answer(this,'q3',true)">DELETE fires triggers. TRUNCATE does not.</button>
+<button class="quiz-option" onclick="answer(this,'q3',false)">Both fire triggers</button>
+<div class="quiz-explanation" id="q3-exp">DELETE removes rows one by one, logging each and firing DELETE triggers. TRUNCATE deallocates data pages — much faster, but no triggers fire and identity resets. Both can be rolled back inside a transaction.</div></div>
+
+<div class="quiz-card" id="q4"><h3>Q4: What does <code>EXCLUDED</code> refer to in PostgreSQL's INSERT ON CONFLICT?</h3>
+<button class="quiz-option" onclick="answer(this,'q4',true)">The row that was attempted to be inserted but conflicted with an existing row</button>
+<button class="quiz-option" onclick="answer(this,'q4',false)">The existing row that caused the conflict</button>
+<div class="quiz-explanation" id="q4-exp"><code>EXCLUDED</code> is a pseudo-table representing the row that <em>would have been</em> inserted if no conflict existed. You use it in DO UPDATE SET to copy values from the attempted insert: <code>name = EXCLUDED.name</code>.</div></div>
+
+<div class="quiz-card" id="q5"><h3>Q5: What happens if you run <code>UPDATE customers SET status = 'inactive'</code> without WHERE?</h3>
+<button class="quiz-option" onclick="answer(this,'q5',true)">Every single row in the table gets updated — all customers become inactive</button>
+<button class="quiz-option" onclick="answer(this,'q5',false)">Only NULL rows are updated</button>
+<div class="quiz-explanation" id="q5-exp">Without WHERE, UPDATE affects EVERY row. Best practice: write WHERE first, run SELECT with the same WHERE to verify, then add SET. Use transactions so you can ROLLBACK if needed.</div></div>
+
+<div class="quiz-score" id="score-box" style="display:none"><div class="big" id="score-text"></div><p style="color:var(--text-dim);margin-top:.3rem">Set Operations & DML Quiz</p></div></div>
+
+<!-- Interview Answers -->
+<div class="section" id="s7"><div class="section-header"><div class="section-num">★</div><h2>Interview Answer Bank</h2></div>
+<div class="accordion"><button class="accordion-btn" onclick="toggleAcc(this)"><span>Q: UNION vs UNION ALL?</span><span class="arrow">▼</span></button><div class="accordion-body"><div class="callout green">UNION removes duplicates (expensive sort/hash). UNION ALL keeps all rows (just appends — faster). Default to UNION ALL unless deduplication is a business requirement. Both require same column count and compatible types.</div></div></div>
+<div class="accordion"><button class="accordion-btn" onclick="toggleAcc(this)"><span>Q: EXCEPT — why does order matter?</span><span class="arrow">▼</span></button><div class="accordion-body"><div class="callout green">EXCEPT is directional: A EXCEPT B = rows in A not in B. B EXCEPT A = completely different result. Use case: orders from 2023 EXCEPT 2024 = lost customers. Data reconciliation: records in system A EXCEPT system B = what's missing.</div></div></div>
+<div class="accordion"><button class="accordion-btn" onclick="toggleAcc(this)"><span>Q: DELETE vs TRUNCATE?</span><span class="arrow">▼</span></button><div class="accordion-body"><div class="callout green">DELETE: row-by-row, logs each, fires triggers, WHERE supported, identity continues. TRUNCATE: deallocates pages, much faster, no triggers, no WHERE, resets identity. Both rollback in transactions. Use TRUNCATE to empty a table; DELETE when you need to filter or triggers must fire.</div></div></div>
+<div class="accordion"><button class="accordion-btn" onclick="toggleAcc(this)"><span>Q: What is MERGE?</span><span class="arrow">▼</span></button><div class="accordion-body"><div class="callout green">Single statement combining INSERT + UPDATE + DELETE. WHEN MATCHED → update. WHEN NOT MATCHED BY TARGET → insert. WHEN NOT MATCHED BY SOURCE → delete. Used in ETL pipelines, data warehouse loading, inventory sync. PostgreSQL alternative: INSERT ON CONFLICT (EXCLUDED = the conflicting row).</div></div></div></div>
+</div>
+
+<script>
+function toggleAcc(btn){btn.classList.toggle('open');btn.nextElementSibling.classList.toggle('open')}
+
+// Venn diagram set visualizer
+const setA=['Ahmed','Sara','Omar','Mona'];
+const setB=['Sara','Omar','Hana','Zain'];
+function showVenn(mode){
+  document.querySelectorAll('.vn-tab').forEach(t=>t.classList.remove('active'));
+  event.target.classList.add('active');
+  const aEl=document.getElementById('vn-a');
+  const bEl=document.getElementById('vn-b');
+  const rEl=document.getElementById('vn-result');
+  const common=['Sara','Omar'];
+  const onlyA=['Ahmed','Mona'];
+  const onlyB=['Hana','Zain'];
+
+  // Render sets with highlighting
+  function renderSet(el,items,highlightFn){
+    el.innerHTML=items.map(i=>`<span class="vn-item ${highlightFn(i)}">${i}</span>`).join('');
+  }
+
+  let resultItems=[],resultLabel='',resultNote='';
+  if(mode==='union'){
+    renderSet(aEl,setA,i=>common.includes(i)?'match':'only-a');
+    renderSet(bEl,setB,i=>common.includes(i)?'match removed':'only-b');
+    resultItems=[...new Set([...setA,...setB])];
+    resultLabel='UNION Result (duplicates removed):';
+    resultNote='Sara & Omar appear only once. Expensive dedup step.';
+  } else if(mode==='unionall'){
+    renderSet(aEl,setA,i=>common.includes(i)?'match':'only-a');
+    renderSet(bEl,setB,i=>common.includes(i)?'match':'only-b');
+    resultItems=[...setA,...setB];
+    resultLabel='UNION ALL Result (all rows kept):';
+    resultNote='Sara & Omar appear TWICE. No dedup — faster!';
+  } else if(mode==='intersect'){
+    renderSet(aEl,setA,i=>common.includes(i)?'match':'removed');
+    renderSet(bEl,setB,i=>common.includes(i)?'match':'removed');
+    resultItems=common;
+    resultLabel='INTERSECT Result (common only):';
+    resultNote='Only rows in BOTH sets survive.';
+  } else {
+    renderSet(aEl,setA,i=>onlyA.includes(i)?'only-a':'removed');
+    renderSet(bEl,setB,()=>'removed');
+    resultItems=onlyA;
+    resultLabel='EXCEPT Result (A not in B):';
+    resultNote='Only rows in A that do NOT exist in B. Order matters!';
+  }
+  rEl.innerHTML=`<h4>${resultLabel}</h4><div class="vn-items" style="margin:.3rem 0">${resultItems.map(i=>`<span class="vn-item match">${i}</span>`).join('')}</div><span style="font-size:.72rem;color:var(--text-dim)">${resultNote} (${resultItems.length} rows)</span>`;
+}
+showVenn('union');
+
+// DML danger sim
+let dmlTimer=null;
+function runDML(mode){
+  clearInterval(dmlTimer);const log=document.getElementById('dml-log');log.innerHTML='';
+  document.querySelectorAll('.dml-tab').forEach(b=>b.classList.remove('active'));event.target.classList.add('active');
+  const lines=[];
+  if(mode==='safe'){
+    lines.push({c:'dim',t:'-- Step 1: Verify with SELECT first'});
+    lines.push({c:'hl',t:'SELECT * FROM customers WHERE customer_id = 5;'});
+    lines.push({c:'ok',t:'→ 1 row returned: Omar, active ✅'});
+    lines.push({c:'dim',t:''});
+    lines.push({c:'dim',t:'-- Step 2: Run UPDATE with same WHERE'});
+    lines.push({c:'hl',t:"UPDATE customers SET status = 'inactive' WHERE customer_id = 5;"});
+    lines.push({c:'ok',t:'→ 1 row affected ✅'});
+    lines.push({c:'ok',t:'✅ Safe — verified target before modifying'});
+  } else if(mode==='danger'){
+    lines.push({c:'bad',t:"UPDATE customers SET status = 'inactive';"});
+    lines.push({c:'dim',t:''});
+    lines.push({c:'bad',t:'→ ⚠ NO WHERE CLAUSE!'});
+    lines.push({c:'bad',t:'→ Row 1: Ahmed → inactive'});
+    lines.push({c:'bad',t:'→ Row 2: Sara → inactive'});
+    lines.push({c:'bad',t:'→ Row 3: Omar → inactive'});
+    lines.push({c:'bad',t:'→ ... 99,997 more rows ...'});
+    lines.push({c:'bad',t:'→ 100,000 rows affected 💥'});
+    lines.push({c:'dim',t:''});
+    lines.push({c:'bad',t:'💥 EVERY customer is now inactive!'});
+    lines.push({c:'warn',t:'Fix: ROLLBACK if inside transaction. Otherwise... restore from backup.'});
+  } else {
+    lines.push({c:'hl',t:'MERGE INTO customers USING new_data ON id match...'});
+    lines.push({c:'dim',t:''});
+    lines.push({c:'ok',t:'Row "Ahmed" → MATCHED → UPDATE email ✅'});
+    lines.push({c:'ok',t:'Row "Sara" → MATCHED → UPDATE phone ✅'});
+    lines.push({c:'hl',t:'Row "Hana" → NOT MATCHED → INSERT new customer ✅'});
+    lines.push({c:'warn',t:'Row "Zain" → NOT MATCHED BY SOURCE → DELETE ✅'});
+    lines.push({c:'dim',t:''});
+    lines.push({c:'ok',t:'✅ 2 updated, 1 inserted, 1 deleted — all in one statement'});
+  }
+  let i=0;dmlTimer=setInterval(()=>{if(i>=lines.length){clearInterval(dmlTimer);return}const l=lines[i];log.innerHTML+=`<span class="${l.c}">${l.t}</span>\n`;log.scrollTop=log.scrollHeight;i++},250);
+}
+
+// Quiz
+let answered=0,correct=0,total=5;
+function answer(btn,qId,isCorrect){const card=document.getElementById(qId);if(card.dataset.answered)return;card.dataset.answered='1';answered++;if(isCorrect){btn.classList.add('correct');correct++;}else btn.classList.add('wrong');card.querySelectorAll('.quiz-option').forEach(o=>o.disabled=true);document.getElementById(qId+'-exp').classList.add('show');if(answered===total){document.getElementById('score-box').style.display='block';document.getElementById('score-text').textContent=correct+' / '+total;}}
+const sections=document.querySelectorAll('.section');const navLinks=document.querySelectorAll('.nav a');
+window.addEventListener('scroll',()=>{let c='';sections.forEach(s=>{if(window.scrollY>=s.offsetTop-120)c=s.id});navLinks.forEach(a=>{a.classList.remove('active');if(a.getAttribute('href')==='#'+c)a.classList.add('active')})});
+</script>
+</body>
+</html>

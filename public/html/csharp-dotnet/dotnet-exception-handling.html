@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Exception Handling — .NET Interview Study Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=DM+Sans:ital,wght@0,400;0,500;0,700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#060810;--bg-card:#0d0f18;--bg-code:#090b12;--bg-el:#151828;--border:#191d30;--border-gl:#242840;--text:#c2c8d8;--text-dim:#5c6486;--text-br:#e4eaf4;--c1:#ef4444;--c2:#3b82f6;--c3:#10b981;--c4:#f59e0b;--c5:#a855f7;--ok:#4ade80;--bad:#f87171;--kw:#c678dd;--str:#98c379;--tp:#61afef;--cm:#5c6370;--fn:#e5c07b;--r:12px}
+*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.72;overflow-x:hidden}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border-gl);border-radius:3px}
+.hero{position:relative;min-height:42vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:80px 24px 46px;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 500px 350px at 30% 40%,rgba(239,68,68,.1),transparent),radial-gradient(ellipse 400px 300px at 70% 55%,rgba(59,130,246,.07),transparent)}
+.hero-badge{position:relative;display:inline-flex;padding:6px 18px;border:1px solid var(--c1);border-radius:100px;font-size:.8rem;color:var(--c1);letter-spacing:.08em;text-transform:uppercase;margin-bottom:20px}
+.hero h1{position:relative;font-family:'Playfair Display',serif;font-size:clamp(2rem,5vw,3.4rem);font-weight:900;line-height:1.15;color:var(--text-br)}
+.hero h1 span{background:linear-gradient(135deg,var(--c1),var(--c4));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{position:relative;max-width:620px;margin-top:14px;color:var(--text-dim);font-size:1rem}
+.np{position:relative;display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:24px}
+.np a{padding:6px 14px;border:1px solid var(--border-gl);border-radius:100px;color:var(--text-dim);text-decoration:none;font-size:.82rem;transition:all .25s}
+.np a:hover{border-color:var(--c1);color:var(--c1)}
+.sec{max-width:1000px;margin:0 auto 55px;padding:0 24px;scroll-margin-top:32px}
+.sh{display:flex;align-items:center;gap:14px;margin-bottom:6px}
+.sn{display:flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:12px;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:.95rem;flex-shrink:0;background:color-mix(in srgb,var(--pat) 16%,transparent);color:var(--pat);border:1px solid color-mix(in srgb,var(--pat) 28%,transparent)}
+.sh h2{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;color:var(--text-br)}
+.ss{color:var(--text-dim);font-style:italic;margin-bottom:18px;padding-left:56px;font-size:.9rem}
+.s1{--pat:var(--c5)}.s2{--pat:var(--c2)}.s3{--pat:var(--c1)}.s4{--pat:var(--c4)}.s5{--pat:var(--c3)}.s6{--pat:var(--c2)}
+.card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:14px}
+.card h3{font-size:.9rem;color:var(--text-br);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.card h3::before{content:'';display:inline-block;width:3px;height:14px;border-radius:2px;background:var(--pat,var(--c1))}
+.dw{background:var(--bg-code);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:14px;overflow-x:auto}
+.dw svg{display:block;margin:0 auto;max-width:100%;height:auto}
+.cb{position:relative;background:var(--bg-code);border:1px solid var(--border);border-radius:var(--r);margin-bottom:12px;overflow:hidden}
+.cb-h{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;background:var(--bg-el);border-bottom:1px solid var(--border);font-size:.74rem;color:var(--text-dim);font-family:'JetBrains Mono',monospace}
+.cb-h .dots{display:flex;gap:5px}.cb-h .dots span{width:9px;height:9px;border-radius:50%}
+.cb-h .dots span:nth-child(1){background:#ff5f57}.cb-h .dots span:nth-child(2){background:#febc2e}.cb-h .dots span:nth-child(3){background:#28c840}
+.cb-h.bad{border-left:3px solid var(--bad)}.cb-h.good{border-left:3px solid var(--ok)}
+.cpb{background:none;border:1px solid var(--border-gl);color:var(--text-dim);padding:2px 8px;border-radius:5px;cursor:pointer;font-size:.68rem;font-family:'JetBrains Mono',monospace;transition:all .2s}
+.cpb:hover{border-color:var(--ok);color:var(--ok)}
+.cb pre{padding:12px 14px;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:.76rem;line-height:1.6;color:var(--text)}
+.kw{color:var(--kw)}.tp{color:var(--tp)}.str{color:var(--str)}.cm{color:var(--cm);font-style:italic}.fn{color:var(--fn)}
+.cg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+@media(max-width:700px){.cg{grid-template-columns:1fr}}
+.cg .cb{margin-bottom:0}
+.tw{overflow-x:auto;margin-bottom:14px}table{width:100%;border-collapse:collapse;font-size:.8rem}
+thead th{background:var(--bg-el);color:var(--text-br);padding:9px 11px;text-align:left;font-weight:600;border-bottom:2px solid var(--border-gl);white-space:nowrap}
+tbody td{padding:7px 11px;border-bottom:1px solid var(--border);vertical-align:top}tbody tr:hover{background:rgba(239,68,68,.03)}
+.tip{display:flex;gap:10px;padding:11px 14px;border-radius:var(--r);margin-bottom:12px;font-size:.83rem}
+.tip-r{background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.16)}.tip-r .ic{color:var(--c1)}
+.tip-g{background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.16)}.tip-g .ic{color:var(--c3)}
+.tip .ic{font-size:1rem;flex-shrink:0}
+.qa-b{margin-bottom:8px}
+.qa-q{display:flex;align-items:start;gap:8px;padding:11px 14px;background:var(--bg-el);border:1px solid var(--border);border-radius:var(--r);cursor:pointer;color:var(--text-br);font-size:.84rem;font-weight:500;transition:all .25s;user-select:none}
+.qa-q:hover{border-color:var(--c1)}.qa-q .ar{flex-shrink:0;transition:transform .3s;color:var(--c1);font-size:.8rem}.qa-q.open .ar{transform:rotate(90deg)}
+.qa-a{max-height:0;overflow:hidden;transition:max-height .35s ease,padding .35s;padding:0 14px;color:var(--text);font-size:.82rem;line-height:1.7;background:var(--bg-card);border:1px solid var(--border);border-top:none;border-radius:0 0 var(--r) var(--r)}
+.qa-a.open{max-height:600px;padding:12px 14px}
+.bt{position:fixed;bottom:24px;right:24px;width:42px;height:42px;border-radius:50%;background:var(--c1);color:#fff;border:none;cursor:pointer;font-size:1.1rem;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s;box-shadow:0 4px 16px rgba(239,68,68,.35);z-index:100;font-weight:700}
+.bt.show{opacity:1;pointer-events:auto}
+footer{text-align:center;padding:30px 24px;color:var(--text-dim);font-size:.78rem;border-top:1px solid var(--border);margin-top:30px}
+.sum{max-width:1000px;margin:0 auto 45px;padding:0 24px}.sum h2{font-family:'Playfair Display',serif;font-size:1.4rem;color:var(--text-br);margin-bottom:16px;text-align:center}
+@media(max-width:768px){.ss{padding-left:0}}
+</style>
+</head>
+<body>
+<section class="hero">
+  <div class="hero-badge">.NET Interview Guide</div>
+  <h1><span>Exception</span> Handling</h1>
+  <p>Hierarchy, throw vs throw ex, finally, custom exceptions, global handler, and best practices.</p>
+  <div class="np"><a href="#hierarchy">Hierarchy</a><a href="#catching">Catching</a><a href="#throw">throw vs throw ex</a><a href="#finally">finally</a><a href="#custom">Custom</a><a href="#global">Global Handler</a><a href="#best">Best Practices</a></div>
+</section>
+
+<!-- 1. HIERARCHY -->
+<section id="hierarchy" class="sec s1">
+  <div class="sh"><div class="sn">1</div><h2>Exception Hierarchy</h2></div>
+  <div class="dw">
+    <svg viewBox="0 0 780 200" xmlns="http://www.w3.org/2000/svg" style="font-family:'JetBrains Mono',monospace">
+      <rect x="250" y="5" width="280" height="30" rx="8" fill="rgba(168,85,247,.1)" stroke="#a855f7" stroke-width="1.5"/>
+      <text x="390" y="24" text-anchor="middle" fill="#a855f7" font-weight="700" font-size="12">System.Exception</text>
+      <!-- SystemException branch -->
+      <line x1="310" y1="35" x2="200" y2="60" stroke="#5c6486" stroke-width="1"/>
+      <rect x="80" y="55" width="240" height="28" rx="6" fill="rgba(59,130,246,.08)" stroke="#3b82f6" stroke-width="1"/>
+      <text x="200" y="73" text-anchor="middle" fill="#3b82f6" font-weight="600" font-size="10">System.SystemException (runtime)</text>
+      <!-- Runtime exceptions -->
+      <line x1="160" y1="83" x2="80" y2="100" stroke="#5c6486" stroke-width=".8"/>
+      <line x1="180" y1="83" x2="160" y2="100" stroke="#5c6486" stroke-width=".8"/>
+      <line x1="200" y1="83" x2="240" y2="100" stroke="#5c6486" stroke-width=".8"/>
+      <line x1="220" y1="83" x2="340" y2="100" stroke="#5c6486" stroke-width=".8"/>
+      <rect x="30" y="98" width="140" height="22" rx="4" fill="rgba(59,130,246,.05)" stroke="#3b82f6" stroke-width=".8" stroke-opacity=".5"/>
+      <text x="100" y="113" text-anchor="middle" fill="#3b82f6" font-size="8">NullReferenceException</text>
+      <rect x="105" y="125" width="140" height="22" rx="4" fill="rgba(59,130,246,.05)" stroke="#3b82f6" stroke-width=".8" stroke-opacity=".5"/>
+      <text x="175" y="140" text-anchor="middle" fill="#3b82f6" font-size="8">IndexOutOfRangeException</text>
+      <rect x="195" y="98" width="110" height="22" rx="4" fill="rgba(59,130,246,.05)" stroke="#3b82f6" stroke-width=".8" stroke-opacity=".5"/>
+      <text x="250" y="113" text-anchor="middle" fill="#3b82f6" font-size="8">InvalidCastException</text>
+      <rect x="290" y="125" width="120" height="22" rx="4" fill="rgba(239,68,68,.08)" stroke="#ef4444" stroke-width=".8"/>
+      <text x="350" y="140" text-anchor="middle" fill="#ef4444" font-size="8">StackOverflowException</text>
+      <!-- ApplicationException branch -->
+      <line x1="470" y1="35" x2="570" y2="60" stroke="#5c6486" stroke-width="1"/>
+      <rect x="460" y="55" width="260" height="28" rx="6" fill="rgba(245,158,11,.08)" stroke="#f59e0b" stroke-width="1"/>
+      <text x="590" y="73" text-anchor="middle" fill="#f59e0b" font-weight="600" font-size="10">System.ApplicationException (app code)</text>
+      <line x1="590" y1="83" x2="590" y2="100" stroke="#5c6486" stroke-width=".8"/>
+      <rect x="510" y="98" width="160" height="22" rx="4" fill="rgba(245,158,11,.05)" stroke="#f59e0b" stroke-width=".8"/>
+      <text x="590" y="113" text-anchor="middle" fill="#f59e0b" font-size="8">YourCustomException</text>
+      <!-- Note -->
+      <rect x="150" y="170" width="480" height="22" rx="6" fill="rgba(168,85,247,.05)" stroke="rgba(168,85,247,.15)" stroke-width="1"/>
+      <text x="390" y="185" text-anchor="middle" fill="#a855f7" font-size="9">Catch most specific first → most general last. System.Exception is the catch-all.</text>
+    </svg>
+  </div>
+</section>
+
+<!-- 2. CATCHING -->
+<section id="catching" class="sec s2">
+  <div class="sh"><div class="sn">2</div><h2>Catching — Most Specific First</h2></div>
+  <div class="cb"><div class="cb-h good"><div class="dots"><span></span><span></span><span></span></div><span>try/catch/finally — correct order</span><button class="cpb" onclick="copyCode(this)">Copy</button></div><pre><span class="kw">public void</span> <span class="fn">ProcessOrder</span>(<span class="kw">string</span> orderId)
+{
+    <span class="kw">try</span>
+    {
+        <span class="kw">var</span> order = <span class="fn">GetOrder</span>(orderId);
+        <span class="fn">SaveOrder</span>(order);
+    }
+    <span class="kw">catch</span> (<span class="tp">OrderNotFoundException</span> ex)  <span class="cm">// most specific first</span>
+    {
+        <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">"Order not found: "</span> + ex.OrderId);
+    }
+    <span class="kw">catch</span> (<span class="tp">DatabaseException</span> ex)       <span class="cm">// more general</span>
+    {
+        <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">"DB error: "</span> + ex.Message);
+    }
+    <span class="kw">catch</span> (<span class="tp">Exception</span> ex)               <span class="cm">// catch-all — last resort</span>
+    {
+        <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">"Unexpected: "</span> + ex.Message);
+        <span class="kw">throw</span>; <span class="cm">// rethrow after logging</span>
+    }
+    <span class="kw">finally</span>
+    {
+        <span class="cm">// ALWAYS runs — exception, return, or normal flow</span>
+        <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">"Processing complete"</span>);
+    }
+}</pre></div>
+</section>
+
+<!-- 3. THROW vs THROW EX -->
+<section id="throw" class="sec s3">
+  <div class="sh"><div class="sn">3</div><h2>throw vs throw ex</h2></div>
+  <div class="tip tip-r"><span class="ic">⚠️</span><span><strong>throw</strong> preserves the original stack trace. <strong>throw ex</strong> RESETS it — you lose where the error originally happened. Always use <code>throw</code>.</span></div>
+  <div class="dw">
+    <svg viewBox="0 0 780 170" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+      <!-- throw ex (bad) -->
+      <text x="195" y="18" text-anchor="middle" fill="#ef4444" font-weight="700" font-size="12">❌ throw ex — destroys evidence</text>
+      <rect x="40" y="28" width="310" height="100" rx="10" fill="rgba(239,68,68,.04)" stroke="#ef4444" stroke-width="1"/>
+      <text x="60" y="50" fill="#ef4444" font-size="9" font-family="JetBrains Mono,monospace">Stack trace with throw ex:</text>
+      <text x="60" y="68" fill="#ef4444" font-size="9" font-family="JetBrains Mono,monospace">  at MethodB() ← starts HERE</text>
+      <text x="60" y="84" fill="#ef4444" font-size="9" font-family="JetBrains Mono,monospace">  at MethodA()</text>
+      <text x="60" y="105" fill="#ef4444" font-size="9" font-weight="600">MethodC info LOST! 😱</text>
+      <text x="60" y="120" fill="#5c6486" font-size="8">Can't find where error originated</text>
+      <!-- throw (good) -->
+      <text x="585" y="18" text-anchor="middle" fill="#10b981" font-weight="700" font-size="12">✅ throw — preserves full history</text>
+      <rect x="430" y="28" width="310" height="100" rx="10" fill="rgba(16,185,129,.04)" stroke="#10b981" stroke-width="1"/>
+      <text x="450" y="50" fill="#10b981" font-size="9" font-family="JetBrains Mono,monospace">Stack trace with throw:</text>
+      <text x="450" y="68" fill="#10b981" font-size="9" font-family="JetBrains Mono,monospace">  at MethodC() line 5 ← original ✅</text>
+      <text x="450" y="84" fill="#10b981" font-size="9" font-family="JetBrains Mono,monospace">  at MethodB()</text>
+      <text x="450" y="100" fill="#10b981" font-size="9" font-family="JetBrains Mono,monospace">  at MethodA()</text>
+      <text x="450" y="120" fill="#10b981" font-size="9" font-weight="600">Full chain preserved!</text>
+      <rect x="180" y="140" width="420" height="22" rx="6" fill="rgba(16,185,129,.05)" stroke="rgba(16,185,129,.15)" stroke-width="1"/>
+      <text x="390" y="155" text-anchor="middle" fill="#10b981" font-size="9" font-weight="600">Always use throw; (not throw ex;) when rethrowing</text>
+    </svg>
+  </div>
+  <div class="cg">
+    <div class="cb"><div class="cb-h bad"><div class="dots"><span></span><span></span><span></span></div><span>❌ throw ex — loses stack trace</span></div><pre><span class="kw">catch</span> (<span class="tp">Exception</span> ex)
+{
+    <span class="kw">throw</span> ex; <span class="cm">// stack trace starts HERE</span>
+    <span class="cm">// original location LOST 😱</span>
+}</pre></div>
+    <div class="cb"><div class="cb-h good"><div class="dots"><span></span><span></span><span></span></div><span>✅ throw — preserves stack trace</span></div><pre><span class="kw">catch</span> (<span class="tp">Exception</span> ex)
+{
+    Logger.<span class="fn">Log</span>(ex);
+    <span class="kw">throw</span>; <span class="cm">// original stack trace preserved ✅</span>
+}</pre></div>
+  </div>
+</section>
+
+<!-- 4. FINALLY -->
+<section id="finally" class="sec s4">
+  <div class="sh"><div class="sn">4</div><h2>Finally Block</h2></div>
+  <div class="ss">ALWAYS runs — even with return, exceptions, or break inside try.</div>
+  <div class="cb"><div class="cb-h"><div class="dots"><span></span><span></span><span></span></div><span>finally runs even with return</span></div><pre><span class="kw">public string</span> <span class="fn">Test</span>()
+{
+    <span class="kw">try</span>
+    {
+        <span class="kw">return</span> <span class="str">"from try"</span>; <span class="cm">// return is here</span>
+    }
+    <span class="kw">finally</span>
+    {
+        <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">"finally runs!"</span>); <span class="cm">// STILL runs!</span>
+    }
+}
+<span class="cm">// Output: "finally runs!" then returns "from try"</span>
+<span class="cm">// Only skipped on: Environment.FailFast() or power failure</span></pre></div>
+</section>
+
+<!-- 5. CUSTOM EXCEPTIONS -->
+<section id="custom" class="sec s5">
+  <div class="sh"><div class="sn">5</div><h2>Custom Exceptions</h2></div>
+  <div class="cb"><div class="cb-h good"><div class="dots"><span></span><span></span><span></span></div><span>Custom exception with context properties</span><button class="cpb" onclick="copyCode(this)">Copy</button></div><pre><span class="kw">public class</span> <span class="tp">OrderNotFoundException</span> : <span class="tp">Exception</span>
+{
+    <span class="kw">public string</span> OrderId { <span class="kw">get</span>; }
+    <span class="kw">public</span> <span class="tp">DateTime</span> AttemptedAt { <span class="kw">get</span>; }
+
+    <span class="kw">public</span> <span class="fn">OrderNotFoundException</span>(<span class="kw">string</span> orderId)
+        : <span class="kw">base</span>(<span class="str">$"Order '{orderId}' was not found"</span>)
+    {
+        OrderId = orderId;
+        AttemptedAt = <span class="tp">DateTime</span>.UtcNow;
+    }
+
+    <span class="cm">// Always include InnerException constructor</span>
+    <span class="kw">public</span> <span class="fn">OrderNotFoundException</span>(<span class="kw">string</span> orderId, <span class="tp">Exception</span> inner)
+        : <span class="kw">base</span>(<span class="str">$"Order '{orderId}' was not found"</span>, inner)
+    {
+        OrderId = orderId;
+        AttemptedAt = <span class="tp">DateTime</span>.UtcNow;
+    }
+}</pre></div>
+</section>
+
+<!-- 6. GLOBAL HANDLER -->
+<section id="global" class="sec s6">
+  <div class="sh"><div class="sn">6</div><h2>Global Exception Handler — ASP.NET Core</h2></div>
+  <div class="cb"><div class="cb-h good"><div class="dots"><span></span><span></span><span></span></div><span>Middleware — catches all unhandled exceptions</span><button class="cpb" onclick="copyCode(this)">Copy</button></div><pre><span class="kw">public class</span> <span class="tp">GlobalExceptionMiddleware</span>
+{
+    <span class="kw">private readonly</span> <span class="tp">RequestDelegate</span> _next;
+    <span class="kw">private readonly</span> <span class="tp">ILogger</span> _logger;
+
+    <span class="kw">public</span> <span class="fn">GlobalExceptionMiddleware</span>(<span class="tp">RequestDelegate</span> next, <span class="tp">ILogger</span> logger)
+    { _next = next; _logger = logger; }
+
+    <span class="kw">public async</span> <span class="tp">Task</span> <span class="fn">Invoke</span>(<span class="tp">HttpContext</span> context)
+    {
+        <span class="kw">try</span> { <span class="kw">await</span> _next(context); }
+        <span class="kw">catch</span> (<span class="tp">OrderNotFoundException</span> ex)
+        {
+            _logger.<span class="fn">LogWarning</span>(ex, <span class="str">"Order not found"</span>);
+            <span class="kw">await</span> <span class="fn">HandleException</span>(context, <span class="num">404</span>, ex.Message);
+        }
+        <span class="kw">catch</span> (<span class="tp">Exception</span> ex)
+        {
+            _logger.<span class="fn">LogError</span>(ex, <span class="str">"Unexpected error"</span>);
+            <span class="kw">await</span> <span class="fn">HandleException</span>(context, <span class="num">500</span>, <span class="str">"An unexpected error occurred"</span>);
+        }
+    }
+}
+
+<span class="cm">// Register in Program.cs</span>
+app.<span class="fn">UseMiddleware</span>&lt;<span class="tp">GlobalExceptionMiddleware</span>&gt;();</pre></div>
+</section>
+
+<!-- 7. BEST PRACTICES -->
+<section id="best" class="sum">
+  <h2>Best Practices Summary</h2>
+  <div class="card" style="--pat:var(--c1)"><div class="tw"><table><thead><tr><th>Rule</th><th>Details</th></tr></thead><tbody>
+    <tr><td><strong>Catch specific first</strong></td><td>Most specific at top, general at bottom</td></tr>
+    <tr><td><strong>throw vs throw ex</strong></td><td>Always use throw — preserves stack trace</td></tr>
+    <tr><td><strong>finally</strong></td><td>Always runs — use for cleanup/disposal</td></tr>
+    <tr><td><strong>Custom exceptions</strong></td><td>Extend Exception, add context properties (OrderId)</td></tr>
+    <tr><td><strong>InnerException</strong></td><td>Always pass original when wrapping exceptions</td></tr>
+    <tr><td><strong>Never swallow</strong></td><td>Always log before swallowing — never empty catch</td></tr>
+    <tr><td><strong>No flow control</strong></td><td>Never use exceptions for expected business logic</td></tr>
+    <tr><td><strong>Global handler</strong></td><td>Catch all unhandled exceptions in one central place</td></tr>
+  </tbody></table></div></div>
+  <div class="cg">
+    <div class="cb"><div class="cb-h bad"><div class="dots"><span></span><span></span><span></span></div><span>❌ Never swallow silently</span></div><pre><span class="kw">catch</span> (<span class="tp">Exception</span> ex) { } <span class="cm">// disappears!</span></pre></div>
+    <div class="cb"><div class="cb-h good"><div class="dots"><span></span><span></span><span></span></div><span>✅ Always log at minimum</span></div><pre><span class="kw">catch</span> (<span class="tp">Exception</span> ex)
+{ _logger.<span class="fn">LogError</span>(ex, <span class="str">"Error"</span>); <span class="kw">throw</span>; }</pre></div>
+  </div>
+  <div class="cg">
+    <div class="cb"><div class="cb-h bad"><div class="dots"><span></span><span></span><span></span></div><span>❌ Loses InnerException</span></div><pre><span class="kw">catch</span> (<span class="tp">SqlException</span> ex)
+{ <span class="kw">throw new</span> <span class="tp">DatabaseException</span>(<span class="str">"Failed"</span>); }</pre></div>
+    <div class="cb"><div class="cb-h good"><div class="dots"><span></span><span></span><span></span></div><span>✅ Preserves InnerException</span></div><pre><span class="kw">catch</span> (<span class="tp">SqlException</span> ex)
+{ <span class="kw">throw new</span> <span class="tp">DatabaseException</span>(<span class="str">"Failed"</span>, ex); }
+<span class="cm">//                                      ↑ preserved</span></pre></div>
+  </div>
+</section>
+
+<!-- INTERVIEW -->
+<section class="sum">
+  <h2>Interview Questions</h2>
+  <div class="qa-b"><div class="qa-q" onclick="toggleQA(this)"><span class="ar">▶</span>What is the difference between throw and throw ex?</div><div class="qa-a"><code>throw</code> preserves the original stack trace showing exactly where the exception first occurred. <code>throw ex</code> resets the stack trace making it appear the exception originated at the catch block. Always use <code>throw</code> when rethrowing.</div></div>
+  <div class="qa-b"><div class="qa-q" onclick="toggleQA(this)"><span class="ar">▶</span>When does the finally block run?</div><div class="qa-a">The finally block <strong>always runs</strong> regardless of whether an exception was thrown, a return statement was hit, or code completed normally. The only exceptions: <code>Environment.FailFast()</code> or machine power failure. Used for cleanup — disposing connections, closing files.</div></div>
+  <div class="qa-b"><div class="qa-q" onclick="toggleQA(this)"><span class="ar">▶</span>When should you catch vs let it bubble up?</div><div class="qa-a"><strong>Catch</strong> when you can recover, need to translate exception types, need to log at this layer, or return specific HTTP responses. <strong>Let bubble up</strong> when you can't do anything useful, a higher layer handles it better, or the global handler catches it. Never catch just to rethrow without adding value.</div></div>
+</section>
+
+<button class="bt" id="backTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+<footer><p>Exception Handling — .NET Interview Study Guide 🚀</p></footer>
+<script>
+function toggleQA(el){el.classList.toggle('open');el.nextElementSibling.classList.toggle('open')}
+function copyCode(btn){const pre=btn.closest('.cb').querySelector('pre');navigator.clipboard.writeText(pre.textContent).then(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',1500)})}
+window.addEventListener('scroll',()=>{document.getElementById('backTop').classList.toggle('show',window.scrollY>400)})
+</script>
+</body>
+</html>

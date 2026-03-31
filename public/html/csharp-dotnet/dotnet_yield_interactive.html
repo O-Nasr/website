@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>.NET yield Keyword — Interactive Study Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#080b0a;--surface:#101916;--surface2:#182420;--border:#263830;--text:#dce8e2;--text-dim:#7a9a8a;--accent:#4ade80;--accent2:#22c55e;--green:#34d399;--red:#f87171;--orange:#fb923c;--yellow:#fbbf24;--blue:#60a5fa;--purple:#c084fc;--code-bg:#0a100e;--glow:rgba(74,222,128,.12)}
+*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;min-height:100vh}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 20% 5%,rgba(74,222,128,.04)0%,transparent 55%),radial-gradient(ellipse at 80% 95%,rgba(34,197,94,.03)0%,transparent 55%);pointer-events:none;z-index:0}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.container{max-width:900px;margin:0 auto;padding:2rem 1.5rem 4rem;position:relative;z-index:1}
+.hero{text-align:center;padding:3rem 0 2.5rem}
+.hero-badge{display:inline-block;background:linear-gradient(135deg,var(--accent),var(--accent2));color:var(--bg);font-weight:700;font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;padding:.35rem 1rem;border-radius:99px;margin-bottom:1.2rem}
+.hero h1{font-size:2.6rem;font-weight:800;background:linear-gradient(135deg,#fff 30%,var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1.15;margin-bottom:.5rem}
+.hero p{color:var(--text-dim);font-size:1.05rem}
+.nav{display:flex;flex-wrap:wrap;gap:.5rem;justify-content:center;margin-bottom:2.5rem;position:sticky;top:0;z-index:10;background:rgba(8,11,10,.88);backdrop-filter:blur(12px);padding:.75rem 0;border-bottom:1px solid var(--border)}
+.nav a{color:var(--text-dim);text-decoration:none;font-size:.76rem;font-weight:600;padding:.4rem .8rem;border-radius:8px;transition:all .2s;border:1px solid transparent}
+.nav a:hover,.nav a.active{color:var(--accent);background:rgba(74,222,128,.08);border-color:rgba(74,222,128,.2)}
+.section{margin-bottom:3rem;animation:fadeUp .5s ease both}
+.section-header{display:flex;align-items:center;gap:.75rem;margin-bottom:1.2rem;padding-bottom:.8rem;border-bottom:1px solid var(--border)}
+.section-num{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.85rem;color:var(--bg);flex-shrink:0}
+.section-header h2{font-size:1.35rem;font-weight:700}
+.callout{background:linear-gradient(135deg,rgba(74,222,128,.07),rgba(34,197,94,.04));border-left:3px solid var(--accent);border-radius:0 10px 10px 0;padding:1rem 1.2rem;margin:1rem 0;font-size:.92rem}
+.callout.green{border-left-color:var(--green);background:linear-gradient(135deg,rgba(52,211,153,.07),rgba(52,211,153,.03))}
+.callout.warn{border-left-color:var(--orange);background:linear-gradient(135deg,rgba(251,146,60,.07),rgba(251,146,60,.03))}
+pre{background:var(--code-bg);border:1px solid var(--border);border-radius:10px;padding:1.2rem;overflow-x:auto;margin:.8rem 0;font-family:'JetBrains Mono',monospace;font-size:.78rem;line-height:1.65;position:relative}
+pre .label{position:absolute;top:.5rem;right:.6rem;font-size:.6rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em;font-family:'Outfit',sans-serif;font-weight:600;background:var(--surface);padding:.15rem .5rem;border-radius:4px}
+.kw{color:var(--accent)}.tp{color:var(--blue)}.cm{color:#3a5a48;font-style:italic}.st{color:var(--yellow)}.fn{color:var(--orange)}.nu{color:var(--orange)}.er{color:var(--red)}
+.table-wrap{overflow-x:auto;margin:.8rem 0;border-radius:10px;border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:.83rem}
+th{background:var(--surface2);color:var(--accent);font-weight:600;text-align:left;padding:.7rem 1rem;white-space:nowrap}
+td{padding:.6rem 1rem;border-top:1px solid var(--border)}
+tr:hover td{background:rgba(74,222,128,.03)}
+.accordion{margin:.8rem 0}
+.accordion-btn{width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:600;padding:.9rem 1.2rem;border-radius:10px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;transition:all .2s}
+.accordion-btn:hover{border-color:var(--accent);background:var(--surface2)}
+.accordion-btn .arrow{transition:transform .3s;font-size:.8rem;color:var(--accent)}
+.accordion-btn.open .arrow{transform:rotate(180deg)}
+.accordion-body{max-height:0;overflow:hidden;transition:max-height .4s ease;background:var(--surface);border:1px solid var(--border);border-top:none;border-radius:0 0 10px 10px;padding:0 1.2rem}
+.accordion-body.open{max-height:3000px;padding:1.2rem}
+
+/* Ping-pong execution visualizer */
+.pp{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.5rem;margin:1rem 0}
+.pp-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);font-family:'Outfit',sans-serif;font-size:.78rem;font-weight:600;padding:.5rem 1rem;border-radius:8px;cursor:pointer;transition:all .2s;margin-bottom:.8rem}
+.pp-btn:hover{color:var(--text);border-color:var(--accent)}
+.pp-btn.active{background:rgba(74,222,128,.12);border-color:var(--accent);color:var(--accent)}
+.pp-cols{display:grid;grid-template-columns:1fr 40px 1fr;gap:0;margin-top:.6rem}
+.pp-side{min-height:200px}
+.pp-side h4{font-size:.78rem;font-weight:700;margin-bottom:.5rem;text-align:center;padding:.3rem;border-radius:6px}
+.pp-side h4.caller{background:rgba(96,165,250,.1);color:var(--blue)}
+.pp-side h4.method{background:rgba(74,222,128,.1);color:var(--accent)}
+.pp-mid{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.3rem}
+.pp-arrow{font-size:.8rem;transition:all .3s;opacity:0}
+.pp-arrow.show{opacity:1}
+.pp-arrow.right{color:var(--blue)}
+.pp-arrow.left{color:var(--accent)}
+.pp-line{font-family:'JetBrains Mono',monospace;font-size:.7rem;padding:.25rem .5rem;border-radius:4px;margin-bottom:.2rem;opacity:.3;transition:all .3s;line-height:1.5}
+.pp-line.active{opacity:1;background:rgba(74,222,128,.1);border-left:2px solid var(--accent)}
+.pp-line.done{opacity:.6}
+.pp-output{background:var(--code-bg);border:1px solid var(--border);border-radius:8px;padding:.6rem;margin-top:.8rem;font-family:'JetBrains Mono',monospace;font-size:.72rem;min-height:40px;color:var(--yellow)}
+
+/* Quiz */
+.quiz-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.5rem;margin-bottom:1rem}
+.quiz-card h3{font-size:.95rem;margin-bottom:1rem;color:var(--accent)}
+.quiz-option{display:block;width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'Outfit',sans-serif;font-size:.83rem;padding:.7rem 1rem;border-radius:8px;cursor:pointer;margin-bottom:.4rem;text-align:left;transition:all .2s}
+.quiz-option:hover{border-color:var(--accent);transform:translateX(4px)}
+.quiz-option.correct{background:rgba(74,222,128,.15);border-color:var(--green);color:var(--green)}
+.quiz-option.wrong{background:rgba(248,113,113,.1);border-color:var(--red);color:var(--red)}
+.quiz-option:disabled{cursor:default;transform:none}
+.quiz-explanation{margin-top:.7rem;padding:.8rem;border-radius:8px;background:rgba(74,222,128,.06);font-size:.83rem;display:none;line-height:1.6}
+.quiz-explanation.show{display:block}
+.quiz-score{text-align:center;padding:1.5rem;background:var(--surface);border:1px solid var(--accent);border-radius:14px;margin-top:1rem}
+.quiz-score .big{font-size:2.2rem;font-weight:800;color:var(--accent)}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:640px){.hero h1{font-size:1.8rem}.container{padding:1rem}.pp-cols{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="hero">
+  <div class="hero-badge">.NET Interview Study Guide</div>
+  <h1>yield Keyword</h1>
+  <p>Custom stateful iteration — one item at a time, on demand</p>
+</div>
+
+<nav class="nav">
+  <a href="#s1">What is yield</a>
+  <a href="#s2">Ping-Pong Sim</a>
+  <a href="#s3">Stateful</a>
+  <a href="#s4">yield break</a>
+  <a href="#s5">Rules</a>
+  <a href="#s6">Quiz</a>
+</nav>
+
+<!-- S1 -->
+<div class="section" id="s1">
+  <div class="section-header"><div class="section-num">1</div><h2>What is yield?</h2></div>
+  <p style="margin-bottom:.8rem">Instead of collecting everything first, <strong>yield returns ONE item at a time, on demand</strong>. Control bounces back and forth between caller and method.</p>
+
+<pre><span class="label">C#</span><span class="cm">// Without yield — collects everything first</span>
+<span class="kw">static</span> <span class="tp">IEnumerable</span>&lt;<span class="tp">int</span>&gt; <span class="fn">FilterWithout</span>()
+{
+    <span class="tp">List</span>&lt;<span class="tp">int</span>&gt; temp = <span class="kw">new</span> <span class="tp">List</span>&lt;<span class="tp">int</span>&gt;(); <span class="er">// ❌ extra temp collection</span>
+    <span class="kw">foreach</span> (<span class="tp">int</span> i <span class="kw">in</span> MyList)
+        <span class="kw">if</span> (i > <span class="nu">3</span>) temp.<span class="fn">Add</span>(i);
+    <span class="kw">return</span> temp; <span class="cm">// returns everything at once</span>
+}
+
+<span class="cm">// With yield — returns one item at a time</span>
+<span class="kw">static</span> <span class="tp">IEnumerable</span>&lt;<span class="tp">int</span>&gt; <span class="fn">FilterWith</span>()
+{
+    <span class="kw">foreach</span> (<span class="tp">int</span> i <span class="kw">in</span> MyList)
+        <span class="kw">if</span> (i > <span class="nu">3</span>) <span class="kw">yield return</span> i; <span class="cm">// return ONE → pause → wait</span>
+}</pre>
+
+  <div class="callout warn">⚠️ Think of yield like a <strong>ping pong game</strong> — control bounces between caller and method. The method remembers its position between each bounce.</div>
+</div>
+
+<!-- S2: Ping-Pong Simulator -->
+<div class="section" id="s2">
+  <div class="section-header"><div class="section-num">2</div><h2>Execution Flow — Live Simulator</h2></div>
+  <p style="margin-bottom:.8rem;font-size:.9rem">Watch control bounce between <code>Main()</code> and <code>FilterWithYield()</code> for list <code>[1, 2, 3, 4, 5]</code>:</p>
+  <div class="pp">
+    <button class="pp-btn" id="pp-start" onclick="startPP()">▶ Step Through Execution</button>
+    <div class="pp-cols">
+      <div class="pp-side" id="pp-caller">
+        <h4 class="caller">Main() — Caller</h4>
+        <div class="pp-line" id="cl-1">foreach (int i in Filter())</div>
+        <div class="pp-line" id="cl-2">&nbsp; → received: 4</div>
+        <div class="pp-line" id="cl-3">&nbsp; Console.WriteLine(4)</div>
+        <div class="pp-line" id="cl-4">&nbsp; → asks for next...</div>
+        <div class="pp-line" id="cl-5">&nbsp; → received: 5</div>
+        <div class="pp-line" id="cl-6">&nbsp; Console.WriteLine(5)</div>
+        <div class="pp-line" id="cl-7">&nbsp; → asks for next...</div>
+        <div class="pp-line" id="cl-8">&nbsp; → no more items, loop ends</div>
+      </div>
+      <div class="pp-mid">
+        <div class="pp-arrow right" id="arr-r">→</div>
+        <div class="pp-arrow left" id="arr-l">←</div>
+      </div>
+      <div class="pp-side" id="pp-method">
+        <h4 class="method">FilterWithYield()</h4>
+        <div class="pp-line" id="mt-1">check 1 → no (1 ≤ 3)</div>
+        <div class="pp-line" id="mt-2">check 2 → no (2 ≤ 3)</div>
+        <div class="pp-line" id="mt-3">check 3 → no (3 ≤ 3)</div>
+        <div class="pp-line" id="mt-4">check 4 → YES!</div>
+        <div class="pp-line" id="mt-5">yield return 4 → PAUSE</div>
+        <div class="pp-line" id="mt-6">RESUME → check 5 → YES!</div>
+        <div class="pp-line" id="mt-7">yield return 5 → PAUSE</div>
+        <div class="pp-line" id="mt-8">RESUME → no more → end</div>
+      </div>
+    </div>
+    <div class="pp-output" id="pp-output"></div>
+  </div>
+</div>
+
+<!-- S3: Stateful -->
+<div class="section" id="s3">
+  <div class="section-header"><div class="section-num">3</div><h2>Stateful Iteration</h2></div>
+  <p style="margin-bottom:.8rem">yield preserves local variables between calls. Running totals, counters — state persists across iterations.</p>
+<pre><span class="label">C#</span><span class="kw">static</span> <span class="tp">IEnumerable</span>&lt;<span class="tp">int</span>&gt; <span class="fn">RunningTotal</span>()
+{
+    <span class="tp">int</span> runningTotal = <span class="nu">0</span>; <span class="cm">// STAYS ALIVE between yields</span>
+
+    <span class="kw">foreach</span> (<span class="tp">int</span> i <span class="kw">in</span> MyList)
+    {
+        runningTotal += i;
+        <span class="kw">yield return</span> runningTotal; <span class="cm">// send total → pause</span>
+    }
+}
+<span class="cm">// Output: 1, 3, 6, 10, 15</span>
+<span class="cm">// Normally method return destroys locals — yield PAUSES, not ends</span></pre>
+
+  <div class="callout green">Normally when a method returns — all local variables are destroyed. With yield, the method is <strong>paused, not ended</strong> — variables stay alive because the compiler generates a state machine class.</div>
+</div>
+
+<!-- S4 -->
+<div class="section" id="s4">
+  <div class="section-header"><div class="section-num">4</div><h2>yield return vs yield break</h2></div>
+<pre><span class="label">C#</span><span class="kw">yield return</span> i;  <span class="cm">// return this value and PAUSE — continue on next iteration</span>
+<span class="kw">yield break</span>;     <span class="cm">// STOP iteration completely — like a return statement</span>
+
+<span class="kw">static</span> <span class="tp">IEnumerable</span>&lt;<span class="tp">int</span>&gt; <span class="fn">StopAtThree</span>()
+{
+    <span class="kw">foreach</span> (<span class="tp">int</span> i <span class="kw">in</span> MyList)
+    {
+        <span class="kw">if</span> (i > <span class="nu">3</span>) <span class="kw">yield break</span>; <span class="cm">// stop everything here</span>
+        <span class="kw">yield return</span> i;
+    }
+}
+<span class="cm">// Output: 1, 2, 3 — stops before 4</span></pre>
+</div>
+
+<!-- S5: Rules -->
+<div class="section" id="s5">
+  <div class="section-header"><div class="section-num">5</div><h2>Important Rules</h2></div>
+  <div class="table-wrap">
+    <table>
+      <tr><th>Rule</th><th>Details</th></tr>
+      <tr><td><strong>Return type</strong></td><td>Must be IEnumerable, IEnumerable&lt;T&gt;, IEnumerator, or IEnumerator&lt;T&gt;</td></tr>
+      <tr><td><strong>Cannot use</strong></td><td>yield return inside a try-catch block</td></tr>
+      <tr><td><strong>Cannot mix</strong></td><td>return and yield return in the same method</td></tr>
+      <tr><td><strong>Execution</strong></td><td>Method does NOT execute until first iteration starts</td></tr>
+      <tr><td><strong>Lazy</strong></td><td>If caller stops early, remaining items never processed</td></tr>
+      <tr><td><strong>Internally</strong></td><td>Compiler transforms into a state machine class</td></tr>
+    </table>
+  </div>
+  <div class="callout">yield is <strong>inherently lazy</strong> — if the caller <code>break</code>s out of the foreach, the remaining items are never processed. Only the work that's needed is done.</div>
+</div>
+
+<!-- S6: Quiz -->
+<div class="section" id="s6">
+  <div class="section-header"><div class="section-num">6</div><h2>Test Yourself</h2></div>
+  <div class="quiz-card" id="q1">
+    <h3>Q1: What does yield return do?</h3>
+    <button class="quiz-option" onclick="answer(this,'q1',false)">Returns all items and ends the method</button>
+    <button class="quiz-option" onclick="answer(this,'q1',true)">Sends one value to the caller and pauses — resumes on next iteration</button>
+    <button class="quiz-option" onclick="answer(this,'q1',false)">Creates a temporary List and adds to it</button>
+    <div class="quiz-explanation" id="q1-exp"><code>yield return</code> sends the current value to the caller and pauses execution. All local variables are preserved. When the caller asks for the next item, execution resumes exactly where it left off.</div>
+  </div>
+  <div class="quiz-card" id="q2">
+    <h3>Q2: Why can local variables survive between yield return calls?</h3>
+    <button class="quiz-option" onclick="answer(this,'q2',false)">They're stored on the heap</button>
+    <button class="quiz-option" onclick="answer(this,'q2',true)">The compiler generates a state machine class that stores them as fields</button>
+    <button class="quiz-option" onclick="answer(this,'q2',false)">They're marked as static automatically</button>
+    <div class="quiz-explanation" id="q2-exp">The compiler transforms any yield method into a state machine class implementing IEnumerator. Local variables become fields in this class, so they persist between calls. The method is paused, not ended.</div>
+  </div>
+  <div class="quiz-card" id="q3">
+    <h3>Q3: What does yield break do?</h3>
+    <button class="quiz-option" onclick="answer(this,'q3',false)">Pauses and sends a value</button>
+    <button class="quiz-option" onclick="answer(this,'q3',true)">Stops the iteration completely — no more values returned</button>
+    <button class="quiz-option" onclick="answer(this,'q3',false)">Throws an exception</button>
+    <div class="quiz-explanation" id="q3-exp"><code>yield break</code> terminates the iterator. No more values are sent to the caller. It's like a <code>return</code> statement for iterator methods.</div>
+  </div>
+  <div class="quiz-card" id="q4">
+    <h3>Q4: If the caller breaks out of foreach after 2 items, do the remaining items get processed?</h3>
+    <button class="quiz-option" onclick="answer(this,'q4',true)">No — yield is lazy, remaining items are never touched</button>
+    <button class="quiz-option" onclick="answer(this,'q4',false)">Yes — all items are processed first then filtered</button>
+    <div class="quiz-explanation" id="q4-exp">yield is inherently lazy. The method only runs as far as the caller needs. If the caller breaks after 2 items, the method stops — remaining items are never processed. This is a key performance benefit.</div>
+  </div>
+  <div class="quiz-score" id="score-box" style="display:none"><div class="big" id="score-text"></div><p style="color:var(--text-dim);margin-top:.3rem">yield Quiz</p></div>
+</div>
+
+<!-- Interview Answers -->
+<div class="section" id="s7">
+  <div class="section-header"><div class="section-num">★</div><h2>Interview Answer Bank</h2></div>
+  <div class="accordion"><button class="accordion-btn" onclick="toggleAcc(this)"><span>Q: What is yield used for?</span><span class="arrow">▼</span></button><div class="accordion-body"><div class="callout green">yield enables custom stateful iteration without temporary collections. When yield return is hit, the value is sent to the caller and the method pauses — preserving all locals. On the next iteration request, it resumes exactly where it left off. Useful for lazy filtering and maintaining state like running totals.</div></div></div>
+  <div class="accordion"><button class="accordion-btn" onclick="toggleAcc(this)"><span>Q: yield return vs yield break?</span><span class="arrow">▼</span></button><div class="accordion-body"><div class="callout green">yield return sends the current value and pauses — execution continues on next request. yield break stops the iteration completely — no more values returned. Like return vs yield return for iterators.</div></div></div>
+  <div class="accordion"><button class="accordion-btn" onclick="toggleAcc(this)"><span>Q: What does the compiler do with yield?</span><span class="arrow">▼</span></button><div class="accordion-body"><div class="callout green">The compiler transforms the method into a state machine class implementing IEnumerator. It tracks current position, local variable values, and execution state. Local variables become fields in this class — that's why they survive between yield return calls.</div></div></div>
+</div>
+</div>
+
+<script>
+function toggleAcc(btn){btn.classList.toggle('open');btn.nextElementSibling.classList.toggle('open')}
+
+// Ping-pong execution sim
+let ppStep=0,ppTimer=null;
+const ppSteps=[
+  {side:'caller',line:'cl-1',arrow:'right',out:''},
+  {side:'method',line:'mt-1',arrow:null,out:''},
+  {side:'method',line:'mt-2',arrow:null,out:''},
+  {side:'method',line:'mt-3',arrow:null,out:''},
+  {side:'method',line:'mt-4',arrow:null,out:''},
+  {side:'method',line:'mt-5',arrow:'left',out:''},
+  {side:'caller',line:'cl-2',arrow:null,out:''},
+  {side:'caller',line:'cl-3',arrow:null,out:'Output: 4'},
+  {side:'caller',line:'cl-4',arrow:'right',out:'Output: 4'},
+  {side:'method',line:'mt-6',arrow:null,out:'Output: 4'},
+  {side:'method',line:'mt-7',arrow:'left',out:'Output: 4'},
+  {side:'caller',line:'cl-5',arrow:null,out:'Output: 4'},
+  {side:'caller',line:'cl-6',arrow:null,out:'Output: 4, 5'},
+  {side:'caller',line:'cl-7',arrow:'right',out:'Output: 4, 5'},
+  {side:'method',line:'mt-8',arrow:'left',out:'Output: 4, 5'},
+  {side:'caller',line:'cl-8',arrow:null,out:'Output: 4, 5 ✅ Done!'},
+];
+function startPP(){
+  ppStep=0;
+  document.querySelectorAll('.pp-line').forEach(l=>{l.classList.remove('active','done')});
+  document.querySelectorAll('.pp-arrow').forEach(a=>a.classList.remove('show'));
+  document.getElementById('pp-output').textContent='';
+  document.getElementById('pp-start').textContent='▶ Running...';
+  document.getElementById('pp-start').classList.add('active');
+  clearInterval(ppTimer);
+  ppTimer=setInterval(()=>{
+    if(ppStep>=ppSteps.length){clearInterval(ppTimer);document.getElementById('pp-start').textContent='▶ Run Again';document.getElementById('pp-start').classList.remove('active');return}
+    // deactivate previous
+    document.querySelectorAll('.pp-line.active').forEach(l=>{l.classList.remove('active');l.classList.add('done')});
+    document.querySelectorAll('.pp-arrow').forEach(a=>a.classList.remove('show'));
+    const s=ppSteps[ppStep];
+    document.getElementById(s.line).classList.add('active');
+    if(s.arrow==='right')document.getElementById('arr-r').classList.add('show');
+    if(s.arrow==='left')document.getElementById('arr-l').classList.add('show');
+    if(s.out)document.getElementById('pp-output').textContent=s.out;
+    ppStep++;
+  },600);
+}
+
+// Quiz
+let answered=0,correct=0,total=4;
+function answer(btn,qId,isCorrect){const card=document.getElementById(qId);if(card.dataset.answered)return;card.dataset.answered='1';answered++;if(isCorrect){btn.classList.add('correct');correct++;}else btn.classList.add('wrong');card.querySelectorAll('.quiz-option').forEach(o=>o.disabled=true);document.getElementById(qId+'-exp').classList.add('show');if(answered===total){document.getElementById('score-box').style.display='block';document.getElementById('score-text').textContent=correct+' / '+total;}}
+const sections=document.querySelectorAll('.section');const navLinks=document.querySelectorAll('.nav a');
+window.addEventListener('scroll',()=>{let c='';sections.forEach(s=>{if(window.scrollY>=s.offsetTop-120)c=s.id});navLinks.forEach(a=>{a.classList.remove('active');if(a.getAttribute('href')==='#'+c)a.classList.add('active')})});
+</script>
+</body>
+</html>

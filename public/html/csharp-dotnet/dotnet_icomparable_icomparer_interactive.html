@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>.NET IComparable vs IComparer — Interactive Study Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0b0f19;
+  --surface: #131a2b;
+  --surface2: #1b2540;
+  --border: #283352;
+  --text: #e2e8f0;
+  --text-dim: #7b8fad;
+  --accent: #f59e0b;
+  --accent2: #ef4444;
+  --green: #22c55e;
+  --red: #ef4444;
+  --blue: #3b82f6;
+  --purple: #a855f7;
+  --code-bg: #0a0f1a;
+  --glow: rgba(245,158,11,0.12);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;min-height:100vh}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 30% 0%,rgba(245,158,11,0.05)0%,transparent 60%),radial-gradient(ellipse at 70% 100%,rgba(168,85,247,0.04)0%,transparent 60%);pointer-events:none;z-index:0}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+
+.container{max-width:900px;margin:0 auto;padding:2rem 1.5rem 4rem;position:relative;z-index:1}
+
+.hero{text-align:center;padding:3rem 0 2.5rem}
+.hero-badge{display:inline-block;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-weight:700;font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;padding:.35rem 1rem;border-radius:99px;margin-bottom:1.2rem}
+.hero h1{font-size:2.4rem;font-weight:800;background:linear-gradient(135deg,#fff 30%,var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1.15;margin-bottom:.5rem}
+.hero p{color:var(--text-dim);font-size:1.05rem}
+
+.nav{display:flex;flex-wrap:wrap;gap:.5rem;justify-content:center;margin-bottom:2.5rem;position:sticky;top:0;z-index:10;background:rgba(11,15,25,.85);backdrop-filter:blur(12px);padding:.75rem 0;border-bottom:1px solid var(--border)}
+.nav a{color:var(--text-dim);text-decoration:none;font-size:.78rem;font-weight:600;padding:.4rem .9rem;border-radius:8px;transition:all .2s;border:1px solid transparent;letter-spacing:.02em}
+.nav a:hover,.nav a.active{color:var(--accent);background:rgba(245,158,11,.08);border-color:rgba(245,158,11,.2)}
+
+.section{margin-bottom:3rem;animation:fadeUp .5s ease both}
+.section-header{display:flex;align-items:center;gap:.75rem;margin-bottom:1.2rem;padding-bottom:.8rem;border-bottom:1px solid var(--border)}
+.section-num{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.85rem;color:#fff;flex-shrink:0}
+.section-header h2{font-size:1.4rem;font-weight:700}
+
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.5rem;margin-bottom:1rem;transition:border-color .3s}
+.card:hover{border-color:rgba(245,158,11,.25)}
+.callout{background:linear-gradient(135deg,rgba(245,158,11,.07),rgba(239,68,68,.04));border-left:3px solid var(--accent);border-radius:0 10px 10px 0;padding:1rem 1.2rem;margin:1rem 0;font-size:.92rem}
+.callout.green{border-left-color:var(--green);background:linear-gradient(135deg,rgba(34,197,94,.07),rgba(34,197,94,.03))}
+.callout.blue{border-left-color:var(--blue);background:linear-gradient(135deg,rgba(59,130,246,.07),rgba(59,130,246,.03))}
+
+pre{background:var(--code-bg);border:1px solid var(--border);border-radius:10px;padding:1.2rem;overflow-x:auto;margin:.8rem 0;font-family:'JetBrains Mono',monospace;font-size:.8rem;line-height:1.65;position:relative}
+pre .label{position:absolute;top:.5rem;right:.6rem;font-size:.6rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em;font-family:'Outfit',sans-serif;font-weight:600;background:var(--surface);padding:.15rem .5rem;border-radius:4px}
+.kw{color:var(--purple)}.tp{color:var(--blue)}.cm{color:#3d5575;font-style:italic}.st{color:var(--green)}.fn{color:var(--accent)}.nu{color:#fb923c}.er{color:var(--red)}
+
+.table-wrap{overflow-x:auto;margin:.8rem 0;border-radius:10px;border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{background:var(--surface2);color:var(--accent);font-weight:600;text-align:left;padding:.7rem 1rem;white-space:nowrap}
+td{padding:.6rem 1rem;border-top:1px solid var(--border)}
+tr:hover td{background:rgba(245,158,11,.03)}
+
+.accordion{margin:.8rem 0}
+.accordion-btn{width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:'Outfit',sans-serif;font-size:.9rem;font-weight:600;padding:.9rem 1.2rem;border-radius:10px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;transition:all .2s}
+.accordion-btn:hover{border-color:var(--accent);background:var(--surface2)}
+.accordion-btn .arrow{transition:transform .3s;font-size:.8rem;color:var(--accent)}
+.accordion-btn.open .arrow{transform:rotate(180deg)}
+.accordion-body{max-height:0;overflow:hidden;transition:max-height .4s ease;background:var(--surface);border:1px solid var(--border);border-top:none;border-radius:0 0 10px 10px;padding:0 1.2rem}
+.accordion-body.open{max-height:2000px;padding:1.2rem}
+
+/* VS split */
+.vs-split{display:grid;grid-template-columns:1fr auto 1fr;gap:1rem;align-items:start;margin:1rem 0}
+.vs-col{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.2rem}
+.vs-col h3{font-size:.95rem;margin-bottom:.8rem;display:flex;align-items:center;gap:.5rem}
+.vs-badge{display:inline-block;padding:.2rem .6rem;border-radius:6px;font-size:.7rem;font-weight:700;letter-spacing:.05em}
+.vs-badge.internal{background:rgba(245,158,11,.15);color:var(--accent)}
+.vs-badge.external{background:rgba(168,85,247,.15);color:var(--purple)}
+.vs-divider{display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.5rem;color:var(--text-dim)}
+
+/* Sort demo */
+.sort-demo{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.5rem;margin:1rem 0}
+.sort-row{display:flex;gap:.5rem;margin:.5rem 0;flex-wrap:wrap;transition:all .4s}
+.sort-item{background:var(--surface2);border:1px solid var(--border);padding:.5rem .8rem;border-radius:8px;font-family:'JetBrains Mono',monospace;font-size:.78rem;min-width:120px;transition:all .4s ease}
+.sort-item .name{font-weight:600;color:var(--text)}
+.sort-item .age{color:var(--accent);font-size:.7rem}
+.sort-controls{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:1rem}
+.sort-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);font-family:'Outfit',sans-serif;font-size:.78rem;font-weight:600;padding:.5rem 1rem;border-radius:8px;cursor:pointer;transition:all .2s}
+.sort-btn:hover{color:var(--text);border-color:var(--accent)}
+.sort-btn.active{background:rgba(245,158,11,.12);border-color:var(--accent);color:var(--accent)}
+.sort-label{font-size:.75rem;color:var(--text-dim);margin-bottom:.3rem;font-weight:600}
+
+/* Quiz */
+.quiz-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.5rem;margin-bottom:1rem}
+.quiz-card h3{font-size:1rem;margin-bottom:1rem;color:var(--accent)}
+.quiz-option{display:block;width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'Outfit',sans-serif;font-size:.85rem;padding:.7rem 1rem;border-radius:8px;cursor:pointer;margin-bottom:.4rem;text-align:left;transition:all .2s}
+.quiz-option:hover{border-color:var(--accent);transform:translateX(4px)}
+.quiz-option.correct{background:rgba(34,197,94,.15);border-color:var(--green);color:var(--green)}
+.quiz-option.wrong{background:rgba(239,68,68,.1);border-color:var(--red);color:var(--red)}
+.quiz-option:disabled{cursor:default;transform:none}
+.quiz-explanation{margin-top:.7rem;padding:.8rem;border-radius:8px;background:rgba(245,158,11,.06);font-size:.85rem;display:none;line-height:1.6}
+.quiz-explanation.show{display:block}
+.quiz-score{text-align:center;padding:1.5rem;background:var(--surface);border:1px solid var(--accent);border-radius:14px;margin-top:1rem}
+.quiz-score .big{font-size:2.2rem;font-weight:800;color:var(--accent)}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:720px){
+  .hero h1{font-size:1.6rem}
+  .container{padding:1rem}
+  .vs-split{grid-template-columns:1fr;gap:.5rem}
+  .vs-divider{transform:rotate(90deg);padding:.5rem}
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="hero">
+  <div class="hero-badge">.NET Interview Study Guide</div>
+  <h1>IComparable vs IComparer</h1>
+  <p>Internal default sort vs external flexible sort strategies</p>
+</div>
+
+<nav class="nav">
+  <a href="#s1">Summary</a>
+  <a href="#s2">IComparable</a>
+  <a href="#s3">IComparer</a>
+  <a href="#s4">Return Values</a>
+  <a href="#s5">Live Sort Demo</a>
+  <a href="#s6">LINQ</a>
+  <a href="#s7">Quiz</a>
+</nav>
+
+<!-- S1 -->
+<div class="section" id="s1">
+  <div class="section-header"><div class="section-num">1</div><h2>Quick Summary</h2></div>
+  <div class="vs-split">
+    <div class="vs-col">
+      <h3><span class="vs-badge internal">INTERNAL</span> IComparable</h3>
+      <p style="font-size:.88rem;">The object knows how to sort <strong>itself</strong>. Sorting logic lives <strong>inside</strong> the class via <code>CompareTo()</code>.</p>
+      <p style="font-size:.82rem;color:var(--text-dim);margin-top:.5rem;">One fixed default sort — like the object judging itself.</p>
+    </div>
+    <div class="vs-divider">vs</div>
+    <div class="vs-col">
+      <h3><span class="vs-badge external">EXTERNAL</span> IComparer</h3>
+      <p style="font-size:.88rem;">A <strong>separate class</strong> that knows how to sort from outside via <code>Compare()</code>.</p>
+      <p style="font-size:.82rem;color:var(--text-dim);margin-top:.5rem;">Multiple flexible strategies — like hiring an external judge.</p>
+    </div>
+  </div>
+  <div class="callout">⚠️ <strong>IComparable</strong> = one fixed default sort. <strong>IComparer</strong> = multiple flexible sort strategies. Think of IComparable as the object judging itself, and IComparer as hiring an external judge.</div>
+</div>
+
+<!-- S2 -->
+<div class="section" id="s2">
+  <div class="section-header"><div class="section-num">2</div><h2>IComparable — Internal Default Sorting</h2></div>
+  <p style="margin-bottom:.8rem;">The class implements sorting logic inside itself using <code>CompareTo()</code>. One default sort criteria.</p>
+<pre><span class="label">C#</span><span class="kw">class</span> <span class="tp">Student</span> : <span class="tp">IComparable</span>&lt;<span class="tp">Student</span>&gt;
+{
+    <span class="kw">public</span> <span class="tp">string</span> Name { <span class="kw">get</span>; <span class="kw">set</span>; }
+    <span class="kw">public</span> <span class="tp">int</span> Age { <span class="kw">get</span>; <span class="kw">set</span>; }
+
+    <span class="cm">// Sorting logic lives INSIDE the class</span>
+    <span class="kw">public int</span> <span class="fn">CompareTo</span>(<span class="tp">Student</span> other)
+    {
+        <span class="kw">return this</span>.Age.<span class="fn">CompareTo</span>(other.Age); <span class="cm">// fixed default — sort by Age</span>
+    }
+}
+
+students.<span class="fn">Sort</span>(); <span class="cm">// uses CompareTo() internally — sorts by Age</span></pre>
+
+  <div class="callout" style="border-left-color:var(--red);">
+    <strong>The Problem:</strong> What if sometimes you want to sort by Name and other times by Age? With IComparable you are <strong>stuck</strong> — the logic is hardcoded inside the class. <code>students.Sort()</code> ALWAYS sorts by Age.
+  </div>
+</div>
+
+<!-- S3 -->
+<div class="section" id="s3">
+  <div class="section-header"><div class="section-num">3</div><h2>IComparer — External Flexible Sorting</h2></div>
+  <p style="margin-bottom:.8rem;">Create separate classes for each sort criteria. Logic lives <strong>outside</strong> the Student class. Zero modifications to original class.</p>
+<pre><span class="label">C#</span><span class="cm">// Sort by Name — external class</span>
+<span class="kw">class</span> <span class="tp">SortByName</span> : <span class="tp">IComparer</span>&lt;<span class="tp">Student</span>&gt;
+{
+    <span class="kw">public int</span> <span class="fn">Compare</span>(<span class="tp">Student</span> x, <span class="tp">Student</span> y)
+        => <span class="tp">string</span>.<span class="fn">Compare</span>(x.Name, y.Name);
+}
+
+<span class="cm">// Sort by Age — external class</span>
+<span class="kw">class</span> <span class="tp">SortByAge</span> : <span class="tp">IComparer</span>&lt;<span class="tp">Student</span>&gt;
+{
+    <span class="kw">public int</span> <span class="fn">Compare</span>(<span class="tp">Student</span> x, <span class="tp">Student</span> y)
+        => x.Age.<span class="fn">CompareTo</span>(y.Age);
+}
+
+<span class="cm">// Sort any way you want — zero changes to Student class</span>
+students.<span class="fn">Sort</span>(<span class="kw">new</span> <span class="tp">SortByName</span>()); <span class="cm">// alphabetical by name</span>
+students.<span class="fn">Sort</span>(<span class="kw">new</span> <span class="tp">SortByAge</span>());  <span class="cm">// ascending by age</span></pre>
+
+  <div class="callout blue">⚠️ <strong>Open/Closed Principle</strong> — IComparer keeps the class closed for modification but open for extension. Mentioning this in interviews instantly shows mid-level thinking.</div>
+</div>
+
+<!-- S4 -->
+<div class="section" id="s4">
+  <div class="section-header"><div class="section-num">4</div><h2>CompareTo Return Values</h2></div>
+  <div class="table-wrap">
+    <table>
+      <tr><th>Return Value</th><th>Meaning</th></tr>
+      <tr><td><code style="color:var(--blue)">Negative (-1)</code></td><td>Current object is <strong>LESS THAN</strong> the other</td></tr>
+      <tr><td><code style="color:var(--accent)">Zero (0)</code></td><td>Current object is <strong>EQUAL TO</strong> the other</td></tr>
+      <tr><td><code style="color:var(--red)">Positive (+1)</code></td><td>Current object is <strong>GREATER THAN</strong> the other</td></tr>
+    </table>
+  </div>
+
+  <div class="table-wrap" style="margin-top:1rem;">
+    <table>
+      <tr><th></th><th>IComparable</th><th>IComparer</th></tr>
+      <tr><td><strong>Where is logic?</strong></td><td>Inside the class</td><td>Outside in a separate class</td></tr>
+      <tr><td><strong>Sort criteria</strong></td><td>One fixed default</td><td>As many as you want</td></tr>
+      <tr><td><strong>How called?</strong></td><td><code>list.Sort()</code></td><td><code>list.Sort(new SortByX())</code></td></tr>
+      <tr><td><strong>Flexible?</strong></td><td style="color:var(--red)">❌ No</td><td style="color:var(--green)">✅ Yes</td></tr>
+      <tr><td><strong>Modifies class?</strong></td><td style="color:var(--red)">✅ Yes</td><td style="color:var(--green)">❌ No</td></tr>
+      <tr><td><strong>Open/Closed?</strong></td><td style="color:var(--red)">❌ No</td><td style="color:var(--green)">✅ Yes</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- S5: Interactive Sort Demo -->
+<div class="section" id="s5">
+  <div class="section-header"><div class="section-num">5</div><h2>Live Sort Demo</h2></div>
+  <div class="sort-demo">
+    <div class="sort-label">Choose a sort strategy:</div>
+    <div class="sort-controls">
+      <button class="sort-btn" onclick="doSort('unsorted')">Unsorted</button>
+      <button class="sort-btn" onclick="doSort('age')">IComparable — Sort by Age</button>
+      <button class="sort-btn" onclick="doSort('name')">IComparer — Sort by Name</button>
+      <button class="sort-btn" onclick="doSort('ageDesc')">IComparer — Age Descending</button>
+    </div>
+    <div class="sort-label" id="sort-method" style="color:var(--accent);min-height:1.2rem;">Click a button to sort</div>
+    <div class="sort-row" id="sort-row"></div>
+  </div>
+</div>
+
+<!-- S6: LINQ -->
+<div class="section" id="s6">
+  <div class="section-header"><div class="section-num">6</div><h2>Modern Alternative — LINQ OrderBy</h2></div>
+<pre><span class="label">C#</span><span class="cm">// Instead of IComparer classes — use LINQ</span>
+<span class="kw">var</span> byName = students.<span class="fn">OrderBy</span>(s => s.Name).<span class="fn">ToList</span>();
+<span class="kw">var</span> byAge  = students.<span class="fn">OrderBy</span>(s => s.Age).<span class="fn">ToList</span>();
+<span class="kw">var</span> byAgeThenName = students
+    .<span class="fn">OrderBy</span>(s => s.Age)
+    .<span class="fn">ThenBy</span>(s => s.Name)
+    .<span class="fn">ToList</span>();
+
+<span class="cm">// IComparer is still important for:</span>
+<span class="cm">// - List.Sort() which sorts in-place (no new list)</span>
+<span class="cm">// - Custom complex sorting logic</span>
+<span class="cm">// - Older codebases & interview questions</span></pre>
+</div>
+
+<!-- S7: Quiz -->
+<div class="section" id="s7">
+  <div class="section-header"><div class="section-num">7</div><h2>Test Yourself</h2></div>
+
+  <div class="quiz-card" id="q1">
+    <h3>Q1: Where does the sorting logic live in IComparable?</h3>
+    <button class="quiz-option" onclick="answer(this,'q1',false)">In a separate external class</button>
+    <button class="quiz-option" onclick="answer(this,'q1',true)">Inside the class itself via CompareTo()</button>
+    <button class="quiz-option" onclick="answer(this,'q1',false)">In the Sort() method of List</button>
+    <div class="quiz-explanation" id="q1-exp">IComparable means the class implements <code>CompareTo()</code> internally — the object knows how to sort itself. This is the fixed default sort.</div>
+  </div>
+
+  <div class="quiz-card" id="q2">
+    <h3>Q2: Which SOLID principle does IComparer follow?</h3>
+    <button class="quiz-option" onclick="answer(this,'q2',false)">Single Responsibility</button>
+    <button class="quiz-option" onclick="answer(this,'q2',true)">Open/Closed Principle</button>
+    <button class="quiz-option" onclick="answer(this,'q2',false)">Liskov Substitution</button>
+    <button class="quiz-option" onclick="answer(this,'q2',false)">Dependency Inversion</button>
+    <div class="quiz-explanation" id="q2-exp">IComparer keeps the original class <strong>closed for modification</strong> but <strong>open for extension</strong> — you can add new sort strategies without changing the class.</div>
+  </div>
+
+  <div class="quiz-card" id="q3">
+    <h3>Q3: What does <code>CompareTo()</code> return when the current object is LESS than the other?</h3>
+    <button class="quiz-option" onclick="answer(this,'q3',true)">A negative number</button>
+    <button class="quiz-option" onclick="answer(this,'q3',false)">Zero</button>
+    <button class="quiz-option" onclick="answer(this,'q3',false)">A positive number</button>
+    <button class="quiz-option" onclick="answer(this,'q3',false)">It throws an exception</button>
+    <div class="quiz-explanation" id="q3-exp">Negative = less than, Zero = equal, Positive = greater than. This convention is shared by both <code>CompareTo()</code> and <code>Compare()</code>.</div>
+  </div>
+
+  <div class="quiz-score" id="score-box" style="display:none;">
+    <div class="big" id="score-text"></div>
+    <p style="color:var(--text-dim);margin-top:.3rem">IComparable vs IComparer Quiz</p>
+  </div>
+</div>
+
+<!-- Interview Answers -->
+<div class="section" id="s8">
+  <div class="section-header"><div class="section-num">★</div><h2>Interview Answer Bank</h2></div>
+
+  <div class="accordion">
+    <button class="accordion-btn" onclick="toggleAcc(this)"><span>Q: Difference between IComparable and IComparer?</span><span class="arrow">▼</span></button>
+    <div class="accordion-body">
+      <div class="callout green">IComparable defines a default sort implementation inside the class using CompareTo(). Limited to one fixed criteria — sorting logic is coupled to the class. IComparer separates sorting into external classes using Compare(), allowing multiple strategies without modifying the original class. IComparer follows the Open/Closed principle.</div>
+    </div>
+  </div>
+  <div class="accordion">
+    <button class="accordion-btn" onclick="toggleAcc(this)"><span>Q: When would you use IComparer over IComparable?</span><span class="arrow">▼</span></button>
+    <div class="accordion-body">
+      <div class="callout green">Use IComparer when you need multiple sort strategies — e.g. employees by name in one context and salary in another. Use IComparable when there's one obvious natural default sort that will never change — e.g. dates chronologically. In modern code, LINQ OrderBy is often preferred for readability.</div>
+    </div>
+  </div>
+  <div class="accordion">
+    <button class="accordion-btn" onclick="toggleAcc(this)"><span>Q: What do the return values of CompareTo mean?</span><span class="arrow">▼</span></button>
+    <div class="accordion-body">
+      <div class="callout green">Negative = current object is less than the other. Zero = equal. Positive = greater than. This convention is shared by both IComparable.CompareTo() and IComparer.Compare(). The Sort method uses these return values to determine ordering.</div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script>
+// Accordion
+function toggleAcc(btn){const b=btn.nextElementSibling;btn.classList.toggle('open');b.classList.toggle('open')}
+
+// Sort demo
+const students=[
+  {name:'Ali',age:25},
+  {name:'Omar',age:20},
+  {name:'Ahmed',age:22},
+  {name:'Sara',age:23},
+  {name:'Hana',age:19}
+];
+function renderSort(arr,label){
+  const row=document.getElementById('sort-row');
+  row.innerHTML='';
+  arr.forEach((s,i)=>{
+    const d=document.createElement('div');
+    d.className='sort-item';
+    d.style.transitionDelay=i*60+'ms';
+    d.innerHTML=`<span class="name">${s.name}</span> <span class="age">Age ${s.age}</span>`;
+    row.appendChild(d);
+  });
+  document.getElementById('sort-method').textContent=label;
+  document.querySelectorAll('.sort-btn').forEach(b=>b.classList.remove('active'));
+  event.target.classList.add('active');
+}
+function doSort(type){
+  let sorted=[...students];
+  let label='';
+  if(type==='age'){sorted.sort((a,b)=>a.age-b.age);label='students.Sort()  →  CompareTo() sorts by Age ascending';}
+  else if(type==='name'){sorted.sort((a,b)=>a.name.localeCompare(b.name));label='students.Sort(new SortByName())  →  alphabetical';}
+  else if(type==='ageDesc'){sorted.sort((a,b)=>b.age-a.age);label='students.Sort(new SortByAgeDesc())  →  Age descending';}
+  else{label='Original order — unsorted';}
+  renderSort(sorted,label);
+}
+// init
+document.getElementById('sort-row').innerHTML=students.map(s=>`<div class="sort-item"><span class="name">${s.name}</span> <span class="age">Age ${s.age}</span></div>`).join('');
+
+// Quiz
+let answered=0,correct=0,total=3;
+function answer(btn,qId,isCorrect){
+  const card=document.getElementById(qId);
+  if(card.dataset.answered)return;
+  card.dataset.answered='1';answered++;
+  if(isCorrect){btn.classList.add('correct');correct++;}
+  else btn.classList.add('wrong');
+  card.querySelectorAll('.quiz-option').forEach(o=>o.disabled=true);
+  document.getElementById(qId+'-exp').classList.add('show');
+  if(answered===total){document.getElementById('score-box').style.display='block';document.getElementById('score-text').textContent=correct+' / '+total;}
+}
+
+// Nav highlight
+const sections=document.querySelectorAll('.section');
+const navLinks=document.querySelectorAll('.nav a');
+window.addEventListener('scroll',()=>{let c='';sections.forEach(s=>{if(window.scrollY>=s.offsetTop-120)c=s.id;});navLinks.forEach(a=>{a.classList.remove('active');if(a.getAttribute('href')==='#'+c)a.classList.add('active');});});
+</script>
+</body>
+</html>

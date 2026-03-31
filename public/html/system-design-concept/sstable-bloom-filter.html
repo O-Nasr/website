@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SSTable, Bloom Filters &amp; LSM Trees — Interactive Study Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=DM+Sans:ital,wght@0,400;0,500;0,700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#060810;--bg-card:#0d0f18;--bg-code:#090b12;--bg-el:#151828;--border:#191d30;--border-gl:#242840;--text:#c2c8d8;--text-dim:#5c6486;--text-br:#e4eaf4;--c1:#06b6d4;--c2:#a855f7;--c3:#f59e0b;--c4:#10b981;--c5:#3b82f6;--c6:#ef4444;--c7:#ec4899;--r:12px}
+*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.72;overflow-x:hidden}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border-gl);border-radius:3px}
+.hero{position:relative;min-height:44vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:80px 24px 50px;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 500px 350px at 25% 40%,rgba(6,182,212,.1),transparent),radial-gradient(ellipse 400px 300px at 75% 55%,rgba(168,85,247,.07),transparent)}
+.hero-badge{position:relative;display:inline-flex;align-items:center;gap:8px;padding:6px 18px;border:1px solid var(--c1);border-radius:100px;font-size:.8rem;color:var(--c1);letter-spacing:.08em;text-transform:uppercase;margin-bottom:20px}
+.hero h1{position:relative;font-family:'Playfair Display',serif;font-size:clamp(2rem,5vw,3.4rem);font-weight:900;line-height:1.15;color:var(--text-br);max-width:750px}
+.hero h1 span{background:linear-gradient(135deg,var(--c1),var(--c2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{position:relative;max-width:640px;margin-top:16px;color:var(--text-dim);font-size:1rem}
+.np{position:relative;display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:28px}
+.np a{display:inline-block;padding:6px 14px;border:1px solid var(--border-gl);border-radius:100px;color:var(--text-dim);text-decoration:none;font-size:.82rem;transition:all .25s}
+.np a:hover{border-color:var(--c1);color:var(--c1);background:rgba(6,182,212,.06)}
+.sec{max-width:1000px;margin:0 auto 70px;padding:0 24px;scroll-margin-top:32px}
+.sh{display:flex;align-items:center;gap:16px;margin-bottom:8px}
+.sn{display:flex;align-items:center;justify-content:center;width:46px;height:46px;border-radius:14px;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:1rem;flex-shrink:0;background:color-mix(in srgb,var(--pat) 16%,transparent);color:var(--pat);border:1px solid color-mix(in srgb,var(--pat) 28%,transparent)}
+.sh h2{font-family:'Playfair Display',serif;font-size:1.55rem;font-weight:700;color:var(--text-br)}
+.ss{color:var(--text-dim);font-style:italic;margin-bottom:24px;padding-left:62px;font-size:.93rem}
+.s1{--pat:var(--c1)}.s2{--pat:var(--c5)}.s3{--pat:var(--c2)}.s4{--pat:var(--c3)}.s5{--pat:var(--c4)}.s6{--pat:var(--c6)}
+.card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r);padding:22px;margin-bottom:18px}
+.card h3{font-size:.95rem;color:var(--text-br);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card h3::before{content:'';display:inline-block;width:3px;height:16px;border-radius:2px;background:var(--pat,var(--c1))}
+.dw{background:var(--bg-code);border:1px solid var(--border);border-radius:var(--r);padding:24px;margin-bottom:18px;overflow-x:auto}
+.dw svg{display:block;margin:0 auto;max-width:100%;height:auto}
+.tw{overflow-x:auto;margin-bottom:18px}table{width:100%;border-collapse:collapse;font-size:.84rem}
+thead th{background:var(--bg-el);color:var(--text-br);padding:11px 14px;text-align:left;font-weight:600;border-bottom:2px solid var(--border-gl);white-space:nowrap}
+tbody td{padding:9px 14px;border-bottom:1px solid var(--border);vertical-align:top}tbody tr:hover{background:rgba(6,182,212,.03)}
+.tip{display:flex;gap:12px;padding:14px 16px;border-radius:var(--r);margin-bottom:18px;font-size:.87rem}
+.tip-c{background:rgba(6,182,212,.06);border:1px solid rgba(6,182,212,.16)}.tip-c .ic{color:var(--c1)}
+.tip-p{background:rgba(168,85,247,.06);border:1px solid rgba(168,85,247,.16)}.tip-p .ic{color:var(--c2)}
+.tip-g{background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.16)}.tip-g .ic{color:var(--c4)}
+.tip .ic{font-size:1.2rem;flex-shrink:0}
+.ct{display:flex;align-items:center;justify-content:space-between;width:100%;padding:14px 18px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r);cursor:pointer;color:var(--text-br);font-size:.93rem;font-weight:600;margin-bottom:4px;transition:all .25s}
+.ct:hover{border-color:var(--pat,var(--c1))}.ct .ch{transition:transform .3s;color:var(--text-dim)}.ct.open .ch{transform:rotate(180deg)}
+.cb{max-height:0;overflow:hidden;transition:max-height .4s ease}.cb.open{max-height:10000px}.cb>.inner{padding:14px 0}
+.bt{position:fixed;bottom:24px;right:24px;width:44px;height:44px;border-radius:50%;background:var(--c1);color:#fff;border:none;cursor:pointer;font-size:1.2rem;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s,transform .3s;box-shadow:0 4px 16px rgba(6,182,212,.35);z-index:100;font-weight:700}
+.bt.show{opacity:1;pointer-events:auto}.bt:hover{transform:scale(1.1)}
+footer{text-align:center;padding:36px 24px;color:var(--text-dim);font-size:.8rem;border-top:1px solid var(--border);margin-top:40px}
+.sum{max-width:1000px;margin:0 auto 60px;padding:0 24px}.sum h2{font-family:'Playfair Display',serif;font-size:1.55rem;color:var(--text-br);margin-bottom:20px;text-align:center}
+@media(max-width:768px){.ss{padding-left:0}}
+</style>
+</head>
+<body>
+
+<section class="hero">
+  <div class="hero-badge">Storage Internals</div>
+  <h1><span>SSTable</span>, Bloom Filters &amp; <span>LSM Trees</span></h1>
+  <p>The storage engine behind Cassandra, Bigtable, RocksDB — sorted immutable files, probabilistic filters, and log-structured merge trees.</p>
+  <div class="np">
+    <a href="#lsm">LSM Tree</a><a href="#sstable">SSTable</a><a href="#write">Write Path</a><a href="#read">Read Path</a><a href="#bloom">Bloom Filter</a><a href="#compact">Compaction</a><a href="#compare">Comparison</a>
+  </div>
+</section>
+
+<!-- ═══════ 1. LSM TREE ═══════ -->
+<section id="lsm" class="sec s1">
+  <div class="sh"><div class="sn">1</div><h2>LSM Tree (Log-Structured Merge Tree)</h2></div>
+  <div class="ss">The data structure behind write-optimized databases — append-only, never update in place.</div>
+
+  <div class="card"><h3>Core Idea</h3><p>Instead of updating data in place (like B-Trees in relational DBs), LSM trees <strong>write new data sequentially</strong> to disk (append-only), keep recent data in <strong>memory (Memtable)</strong>, periodically <strong>flush to disk as SSTables</strong>, and use <strong>compaction</strong> to merge and clean up. Sequential writes are much faster than random writes — that's the key insight.</p></div>
+
+  <div class="tip tip-c"><span class="ic">🧠</span><span><strong>Relationship:</strong> LSM Tree = Algorithm + Structure. SSTable = Storage format used by LSM Tree. LSM organizes data across Memtable + SSTables + Compaction.</span></div>
+</section>
+
+<!-- ═══════ 2. SSTABLE ═══════ -->
+<section id="sstable" class="sec s2">
+  <div class="sh"><div class="sn">2</div><h2>SSTable (Sorted String Table)</h2></div>
+  <div class="ss">A persistent, immutable, sorted file format — the physical representation of LSM Tree data on disk.</div>
+
+  <div class="dw">
+    <svg viewBox="0 0 780 220" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+      <!-- SSTable file structure -->
+      <text x="390" y="20" text-anchor="middle" fill="var(--text-br)" font-weight="700" font-size="14" font-family="Playfair Display,serif">SSTable File Structure</text>
+      <!-- Main file bar -->
+      <rect x="40" y="35" width="700" height="60" rx="10" fill="rgba(59,130,246,.04)" stroke="#3b82f6" stroke-width="1.5"/>
+      <!-- Data block -->
+      <rect x="40" y="35" width="300" height="60" rx="10 0 0 10" fill="rgba(59,130,246,.1)" stroke="#3b82f6" stroke-width="1.5"/>
+      <text x="190" y="60" text-anchor="middle" fill="#3b82f6" font-weight="700" font-size="13">Data Blocks</text>
+      <text x="190" y="78" text-anchor="middle" fill="#8890a8" font-size="10">sorted key-value pairs</text>
+      <!-- Index block -->
+      <rect x="340" y="35" width="200" height="60" fill="rgba(168,85,247,.1)" stroke="#a855f7" stroke-width="1.5"/>
+      <text x="440" y="60" text-anchor="middle" fill="#a855f7" font-weight="700" font-size="13">Index Block</text>
+      <text x="440" y="78" text-anchor="middle" fill="#8890a8" font-size="10">sparse key → offset</text>
+      <!-- Bloom filter -->
+      <rect x="540" y="35" width="200" height="60" rx="0 10 10 0" fill="rgba(16,185,129,.1)" stroke="#10b981" stroke-width="1.5"/>
+      <text x="640" y="60" text-anchor="middle" fill="#10b981" font-weight="700" font-size="13">Bloom Filter</text>
+      <text x="640" y="78" text-anchor="middle" fill="#8890a8" font-size="10">"is key here?" fast check</text>
+      <!-- Key properties -->
+      <rect x="40" y="120" width="160" height="40" rx="8" fill="rgba(6,182,212,.06)" stroke="#06b6d4" stroke-width="1"/>
+      <text x="120" y="144" text-anchor="middle" fill="#06b6d4" font-weight="600" font-size="10">🔒 Immutable</text>
+      <text x="120" y="156" text-anchor="middle" fill="#8890a8" font-size="8">never modified after creation</text>
+      <rect x="220" y="120" width="160" height="40" rx="8" fill="rgba(6,182,212,.06)" stroke="#06b6d4" stroke-width="1"/>
+      <text x="300" y="144" text-anchor="middle" fill="#06b6d4" font-weight="600" font-size="10">🔤 Sorted by key</text>
+      <text x="300" y="156" text-anchor="middle" fill="#8890a8" font-size="8">efficient range queries</text>
+      <rect x="400" y="120" width="170" height="40" rx="8" fill="rgba(6,182,212,.06)" stroke="#06b6d4" stroke-width="1"/>
+      <text x="485" y="144" text-anchor="middle" fill="#06b6d4" font-weight="600" font-size="10">📝 Append-only</text>
+      <text x="485" y="156" text-anchor="middle" fill="#8890a8" font-size="8">new updates = new SSTable</text>
+      <rect x="590" y="120" width="150" height="40" rx="8" fill="rgba(6,182,212,.06)" stroke="#06b6d4" stroke-width="1"/>
+      <text x="665" y="144" text-anchor="middle" fill="#06b6d4" font-weight="600" font-size="10">🔄 Compactable</text>
+      <text x="665" y="156" text-anchor="middle" fill="#8890a8" font-size="8">merge to reclaim space</text>
+      <!-- Note -->
+      <rect x="120" y="182" width="540" height="26" rx="8" fill="rgba(59,130,246,.05)" stroke="rgba(59,130,246,.15)" stroke-width="1"/>
+      <text x="390" y="199" text-anchor="middle" fill="#3b82f6" font-size="10">SSTable is a file format, not a database — used BY databases like Cassandra, Bigtable, RocksDB</text>
+    </svg>
+  </div>
+
+  <div class="card"><h3>Why SSTables?</h3><p>Optimized for <strong>write-heavy workloads</strong>. Sequential disk writes are fast and efficient. Great for huge datasets (billions of keys). Used by Cassandra, Bigtable, ScyllaDB, RocksDB, LevelDB, HBase.</p></div>
+</section>
+
+<!-- ═══════ 3. WRITE PATH ═══════ -->
+<section id="write" class="sec s3">
+  <div class="sh"><div class="sn">3</div><h2>Write Path</h2></div>
+  <div class="ss">Data → Commit Log + Memtable → flush to SSTable when full.</div>
+
+  <div class="dw">
+    <svg viewBox="0 0 780 280" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+      <defs><marker id="aw" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#a855f7"/></marker><marker id="awg" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#5c6486"/></marker></defs>
+      <!-- Write request -->
+      <rect x="30" y="90" width="100" height="55" rx="10" fill="rgba(168,85,247,.1)" stroke="#a855f7" stroke-width="1.5"/>
+      <text x="80" y="114" text-anchor="middle" fill="#a855f7" font-weight="700" font-size="12">Write</text>
+      <text x="80" y="132" text-anchor="middle" fill="#8890a8" font-size="9">key: "user:1"</text>
+      <!-- Step 1: Commit Log -->
+      <rect x="180" y="20" width="150" height="60" rx="10" fill="rgba(239,68,68,.08)" stroke="#ef4444" stroke-width="1.2"/>
+      <text x="255" y="45" text-anchor="middle" fill="#ef4444" font-weight="600" font-size="11">Commit Log</text>
+      <text x="255" y="62" text-anchor="middle" fill="#8890a8" font-size="9">durability (WAL)</text>
+      <text x="255" y="74" text-anchor="middle" fill="#ef4444" font-size="8">append-only, sequential</text>
+      <!-- Step 2: Memtable -->
+      <rect x="180" y="110" width="150" height="70" rx="10" fill="rgba(16,185,129,.1)" stroke="#10b981" stroke-width="2"/>
+      <text x="255" y="135" text-anchor="middle" fill="#10b981" font-weight="700" font-size="13">Memtable</text>
+      <text x="255" y="155" text-anchor="middle" fill="#8890a8" font-size="10">in-memory sorted tree</text>
+      <text x="255" y="170" text-anchor="middle" fill="#10b981" font-size="9">fast writes + reads</text>
+      <!-- Arrows to both -->
+      <path d="M130,105 L180,50" fill="none" stroke="#a855f7" stroke-width="1.2" marker-end="url(#aw)"/>
+      <path d="M130,120 L180,140" fill="none" stroke="#a855f7" stroke-width="1.5" marker-end="url(#aw)"/>
+      <circle cx="145" cy="112" r="10" fill="#a855f7"/><text x="145" y="116" text-anchor="middle" fill="#fff" font-size="8" font-weight="700">1</text>
+      <!-- Step 3: Flush to SSTable -->
+      <path d="M330,145 L420,145" fill="none" stroke="#10b981" stroke-width="2" marker-end="url(#aw)"/>
+      <text x="375" y="138" text-anchor="middle" fill="#10b981" font-size="9" font-weight="600">flush when full</text>
+      <circle cx="375" cy="155" r="10" fill="#10b981"/><text x="375" y="159" text-anchor="middle" fill="#fff" font-size="8" font-weight="700">2</text>
+      <!-- SSTable on disk -->
+      <rect x="420" y="110" width="150" height="70" rx="10" fill="rgba(59,130,246,.1)" stroke="#3b82f6" stroke-width="1.5"/>
+      <text x="495" y="135" text-anchor="middle" fill="#3b82f6" font-weight="700" font-size="13">SSTable</text>
+      <text x="495" y="155" text-anchor="middle" fill="#8890a8" font-size="10">on disk, immutable</text>
+      <text x="495" y="170" text-anchor="middle" fill="#3b82f6" font-size="9">sorted, with index + bloom</text>
+      <!-- More SSTables accumulate -->
+      <rect x="600" y="50" width="130" height="35" rx="8" fill="rgba(59,130,246,.06)" stroke="#3b82f6" stroke-width="1" stroke-opacity=".5"/>
+      <text x="665" y="72" text-anchor="middle" fill="#3b82f6" font-size="10">SSTable 1</text>
+      <rect x="600" y="95" width="130" height="35" rx="8" fill="rgba(59,130,246,.06)" stroke="#3b82f6" stroke-width="1" stroke-opacity=".5"/>
+      <text x="665" y="117" text-anchor="middle" fill="#3b82f6" font-size="10">SSTable 2</text>
+      <rect x="600" y="140" width="130" height="35" rx="8" fill="rgba(59,130,246,.06)" stroke="#3b82f6" stroke-width="1" stroke-opacity=".5"/>
+      <text x="665" y="162" text-anchor="middle" fill="#3b82f6" font-size="10">SSTable 3</text>
+      <text x="665" y="195" text-anchor="middle" fill="#5c6486" font-size="10">...</text>
+      <text x="665" y="215" text-anchor="middle" fill="#f59e0b" font-size="9" font-weight="600">accumulate over time</text>
+      <text x="665" y="230" text-anchor="middle" fill="#f59e0b" font-size="9">→ need compaction!</text>
+      <!-- Summary -->
+      <rect x="60" y="245" width="520" height="26" rx="8" fill="rgba(168,85,247,.05)" stroke="rgba(168,85,247,.15)" stroke-width="1"/>
+      <text x="320" y="262" text-anchor="middle" fill="#a855f7" font-size="10">Write = append to Commit Log + insert into Memtable → flush to SSTable when full</text>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════ 4. READ PATH ═══════ -->
+<section id="read" class="sec s4">
+  <div class="sh"><div class="sn">4</div><h2>Read Path</h2></div>
+  <div class="ss">Check Memtable first → then search SSTables using Bloom Filters + sparse index.</div>
+
+  <div class="dw">
+    <svg viewBox="0 0 780 240" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+      <defs><marker id="ar" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#f59e0b"/></marker></defs>
+      <!-- Read request -->
+      <rect x="30" y="80" width="100" height="55" rx="10" fill="rgba(245,158,11,.1)" stroke="#f59e0b" stroke-width="1.5"/>
+      <text x="80" y="104" text-anchor="middle" fill="#f59e0b" font-weight="700" font-size="12">Read</text>
+      <text x="80" y="122" text-anchor="middle" fill="#8890a8" font-size="9">key: "user:1"</text>
+      <!-- Step 1: Memtable -->
+      <path d="M130,107 L190,107" fill="none" stroke="#f59e0b" stroke-width="1.5" marker-end="url(#ar)"/>
+      <rect x="190" y="80" width="130" height="55" rx="10" fill="rgba(16,185,129,.1)" stroke="#10b981" stroke-width="1.5"/>
+      <text x="255" y="102" text-anchor="middle" fill="#10b981" font-weight="700" font-size="11">① Memtable</text>
+      <text x="255" y="120" text-anchor="middle" fill="#10b981" font-size="9">check memory first</text>
+      <text x="255" y="60" text-anchor="middle" fill="#10b981" font-size="9" font-weight="600">found? → return!</text>
+      <!-- Step 2: Bloom Filter -->
+      <path d="M320,107 L370,107" fill="none" stroke="#f59e0b" stroke-width="1.2" marker-end="url(#ar)"/>
+      <text x="345" y="98" fill="#f59e0b" font-size="8">miss</text>
+      <rect x="370" y="70" width="140" height="70" rx="10" fill="rgba(16,185,129,.08)" stroke="#10b981" stroke-width="1.2"/>
+      <text x="440" y="92" text-anchor="middle" fill="#10b981" font-weight="700" font-size="11">② Bloom Filter</text>
+      <text x="440" y="110" text-anchor="middle" fill="#8890a8" font-size="9">"is key in SSTable?"</text>
+      <text x="440" y="126" text-anchor="middle" fill="#10b981" font-size="9">NO → skip SSTable</text>
+      <text x="440" y="138" text-anchor="middle" fill="#f59e0b" font-size="9">MAYBE → check it</text>
+      <!-- Step 3: SSTable Index + Data -->
+      <path d="M510,107 L560,107" fill="none" stroke="#f59e0b" stroke-width="1.2" marker-end="url(#ar)"/>
+      <rect x="560" y="70" width="180" height="70" rx="10" fill="rgba(59,130,246,.08)" stroke="#3b82f6" stroke-width="1.2"/>
+      <text x="650" y="92" text-anchor="middle" fill="#3b82f6" font-weight="700" font-size="11">③ SSTable Lookup</text>
+      <text x="650" y="110" text-anchor="middle" fill="#8890a8" font-size="9">sparse index → data block</text>
+      <text x="650" y="126" text-anchor="middle" fill="#3b82f6" font-size="9">binary search within block</text>
+      <!-- Repeat for more SSTables -->
+      <rect x="370" y="165" width="370" height="28" rx="8" fill="rgba(245,158,11,.06)" stroke="rgba(245,158,11,.15)" stroke-width="1"/>
+      <text x="555" y="183" text-anchor="middle" fill="#f59e0b" font-size="10">Repeat ②→③ for each SSTable (newest first) until key found</text>
+      <!-- Summary -->
+      <rect x="100" y="210" width="560" height="26" rx="8" fill="rgba(245,158,11,.05)" stroke="rgba(245,158,11,.15)" stroke-width="1"/>
+      <text x="380" y="227" text-anchor="middle" fill="#f59e0b" font-size="10">More SSTables = more lookups = slower reads → that's why compaction exists!</text>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════ 5. BLOOM FILTER ═══════ -->
+<section id="bloom" class="sec s5">
+  <div class="sh"><div class="sn">5</div><h2>Bloom Filter</h2></div>
+  <div class="ss">A space-efficient probabilistic data structure — "is this key definitely NOT here?"</div>
+
+  <div class="dw">
+    <svg viewBox="0 0 780 300" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+      <!-- Bit array -->
+      <text x="390" y="22" text-anchor="middle" fill="var(--text-br)" font-weight="700" font-size="14" font-family="Playfair Display,serif">How a Bloom Filter Works</text>
+      <!-- Bit array visualization -->
+      <text x="390" y="48" text-anchor="middle" fill="#5c6486" font-size="10">Bit Array (all zeros initially)</text>
+      <g transform="translate(140,55)">
+        <rect x="0" y="0" width="40" height="35" rx="4" fill="rgba(16,185,129,.2)" stroke="#10b981" stroke-width="1.2"/><text x="20" y="22" text-anchor="middle" fill="#10b981" font-weight="700" font-size="12">1</text>
+        <rect x="50" y="0" width="40" height="35" rx="4" fill="rgba(100,116,139,.08)" stroke="#64748b" stroke-width="1"/><text x="70" y="22" text-anchor="middle" fill="#64748b" font-size="12">0</text>
+        <rect x="100" y="0" width="40" height="35" rx="4" fill="rgba(16,185,129,.2)" stroke="#10b981" stroke-width="1.2"/><text x="120" y="22" text-anchor="middle" fill="#10b981" font-weight="700" font-size="12">1</text>
+        <rect x="150" y="0" width="40" height="35" rx="4" fill="rgba(100,116,139,.08)" stroke="#64748b" stroke-width="1"/><text x="170" y="22" text-anchor="middle" fill="#64748b" font-size="12">0</text>
+        <rect x="200" y="0" width="40" height="35" rx="4" fill="rgba(16,185,129,.2)" stroke="#10b981" stroke-width="1.2"/><text x="220" y="22" text-anchor="middle" fill="#10b981" font-weight="700" font-size="12">1</text>
+        <rect x="250" y="0" width="40" height="35" rx="4" fill="rgba(100,116,139,.08)" stroke="#64748b" stroke-width="1"/><text x="270" y="22" text-anchor="middle" fill="#64748b" font-size="12">0</text>
+        <rect x="300" y="0" width="40" height="35" rx="4" fill="rgba(100,116,139,.08)" stroke="#64748b" stroke-width="1"/><text x="320" y="22" text-anchor="middle" fill="#64748b" font-size="12">0</text>
+        <rect x="350" y="0" width="40" height="35" rx="4" fill="rgba(16,185,129,.2)" stroke="#10b981" stroke-width="1.2"/><text x="370" y="22" text-anchor="middle" fill="#10b981" font-weight="700" font-size="12">1</text>
+        <rect x="400" y="0" width="40" height="35" rx="4" fill="rgba(100,116,139,.08)" stroke="#64748b" stroke-width="1"/><text x="420" y="22" text-anchor="middle" fill="#64748b" font-size="12">0</text>
+        <rect x="450" y="0" width="40" height="35" rx="4" fill="rgba(16,185,129,.2)" stroke="#10b981" stroke-width="1.2"/><text x="470" y="22" text-anchor="middle" fill="#10b981" font-weight="700" font-size="12">1</text>
+      </g>
+      <!-- Query: "is key X here?" -->
+      <rect x="80" y="115" width="280" height="70" rx="10" fill="rgba(16,185,129,.06)" stroke="#10b981" stroke-width="1.2"/>
+      <text x="220" y="138" text-anchor="middle" fill="#10b981" font-weight="700" font-size="12">Query: "is user:42 here?"</text>
+      <text x="220" y="158" text-anchor="middle" fill="#8890a8" font-size="10">Hash → check bits at positions 0, 2, 7</text>
+      <text x="220" y="174" text-anchor="middle" fill="#10b981" font-size="10" font-weight="600">All bits = 1 → "MAYBE present"</text>
+      <rect x="420" y="115" width="280" height="70" rx="10" fill="rgba(239,68,68,.06)" stroke="#ef4444" stroke-width="1.2"/>
+      <text x="560" y="138" text-anchor="middle" fill="#ef4444" font-weight="700" font-size="12">Query: "is user:99 here?"</text>
+      <text x="560" y="158" text-anchor="middle" fill="#8890a8" font-size="10">Hash → check bits at positions 1, 3, 6</text>
+      <text x="560" y="174" text-anchor="middle" fill="#ef4444" font-size="10" font-weight="600">Bit 1 = 0 → "DEFINITELY NOT here"</text>
+      <!-- Key rules -->
+      <rect x="80" y="205" width="280" height="42" rx="8" fill="rgba(245,158,11,.06)" stroke="#f59e0b" stroke-width="1"/>
+      <text x="220" y="225" text-anchor="middle" fill="#f59e0b" font-weight="600" font-size="11">⚠ False Positives possible</text>
+      <text x="220" y="241" text-anchor="middle" fill="#8890a8" font-size="9">"maybe present" might be wrong</text>
+      <rect x="420" y="205" width="280" height="42" rx="8" fill="rgba(16,185,129,.06)" stroke="#10b981" stroke-width="1"/>
+      <text x="560" y="225" text-anchor="middle" fill="#10b981" font-weight="600" font-size="11">✅ Never False Negatives</text>
+      <text x="560" y="241" text-anchor="middle" fill="#8890a8" font-size="9">"not present" is always correct</text>
+      <!-- In SSTable context -->
+      <rect x="140" y="265" width="500" height="26" rx="8" fill="rgba(6,182,212,.05)" stroke="rgba(6,182,212,.15)" stroke-width="1"/>
+      <text x="390" y="282" text-anchor="middle" fill="#06b6d4" font-size="10">In SSTables: skip files that definitely don't have the key → saves disk I/O → faster reads</text>
+    </svg>
+  </div>
+
+  <div class="card"><h3>Benefits in SSTables</h3><p>Each SSTable has its own Bloom filter. On a read, the system checks each SSTable's Bloom filter first. If it says "not present" → skip that file entirely. This avoids unnecessary disk seeks and dramatically speeds up reads when there are many SSTables. Very memory-efficient: just a few bits per key.</p></div>
+</section>
+
+<!-- ═══════ 6. COMPACTION ═══════ -->
+<section id="compact" class="sec s6">
+  <div class="sh"><div class="sn">6</div><h2>Compaction</h2></div>
+  <div class="ss">Periodically merge SSTables to remove duplicates, tombstones, and speed up reads.</div>
+
+  <div class="dw">
+    <svg viewBox="0 0 780 220" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+      <defs><marker id="ac" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#10b981"/></marker></defs>
+      <!-- Before: many SSTables -->
+      <text x="150" y="20" text-anchor="middle" fill="#ef4444" font-weight="700" font-size="13">Before Compaction</text>
+      <rect x="30" y="30" width="85" height="30" rx="6" fill="rgba(239,68,68,.08)" stroke="#ef4444" stroke-width="1" stroke-opacity=".6"/>
+      <text x="73" y="49" text-anchor="middle" fill="#ef4444" font-size="9">SSTable 1</text>
+      <rect x="30" y="68" width="85" height="30" rx="6" fill="rgba(239,68,68,.08)" stroke="#ef4444" stroke-width="1" stroke-opacity=".6"/>
+      <text x="73" y="87" text-anchor="middle" fill="#ef4444" font-size="9">SSTable 2</text>
+      <rect x="30" y="106" width="85" height="30" rx="6" fill="rgba(239,68,68,.08)" stroke="#ef4444" stroke-width="1" stroke-opacity=".6"/>
+      <text x="73" y="125" text-anchor="middle" fill="#ef4444" font-size="9">SSTable 3</text>
+      <rect x="130" y="30" width="85" height="30" rx="6" fill="rgba(239,68,68,.08)" stroke="#ef4444" stroke-width="1" stroke-opacity=".6"/>
+      <text x="173" y="49" text-anchor="middle" fill="#ef4444" font-size="9">SSTable 4</text>
+      <rect x="130" y="68" width="85" height="30" rx="6" fill="rgba(239,68,68,.08)" stroke="#ef4444" stroke-width="1" stroke-opacity=".6"/>
+      <text x="173" y="87" text-anchor="middle" fill="#ef4444" font-size="9">SSTable 5</text>
+      <text x="130" y="118" fill="#ef4444" font-size="9">...many more</text>
+      <text x="130" y="145" text-anchor="middle" fill="#ef4444" font-size="9">100 SSTables</text>
+      <text x="130" y="160" text-anchor="middle" fill="#ef4444" font-size="9">= slow reads 🐢</text>
+      <!-- Arrow: compact -->
+      <path d="M230,90 L350,90" fill="none" stroke="#10b981" stroke-width="2.5" marker-end="url(#ac)"/>
+      <text x="290" y="80" text-anchor="middle" fill="#10b981" font-weight="700" font-size="12">COMPACT</text>
+      <text x="290" y="108" text-anchor="middle" fill="#8890a8" font-size="9">merge + dedupe</text>
+      <text x="290" y="122" text-anchor="middle" fill="#8890a8" font-size="9">remove tombstones</text>
+      <!-- After: fewer SSTables -->
+      <text x="470" y="20" text-anchor="middle" fill="#10b981" font-weight="700" font-size="13">After Compaction</text>
+      <rect x="380" y="42" width="100" height="40" rx="8" fill="rgba(16,185,129,.1)" stroke="#10b981" stroke-width="1.5"/>
+      <text x="430" y="67" text-anchor="middle" fill="#10b981" font-weight="600" font-size="10">SSTable A</text>
+      <rect x="500" y="42" width="100" height="40" rx="8" fill="rgba(16,185,129,.1)" stroke="#10b981" stroke-width="1.5"/>
+      <text x="550" y="67" text-anchor="middle" fill="#10b981" font-weight="600" font-size="10">SSTable B</text>
+      <text x="480" y="110" text-anchor="middle" fill="#10b981" font-size="10" font-weight="600">10 SSTables = fast reads 🚀</text>
+      <!-- Compaction types -->
+      <rect x="620" y="30" width="150" height="130" rx="10" fill="rgba(6,182,212,.04)" stroke="rgba(6,182,212,.15)" stroke-width="1"/>
+      <text x="695" y="50" text-anchor="middle" fill="#06b6d4" font-weight="600" font-size="10">Compaction Types</text>
+      <text x="695" y="72" text-anchor="middle" fill="#f59e0b" font-size="10" font-weight="600">Size-Tiered</text>
+      <text x="695" y="86" text-anchor="middle" fill="#8890a8" font-size="8">small → big merges</text>
+      <text x="695" y="106" text-anchor="middle" fill="#a855f7" font-size="10" font-weight="600">Leveled</text>
+      <text x="695" y="120" text-anchor="middle" fill="#8890a8" font-size="8">balanced levels</text>
+      <text x="695" y="140" text-anchor="middle" fill="#3b82f6" font-size="10" font-weight="600">Time-Window</text>
+      <text x="695" y="154" text-anchor="middle" fill="#8890a8" font-size="8">group by time period</text>
+      <!-- Trade-off -->
+      <rect x="80" y="180" width="520" height="28" rx="8" fill="rgba(245,158,11,.05)" stroke="rgba(245,158,11,.15)" stroke-width="1"/>
+      <text x="340" y="198" text-anchor="middle" fill="#f59e0b" font-size="10">Trade-off: compaction is I/O heavy and can temporarily impact write performance</text>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════ 7. COMPARISON ═══════ -->
+<section id="compare" class="sum">
+  <h2>SSTable vs Relational DB vs Redis</h2>
+  <div class="card" style="--pat:var(--c1)"><div class="tw"><table>
+    <thead><tr><th>Feature</th><th>SSTable (LSM)</th><th>Relational DB</th><th>Redis</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Write Speed</strong></td><td style="color:var(--c4)">✅ Very fast (sequential)</td><td style="color:var(--c6)">❌ Slower (random I/O)</td><td style="color:var(--c4)">✅ Extremely fast</td></tr>
+      <tr><td><strong>Read Speed</strong></td><td style="color:var(--c6)">❌ Slower (needs merging)</td><td style="color:var(--c4)">✅ Fast (B-Tree index)</td><td style="color:var(--c4)">✅ Fast (in-memory)</td></tr>
+      <tr><td><strong>Data Size</strong></td><td style="color:var(--c4)">✅ Huge scale (billions)</td><td style="color:var(--c6)">❌ Limited</td><td style="color:var(--c6)">❌ Limited (RAM)</td></tr>
+      <tr><td><strong>Indexing</strong></td><td>LSM Tree + Bloom Filter</td><td>B-Tree</td><td>Hash Table</td></tr>
+      <tr><td><strong>Updates</strong></td><td>Append new SSTable</td><td>Update in place</td><td>Update in place</td></tr>
+      <tr><td><strong>Use Case</strong></td><td>Logs, time-series, analytics</td><td>OLTP, transactions</td><td>Caching</td></tr>
+      <tr><td><strong>Examples</strong></td><td>Cassandra, Bigtable, RocksDB</td><td>MySQL, PostgreSQL</td><td>Redis, Memcached</td></tr>
+    </tbody>
+  </table></div></div>
+</section>
+
+<!-- ═══════ REAL-WORLD ═══════ -->
+<section class="sum">
+  <h2>Real-World Systems Using SSTables</h2>
+  <div class="card" style="--pat:var(--c2)"><div class="tw"><table>
+    <thead><tr><th>System</th><th>How It Uses SSTables</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Apache Cassandra</strong></td><td>Stores column families as SSTables. Uses Bloom filters for every SSTable.</td></tr>
+      <tr><td><strong>Google Bigtable</strong></td><td>Original design uses SSTables for persistent storage.</td></tr>
+      <tr><td><strong>RocksDB / LevelDB</strong></td><td>Embedded key-value stores. Uses Leveled Compaction for predictable read latency.</td></tr>
+      <tr><td><strong>HBase</strong></td><td>Hadoop-based NoSQL uses SSTables for storage.</td></tr>
+      <tr><td><strong>ScyllaDB</strong></td><td>Cassandra-compatible, uses SSTables with optimized compaction.</td></tr>
+    </tbody>
+  </table></div></div>
+  <div class="tip tip-c"><span class="ic">🧠</span><span><strong>Real example:</strong> Cassandra storing IoT sensor data — millions of writes per second. SSTables allow fast sequential writes. Later, compaction merges old SSTables for efficient reads.</span></div>
+</section>
+
+<button class="bt" id="backTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+<footer><p>SSTable, Bloom Filters &amp; LSM Trees — Storage Internals Study Guide</p></footer>
+
+<script>
+function toggleCollapsible(btn){btn.classList.toggle('open');btn.nextElementSibling.classList.toggle('open')}
+window.addEventListener('scroll',()=>{document.getElementById('backTop').classList.toggle('show',window.scrollY>400)})
+</script>
+</body>
+</html>

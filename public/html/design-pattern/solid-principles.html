@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SOLID Principles — C# Interactive Study Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=DM+Sans:ital,wght@0,400;0,500;0,700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg-deep:#07080e;--bg-card:#0f1118;--bg-code:#0a0c12;--bg-elevated:#171a26;--border:#1b1f30;--border-glow:#262b42;--text:#c4c9d8;--text-dim:#5f6786;--text-bright:#e5eaf4;--s:#3b82f6;--o:#f59e0b;--l:#10b981;--i:#a855f7;--d:#ef4444;--accent-ok:#4ade80;--accent-bad:#f87171;--syntax-keyword:#c678dd;--syntax-string:#98c379;--syntax-type:#61afef;--syntax-number:#d19a66;--syntax-comment:#5c6370;--syntax-method:#e5c07b;--radius:12px}
+*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg-deep);color:var(--text);line-height:1.72;overflow-x:hidden}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg-deep)}::-webkit-scrollbar-thumb{background:var(--border-glow);border-radius:3px}
+.hero{position:relative;min-height:50vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:80px 24px 56px;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 500px 350px at 20% 40%,rgba(59,130,246,.1),transparent),radial-gradient(ellipse 400px 300px at 50% 50%,rgba(168,85,247,.07),transparent),radial-gradient(ellipse 400px 300px at 80% 60%,rgba(239,68,68,.06),transparent)}
+.hero-badge{position:relative;display:inline-flex;align-items:center;gap:8px;padding:6px 18px;border:1px solid var(--s);border-radius:100px;font-size:.8rem;color:var(--s);letter-spacing:.1em;text-transform:uppercase;margin-bottom:24px}
+.hero h1{position:relative;font-family:'Playfair Display',serif;font-size:clamp(2.6rem,7vw,4.5rem);font-weight:900;line-height:1.1;color:var(--text-bright);max-width:700px}
+.hero h1 .letter{display:inline-block;font-weight:900}
+.hero h1 .letter:nth-child(1){color:var(--s)}.hero h1 .letter:nth-child(2){color:var(--o)}.hero h1 .letter:nth-child(3){color:var(--l)}.hero h1 .letter:nth-child(4){color:var(--i)}.hero h1 .letter:nth-child(5){color:var(--d)}
+.hero p{position:relative;max-width:640px;margin-top:20px;color:var(--text-dim);font-size:1.05rem}
+.solid-nav{position:relative;display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-top:32px}
+.solid-nav a{display:flex;align-items:center;gap:8px;padding:10px 20px;border:1px solid var(--border-glow);border-radius:var(--radius);color:var(--text-dim);text-decoration:none;font-size:.88rem;font-weight:600;transition:all .25s}
+.solid-nav a:hover{transform:translateY(-2px)}
+.solid-nav a:nth-child(1):hover{border-color:var(--s);color:var(--s);box-shadow:0 4px 16px rgba(59,130,246,.15)}
+.solid-nav a:nth-child(2):hover{border-color:var(--o);color:var(--o);box-shadow:0 4px 16px rgba(245,158,11,.15)}
+.solid-nav a:nth-child(3):hover{border-color:var(--l);color:var(--l);box-shadow:0 4px 16px rgba(16,185,129,.15)}
+.solid-nav a:nth-child(4):hover{border-color:var(--i);color:var(--i);box-shadow:0 4px 16px rgba(168,85,247,.15)}
+.solid-nav a:nth-child(5):hover{border-color:var(--d);color:var(--d);box-shadow:0 4px 16px rgba(239,68,68,.15)}
+.solid-nav .nav-letter{font-size:1.1rem;font-weight:900;font-family:'Playfair Display',serif}
+.principle-section{max-width:1000px;margin:0 auto 80px;padding:0 24px;scroll-margin-top:32px}
+.principle-header{display:flex;align-items:center;gap:16px;margin-bottom:8px}
+.principle-letter{display:flex;align-items:center;justify-content:center;width:52px;height:52px;border-radius:14px;font-family:'Playfair Display',serif;font-weight:900;font-size:1.6rem;flex-shrink:0}
+.principle-header h2{font-family:'Playfair Display',serif;font-size:1.7rem;font-weight:700;color:var(--text-bright)}
+.principle-quote{color:var(--text-dim);font-style:italic;margin-bottom:28px;padding-left:68px;font-size:.95rem}
+.ps{--pat:var(--s)}.po{--pat:var(--o)}.pl{--pat:var(--l)}.pi{--pat:var(--i)}.pd{--pat:var(--d)}
+.principle-letter{background:color-mix(in srgb,var(--pat) 16%,transparent);color:var(--pat);border:1px solid color-mix(in srgb,var(--pat) 28%,transparent)}
+.card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:20px}
+.card h3{font-size:1rem;color:var(--text-bright);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.card h3::before{content:'';display:inline-block;width:3px;height:18px;border-radius:2px;background:var(--pat,var(--s))}
+.diagram-wrapper{background:var(--bg-code);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:20px;overflow-x:auto}
+.diagram-wrapper svg{display:block;margin:0 auto;max-width:100%;height:auto}
+/* Code comparison grid */
+.code-compare{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
+@media(max-width:768px){.code-compare{grid-template-columns:1fr}}
+.code-compare .code-block{margin-bottom:0}
+.code-block{position:relative;background:var(--bg-code);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:16px;overflow:hidden}
+.code-header{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:var(--bg-elevated);border-bottom:1px solid var(--border);font-size:.78rem;color:var(--text-dim);font-family:'JetBrains Mono',monospace}
+.code-header .dots{display:flex;gap:6px}.code-header .dots span{width:10px;height:10px;border-radius:50%}
+.code-header .dots span:nth-child(1){background:#ff5f57}.code-header .dots span:nth-child(2){background:#febc2e}.code-header .dots span:nth-child(3){background:#28c840}
+.code-header.bad{border-left:3px solid var(--accent-bad)}.code-header.good{border-left:3px solid var(--accent-ok)}
+.copy-btn{background:none;border:1px solid var(--border-glow);color:var(--text-dim);padding:3px 10px;border-radius:6px;cursor:pointer;font-size:.72rem;font-family:'JetBrains Mono',monospace;transition:all .2s}
+.copy-btn:hover{border-color:var(--accent-ok);color:var(--accent-ok)}
+.code-block pre{padding:16px 18px;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:.8rem;line-height:1.6;color:var(--text)}
+.kw{color:var(--syntax-keyword)}.tp{color:var(--syntax-type)}.str{color:var(--syntax-string)}.num{color:var(--syntax-number)}.cm{color:var(--syntax-comment);font-style:italic}.fn{color:var(--syntax-method)}
+.table-wrap{overflow-x:auto;margin-bottom:20px}table{width:100%;border-collapse:collapse;font-size:.85rem}
+thead th{background:var(--bg-elevated);color:var(--text-bright);padding:12px 16px;text-align:left;font-weight:600;border-bottom:2px solid var(--border-glow);white-space:nowrap}
+tbody td{padding:10px 16px;border-bottom:1px solid var(--border);vertical-align:top}tbody tr:hover{background:rgba(59,130,246,.03)}
+.qa-block{margin-bottom:10px}
+.qa-q{display:flex;align-items:start;gap:10px;padding:14px 18px;background:var(--bg-elevated);border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;color:var(--text-bright);font-size:.9rem;font-weight:500;transition:all .25s;user-select:none}
+.qa-q:hover{border-color:var(--pat,var(--s))}.qa-q .arrow{flex-shrink:0;width:20px;height:20px;display:flex;align-items:center;justify-content:center;transition:transform .3s;color:var(--pat,var(--s));font-size:.8rem}
+.qa-q.open .arrow{transform:rotate(90deg)}
+.qa-a{max-height:0;overflow:hidden;transition:max-height .35s ease,padding .35s;padding:0 18px;color:var(--text);font-size:.88rem;line-height:1.7;background:var(--bg-card);border:1px solid var(--border);border-top:none;border-radius:0 0 var(--radius) var(--radius)}
+.qa-a.open{max-height:600px;padding:16px 18px}
+.use-avoid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
+@media(max-width:600px){.use-avoid{grid-template-columns:1fr}}
+.use-col,.avoid-col{padding:16px 18px;border-radius:var(--radius);font-size:.85rem}
+.use-col{background:rgba(74,222,128,.06);border:1px solid rgba(74,222,128,.18)}.avoid-col{background:rgba(248,113,113,.06);border:1px solid rgba(248,113,113,.18)}
+.use-col h4{color:var(--accent-ok);margin-bottom:8px}.avoid-col h4{color:var(--accent-bad);margin-bottom:8px}
+.use-col li,.avoid-col li{margin-bottom:6px;list-style:none;padding-left:18px;position:relative}
+.use-col li::before{content:'✓';position:absolute;left:0;color:var(--accent-ok);font-weight:700}
+.avoid-col li::before{content:'✗';position:absolute;left:0;color:var(--accent-bad);font-weight:700}
+.note{display:flex;gap:12px;padding:16px 18px;background:rgba(59,130,246,.06);border:1px solid rgba(59,130,246,.16);border-radius:var(--radius);margin-bottom:20px;font-size:.88rem}
+.note .bulb{font-size:1.2rem;flex-shrink:0}
+.analogy{display:flex;gap:12px;padding:16px 18px;background:rgba(168,85,247,.06);border:1px solid rgba(168,85,247,.16);border-radius:var(--radius);margin-bottom:20px;font-size:.88rem}
+.analogy .icon{font-size:1.2rem;flex-shrink:0}
+.collapsible-trigger{display:flex;align-items:center;justify-content:space-between;width:100%;padding:16px 20px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;color:var(--text-bright);font-size:.95rem;font-weight:600;margin-bottom:4px;transition:all .25s}
+.collapsible-trigger:hover{border-color:var(--pat,var(--s))}.collapsible-trigger .chevron{transition:transform .3s;color:var(--text-dim)}.collapsible-trigger.open .chevron{transform:rotate(180deg)}
+.collapsible-body{max-height:0;overflow:hidden;transition:max-height .4s ease}.collapsible-body.open{max-height:12000px}.collapsible-body>.inner{padding:16px 0}
+.back-top{position:fixed;bottom:24px;right:24px;width:44px;height:44px;border-radius:50%;background:var(--s);color:#fff;border:none;cursor:pointer;font-size:1.2rem;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s,transform .3s;box-shadow:0 4px 16px rgba(59,130,246,.35);z-index:100;font-weight:700}
+.back-top.show{opacity:1;pointer-events:auto}.back-top:hover{transform:scale(1.1)}
+footer{text-align:center;padding:40px 24px;color:var(--text-dim);font-size:.8rem;border-top:1px solid var(--border);margin-top:40px}
+.summary-section{max-width:1000px;margin:0 auto 60px;padding:0 24px}
+.summary-section h2{font-family:'Playfair Display',serif;font-size:1.8rem;color:var(--text-bright);margin-bottom:24px;text-align:center}
+</style>
+</head>
+<body>
+
+<section class="hero">
+  <div class="hero-badge">C# Design Principles</div>
+  <h1><span class="letter">S</span><span class="letter">O</span><span class="letter">L</span><span class="letter">I</span><span class="letter">D</span> Principles</h1>
+  <p>Five design principles by Robert C. Martin (Uncle Bob) that guide you toward code that is easier to maintain, extend, and test.</p>
+  <div class="solid-nav">
+    <a href="#srp"><span class="nav-letter" style="color:var(--s)">S</span> Single Responsibility</a>
+    <a href="#ocp"><span class="nav-letter" style="color:var(--o)">O</span> Open / Closed</a>
+    <a href="#lsp"><span class="nav-letter" style="color:var(--l)">L</span> Liskov Substitution</a>
+    <a href="#isp"><span class="nav-letter" style="color:var(--i)">I</span> Interface Segregation</a>
+    <a href="#dip"><span class="nav-letter" style="color:var(--d)">D</span> Dependency Inversion</a>
+  </div>
+</section>
+
+<!-- ═══════════════════════ S — SRP ═══════════════════════ -->
+<section id="srp" class="principle-section ps">
+  <div class="principle-header"><div class="principle-letter">S</div><h2>Single Responsibility Principle</h2></div>
+  <div class="principle-quote">"A class should have only one reason to change."</div>
+
+  <div class="card"><h3>What It Means</h3><p>A class should do one thing and do it well. If a class handles multiple concerns, a change to one concern risks breaking another. The 'reason to change' is the key phrase — count how many different stakeholders could ask you to change this class.</p></div>
+
+  <div class="diagram-wrapper">
+    <svg viewBox="0 0 780 250" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+      <defs><marker id="as1" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#3b82f6"/></marker></defs>
+      <!-- Violation side -->
+      <rect x="20" y="20" width="300" height="140" rx="10" fill="rgba(248,113,113,.06)" stroke="#f87171" stroke-width="1.2"/>
+      <text x="170" y="45" text-anchor="middle" fill="#f87171" font-weight="700" font-size="13">❌ Invoice (3 reasons to change)</text>
+      <line x1="40" y1="52" x2="300" y2="52" stroke="#f87171" stroke-opacity=".3"/>
+      <text x="170" y="72" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">CalculateTotal()  ← business</text>
+      <text x="170" y="90" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">PrintInvoice()    ← UI/format</text>
+      <text x="170" y="108" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">SaveToDatabase()  ← data access</text>
+      <text x="170" y="150" text-anchor="middle" fill="#f87171" font-size="10" font-style="italic">3 stakeholders, 3 reasons to change</text>
+      <!-- Arrow -->
+      <path d="M340,90 L420,90" fill="none" stroke="#3b82f6" stroke-width="2" marker-end="url(#as1)"/>
+      <text x="380" y="82" text-anchor="middle" fill="#3b82f6" font-weight="700" font-size="11">FIX</text>
+      <!-- Fixed side -->
+      <rect x="440" y="10" width="160" height="50" rx="8" fill="rgba(74,222,128,.06)" stroke="#4ade80" stroke-width="1"/>
+      <text x="520" y="32" text-anchor="middle" fill="#4ade80" font-weight="600" font-size="11">Invoice</text>
+      <text x="520" y="48" text-anchor="middle" fill="#8890a8" font-size="9" font-family="JetBrains Mono,monospace">CalculateTotal()</text>
+      <rect x="620" y="10" width="150" height="50" rx="8" fill="rgba(74,222,128,.06)" stroke="#4ade80" stroke-width="1"/>
+      <text x="695" y="32" text-anchor="middle" fill="#4ade80" font-weight="600" font-size="11">InvoicePrinter</text>
+      <text x="695" y="48" text-anchor="middle" fill="#8890a8" font-size="9" font-family="JetBrains Mono,monospace">Print(Invoice)</text>
+      <rect x="440" y="75" width="175" height="50" rx="8" fill="rgba(74,222,128,.06)" stroke="#4ade80" stroke-width="1"/>
+      <text x="528" y="97" text-anchor="middle" fill="#4ade80" font-weight="600" font-size="11">InvoiceRepository</text>
+      <text x="528" y="113" text-anchor="middle" fill="#8890a8" font-size="9" font-family="JetBrains Mono,monospace">Save(Invoice)</text>
+      <text x="580" y="152" text-anchor="middle" fill="#4ade80" font-size="10">✅ Each class = 1 reason to change</text>
+      <!-- Stakeholders -->
+      <rect x="440" y="170" width="330" height="65" rx="10" fill="rgba(59,130,246,.04)" stroke="rgba(59,130,246,.12)" stroke-width="1"/>
+      <text x="605" y="192" text-anchor="middle" fill="#3b82f6" font-size="10" font-weight="600">Stakeholder Mapping:</text>
+      <text x="605" y="210" text-anchor="middle" fill="#8890a8" font-size="9" font-family="JetBrains Mono,monospace">Business Analyst → Invoice</text>
+      <text x="605" y="224" text-anchor="middle" fill="#8890a8" font-size="9" font-family="JetBrains Mono,monospace">UI Designer → InvoicePrinter  |  DBA → InvoiceRepository</text>
+    </svg>
+  </div>
+
+  <button class="collapsible-trigger" onclick="toggleCollapsible(this)">Violation vs Fix — C# Code <span class="chevron">▼</span></button>
+  <div class="collapsible-body"><div class="inner">
+    <div class="code-compare">
+      <div class="code-block"><div class="code-header bad"><div class="dots"><span></span><span></span><span></span></div><span>❌ Violation</span></div><pre><span class="kw">public class</span> <span class="tp">Invoice</span>
+{
+    <span class="cm">// Business logic</span>
+    <span class="kw">public void</span> <span class="fn">CalculateTotal</span>() { }
+
+    <span class="cm">// UI / formatting logic</span>
+    <span class="kw">public void</span> <span class="fn">PrintInvoice</span>() { }
+
+    <span class="cm">// Data access logic</span>
+    <span class="kw">public void</span> <span class="fn">SaveToDatabase</span>() { }
+}
+
+<span class="cm">// 3 reasons to change:</span>
+<span class="cm">// 1. Business rules change</span>
+<span class="cm">// 2. Print format changes</span>
+<span class="cm">// 3. DB schema changes</span></pre></div>
+      <div class="code-block"><div class="code-header good"><div class="dots"><span></span><span></span><span></span></div><span>✅ Fixed</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><span class="cm">// Each class has ONE responsibility</span>
+<span class="kw">public class</span> <span class="tp">Invoice</span>
+{
+    <span class="kw">public void</span> <span class="fn">CalculateTotal</span>() { }
+}
+
+<span class="kw">public class</span> <span class="tp">InvoicePrinter</span>
+{
+    <span class="kw">public void</span> <span class="fn">Print</span>(<span class="tp">Invoice</span> i) { }
+}
+
+<span class="kw">public class</span> <span class="tp">InvoiceRepository</span>
+{
+    <span class="kw">public void</span> <span class="fn">Save</span>(<span class="tp">Invoice</span> i) { }
+}
+<span class="cm">// Each has exactly one reason to change</span></pre></div>
+    </div>
+  </div></div>
+
+  <div class="analogy"><span class="icon">🎯</span><span><strong>Real-World Analogy:</strong> A restaurant — the chef cooks, the waiter serves, the cashier handles payment. Each person has one responsibility. If the chef also handled billing, a change in tax law would disrupt the kitchen.</span></div>
+
+  <button class="collapsible-trigger" onclick="toggleCollapsible(this)">Interview Q&A <span class="chevron">▼</span></button>
+  <div class="collapsible-body"><div class="inner">
+    <div class="qa-block"><div class="qa-q" onclick="toggleQA(this)"><span class="arrow">▶</span>How do you identify an SRP violation?</div><div class="qa-a">Count the number of 'reasons to change'. If different stakeholders — a business analyst, a DBA, a UI designer — could all ask you to change the same class, it has too many responsibilities.</div></div>
+    <div class="qa-block"><div class="qa-q" onclick="toggleQA(this)"><span class="arrow">▶</span>Does SRP mean every class should have exactly one method?</div><div class="qa-a">No. A class can have many methods as long as they all serve the same single responsibility. An Invoice class can have CalculateTotal(), ApplyDiscount(), and GetLineItems() — they all relate to invoice business logic.</div></div>
+  </div></div>
+
+  <div class="use-avoid">
+    <div class="use-col"><h4>✅ Use When</h4><ul><li>Class has one clear, focused purpose</li><li>Different stakeholders each own one class</li><li>Changing one feature does not risk breaking another</li></ul></div>
+    <div class="avoid-col"><h4>❌ Violation Signal</h4><ul><li>Class name includes 'And' or 'Manager'</li><li>Class has imports from UI, DB, and business layers</li><li>A change to print format breaks business logic</li></ul></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ O — OCP ═══════════════════════ -->
+<section id="ocp" class="principle-section po">
+  <div class="principle-header"><div class="principle-letter">O</div><h2>Open / Closed Principle</h2></div>
+  <div class="principle-quote">"A class should be open for extension, but closed for modification."</div>
+
+  <div class="card"><h3>What It Means</h3><p>You should be able to add new behavior to a system without changing existing, tested code. You extend by adding new classes — not by editing old ones. This protects stable code from being broken by new requirements.</p></div>
+
+  <div class="diagram-wrapper">
+    <svg viewBox="0 0 780 240" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+      <defs><marker id="ao2" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#5f6786"/></marker></defs>
+      <!-- IDiscount interface -->
+      <rect x="260" y="10" width="260" height="65" rx="10" fill="rgba(245,158,11,.1)" stroke="#f59e0b" stroke-width="1.5"/>
+      <text x="390" y="35" text-anchor="middle" fill="#f59e0b" font-weight="700" font-size="13">«interface» IDiscount</text>
+      <line x1="280" y1="42" x2="500" y2="42" stroke="#f59e0b" stroke-opacity=".3"/>
+      <text x="390" y="62" text-anchor="middle" fill="#8890a8" font-size="11" font-family="JetBrains Mono,monospace">Apply(double price) : double</text>
+      <!-- Concrete discounts -->
+      <rect x="40" y="130" width="140" height="48" rx="10" fill="rgba(245,158,11,.06)" stroke="#f59e0b" stroke-width="1" stroke-opacity=".5"/>
+      <text x="110" y="158" text-anchor="middle" fill="#f59e0b" font-weight="600" font-size="11">VIPDiscount</text>
+      <text x="110" y="172" text-anchor="middle" fill="#8890a8" font-size="9" font-family="JetBrains Mono,monospace">p × 0.8</text>
+      <rect x="200" y="130" width="160" height="48" rx="10" fill="rgba(245,158,11,.06)" stroke="#f59e0b" stroke-width="1" stroke-opacity=".5"/>
+      <text x="280" y="158" text-anchor="middle" fill="#f59e0b" font-weight="600" font-size="11">SeniorDiscount</text>
+      <text x="280" y="172" text-anchor="middle" fill="#8890a8" font-size="9" font-family="JetBrains Mono,monospace">p × 0.9</text>
+      <rect x="380" y="130" width="160" height="48" rx="10" fill="rgba(245,158,11,.06)" stroke="#f59e0b" stroke-width="1" stroke-opacity=".5"/>
+      <text x="460" y="158" text-anchor="middle" fill="#f59e0b" font-weight="600" font-size="11">StudentDiscount</text>
+      <text x="460" y="172" text-anchor="middle" fill="#8890a8" font-size="9" font-family="JetBrains Mono,monospace">p × 0.85</text>
+      <!-- New one with glow -->
+      <rect x="560" y="130" width="170" height="48" rx="10" fill="rgba(74,222,128,.08)" stroke="#4ade80" stroke-width="1.5" stroke-dasharray="6 4"/>
+      <text x="645" y="152" text-anchor="middle" fill="#4ade80" font-weight="600" font-size="11">EmployeeDiscount</text>
+      <text x="645" y="168" text-anchor="middle" fill="#4ade80" font-size="9" font-family="JetBrains Mono,monospace">NEW — zero edits elsewhere</text>
+      <!-- Implements arrows -->
+      <line x1="110" y1="130" x2="330" y2="75" stroke="#5f6786" stroke-width="1" marker-end="url(#ao2)"/>
+      <line x1="280" y1="130" x2="370" y2="75" stroke="#5f6786" stroke-width="1" marker-end="url(#ao2)"/>
+      <line x1="460" y1="130" x2="420" y2="75" stroke="#5f6786" stroke-width="1" marker-end="url(#ao2)"/>
+      <line x1="645" y1="130" x2="460" y2="75" stroke="#4ade80" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#ao2)"/>
+      <!-- OCP note -->
+      <rect x="150" y="205" width="480" height="26" rx="8" fill="rgba(245,158,11,.05)" stroke="rgba(245,158,11,.15)" stroke-width="1"/>
+      <text x="390" y="222" text-anchor="middle" fill="#f59e0b" font-size="10">New discount type = new class only. Existing code: CLOSED for modification.</text>
+    </svg>
+  </div>
+
+  <button class="collapsible-trigger" onclick="toggleCollapsible(this)">Violation vs Fix — C# Code <span class="chevron">▼</span></button>
+  <div class="collapsible-body"><div class="inner">
+    <div class="code-compare">
+      <div class="code-block"><div class="code-header bad"><div class="dots"><span></span><span></span><span></span></div><span>❌ Violation</span></div><pre><span class="kw">public class</span> <span class="tp">DiscountCalculator</span>
+{
+    <span class="kw">public double</span> <span class="fn">Calculate</span>(
+        <span class="kw">string</span> customerType, <span class="kw">double</span> price)
+    {
+        <span class="kw">if</span> (customerType == <span class="str">"VIP"</span>)
+            <span class="kw">return</span> price * <span class="num">0.8</span>;
+        <span class="kw">if</span> (customerType == <span class="str">"Senior"</span>)
+            <span class="kw">return</span> price * <span class="num">0.9</span>;
+        <span class="cm">// Adding new type = edit this class</span>
+        <span class="kw">return</span> price;
+    }
+}</pre></div>
+      <div class="code-block"><div class="code-header good"><div class="dots"><span></span><span></span><span></span></div><span>✅ Fixed</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><span class="kw">public interface</span> <span class="tp">IDiscount</span>
+{
+    <span class="kw">double</span> <span class="fn">Apply</span>(<span class="kw">double</span> price);
+}
+
+<span class="kw">public class</span> <span class="tp">VIPDiscount</span> : <span class="tp">IDiscount</span>
+{ <span class="kw">public double</span> <span class="fn">Apply</span>(<span class="kw">double</span> p) => p * <span class="num">0.8</span>; }
+
+<span class="kw">public class</span> <span class="tp">SeniorDiscount</span> : <span class="tp">IDiscount</span>
+{ <span class="kw">public double</span> <span class="fn">Apply</span>(<span class="kw">double</span> p) => p * <span class="num">0.9</span>; }
+
+<span class="cm">// New type = new class only, zero edits</span>
+<span class="kw">public class</span> <span class="tp">StudentDiscount</span> : <span class="tp">IDiscount</span>
+{ <span class="kw">public double</span> <span class="fn">Apply</span>(<span class="kw">double</span> p) => p * <span class="num">0.85</span>; }</pre></div>
+    </div>
+  </div></div>
+
+  <div class="analogy"><span class="icon">🎯</span><span><strong>Real-World Analogy:</strong> A power strip is open for extension — you plug in new devices without modifying the strip itself. You never rewire the strip just because you bought a new appliance.</span></div>
+
+  <button class="collapsible-trigger" onclick="toggleCollapsible(this)">Interview Q&A <span class="chevron">▼</span></button>
+  <div class="collapsible-body"><div class="inner">
+    <div class="qa-block"><div class="qa-q" onclick="toggleQA(this)"><span class="arrow">▶</span>How do you achieve OCP in practice?</div><div class="qa-a">Program to interfaces or abstract classes. When new behavior is needed, create a new class that implements the interface rather than modifying the existing implementation.</div></div>
+    <div class="qa-block"><div class="qa-q" onclick="toggleQA(this)"><span class="arrow">▶</span>Is it realistic to never modify existing code?</div><div class="qa-a">No — the goal is to minimize changes to stable, tested code. You use abstractions to isolate the parts most likely to change so that new requirements only require new classes, not edits to proven ones.</div></div>
+  </div></div>
+
+  <div class="use-avoid">
+    <div class="use-col"><h4>✅ Use When</h4><ul><li>New features are added by creating new classes</li><li>Existing classes are stable and rarely edited</li><li>The system uses interfaces for varying behavior</li></ul></div>
+    <div class="avoid-col"><h4>❌ Violation Signal</h4><ul><li>Every new requirement forces edits to existing classes</li><li>A class has long if/else or switch chains on type strings</li><li>Adding a new case breaks existing tests</li></ul></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ L — LSP ═══════════════════════ -->
+<section id="lsp" class="principle-section pl">
+  <div class="principle-header"><div class="principle-letter">L</div><h2>Liskov Substitution Principle</h2></div>
+  <div class="principle-quote">"Subtypes must be substitutable for their base types without breaking the program."</div>
+
+  <div class="card"><h3>What It Means</h3><p>If class B extends class A, you must be able to replace A with B anywhere in the code and have everything still work correctly — no crashes, no wrong results, no surprises. The child must honor every promise the parent makes.</p></div>
+
+  <div class="note"><span class="bulb">💡</span><span><strong>The Swap Test:</strong> Take any variable typed as the parent, replace it with a child, and ask — did anything break? If yes, LSP is violated.</span></div>
+
+  <div class="diagram-wrapper">
+    <svg viewBox="0 0 780 240" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+      <defs><marker id="al3" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#5f6786"/></marker></defs>
+      <!-- Violation side -->
+      <rect x="20" y="10" width="340" height="110" rx="10" fill="rgba(248,113,113,.04)" stroke="#f87171" stroke-width="1" stroke-dasharray="6 4"/>
+      <text x="190" y="32" text-anchor="middle" fill="#f87171" font-weight="600" font-size="11">❌ Square : Rectangle — breaks parent contract</text>
+      <rect x="40" y="45" width="130" height="35" rx="6" fill="rgba(248,113,113,.06)" stroke="#f87171" stroke-width="1" stroke-opacity=".5"/>
+      <text x="105" y="67" text-anchor="middle" fill="#f87171" font-size="10">Rectangle</text>
+      <rect x="200" y="45" width="130" height="35" rx="6" fill="rgba(248,113,113,.06)" stroke="#f87171" stroke-width="1" stroke-opacity=".5"/>
+      <text x="265" y="67" text-anchor="middle" fill="#f87171" font-size="10">Square</text>
+      <line x1="200" y1="62" x2="170" y2="62" stroke="#f87171" stroke-width="1" marker-end="url(#al3)"/>
+      <text x="120" y="100" text-anchor="middle" fill="#f87171" font-size="9" font-family="JetBrains Mono,monospace">r.Width=4; r.Height=5;</text>
+      <text x="120" y="114" text-anchor="middle" fill="#f87171" font-size="9">expects 20, gets 25 with Square!</text>
+      <!-- Fix side -->
+      <rect x="400" y="10" width="360" height="110" rx="10" fill="rgba(74,222,128,.04)" stroke="#4ade80" stroke-width="1"/>
+      <text x="580" y="32" text-anchor="middle" fill="#4ade80" font-weight="600" font-size="11">✅ Both implement IShape — independent contracts</text>
+      <rect x="420" y="45" width="110" height="35" rx="6" fill="rgba(16,185,129,.08)" stroke="#10b981" stroke-width="1"/>
+      <text x="475" y="62" text-anchor="middle" fill="#10b981" font-weight="600" font-size="10">IShape</text>
+      <text x="475" y="73" text-anchor="middle" fill="#8890a8" font-size="8">Area()</text>
+      <rect x="420" y="90" width="100" height="28" rx="6" fill="rgba(16,185,129,.05)" stroke="#10b981" stroke-width="1" stroke-opacity=".4"/>
+      <text x="470" y="108" text-anchor="middle" fill="#10b981" font-size="9">Rectangle</text>
+      <rect x="540" y="90" width="100" height="28" rx="6" fill="rgba(16,185,129,.05)" stroke="#10b981" stroke-width="1" stroke-opacity=".4"/>
+      <text x="590" y="108" text-anchor="middle" fill="#10b981" font-size="9">Square</text>
+      <line x1="470" y1="90" x2="475" y2="80" stroke="#5f6786" stroke-width="1" marker-end="url(#al3)"/>
+      <line x1="590" y1="90" x2="490" y2="80" stroke="#5f6786" stroke-width="1" marker-end="url(#al3)"/>
+      <!-- Swap test -->
+      <rect x="120" y="150" width="540" height="70" rx="10" fill="rgba(16,185,129,.04)" stroke="rgba(16,185,129,.12)" stroke-width="1"/>
+      <text x="390" y="172" text-anchor="middle" fill="#10b981" font-size="11" font-weight="600">The LSP Quick Test</text>
+      <text x="390" y="192" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">1. Can the child do everything the parent promises?</text>
+      <text x="390" y="210" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">2. Can you secretly swap parent → child with nobody noticing?</text>
+    </svg>
+  </div>
+
+  <button class="collapsible-trigger" onclick="toggleCollapsible(this)">All 3 Examples — C# Code <span class="chevron">▼</span></button>
+  <div class="collapsible-body"><div class="inner">
+    <div class="code-compare">
+      <div class="code-block"><div class="code-header bad"><div class="dots"><span></span><span></span><span></span></div><span>❌ Rectangle/Square</span></div><pre><span class="kw">public class</span> <span class="tp">Rectangle</span>
+{
+    <span class="kw">public virtual int</span> Width { <span class="kw">get</span>; <span class="kw">set</span>; }
+    <span class="kw">public virtual int</span> Height { <span class="kw">get</span>; <span class="kw">set</span>; }
+    <span class="kw">public int</span> <span class="fn">Area</span>() => Width * Height;
+}
+
+<span class="kw">public class</span> <span class="tp">Square</span> : <span class="tp">Rectangle</span>
+{
+    <span class="kw">public override int</span> Width
+    { <span class="kw">set</span> { <span class="kw">base</span>.Width = <span class="kw">base</span>.Height = value; } }
+    <span class="kw">public override int</span> Height
+    { <span class="kw">set</span> { <span class="kw">base</span>.Width = <span class="kw">base</span>.Height = value; } }
+}
+
+<span class="kw">void</span> <span class="fn">ResizeAndPrint</span>(<span class="tp">Rectangle</span> r)
+{
+    r.Width = <span class="num">4</span>; r.Height = <span class="num">5</span>;
+    <span class="tp">Console</span>.<span class="fn">WriteLine</span>(r.<span class="fn">Area</span>());
+    <span class="cm">// Expects 20, gets 25 with Square</span>
+}</pre></div>
+      <div class="code-block"><div class="code-header good"><div class="dots"><span></span><span></span><span></span></div><span>✅ Fixed with IShape</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><span class="kw">public interface</span> <span class="tp">IShape</span> { <span class="kw">int</span> <span class="fn">Area</span>(); }
+
+<span class="kw">public class</span> <span class="tp">Rectangle</span> : <span class="tp">IShape</span>
+{
+    <span class="kw">public int</span> Width { <span class="kw">get</span>; <span class="kw">set</span>; }
+    <span class="kw">public int</span> Height { <span class="kw">get</span>; <span class="kw">set</span>; }
+    <span class="kw">public int</span> <span class="fn">Area</span>() => Width * Height;
+}
+
+<span class="kw">public class</span> <span class="tp">Square</span> : <span class="tp">IShape</span>
+{
+    <span class="kw">public int</span> Side { <span class="kw">get</span>; <span class="kw">set</span>; }
+    <span class="kw">public int</span> <span class="fn">Area</span>() => Side * Side;
+}
+<span class="cm">// Neither breaks the other's contract</span></pre></div>
+    </div>
+    <div class="code-compare">
+      <div class="code-block"><div class="code-header bad"><div class="dots"><span></span><span></span><span></span></div><span>❌ Bird/Penguin</span></div><pre><span class="kw">public class</span> <span class="tp">Bird</span>
+{
+    <span class="kw">public virtual void</span> <span class="fn">Fly</span>()
+        => <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">"Flying!"</span>);
+}
+
+<span class="kw">public class</span> <span class="tp">Penguin</span> : <span class="tp">Bird</span>
+{
+    <span class="kw">public override void</span> <span class="fn">Fly</span>()
+        => <span class="kw">throw new</span> <span class="tp">NotSupportedException</span>();
+}
+
+<span class="kw">void</span> <span class="fn">MakeBirdFly</span>(<span class="tp">Bird</span> bird)
+{
+    bird.<span class="fn">Fly</span>(); <span class="cm">// Crashes with Penguin</span>
+}</pre></div>
+      <div class="code-block"><div class="code-header good"><div class="dots"><span></span><span></span><span></span></div><span>✅ Fixed with IFlyable</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><span class="kw">public abstract class</span> <span class="tp">Bird</span>
+{
+    <span class="kw">public abstract void</span> <span class="fn">Eat</span>();
+}
+
+<span class="kw">public interface</span> <span class="tp">IFlyable</span> { <span class="kw">void</span> <span class="fn">Fly</span>(); }
+
+<span class="kw">public class</span> <span class="tp">Eagle</span> : <span class="tp">Bird</span>, <span class="tp">IFlyable</span>
+{
+    <span class="kw">public override void</span> <span class="fn">Eat</span>() { }
+    <span class="kw">public void</span> <span class="fn">Fly</span>()
+        => <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">"Soaring!"</span>);
+}
+
+<span class="kw">public class</span> <span class="tp">Penguin</span> : <span class="tp">Bird</span>
+{
+    <span class="kw">public override void</span> <span class="fn">Eat</span>() { }
+    <span class="cm">// Never promised it could fly</span>
+}</pre></div>
+    </div>
+    <div class="code-compare">
+      <div class="code-block"><div class="code-header bad"><div class="dots"><span></span><span></span><span></span></div><span>❌ ReadOnlyRepository</span></div><pre><span class="kw">public class</span> <span class="tp">Repository</span>
+{
+    <span class="kw">public virtual void</span> <span class="fn">Add</span>(<span class="kw">string</span> item) { }
+    <span class="kw">public virtual void</span> <span class="fn">Delete</span>(<span class="kw">string</span> item) { }
+}
+
+<span class="kw">public class</span> <span class="tp">ReadOnlyRepository</span> : <span class="tp">Repository</span>
+{
+    <span class="kw">public override void</span> <span class="fn">Delete</span>(<span class="kw">string</span> item)
+        => <span class="kw">throw new</span> <span class="tp">NotSupportedException</span>();
+    <span class="cm">// Breaks the parent's contract</span>
+}</pre></div>
+      <div class="code-block"><div class="code-header good"><div class="dots"><span></span><span></span><span></span></div><span>✅ Fixed with split interfaces</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><span class="kw">public interface</span> <span class="tp">IReadRepository</span>
+{
+    <span class="kw">string</span> <span class="fn">Get</span>(<span class="kw">int</span> id);
+}
+<span class="kw">public interface</span> <span class="tp">IWriteRepository</span>
+{
+    <span class="kw">void</span> <span class="fn">Add</span>(<span class="kw">string</span> item);
+    <span class="kw">void</span> <span class="fn">Delete</span>(<span class="kw">string</span> item);
+}
+
+<span class="kw">public class</span> <span class="tp">FullRepository</span> :
+    <span class="tp">IReadRepository</span>, <span class="tp">IWriteRepository</span> { }
+
+<span class="kw">public class</span> <span class="tp">ReadOnlyRepository</span> :
+    <span class="tp">IReadRepository</span> { }
+<span class="cm">// Only promises what it delivers</span></pre></div>
+    </div>
+  </div></div>
+
+  <button class="collapsible-trigger" onclick="toggleCollapsible(this)">Interview Q&A <span class="chevron">▼</span></button>
+  <div class="collapsible-body"><div class="inner">
+    <div class="qa-block"><div class="qa-q" onclick="toggleQA(this)"><span class="arrow">▶</span>What is the most common LSP violation pattern?</div><div class="qa-a">A subclass that overrides a method and throws <code>NotImplementedException</code> or <code>NotSupportedException</code>. This is a clear sign the subclass does not honor the parent contract.</div></div>
+    <div class="qa-block"><div class="qa-q" onclick="toggleQA(this)"><span class="arrow">▶</span>How does LSP relate to polymorphism?</div><div class="qa-a">LSP is what makes polymorphism safe. Polymorphism lets you treat objects of different types uniformly through a base type — LSP ensures that doing so never produces unexpected behavior.</div></div>
+    <div class="qa-block"><div class="qa-q" onclick="toggleQA(this)"><span class="arrow">▶</span>What is the swap test?</div><div class="qa-a">Replace any variable of the parent type with a child object and check if the program still behaves correctly. If something breaks, the child violates LSP.</div></div>
+  </div></div>
+
+  <div class="use-avoid">
+    <div class="use-col"><h4>✅ Use When</h4><ul><li>Child classes fully honor the parent's behavior contract</li><li>Substituting child for parent produces no surprises</li><li>Inheritance reflects a true 'is-a' relationship in behavior</li></ul></div>
+    <div class="avoid-col"><h4>❌ Violation Signal</h4><ul><li>Subclass throws NotImplementedException or NotSupportedException</li><li>Subclass weakens or ignores inherited method behavior</li><li>You need type checks like 'if (obj is Square)' before calling methods</li></ul></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ I — ISP ═══════════════════════ -->
+<section id="isp" class="principle-section pi">
+  <div class="principle-header"><div class="principle-letter">I</div><h2>Interface Segregation Principle</h2></div>
+  <div class="principle-quote">"No class should be forced to implement methods it does not use."</div>
+
+  <div class="card"><h3>What It Means</h3><p>Prefer many small, focused interfaces over one large fat interface. A class should only implement methods that are relevant to it. Forcing a class to implement irrelevant methods creates dead code and misleads callers.</p></div>
+
+  <div class="diagram-wrapper">
+    <svg viewBox="0 0 780 270" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+      <defs><marker id="ai4" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#5f6786"/></marker></defs>
+      <!-- Fat interface violation -->
+      <rect x="20" y="10" width="300" height="120" rx="10" fill="rgba(248,113,113,.04)" stroke="#f87171" stroke-width="1" stroke-dasharray="6 4"/>
+      <text x="170" y="32" text-anchor="middle" fill="#f87171" font-weight="600" font-size="11">❌ Fat Interface</text>
+      <rect x="50" y="42" width="240" height="75" rx="8" fill="rgba(168,85,247,.06)" stroke="#a855f7" stroke-width="1"/>
+      <text x="170" y="62" text-anchor="middle" fill="#a855f7" font-weight="600" font-size="11">IWorker</text>
+      <text x="170" y="78" text-anchor="middle" fill="#8890a8" font-size="9" font-family="JetBrains Mono,monospace">Work() / Eat() / Sleep()</text>
+      <text x="170" y="98" text-anchor="middle" fill="#f87171" font-size="9">Robot: Eat()→throw, Sleep()→throw</text>
+      <text x="170" y="112" text-anchor="middle" fill="#f87171" font-size="9" font-style="italic">forced to implement unused methods</text>
+      <!-- Fixed side -->
+      <rect x="380" y="10" width="380" height="120" rx="10" fill="rgba(74,222,128,.04)" stroke="#4ade80" stroke-width="1"/>
+      <text x="570" y="32" text-anchor="middle" fill="#4ade80" font-weight="600" font-size="11">✅ Segregated Interfaces</text>
+      <rect x="400" y="42" width="100" height="38" rx="6" fill="rgba(168,85,247,.06)" stroke="#a855f7" stroke-width="1" stroke-opacity=".6"/>
+      <text x="450" y="58" text-anchor="middle" fill="#a855f7" font-size="10" font-weight="600">IWorkable</text>
+      <text x="450" y="72" text-anchor="middle" fill="#8890a8" font-size="8">Work()</text>
+      <rect x="515" y="42" width="100" height="38" rx="6" fill="rgba(168,85,247,.06)" stroke="#a855f7" stroke-width="1" stroke-opacity=".6"/>
+      <text x="565" y="58" text-anchor="middle" fill="#a855f7" font-size="10" font-weight="600">IEatable</text>
+      <text x="565" y="72" text-anchor="middle" fill="#8890a8" font-size="8">Eat()</text>
+      <rect x="630" y="42" width="110" height="38" rx="6" fill="rgba(168,85,247,.06)" stroke="#a855f7" stroke-width="1" stroke-opacity=".6"/>
+      <text x="685" y="58" text-anchor="middle" fill="#a855f7" font-size="10" font-weight="600">ISleepable</text>
+      <text x="685" y="72" text-anchor="middle" fill="#8890a8" font-size="8">Sleep()</text>
+      <text x="450" y="102" text-anchor="middle" fill="#4ade80" font-size="9">Human: all 3</text>
+      <text x="620" y="102" text-anchor="middle" fill="#4ade80" font-size="9">Robot: IWorkable only</text>
+      <!-- Concrete classes -->
+      <rect x="400" y="165" width="140" height="38" rx="8" fill="rgba(168,85,247,.04)" stroke="#a855f7" stroke-width="1" stroke-opacity=".4"/>
+      <text x="470" y="188" text-anchor="middle" fill="#a855f7" font-size="11">Human</text>
+      <rect x="570" y="165" width="140" height="38" rx="8" fill="rgba(168,85,247,.04)" stroke="#a855f7" stroke-width="1" stroke-opacity=".4"/>
+      <text x="640" y="188" text-anchor="middle" fill="#a855f7" font-size="11">Robot</text>
+      <!-- Arrows -->
+      <line x1="470" y1="165" x2="450" y2="80" stroke="#5f6786" stroke-width="1" marker-end="url(#ai4)"/>
+      <line x1="470" y1="165" x2="565" y2="80" stroke="#5f6786" stroke-width="1" marker-end="url(#ai4)"/>
+      <line x1="470" y1="165" x2="685" y2="80" stroke="#5f6786" stroke-width="1" marker-end="url(#ai4)"/>
+      <line x1="640" y1="165" x2="450" y2="80" stroke="#4ade80" stroke-width="1.5" marker-end="url(#ai4)"/>
+      <text x="595" y="148" fill="#4ade80" font-size="9" font-weight="600">only IWorkable</text>
+      <!-- Summary -->
+      <rect x="120" y="230" width="540" height="26" rx="8" fill="rgba(168,85,247,.05)" stroke="rgba(168,85,247,.15)" stroke-width="1"/>
+      <text x="390" y="247" text-anchor="middle" fill="#a855f7" font-size="10">No class should be forced to implement methods it does not use</text>
+    </svg>
+  </div>
+
+  <button class="collapsible-trigger" onclick="toggleCollapsible(this)">Violation vs Fix — C# Code <span class="chevron">▼</span></button>
+  <div class="collapsible-body"><div class="inner">
+    <div class="code-compare">
+      <div class="code-block"><div class="code-header bad"><div class="dots"><span></span><span></span><span></span></div><span>❌ Violation — Fat Interface</span></div><pre><span class="kw">public interface</span> <span class="tp">IWorker</span>
+{
+    <span class="kw">void</span> <span class="fn">Work</span>();
+    <span class="kw">void</span> <span class="fn">Eat</span>();
+    <span class="kw">void</span> <span class="fn">Sleep</span>();
+}
+
+<span class="cm">// Robot works but doesn't eat or sleep</span>
+<span class="kw">public class</span> <span class="tp">Robot</span> : <span class="tp">IWorker</span>
+{
+    <span class="kw">public void</span> <span class="fn">Work</span>()
+        => <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">"Robot working."</span>);
+
+    <span class="kw">public void</span> <span class="fn">Eat</span>()
+        => <span class="kw">throw new</span> <span class="tp">NotImplementedException</span>();
+
+    <span class="kw">public void</span> <span class="fn">Sleep</span>()
+        => <span class="kw">throw new</span> <span class="tp">NotImplementedException</span>();
+}</pre></div>
+      <div class="code-block"><div class="code-header good"><div class="dots"><span></span><span></span><span></span></div><span>✅ Fixed — Segregated</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><span class="kw">public interface</span> <span class="tp">IWorkable</span> { <span class="kw">void</span> <span class="fn">Work</span>(); }
+<span class="kw">public interface</span> <span class="tp">IEatable</span> { <span class="kw">void</span> <span class="fn">Eat</span>(); }
+<span class="kw">public interface</span> <span class="tp">ISleepable</span> { <span class="kw">void</span> <span class="fn">Sleep</span>(); }
+
+<span class="kw">public class</span> <span class="tp">Human</span> :
+    <span class="tp">IWorkable</span>, <span class="tp">IEatable</span>, <span class="tp">ISleepable</span>
+{
+    <span class="kw">public void</span> <span class="fn">Work</span>() { }
+    <span class="kw">public void</span> <span class="fn">Eat</span>() { }
+    <span class="kw">public void</span> <span class="fn">Sleep</span>() { }
+}
+
+<span class="cm">// Robot only implements what it needs</span>
+<span class="kw">public class</span> <span class="tp">Robot</span> : <span class="tp">IWorkable</span>
+{
+    <span class="kw">public void</span> <span class="fn">Work</span>()
+        => <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">"Robot working."</span>);
+}</pre></div>
+    </div>
+  </div></div>
+
+  <div class="analogy"><span class="icon">🎯</span><span><strong>Real-World Analogy:</strong> A TV remote has buttons for volume, channel, and power. An AC remote has buttons for temperature and fan speed. You would never hand a TV remote to someone trying to control an AC and tell them to 'just ignore the buttons that don't apply'.</span></div>
+
+  <button class="collapsible-trigger" onclick="toggleCollapsible(this)">Interview Q&A <span class="chevron">▼</span></button>
+  <div class="collapsible-body"><div class="inner">
+    <div class="qa-block"><div class="qa-q" onclick="toggleQA(this)"><span class="arrow">▶</span>How small should an interface be?</div><div class="qa-a">An interface should represent one coherent capability or role. If you find yourself writing <code>throw new NotImplementedException()</code> in a class that implements an interface, the interface is too large and should be split.</div></div>
+    <div class="qa-block"><div class="qa-q" onclick="toggleQA(this)"><span class="arrow">▶</span>How does ISP relate to SRP?</div><div class="qa-a">SRP applies to classes — one reason to change. ISP applies to interfaces — one focused capability. Both push toward smaller, more focused units. Violating one often leads to violating the other.</div></div>
+  </div></div>
+
+  <div class="use-avoid">
+    <div class="use-col"><h4>✅ Use When</h4><ul><li>Interfaces represent one focused capability or role</li><li>Classes only implement methods they actually use</li><li>Adding a new class does not require implementing irrelevant methods</li></ul></div>
+    <div class="avoid-col"><h4>❌ Violation Signal</h4><ul><li>Interface has many unrelated methods</li><li>Classes implement methods with empty bodies or NotImplementedException</li><li>Changing one method forces changes in many unrelated classes</li></ul></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════ D — DIP ═══════════════════════ -->
+<section id="dip" class="principle-section pd">
+  <div class="principle-header"><div class="principle-letter">D</div><h2>Dependency Inversion Principle</h2></div>
+  <div class="principle-quote">"High-level modules should not depend on low-level modules. Both should depend on abstractions."</div>
+
+  <div class="card"><h3>What It Means</h3><p>Your business logic (high-level) should not be directly tied to concrete implementations (low-level). Both should communicate through an interface. This makes it easy to swap implementations without touching business logic.</p></div>
+
+  <div class="note"><span class="bulb">💡</span><span>DIP is the <strong>principle</strong>. Dependency Injection (DI) is the <strong>technique</strong> used to achieve it. They are related but not the same thing.</span></div>
+
+  <div class="diagram-wrapper">
+    <svg viewBox="0 0 780 280" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+      <defs>
+        <marker id="ad5" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#5f6786"/></marker>
+        <marker id="ad5r" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#ef4444"/></marker>
+      </defs>
+      <!-- Violation -->
+      <rect x="20" y="10" width="280" height="120" rx="10" fill="rgba(248,113,113,.04)" stroke="#f87171" stroke-width="1" stroke-dasharray="6 4"/>
+      <text x="160" y="30" text-anchor="middle" fill="#f87171" font-weight="600" font-size="11">❌ Direct dependency</text>
+      <rect x="50" y="40" width="200" height="32" rx="6" fill="rgba(248,113,113,.06)" stroke="#f87171" stroke-width="1" stroke-opacity=".5"/>
+      <text x="150" y="60" text-anchor="middle" fill="#f87171" font-size="10">OrderService (high-level)</text>
+      <rect x="50" y="85" width="200" height="32" rx="6" fill="rgba(248,113,113,.06)" stroke="#f87171" stroke-width="1" stroke-opacity=".5"/>
+      <text x="150" y="105" text-anchor="middle" fill="#f87171" font-size="10">SqlOrderRepository (concrete)</text>
+      <line x1="150" y1="72" x2="150" y2="85" stroke="#f87171" stroke-width="1.5" marker-end="url(#ad5r)"/>
+      <text x="185" y="82" fill="#f87171" font-size="8">new SqlRepo()</text>
+      <!-- Fixed -->
+      <rect x="370" y="10" width="390" height="250" rx="10" fill="rgba(74,222,128,.04)" stroke="#4ade80" stroke-width="1"/>
+      <text x="565" y="30" text-anchor="middle" fill="#4ade80" font-weight="600" font-size="11">✅ Both depend on abstraction</text>
+      <!-- High-level -->
+      <rect x="440" y="42" width="200" height="48" rx="8" fill="rgba(239,68,68,.06)" stroke="#ef4444" stroke-width="1"/>
+      <text x="540" y="62" text-anchor="middle" fill="#ef4444" font-weight="600" font-size="11">OrderService</text>
+      <text x="540" y="78" text-anchor="middle" fill="#8890a8" font-size="9" font-family="JetBrains Mono,monospace">_repo : IOrderRepository</text>
+      <!-- Abstraction -->
+      <rect x="420" y="120" width="240" height="42" rx="8" fill="rgba(239,68,68,.1)" stroke="#ef4444" stroke-width="1.5"/>
+      <text x="540" y="140" text-anchor="middle" fill="#ef4444" font-weight="700" font-size="12">«interface» IOrderRepository</text>
+      <text x="540" y="156" text-anchor="middle" fill="#8890a8" font-size="9" font-family="JetBrains Mono,monospace">Save(Order)</text>
+      <!-- Low-level -->
+      <rect x="390" y="195" width="145" height="38" rx="8" fill="rgba(239,68,68,.04)" stroke="#ef4444" stroke-width="1" stroke-opacity=".4"/>
+      <text x="463" y="218" text-anchor="middle" fill="#ef4444" font-size="10">SqlOrderRepo</text>
+      <rect x="555" y="195" width="160" height="38" rx="8" fill="rgba(74,222,128,.08)" stroke="#4ade80" stroke-width="1.2" stroke-dasharray="5 3"/>
+      <text x="635" y="218" text-anchor="middle" fill="#4ade80" font-size="10">MongoOrderRepo</text>
+      <!-- Arrows -->
+      <line x1="540" y1="90" x2="540" y2="120" stroke="#5f6786" stroke-width="1" marker-end="url(#ad5)"/>
+      <text x="555" y="108" fill="#5f6786" font-size="8">depends on</text>
+      <line x1="463" y1="195" x2="500" y2="162" stroke="#5f6786" stroke-width="1" marker-end="url(#ad5)"/>
+      <line x1="635" y1="195" x2="580" y2="162" stroke="#5f6786" stroke-width="1" marker-end="url(#ad5)"/>
+      <text x="460" y="182" fill="#5f6786" font-size="8">implements</text>
+      <text x="620" y="182" fill="#4ade80" font-size="8">swap: 1 line in DI</text>
+    </svg>
+  </div>
+
+  <button class="collapsible-trigger" onclick="toggleCollapsible(this)">Violation vs Fix — C# Code <span class="chevron">▼</span></button>
+  <div class="collapsible-body"><div class="inner">
+    <div class="code-compare">
+      <div class="code-block"><div class="code-header bad"><div class="dots"><span></span><span></span><span></span></div><span>❌ Violation</span></div><pre><span class="kw">public class</span> <span class="tp">OrderService</span>
+{
+    <span class="cm">// Directly depends on a concrete class</span>
+    <span class="kw">private</span> <span class="tp">SqlOrderRepository</span> _repo
+        = <span class="kw">new</span> <span class="tp">SqlOrderRepository</span>();
+
+    <span class="kw">public void</span> <span class="fn">PlaceOrder</span>(<span class="tp">Order</span> order)
+        => _repo.<span class="fn">Save</span>(order);
+}
+
+<span class="cm">// Switching to MongoDB means editing</span>
+<span class="cm">// OrderService — a business class.</span>
+<span class="cm">// That is wrong.</span></pre></div>
+      <div class="code-block"><div class="code-header good"><div class="dots"><span></span><span></span><span></span></div><span>✅ Fixed</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><span class="kw">public interface</span> <span class="tp">IOrderRepository</span>
+{
+    <span class="kw">void</span> <span class="fn">Save</span>(<span class="tp">Order</span> order);
+}
+
+<span class="kw">public class</span> <span class="tp">SqlOrderRepository</span> : <span class="tp">IOrderRepository</span>
+{ <span class="kw">public void</span> <span class="fn">Save</span>(<span class="tp">Order</span> o) { <span class="cm">/* SQL */</span> } }
+
+<span class="kw">public class</span> <span class="tp">MongoOrderRepository</span> : <span class="tp">IOrderRepository</span>
+{ <span class="kw">public void</span> <span class="fn">Save</span>(<span class="tp">Order</span> o) { <span class="cm">/* Mongo */</span> } }
+
+<span class="kw">public class</span> <span class="tp">OrderService</span>
+{
+    <span class="kw">private readonly</span> <span class="tp">IOrderRepository</span> _repo;
+    <span class="kw">public</span> <span class="fn">OrderService</span>(<span class="tp">IOrderRepository</span> repo)
+    { _repo = repo; } <span class="cm">// injected from outside</span>
+
+    <span class="kw">public void</span> <span class="fn">PlaceOrder</span>(<span class="tp">Order</span> order)
+        => _repo.<span class="fn">Save</span>(order);
+}</pre></div>
+    </div>
+    <div class="code-block"><div class="code-header good"><div class="dots"><span></span><span></span><span></span></div><span>DIP in ASP.NET Core</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><span class="cm">// Program.cs — register the abstraction and its implementation</span>
+builder.Services.<span class="fn">AddScoped</span>&lt;<span class="tp">IOrderRepository</span>, <span class="tp">SqlOrderRepository</span>&gt;();
+
+<span class="cm">// OrderService never knows if it's SQL or Mongo</span>
+<span class="kw">public class</span> <span class="tp">OrderService</span>
+{
+    <span class="kw">private readonly</span> <span class="tp">IOrderRepository</span> _repo;
+    <span class="kw">public</span> <span class="fn">OrderService</span>(<span class="tp">IOrderRepository</span> repo) { _repo = repo; }
+    <span class="kw">public void</span> <span class="fn">PlaceOrder</span>(<span class="tp">Order</span> order) => _repo.<span class="fn">Save</span>(order);
+}
+
+<span class="cm">// Switching to Mongo? Change one line in Program.cs:</span>
+<span class="cm">// builder.Services.AddScoped&lt;IOrderRepository, MongoOrderRepository&gt;();</span>
+<span class="cm">// OrderService code: zero changes.</span></pre></div>
+  </div></div>
+
+  <div class="note"><span class="bulb">💡</span><span>In unit tests, you can inject a mock <code>IOrderRepository</code> without touching a real database. This is only possible because of DIP — OrderService depends on the abstraction, not the concrete class.</span></div>
+
+  <button class="collapsible-trigger" onclick="toggleCollapsible(this)">Interview Q&A <span class="chevron">▼</span></button>
+  <div class="collapsible-body"><div class="inner">
+    <div class="qa-block"><div class="qa-q" onclick="toggleQA(this)"><span class="arrow">▶</span>What is the difference between DIP and Dependency Injection?</div><div class="qa-a">DIP is the principle — high-level modules should depend on abstractions. Dependency Injection is the technique where dependencies are provided from outside (via constructor, property, or method) rather than created inside the class. DI is the most common way to achieve DIP.</div></div>
+    <div class="qa-block"><div class="qa-q" onclick="toggleQA(this)"><span class="arrow">▶</span>What does 'inversion' mean in DIP?</div><div class="qa-a">Traditionally, high-level modules depended on low-level modules — the direction of dependency flowed downward. DIP inverts this: both levels depend on an abstraction. The flow of dependency is inverted to point toward the abstraction, not the concrete implementation.</div></div>
+    <div class="qa-block"><div class="qa-q" onclick="toggleQA(this)"><span class="arrow">▶</span>How does DIP make unit testing easier?</div><div class="qa-a">Because the class depends on an interface, you can inject a mock or fake implementation in tests. Without DIP, the class creates its own dependencies internally — making it impossible to isolate for testing.</div></div>
+  </div></div>
+
+  <div class="use-avoid">
+    <div class="use-col"><h4>✅ Use When</h4><ul><li>Business classes depend on interfaces, not concrete types</li><li>Implementations are injected from outside via constructor</li><li>Switching a database or service requires zero business logic changes</li></ul></div>
+    <div class="avoid-col"><h4>❌ Violation Signal</h4><ul><li><code>new ConcreteClass()</code> appears inside business logic</li><li>Business class imports from infrastructure or data access layers directly</li><li>Unit testing the class requires a real database or external service</li></ul></div>
+  </div>
+</section>
+
+<!-- ═══ HOW SOLID CONNECTS ═══ -->
+<section class="summary-section">
+  <h2>How SOLID Principles Connect</h2>
+  <div class="diagram-wrapper">
+    <svg viewBox="0 0 780 280" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+      <defs><marker id="aconn" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#5f6786"/></marker></defs>
+      <!-- S -->
+      <rect x="40" y="30" width="120" height="50" rx="10" fill="rgba(59,130,246,.1)" stroke="#3b82f6" stroke-width="1.5"/>
+      <text x="100" y="52" text-anchor="middle" fill="#3b82f6" font-weight="900" font-size="20" font-family="Playfair Display,serif">S</text>
+      <text x="100" y="70" text-anchor="middle" fill="#8890a8" font-size="9">one class, one job</text>
+      <!-- O -->
+      <rect x="220" y="30" width="120" height="50" rx="10" fill="rgba(245,158,11,.1)" stroke="#f59e0b" stroke-width="1.5"/>
+      <text x="280" y="52" text-anchor="middle" fill="#f59e0b" font-weight="900" font-size="20" font-family="Playfair Display,serif">O</text>
+      <text x="280" y="70" text-anchor="middle" fill="#8890a8" font-size="9">extend, don't edit</text>
+      <!-- L -->
+      <rect x="400" y="30" width="120" height="50" rx="10" fill="rgba(16,185,129,.1)" stroke="#10b981" stroke-width="1.5"/>
+      <text x="460" y="52" text-anchor="middle" fill="#10b981" font-weight="900" font-size="20" font-family="Playfair Display,serif">L</text>
+      <text x="460" y="70" text-anchor="middle" fill="#8890a8" font-size="9">subtypes keep promises</text>
+      <!-- I -->
+      <rect x="560" y="110" width="120" height="50" rx="10" fill="rgba(168,85,247,.1)" stroke="#a855f7" stroke-width="1.5"/>
+      <text x="620" y="132" text-anchor="middle" fill="#a855f7" font-weight="900" font-size="20" font-family="Playfair Display,serif">I</text>
+      <text x="620" y="150" text-anchor="middle" fill="#8890a8" font-size="9">focused interfaces</text>
+      <!-- D -->
+      <rect x="560" y="200" width="120" height="50" rx="10" fill="rgba(239,68,68,.1)" stroke="#ef4444" stroke-width="1.5"/>
+      <text x="620" y="222" text-anchor="middle" fill="#ef4444" font-weight="900" font-size="20" font-family="Playfair Display,serif">D</text>
+      <text x="620" y="240" text-anchor="middle" fill="#8890a8" font-size="9">depend on abstractions</text>
+      <!-- Connection arrows -->
+      <path d="M160,55 L220,55" fill="none" stroke="#5f6786" stroke-width="1" marker-end="url(#aconn)"/>
+      <text x="190" y="48" text-anchor="middle" fill="#5f6786" font-size="7">enables</text>
+      <path d="M340,55 L400,55" fill="none" stroke="#5f6786" stroke-width="1" marker-end="url(#aconn)"/>
+      <text x="370" y="48" text-anchor="middle" fill="#5f6786" font-size="7">safe via</text>
+      <path d="M520,65 L560,125" fill="none" stroke="#5f6786" stroke-width="1" marker-end="url(#aconn)"/>
+      <text x="548" y="92" fill="#5f6786" font-size="7">easier with</text>
+      <path d="M620" y1="160" x2="620" y2="200" fill="none" stroke="#5f6786" stroke-width="1" marker-end="url(#aconn)"/>
+      <text x="640" y="182" fill="#5f6786" font-size="7">uses</text>
+      <path d="M620,200 C700,180 700,60 520,55" fill="none" stroke="#5f6786" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#aconn)"/>
+      <text x="710" y="120" fill="#5f6786" font-size="7">enables OCP</text>
+      <!-- Descriptions -->
+      <text x="100" y="110" text-anchor="middle" fill="#3b82f6" font-size="9">Makes classes smaller</text>
+      <text x="280" y="110" text-anchor="middle" fill="#f59e0b" font-size="9">Relies on SRP stability</text>
+      <text x="460" y="110" text-anchor="middle" fill="#10b981" font-size="9">Makes OCP safe</text>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══ ONE-SENTENCE ANSWERS ═══ -->
+<section class="summary-section">
+  <h2>The One-Sentence Interview Answer</h2>
+  <div class="card"><div class="table-wrap"><table>
+    <thead><tr><th></th><th>One-Sentence Answer</th></tr></thead>
+    <tbody>
+      <tr><td><strong style="color:var(--s)">S</strong></td><td>Give every class one job so it has one reason to change.</td></tr>
+      <tr><td><strong style="color:var(--o)">O</strong></td><td>Add new features by writing new code, not by editing existing code.</td></tr>
+      <tr><td><strong style="color:var(--l)">L</strong></td><td>A child class must be a complete, trustworthy substitute for its parent.</td></tr>
+      <tr><td><strong style="color:var(--i)">I</strong></td><td>Split large interfaces so classes only implement what they actually need.</td></tr>
+      <tr><td><strong style="color:var(--d)">D</strong></td><td>Business logic should talk to interfaces, not to concrete implementations.</td></tr>
+    </tbody>
+  </table></div></div>
+</section>
+
+<button class="back-top" id="backTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+<footer><p>SOLID Principles — C# Interactive Study Guide</p></footer>
+
+<script>
+function toggleCollapsible(btn){btn.classList.toggle('open');btn.nextElementSibling.classList.toggle('open')}
+function toggleQA(el){el.classList.toggle('open');el.nextElementSibling.classList.toggle('open')}
+function copyCode(btn){const pre=btn.closest('.code-block').querySelector('pre');navigator.clipboard.writeText(pre.textContent).then(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',1500)})}
+window.addEventListener('scroll',()=>{document.getElementById('backTop').classList.toggle('show',window.scrollY>400)})
+</script>
+</body>
+</html>

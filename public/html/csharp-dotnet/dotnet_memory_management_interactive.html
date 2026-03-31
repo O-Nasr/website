@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>.NET Memory Management — Interactive Study Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#090b10;--surface:#10141e;--surface2:#171d2e;--border:#252e44;--text:#e2e8f0;--text-dim:#6b7fa0;--accent:#60a5fa;--accent2:#38bdf8;--green:#34d399;--red:#f87171;--orange:#fb923c;--yellow:#fbbf24;--purple:#a78bfa;--pink:#f472b6;--code-bg:#0b0e16;--glow:rgba(96,165,250,.12)}
+*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;min-height:100vh}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 15% 5%,rgba(96,165,250,.05)0%,transparent 55%),radial-gradient(ellipse at 85% 95%,rgba(167,139,250,.04)0%,transparent 55%);pointer-events:none;z-index:0}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.container{max-width:920px;margin:0 auto;padding:2rem 1.5rem 4rem;position:relative;z-index:1}
+.hero{text-align:center;padding:3rem 0 2.5rem}
+.hero-badge{display:inline-block;background:linear-gradient(135deg,var(--accent),var(--purple));color:#fff;font-weight:700;font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;padding:.35rem 1rem;border-radius:99px;margin-bottom:1.2rem}
+.hero h1{font-size:2.4rem;font-weight:800;background:linear-gradient(135deg,#fff 30%,var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1.15;margin-bottom:.5rem}
+.hero p{color:var(--text-dim);font-size:1.05rem}
+.nav{display:flex;flex-wrap:wrap;gap:.5rem;justify-content:center;margin-bottom:2.5rem;position:sticky;top:0;z-index:10;background:rgba(9,11,16,.88);backdrop-filter:blur(12px);padding:.75rem 0;border-bottom:1px solid var(--border)}
+.nav a{color:var(--text-dim);text-decoration:none;font-size:.75rem;font-weight:600;padding:.4rem .8rem;border-radius:8px;transition:all .2s;border:1px solid transparent;letter-spacing:.02em}
+.nav a:hover,.nav a.active{color:var(--accent);background:rgba(96,165,250,.08);border-color:rgba(96,165,250,.2)}
+.section{margin-bottom:3rem;animation:fadeUp .5s ease both}
+.section-header{display:flex;align-items:center;gap:.75rem;margin-bottom:1.2rem;padding-bottom:.8rem;border-bottom:1px solid var(--border)}
+.section-num{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--purple));display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.85rem;color:#fff;flex-shrink:0}
+.section-header h2{font-size:1.35rem;font-weight:700}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.5rem;margin-bottom:1rem;transition:border-color .3s}
+.card:hover{border-color:rgba(96,165,250,.25)}
+.callout{background:linear-gradient(135deg,rgba(96,165,250,.07),rgba(167,139,250,.04));border-left:3px solid var(--accent);border-radius:0 10px 10px 0;padding:1rem 1.2rem;margin:1rem 0;font-size:.92rem}
+.callout.warn{border-left-color:var(--orange);background:linear-gradient(135deg,rgba(251,146,60,.07),rgba(251,146,60,.03))}
+.callout.green{border-left-color:var(--green);background:linear-gradient(135deg,rgba(52,211,153,.07),rgba(52,211,153,.03))}
+.callout.red{border-left-color:var(--red);background:linear-gradient(135deg,rgba(248,113,113,.07),rgba(248,113,113,.03))}
+pre{background:var(--code-bg);border:1px solid var(--border);border-radius:10px;padding:1.2rem;overflow-x:auto;margin:.8rem 0;font-family:'JetBrains Mono',monospace;font-size:.78rem;line-height:1.65;position:relative}
+pre .label{position:absolute;top:.5rem;right:.6rem;font-size:.6rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em;font-family:'Outfit',sans-serif;font-weight:600;background:var(--surface);padding:.15rem .5rem;border-radius:4px}
+.kw{color:var(--purple)}.tp{color:var(--accent)}.cm{color:#3a4a6a;font-style:italic}.st{color:var(--green)}.fn{color:var(--yellow)}.nu{color:var(--orange)}.er{color:var(--red)}
+.table-wrap{overflow-x:auto;margin:.8rem 0;border-radius:10px;border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:.83rem}
+th{background:var(--surface2);color:var(--accent);font-weight:600;text-align:left;padding:.7rem 1rem;white-space:nowrap}
+td{padding:.6rem 1rem;border-top:1px solid var(--border)}
+tr:hover td{background:rgba(96,165,250,.03)}
+.accordion{margin:.8rem 0}
+.accordion-btn{width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:600;padding:.9rem 1.2rem;border-radius:10px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;transition:all .2s}
+.accordion-btn:hover{border-color:var(--accent);background:var(--surface2)}
+.accordion-btn .arrow{transition:transform .3s;font-size:.8rem;color:var(--accent)}
+.accordion-btn.open .arrow{transform:rotate(180deg)}
+.accordion-body{max-height:0;overflow:hidden;transition:max-height .4s ease;background:var(--surface);border:1px solid var(--border);border-top:none;border-radius:0 0 10px 10px;padding:0 1.2rem}
+.accordion-body.open{max-height:4000px;padding:1.2rem}
+.tabs{display:flex;gap:.4rem;margin-bottom:0;flex-wrap:wrap}
+.tab-btn{background:var(--surface);border:1px solid var(--border);color:var(--text-dim);font-family:'Outfit',sans-serif;font-size:.76rem;font-weight:600;padding:.5rem 1rem;border-radius:8px 8px 0 0;cursor:pointer;transition:all .2s}
+.tab-btn:hover{color:var(--text)}.tab-btn.active{color:var(--accent);background:var(--surface2);border-bottom-color:var(--surface2)}
+.tab-panel{display:none;background:var(--surface2);border:1px solid var(--border);border-radius:0 10px 10px 10px;padding:1.2rem}
+.tab-panel.active{display:block}
+
+/* Memory diagram */
+.mem-diagram{display:flex;gap:1.5rem;margin:1rem 0;flex-wrap:wrap}
+.mem-col{flex:1;min-width:200px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1rem;position:relative;overflow:hidden}
+.mem-col h4{font-size:.85rem;font-weight:700;margin-bottom:.6rem;display:flex;align-items:center;gap:.4rem}
+.mem-col .tag{font-size:.6rem;padding:.15rem .4rem;border-radius:4px;font-weight:700;letter-spacing:.05em}
+.tag.fast{background:rgba(52,211,153,.15);color:var(--green)}
+.tag.slow{background:rgba(248,113,113,.15);color:var(--red)}
+.mem-slot{background:var(--code-bg);border:1px solid var(--border);border-radius:6px;padding:.35rem .6rem;margin-bottom:.3rem;font-family:'JetBrains Mono',monospace;font-size:.72rem;display:flex;justify-content:space-between;transition:all .3s}
+.mem-slot:hover{border-color:var(--accent)}
+.mem-slot .val{color:var(--accent)}
+.mem-slot .ref{color:var(--purple);font-style:italic}
+
+/* GC Gen visualization */
+.gen-viz{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.5rem;margin:1rem 0}
+.gen-bar{display:flex;gap:4px;margin:.8rem 0;border-radius:8px;overflow:hidden;height:48px}
+.gen-seg{display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.75rem;color:#fff;transition:all .4s;cursor:default;position:relative}
+.gen-seg.g0{background:linear-gradient(135deg,#34d399,#10b981);flex:3}
+.gen-seg.g1{background:linear-gradient(135deg,#fbbf24,#f59e0b);flex:2}
+.gen-seg.g2{background:linear-gradient(135deg,#f87171,#ef4444);flex:4}
+.gen-seg.loh{background:linear-gradient(135deg,#a78bfa,#8b5cf6);flex:2}
+.gen-labels{display:flex;gap:1rem;flex-wrap:wrap;margin-top:.5rem}
+.gen-label{display:flex;align-items:center;gap:.3rem;font-size:.75rem;font-weight:600}
+.gen-dot{width:10px;height:10px;border-radius:3px}
+
+/* GC Simulator */
+.gc-sim{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.5rem;margin:1rem 0}
+.gc-controls{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.8rem}
+.gc-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);font-family:'Outfit',sans-serif;font-size:.76rem;font-weight:600;padding:.5rem 1rem;border-radius:8px;cursor:pointer;transition:all .2s}
+.gc-btn:hover{color:var(--text);border-color:var(--accent)}
+.gc-btn.active{background:rgba(96,165,250,.12);border-color:var(--accent);color:var(--accent)}
+.gc-log{background:var(--code-bg);border:1px solid var(--border);border-radius:10px;padding:1rem;font-family:'JetBrains Mono',monospace;font-size:.73rem;line-height:1.8;min-height:80px;max-height:300px;overflow-y:auto}
+.gc-log .ok{color:var(--green)}.gc-log .bad{color:var(--red)}.gc-log .warn{color:var(--orange)}.gc-log .info{color:var(--text-dim)}.gc-log .hl{color:var(--accent)}
+
+/* Leak patterns */
+.leak-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:.8rem;margin:1rem 0}
+.leak-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1rem;transition:all .2s}
+.leak-card:hover{border-color:var(--red);transform:translateY(-2px)}
+.leak-card h4{font-size:.88rem;color:var(--red);margin-bottom:.4rem;display:flex;align-items:center;gap:.3rem}
+.leak-card p{font-size:.8rem;color:var(--text-dim);line-height:1.5}
+
+/* Quiz */
+.quiz-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.5rem;margin-bottom:1rem}
+.quiz-card h3{font-size:.95rem;margin-bottom:1rem;color:var(--accent)}
+.quiz-option{display:block;width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'Outfit',sans-serif;font-size:.83rem;padding:.7rem 1rem;border-radius:8px;cursor:pointer;margin-bottom:.4rem;text-align:left;transition:all .2s}
+.quiz-option:hover{border-color:var(--accent);transform:translateX(4px)}
+.quiz-option.correct{background:rgba(52,211,153,.15);border-color:var(--green);color:var(--green)}
+.quiz-option.wrong{background:rgba(248,113,113,.1);border-color:var(--red);color:var(--red)}
+.quiz-option:disabled{cursor:default;transform:none}
+.quiz-explanation{margin-top:.7rem;padding:.8rem;border-radius:8px;background:rgba(96,165,250,.06);font-size:.83rem;display:none;line-height:1.6}
+.quiz-explanation.show{display:block}
+.quiz-score{text-align:center;padding:1.5rem;background:var(--surface);border:1px solid var(--accent);border-radius:14px;margin-top:1rem}
+.quiz-score .big{font-size:2.2rem;font-weight:800;color:var(--accent)}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:640px){.hero h1{font-size:1.7rem}.container{padding:1rem}.mem-diagram{flex-direction:column}}
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="hero">
+  <div class="hero-badge">.NET Interview Study Guide</div>
+  <h1>Memory Management</h1>
+  <p>Stack, Heap, GC Generations, LOH, Boxing, WeakReference & Leak Patterns</p>
+</div>
+
+<nav class="nav">
+  <a href="#s1">Stack vs Heap</a>
+  <a href="#s2">GC Generations</a>
+  <a href="#s3">LOH</a>
+  <a href="#s4">GC Rule</a>
+  <a href="#s5">Boxing</a>
+  <a href="#s6">WeakRef</a>
+  <a href="#s7">Leaks</a>
+  <a href="#s8">Quiz</a>
+</nav>
+
+<!-- S1: Stack vs Heap -->
+<div class="section" id="s1">
+  <div class="section-header"><div class="section-num">1</div><h2>Stack vs Heap</h2></div>
+
+  <div class="mem-diagram">
+    <div class="mem-col">
+      <h4>Stack <span class="tag fast">FAST</span></h4>
+      <div class="mem-slot">int x = 5 <span class="val">5</span></div>
+      <div class="mem-slot">bool flag <span class="val">true</span></div>
+      <div class="mem-slot">name ref <span class="ref">→ 0x1A2B</span></div>
+      <div class="mem-slot">p ref <span class="ref">→ 0x3C4D</span></div>
+      <p style="font-size:.72rem;color:var(--text-dim);margin-top:.5rem">Value types + references<br>Auto-cleaned on method return<br>LIFO • ~1MB per thread</p>
+    </div>
+    <div class="mem-col">
+      <h4>Heap <span class="tag slow">GC MANAGED</span></h4>
+      <div class="mem-slot">0x1A2B <span class="val">"Omar"</span></div>
+      <div class="mem-slot">0x3C4D <span class="val">Person{...}</span></div>
+      <div class="mem-slot">0x5E6F <span class="val">List&lt;int&gt;{...}</span></div>
+      <div class="mem-slot" style="opacity:.4">0x7G8H <span style="color:var(--red)">garbage</span></div>
+      <p style="font-size:.72rem;color:var(--text-dim);margin-top:.5rem">Reference type objects<br>GC cleans nondeterministically<br>No order • limited by RAM</p>
+    </div>
+  </div>
+
+  <div class="callout warn">⚠️ Variables always live on the <strong>stack</strong>. What they <em>point to</em> lives on the <strong>heap</strong>. The stack holds the reference (pointer), the heap holds the actual object data.</div>
+
+<pre><span class="label">C#</span><span class="kw">void</span> <span class="fn">MyMethod</span>()
+{
+    <span class="tp">int</span> x = <span class="nu">5</span>;              <span class="cm">// x → stack (actual value)</span>
+    <span class="tp">string</span> name = <span class="st">"Omar"</span>;   <span class="cm">// reference → stack, "Omar" → heap</span>
+    <span class="tp">Person</span> p = <span class="kw">new</span> <span class="tp">Person</span>(); <span class="cm">// reference → stack, object → heap</span>
+} <span class="cm">// method returns → stack frame popped instantly</span>
+  <span class="cm">// heap objects stay until GC collects them</span></pre>
+</div>
+
+<!-- S2: GC Generations -->
+<div class="section" id="s2">
+  <div class="section-header"><div class="section-num">2</div><h2>GC Generations</h2></div>
+  <p style="margin-bottom:.8rem">The GC uses a generational system based on one key observation: <strong>most objects die young</strong>.</p>
+
+  <div class="gen-viz">
+    <p style="font-size:.85rem;font-weight:600;margin-bottom:.4rem;color:var(--accent)">Managed Heap Layout</p>
+    <div class="gen-bar">
+      <div class="gen-seg g0">Gen 0</div>
+      <div class="gen-seg g1">Gen 1</div>
+      <div class="gen-seg g2">Gen 2</div>
+      <div class="gen-seg loh">LOH</div>
+    </div>
+    <div class="gen-labels">
+      <div class="gen-label"><div class="gen-dot" style="background:#34d399"></div>Gen 0 — Frequent, cheap</div>
+      <div class="gen-label"><div class="gen-dot" style="background:#fbbf24"></div>Gen 1 — Occasional</div>
+      <div class="gen-label"><div class="gen-dot" style="background:#f87171"></div>Gen 2 — Rare, expensive</div>
+      <div class="gen-label"><div class="gen-dot" style="background:#a78bfa"></div>LOH — Objects > 85KB</div>
+    </div>
+  </div>
+
+  <div class="accordion">
+    <button class="accordion-btn" onclick="toggleAcc(this)"><span style="color:var(--green)">Gen 0 — Newborns (most objects die here)</span><span class="arrow">▼</span></button>
+    <div class="accordion-body">
+      <p style="font-size:.88rem;margin-bottom:.6rem">All new objects start here. GC collects Gen 0 most frequently — fast and cheap. Most objects never leave Gen 0.</p>
+<pre><span class="label">C#</span><span class="kw">for</span> (<span class="tp">int</span> i = <span class="nu">0</span>; i < <span class="nu">1000</span>; i++)
+{
+    <span class="kw">var</span> temp = <span class="kw">new</span> <span class="tp">TempObject</span>(); <span class="cm">// Gen 0</span>
+    <span class="fn">DoWork</span>(temp);
+} <span class="cm">// temp becomes garbage → collected in Gen 0 ✅ cheap and fast</span></pre>
+    </div>
+  </div>
+  <div class="accordion">
+    <button class="accordion-btn" onclick="toggleAcc(this)"><span style="color:var(--yellow)">Gen 1 — Survivors (buffer zone)</span><span class="arrow">▼</span></button>
+    <div class="accordion-body"><p style="font-size:.88rem">Objects that survived one Gen 0 collection. Acts as buffer between Gen 0 and Gen 2. Objects with finalizers get promoted here — they survive an extra GC cycle.</p></div>
+  </div>
+  <div class="accordion">
+    <button class="accordion-btn" onclick="toggleAcc(this)"><span style="color:var(--red)">Gen 2 — Long-Lived (expensive full GC)</span><span class="arrow">▼</span></button>
+    <div class="accordion-body">
+      <p style="font-size:.88rem;margin-bottom:.6rem">Survived Gen 0 AND Gen 1. Collected least frequently — expensive full GC that may pause the app. Singletons, caches, static data end up here.</p>
+<pre><span class="label">C#</span><span class="cm">// These end up in Gen 2 — live for app lifetime</span>
+<span class="kw">public static readonly</span> <span class="tp">AppCache</span> _instance = <span class="kw">new</span> <span class="tp">AppCache</span>(); <span class="cm">// Gen 2</span>
+<span class="kw">public static readonly</span> <span class="tp">string</span> ConnStr = <span class="st">"..."</span>;              <span class="cm">// Gen 2</span></pre>
+    </div>
+  </div>
+
+  <div class="table-wrap" style="margin-top:1rem">
+    <table>
+      <tr><th>Generation</th><th>Contains</th><th>Collection Freq</th><th>Cost</th></tr>
+      <tr><td style="color:var(--green)">Gen 0</td><td>New short-lived objects</td><td>Very frequent</td><td>Cheap — fast</td></tr>
+      <tr><td style="color:var(--yellow)">Gen 1</td><td>Survived Gen 0</td><td>Occasional</td><td>Moderate</td></tr>
+      <tr><td style="color:var(--red)">Gen 2</td><td>Long-lived objects</td><td>Rare — full GC</td><td>Expensive — may pause app</td></tr>
+    </table>
+  </div>
+
+  <div class="callout green">More objects in <strong>Gen 0</strong> = healthier app. Objects stuck in <strong>Gen 2</strong> = memory pressure.</div>
+</div>
+
+<!-- S3: LOH -->
+<div class="section" id="s3">
+  <div class="section-header"><div class="section-num">3</div><h2>Large Object Heap (LOH)</h2></div>
+  <p style="margin-bottom:.8rem">Objects larger than <strong>85,000 bytes (~83KB)</strong> go directly to the LOH — skipping Gen 0 entirely.</p>
+
+  <div class="table-wrap">
+    <table>
+      <tr><th></th><th>Normal Heap (SOH)</th><th>Large Object Heap (LOH)</th></tr>
+      <tr><td><strong>GC compaction</strong></td><td style="color:var(--green)">✅ Moves objects together</td><td style="color:var(--red)">❌ Objects stay in place</td></tr>
+      <tr><td><strong>Fragmentation</strong></td><td style="color:var(--green)">✅ None — compacted</td><td style="color:var(--red)">❌ Can fragment over time</td></tr>
+      <tr><td><strong>When collected</strong></td><td>Gen 0, 1, or 2</td><td>Only during Gen 2 (full GC)</td></tr>
+      <tr><td><strong>App pause</strong></td><td>Short</td><td>Longer — full GC required</td></tr>
+    </table>
+  </div>
+
+  <div class="callout red">⚠️ <strong>LOH Fragmentation:</strong> Free memory exists but not as a contiguous block. 130KB free total but no single 120KB block → allocation fails! The silent memory killer.</div>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="openTab(event,'tab-loh-bad')">❌ Repeated Allocation</button>
+    <button class="tab-btn" onclick="openTab(event,'tab-loh-fix')">✅ Fix — ArrayPool</button>
+  </div>
+  <div class="tab-panel active" id="tab-loh-bad">
+<pre><span class="label">C#</span><span class="cm">// ❌ LOH every iteration → fragmentation</span>
+<span class="kw">for</span> (<span class="tp">int</span> i = <span class="nu">0</span>; i < <span class="nu">1000</span>; i++)
+{
+    <span class="kw">var</span> buffer = <span class="kw">new</span> <span class="tp">byte</span>[<span class="nu">100000</span>]; <span class="er">// LOH every time 😱</span>
+    <span class="fn">ProcessData</span>(buffer);
+}</pre>
+  </div>
+  <div class="tab-panel" id="tab-loh-fix">
+<pre><span class="label">C#</span><span class="cm">// ✅ ArrayPool — borrow and return — zero GC pressure</span>
+<span class="kw">for</span> (<span class="tp">int</span> i = <span class="nu">0</span>; i < <span class="nu">1000</span>; i++)
+{
+    <span class="tp">byte</span>[] buffer = <span class="tp">ArrayPool</span>&lt;<span class="tp">byte</span>&gt;.Shared.<span class="fn">Rent</span>(<span class="nu">100000</span>);
+    <span class="kw">try</span> { <span class="fn">ProcessData</span>(buffer); }
+    <span class="kw">finally</span> { <span class="tp">ArrayPool</span>&lt;<span class="tp">byte</span>&gt;.Shared.<span class="fn">Return</span>(buffer); } <span class="cm">// no GC ✅</span>
+}</pre>
+  </div>
+</div>
+
+<!-- S4: GC Rule -->
+<div class="section" id="s4">
+  <div class="section-header"><div class="section-num">4</div><h2>The Fundamental GC Rule</h2></div>
+
+  <div class="callout" style="font-size:1rem;font-weight:600;text-align:center;padding:1.2rem">
+    ZERO references → GC collects ✅<br>ANY reference → GC cannot collect ❌
+  </div>
+
+  <!-- GC Simulator -->
+  <div class="gc-sim">
+    <p style="font-size:.85rem;font-weight:600;margin-bottom:.6rem;color:var(--accent)">Reference Chain Simulator</p>
+    <div class="gc-controls">
+      <button class="gc-btn" onclick="runGC('local')">Local Variable</button>
+      <button class="gc-btn" onclick="runGC('instance')">Instance Field</button>
+      <button class="gc-btn" onclick="runGC('static')">Static Field (Leak!)</button>
+    </div>
+    <div class="gc-log" id="gc-log"><span class="info">Click a scenario to trace references...</span></div>
+  </div>
+</div>
+
+<!-- S5: Boxing -->
+<div class="section" id="s5">
+  <div class="section-header"><div class="section-num">5</div><h2>Boxing & Unboxing</h2></div>
+  <p style="margin-bottom:.8rem">Boxing converts a value type to a reference type — creating a new heap object. One is negligible; <strong>repeated boxing in loops causes massive GC pressure</strong>.</p>
+
+<pre><span class="label">C#</span><span class="tp">int</span> x = <span class="nu">42</span>;            <span class="cm">// x on stack — no heap</span>
+<span class="tp">object</span> boxed = x;      <span class="cm">// BOXING: allocate heap object, copy 42 into it</span>
+
+<span class="cm">// ❌ 1 million heap allocations</span>
+<span class="kw">for</span> (<span class="tp">int</span> i = <span class="nu">0</span>; i < <span class="nu">1000000</span>; i++)
+    <span class="tp">object</span> boxed = i;  <span class="er">// new heap object every iteration 😱</span>
+
+<span class="cm">// ✅ Use generics to avoid boxing</span>
+<span class="tp">List</span>&lt;<span class="tp">int</span>&gt; typed = <span class="kw">new</span> <span class="tp">List</span>&lt;<span class="tp">int</span>&gt;();  <span class="cm">// no boxing ✅</span>
+<span class="tp">ArrayList</span> untyped = <span class="kw">new</span> <span class="tp">ArrayList</span>();
+untyped.<span class="fn">Add</span>(<span class="nu">42</span>);                       <span class="er">// boxing! int → object 😱</span></pre>
+</div>
+
+<!-- S6: WeakReference -->
+<div class="section" id="s6">
+  <div class="section-header"><div class="section-num">6</div><h2>WeakReference — Let GC Decide</h2></div>
+  <p style="margin-bottom:.8rem">A strong reference prevents collection. A <strong>WeakReference</strong> tells GC: keep it if memory allows, collect when needed.</p>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="openTab(event,'tab-strong')">❌ Strong Ref (Leak)</button>
+    <button class="tab-btn" onclick="openTab(event,'tab-weak')">✅ WeakReference</button>
+  </div>
+  <div class="tab-panel active" id="tab-strong">
+<pre><span class="label">C#</span><span class="kw">var</span> cache = <span class="kw">new</span> <span class="tp">Dictionary</span>&lt;<span class="tp">string</span>, <span class="tp">object</span>&gt;();
+cache[<span class="st">"key"</span>] = data;  <span class="cm">// strong reference</span>
+data = <span class="kw">null</span>;            <span class="cm">// you think data is gone</span>
+                         <span class="er">// BUT cache["key"] still references it → GC can't collect 😱</span></pre>
+  </div>
+  <div class="tab-panel" id="tab-weak">
+<pre><span class="label">C#</span><span class="kw">var</span> weakRef = <span class="kw">new</span> <span class="tp">WeakReference</span>&lt;<span class="tp">LargeObject</span>&gt;(data);
+data = <span class="kw">null</span>; <span class="cm">// strong ref gone — only weak remains</span>
+             <span class="cm">// GC CAN collect when memory needed ✅</span>
+
+<span class="cm">// Always check before using!</span>
+<span class="kw">if</span> (weakRef.<span class="fn">TryGetTarget</span>(<span class="kw">out</span> <span class="tp">LargeObject</span> obj))
+    obj.<span class="fn">DoWork</span>();  <span class="cm">// still alive ✅</span>
+<span class="kw">else</span>
+    obj = <span class="kw">new</span> <span class="tp">LargeObject</span>(); <span class="cm">// collected — recreate</span></pre>
+  </div>
+</div>
+
+<!-- S7: Leak Patterns -->
+<div class="section" id="s7">
+  <div class="section-header"><div class="section-num">7</div><h2>Common Memory Leak Patterns</h2></div>
+
+  <div class="leak-grid">
+    <div class="leak-card">
+      <h4>🔥 Event Handlers</h4>
+      <p>Publisher holds ref to subscriber. Even if subscriber is "done" — GC can't collect it. <strong>Fix:</strong> always <code>-= handler</code></p>
+    </div>
+    <div class="leak-card">
+      <h4>🔥 Static Collections</h4>
+      <p>Static list grows every request, never cleaned. After 1M requests = 1M strings in memory → crash. <strong>Fix:</strong> limit size or use MemoryCache</p>
+    </div>
+    <div class="leak-card">
+      <h4>🔥 Undisposed Objects</h4>
+      <p>SqlConnection opened but never disposed — connection stays open, pool exhausts. <strong>Fix:</strong> always <code>using(...)</code></p>
+    </div>
+  </div>
+
+  <div class="accordion">
+    <button class="accordion-btn" onclick="toggleAcc(this)"><span>Event Handler Leak — Code Example</span><span class="arrow">▼</span></button>
+    <div class="accordion-body">
+<pre><span class="label">C#</span><span class="cm">// ❌ Subscriber held alive by publisher</span>
+publisher.OnEvent += <span class="fn">HandleEvent</span>;
+<span class="cm">// Publisher now holds reference → GC cannot collect Subscriber 😱</span>
+
+<span class="cm">// ✅ Always unsubscribe when done</span>
+publisher.OnEvent -= <span class="fn">HandleEvent</span>;</pre>
+    </div>
+  </div>
+
+  <!-- GC Modes -->
+  <div class="table-wrap" style="margin-top:1.5rem">
+    <table>
+      <tr><th></th><th>Workstation GC</th><th>Server GC</th></tr>
+      <tr><td><strong>Default for</strong></td><td>Desktop apps</td><td>ASP.NET Core web apps</td></tr>
+      <tr><td><strong>GC threads</strong></td><td>Single thread</td><td>One per CPU core</td></tr>
+      <tr><td><strong>Optimized for</strong></td><td>Low latency — short pauses</td><td>Throughput — more requests</td></tr>
+      <tr><td><strong>Best for</strong></td><td>Interactive desktop apps</td><td>High-traffic web servers</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- S8: Quiz -->
+<div class="section" id="s8">
+  <div class="section-header"><div class="section-num">8</div><h2>Test Yourself</h2></div>
+
+  <div class="quiz-card" id="q1">
+    <h3>Q1: Where does the reference to a heap object live?</h3>
+    <button class="quiz-option" onclick="answer(this,'q1',true)">On the stack</button>
+    <button class="quiz-option" onclick="answer(this,'q1',false)">On the heap</button>
+    <button class="quiz-option" onclick="answer(this,'q1',false)">In the LOH</button>
+    <div class="quiz-explanation" id="q1-exp">Variables (including references/pointers) always live on the <strong>stack</strong>. What they point to — the actual object data — lives on the <strong>heap</strong>.</div>
+  </div>
+  <div class="quiz-card" id="q2">
+    <h3>Q2: Why does the GC use generations?</h3>
+    <button class="quiz-option" onclick="answer(this,'q2',false)">To organize objects alphabetically</button>
+    <button class="quiz-option" onclick="answer(this,'q2',true)">Most objects die young — focus collection on Gen 0 where most garbage is</button>
+    <button class="quiz-option" onclick="answer(this,'q2',false)">To make debugging easier</button>
+    <div class="quiz-explanation" id="q2-exp">The generational hypothesis: most objects die young. By collecting the small Gen 0 area frequently and cheaply, the GC avoids expensive full collections most of the time.</div>
+  </div>
+  <div class="quiz-card" id="q3">
+    <h3>Q3: What happens to objects > 85KB?</h3>
+    <button class="quiz-option" onclick="answer(this,'q3',false)">They go to Gen 2 directly</button>
+    <button class="quiz-option" onclick="answer(this,'q3',true)">They go to the Large Object Heap (LOH) — not compacted, only collected in full GC</button>
+    <button class="quiz-option" onclick="answer(this,'q3',false)">They are split across multiple generations</button>
+    <div class="quiz-explanation" id="q3-exp">Objects > 85KB skip Gen 0 entirely and land in the LOH. The LOH is never compacted by default, which causes fragmentation. It's only collected during expensive Gen 2 full GC. Use <code>ArrayPool</code> to avoid LOH pressure.</div>
+  </div>
+  <div class="quiz-card" id="q4">
+    <h3>Q4: Why do static collections cause memory leaks?</h3>
+    <button class="quiz-option" onclick="answer(this,'q4',false)">Because static means the GC ignores them</button>
+    <button class="quiz-option" onclick="answer(this,'q4',true)">Static fields live forever → everything they reference lives forever too</button>
+    <button class="quiz-option" onclick="answer(this,'q4',false)">Because static fields are stored on the stack</button>
+    <div class="quiz-explanation" id="q4-exp">GC traces from roots through reference chains. Static fields are always reachable (they live for the app's lifetime), so everything they hold a reference to also stays alive forever — the GC can never collect those objects.</div>
+  </div>
+  <div class="quiz-card" id="q5">
+    <h3>Q5: What does a WeakReference allow?</h3>
+    <button class="quiz-option" onclick="answer(this,'q5',false)">It forces GC to collect immediately</button>
+    <button class="quiz-option" onclick="answer(this,'q5',true)">It lets GC collect the object when memory is needed, unlike a strong reference</button>
+    <button class="quiz-option" onclick="answer(this,'q5',false)">It moves the object to Gen 0</button>
+    <div class="quiz-explanation" id="q5-exp">A WeakReference doesn't prevent GC from collecting. Unlike a strong reference that keeps an object alive, a WeakReference says "collect this if you need the memory." You must always call <code>TryGetTarget</code> to check if it's still alive before using it.</div>
+  </div>
+
+  <div class="quiz-score" id="score-box" style="display:none">
+    <div class="big" id="score-text"></div>
+    <p style="color:var(--text-dim);margin-top:.3rem">Memory Management Quiz</p>
+  </div>
+</div>
+
+<!-- Interview Answers -->
+<div class="section" id="s9">
+  <div class="section-header"><div class="section-num">★</div><h2>Interview Answer Bank</h2></div>
+  <div class="accordion"><button class="accordion-btn" onclick="toggleAcc(this)"><span>Q: Stack vs Heap?</span><span class="arrow">▼</span></button><div class="accordion-body"><div class="callout green">The stack stores value types and references — cleaned automatically and instantly when a method returns. The heap stores reference type objects — managed by the GC nondeterministically. Variables always live on the stack; what they point to lives on the heap. The stack is fast and automatic; the heap is flexible but requires GC overhead.</div></div></div>
+  <div class="accordion"><button class="accordion-btn" onclick="toggleAcc(this)"><span>Q: GC Generations and why they exist?</span><span class="arrow">▼</span></button><div class="accordion-body"><div class="callout green">GC uses three generations: Gen 0 holds new short-lived objects (collected frequently and cheaply), Gen 1 holds survivors of Gen 0, Gen 2 holds long-lived objects (collected rarely in expensive full GC that may pause the app). The generational approach improves performance by focusing most collection on the small Gen 0 area where most garbage is found.</div></div></div>
+  <div class="accordion"><button class="accordion-btn" onclick="toggleAcc(this)"><span>Q: LOH — why is it special?</span><span class="arrow">▼</span></button><div class="accordion-body"><div class="callout green">Objects > 85KB go to the LOH instead of Gen 0. The LOH is not compacted by default — objects stay in place after collection, causing fragmentation where free memory exists but not as a contiguous block. Only collected during Gen 2 full GC. Fix: use ArrayPool to rent and return large buffers.</div></div></div>
+  <div class="accordion"><button class="accordion-btn" onclick="toggleAcc(this)"><span>Q: Fundamental GC rule?</span><span class="arrow">▼</span></button><div class="accordion-body"><div class="callout green">GC collects an object only when zero references point to it — directly or through any chain. If anything anywhere holds a reference, the object stays alive. This is why static collections leak — the static field lives forever and everything it references lives forever too.</div></div></div>
+  <div class="accordion"><button class="accordion-btn" onclick="toggleAcc(this)"><span>Q: WeakReference — when to use?</span><span class="arrow">▼</span></button><div class="accordion-body"><div class="callout green">A WeakReference holds a reference without preventing GC collection. Unlike strong references, GC can collect the object when memory is needed. Always call TryGetTarget before using. Useful for caching — cache objects but let GC reclaim them under memory pressure.</div></div></div>
+</div>
+
+</div>
+
+<script>
+function toggleAcc(btn){btn.classList.toggle('open');btn.nextElementSibling.classList.toggle('open')}
+function openTab(e,id){const s=e.target.closest('.section');s.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));s.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));e.target.classList.add('active');document.getElementById(id).classList.add('active')}
+
+// GC Reference Simulator
+function runGC(mode){
+  const log=document.getElementById('gc-log');
+  log.innerHTML='';
+  document.querySelectorAll('.gc-btn').forEach(b=>b.classList.remove('active'));
+  event.target.classList.add('active');
+  const lines=[];
+  if(mode==='local'){
+    lines.push({c:'hl',t:'void MyMethod() {'});
+    lines.push({c:'info',t:'  var cache = new Dictionary<string, object>();'});
+    lines.push({c:'info',t:'  cache["key"] = new LargeObject();'});
+    lines.push({c:'hl',t:'} // method returns'});
+    lines.push({c:'ok',t:'→ Stack frame popped → cache reference GONE'});
+    lines.push({c:'ok',t:'→ Nothing points to Dictionary → GC CAN collect ✅'});
+    lines.push({c:'ok',t:'→ LargeObject inside also collected ✅'});
+  } else if(mode==='instance'){
+    lines.push({c:'hl',t:'class OrderService {'});
+    lines.push({c:'info',t:'  private Dictionary<string, object> _cache = new();'});
+    lines.push({c:'hl',t:'}'});
+    lines.push({c:'warn',t:'→ _cache lives as long as OrderService is referenced'});
+    lines.push({c:'info',t:'→ If OrderService instance is collected → _cache is too'});
+    lines.push({c:'ok',t:'→ Manageable — dies with its parent ✅'});
+  } else {
+    lines.push({c:'hl',t:'static class Cache {'});
+    lines.push({c:'info',t:'  static Dictionary<string, object> _cache = new();'});
+    lines.push({c:'hl',t:'}'});
+    lines.push({c:'bad',t:'→ Static field = application root → lives FOREVER'});
+    lines.push({c:'bad',t:'→ _cache Dictionary lives forever'});
+    lines.push({c:'bad',t:'→ Every object inside _cache lives forever 😱'});
+    lines.push({c:'bad',t:'→ GC can NEVER collect any of them'});
+    lines.push({c:'warn',t:'→ After 1M entries = 1M objects permanently in memory'});
+    lines.push({c:'bad',t:'⚠ MEMORY LEAK — use MemoryCache with size limits!'});
+  }
+  let i=0;
+  const t=setInterval(()=>{if(i>=lines.length){clearInterval(t);return}const l=lines[i];log.innerHTML+=`<span class="${l.c}">${l.t}</span>\n`;log.scrollTop=log.scrollHeight;i++},200);
+}
+
+// Quiz
+let answered=0,correct=0,total=5;
+function answer(btn,qId,isCorrect){const card=document.getElementById(qId);if(card.dataset.answered)return;card.dataset.answered='1';answered++;if(isCorrect){btn.classList.add('correct');correct++;}else btn.classList.add('wrong');card.querySelectorAll('.quiz-option').forEach(o=>o.disabled=true);document.getElementById(qId+'-exp').classList.add('show');if(answered===total){document.getElementById('score-box').style.display='block';document.getElementById('score-text').textContent=correct+' / '+total;}}
+
+const sections=document.querySelectorAll('.section');const navLinks=document.querySelectorAll('.nav a');
+window.addEventListener('scroll',()=>{let c='';sections.forEach(s=>{if(window.scrollY>=s.offsetTop-120)c=s.id});navLinks.forEach(a=>{a.classList.remove('active');if(a.getAttribute('href')==='#'+c)a.classList.add('active')})});
+</script>
+</body>
+</html>

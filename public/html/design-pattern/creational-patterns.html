@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Creational Design Patterns — C# Interactive Study Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=DM+Sans:ital,wght@0,400;0,500;0,700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-deep: #080b12;
+  --bg-card: #10131d;
+  --bg-code: #0b0e16;
+  --bg-elevated: #181c2a;
+  --border: #1c2035;
+  --border-glow: #282e48;
+  --text: #c4c9d8;
+  --text-dim: #626a8a;
+  --text-bright: #e6eaf4;
+  --accent-1: #e8a838;
+  --accent-2: #38bdf8;
+  --accent-3: #f472b6;
+  --accent-4: #a78bfa;
+  --accent-5: #4ade80;
+  --accent-6: #fb923c;
+  --syntax-keyword: #c678dd;
+  --syntax-string: #98c379;
+  --syntax-type: #61afef;
+  --syntax-number: #d19a66;
+  --syntax-comment: #5c6370;
+  --syntax-method: #e5c07b;
+  --radius: 12px;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
+body { font-family:'DM Sans',system-ui,sans-serif; background:var(--bg-deep); color:var(--text); line-height:1.72; overflow-x:hidden; }
+::-webkit-scrollbar { width:6px; } ::-webkit-scrollbar-track { background:var(--bg-deep); } ::-webkit-scrollbar-thumb { background:var(--border-glow); border-radius:3px; }
+.hero { position:relative; min-height:52vh; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:80px 24px 56px; overflow:hidden; }
+.hero::before { content:''; position:absolute; inset:0; background: radial-gradient(ellipse 550px 380px at 35% 45%,rgba(232,168,56,.1),transparent), radial-gradient(ellipse 450px 320px at 65% 55%,rgba(56,189,248,.07),transparent), radial-gradient(ellipse 350px 250px at 50% 75%,rgba(164,139,250,.05),transparent); }
+.hero-badge { position:relative; display:inline-flex; align-items:center; gap:8px; padding:6px 18px; border:1px solid var(--accent-1); border-radius:100px; font-size:.8rem; color:var(--accent-1); letter-spacing:.08em; text-transform:uppercase; margin-bottom:24px; }
+.hero h1 { position:relative; font-family:'Playfair Display',serif; font-size:clamp(2.4rem,6vw,4.2rem); font-weight:900; line-height:1.15; color:var(--text-bright); max-width:700px; }
+.hero h1 span { background:linear-gradient(135deg,var(--accent-1),var(--accent-6)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+.hero p { position:relative; max-width:600px; margin-top:20px; color:var(--text-dim); font-size:1.05rem; }
+.pattern-pills { position:relative; display:flex; flex-wrap:wrap; justify-content:center; gap:8px; margin-top:32px; max-width:700px; }
+.pattern-pills a { display:inline-block; padding:6px 16px; border:1px solid var(--border-glow); border-radius:100px; color:var(--text-dim); text-decoration:none; font-size:.84rem; transition:all .25s; }
+.pattern-pills a:hover { border-color:var(--accent-1); color:var(--accent-1); background:rgba(232,168,56,.06); }
+.overview-section { max-width:1100px; margin:0 auto 60px; padding:0 24px; }
+.overview-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:14px; }
+.overview-card { display:grid; grid-template-columns:44px 1fr; gap:14px; padding:18px 20px; background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); cursor:pointer; transition:all .3s; text-decoration:none; color:inherit; }
+.overview-card:hover { border-color:var(--accent-1); transform:translateY(-2px); box-shadow:0 6px 24px rgba(232,168,56,.1); }
+.overview-card .icon { font-size:1.6rem; display:flex; align-items:start; justify-content:center; padding-top:2px; }
+.overview-card h3 { font-size:.95rem; color:var(--text-bright); margin-bottom:4px; }
+.overview-card .intent { font-size:.82rem; color:var(--text-dim); }
+.overview-card .key-idea { grid-column:1/-1; font-size:.78rem; padding:8px 12px; background:var(--bg-elevated); border-radius:8px; color:var(--accent-2); font-family:'JetBrains Mono',monospace; }
+.pattern-section { max-width:1000px; margin:0 auto 80px; padding:0 24px; scroll-margin-top:32px; }
+.pattern-header { display:flex; align-items:center; gap:16px; margin-bottom:8px; }
+.pattern-num { display:flex; align-items:center; justify-content:center; width:48px; height:48px; border-radius:14px; font-family:'JetBrains Mono',monospace; font-weight:700; font-size:1.1rem; flex-shrink:0; }
+.pattern-header h2 { font-family:'Playfair Display',serif; font-size:1.8rem; font-weight:700; color:var(--text-bright); }
+.pattern-subtitle { color:var(--text-dim); font-style:italic; margin-bottom:28px; padding-left:64px; font-size:.95rem; }
+.p1{--pat:#e8a838}.p2{--pat:#38bdf8}.p3{--pat:#a78bfa}.p4{--pat:#4ade80}.p5{--pat:#f472b6}
+.pattern-num { background:color-mix(in srgb,var(--pat) 16%,transparent); color:var(--pat); border:1px solid color-mix(in srgb,var(--pat) 28%,transparent); }
+.card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); padding:24px; margin-bottom:20px; }
+.card h3 { font-size:1rem; color:var(--text-bright); margin-bottom:14px; display:flex; align-items:center; gap:8px; }
+.card h3::before { content:''; display:inline-block; width:3px; height:18px; border-radius:2px; background:var(--pat,var(--accent-1)); }
+.diagram-wrapper { background:var(--bg-code); border:1px solid var(--border); border-radius:var(--radius); padding:24px; margin-bottom:20px; overflow-x:auto; }
+.diagram-wrapper svg { display:block; margin:0 auto; max-width:100%; height:auto; }
+.code-block { position:relative; background:var(--bg-code); border:1px solid var(--border); border-radius:var(--radius); margin-bottom:16px; overflow:hidden; }
+.code-header { display:flex; align-items:center; justify-content:space-between; padding:10px 16px; background:var(--bg-elevated); border-bottom:1px solid var(--border); font-size:.78rem; color:var(--text-dim); font-family:'JetBrains Mono',monospace; }
+.code-header .dots { display:flex; gap:6px; }
+.code-header .dots span { width:10px; height:10px; border-radius:50%; }
+.code-header .dots span:nth-child(1){background:#ff5f57} .code-header .dots span:nth-child(2){background:#febc2e} .code-header .dots span:nth-child(3){background:#28c840}
+.copy-btn { background:none; border:1px solid var(--border-glow); color:var(--text-dim); padding:3px 10px; border-radius:6px; cursor:pointer; font-size:.72rem; font-family:'JetBrains Mono',monospace; transition:all .2s; }
+.copy-btn:hover { border-color:var(--accent-2); color:var(--accent-2); }
+.code-block pre { padding:18px 20px; overflow-x:auto; font-family:'JetBrains Mono',monospace; font-size:.82rem; line-height:1.65; color:var(--text); }
+.kw{color:var(--syntax-keyword)}.tp{color:var(--syntax-type)}.str{color:var(--syntax-string)}.num{color:var(--syntax-number)}.cm{color:var(--syntax-comment);font-style:italic}.fn{color:var(--syntax-method)}
+.table-wrap { overflow-x:auto; margin-bottom:20px; }
+table { width:100%; border-collapse:collapse; font-size:.85rem; }
+thead th { background:var(--bg-elevated); color:var(--text-bright); padding:12px 16px; text-align:left; font-weight:600; border-bottom:2px solid var(--border-glow); white-space:nowrap; }
+tbody td { padding:10px 16px; border-bottom:1px solid var(--border); vertical-align:top; }
+tbody tr:hover { background:rgba(232,168,56,.03); }
+.qa-block { margin-bottom:10px; }
+.qa-q { display:flex; align-items:start; gap:10px; padding:14px 18px; background:var(--bg-elevated); border:1px solid var(--border); border-radius:var(--radius); cursor:pointer; color:var(--text-bright); font-size:.9rem; font-weight:500; transition:all .25s; user-select:none; }
+.qa-q:hover { border-color:var(--accent-1); }
+.qa-q .arrow { flex-shrink:0; width:20px; height:20px; display:flex; align-items:center; justify-content:center; transition:transform .3s; color:var(--accent-1); font-size:.8rem; }
+.qa-q.open .arrow { transform:rotate(90deg); }
+.qa-a { max-height:0; overflow:hidden; transition:max-height .35s ease,padding .35s; padding:0 18px; color:var(--text); font-size:.88rem; line-height:1.7; background:var(--bg-card); border:1px solid var(--border); border-top:none; border-radius:0 0 var(--radius) var(--radius); }
+.qa-a.open { max-height:500px; padding:16px 18px; }
+.use-avoid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:20px; }
+@media(max-width:600px){.use-avoid{grid-template-columns:1fr}}
+.use-col,.avoid-col { padding:16px 18px; border-radius:var(--radius); font-size:.85rem; }
+.use-col { background:rgba(74,222,128,.06); border:1px solid rgba(74,222,128,.18); }
+.avoid-col { background:rgba(244,114,182,.06); border:1px solid rgba(244,114,182,.18); }
+.use-col h4{color:var(--accent-5);margin-bottom:8px} .avoid-col h4{color:var(--accent-3);margin-bottom:8px}
+.use-col li,.avoid-col li { margin-bottom:6px; list-style:none; padding-left:18px; position:relative; }
+.use-col li::before{content:'✓';position:absolute;left:0;color:var(--accent-5);font-weight:700}
+.avoid-col li::before{content:'✗';position:absolute;left:0;color:var(--accent-3);font-weight:700}
+.note { display:flex; gap:12px; padding:16px 18px; background:rgba(232,168,56,.06); border:1px solid rgba(232,168,56,.16); border-radius:var(--radius); margin-bottom:20px; font-size:.88rem; }
+.note .bulb { font-size:1.2rem; flex-shrink:0; }
+.analogy { display:flex; gap:12px; padding:16px 18px; background:rgba(164,139,250,.06); border:1px solid rgba(164,139,250,.16); border-radius:var(--radius); margin-bottom:20px; font-size:.88rem; }
+.analogy .icon { font-size:1.2rem; flex-shrink:0; }
+.collapsible-trigger { display:flex; align-items:center; justify-content:space-between; width:100%; padding:16px 20px; background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); cursor:pointer; color:var(--text-bright); font-size:.95rem; font-weight:600; margin-bottom:4px; transition:all .25s; }
+.collapsible-trigger:hover { border-color:var(--accent-1); }
+.collapsible-trigger .chevron { transition:transform .3s; color:var(--text-dim); }
+.collapsible-trigger.open .chevron { transform:rotate(180deg); }
+.collapsible-body { max-height:0; overflow:hidden; transition:max-height .4s ease; }
+.collapsible-body.open { max-height:12000px; }
+.collapsible-body>.inner { padding:16px 0; }
+.back-top { position:fixed; bottom:24px; right:24px; width:44px; height:44px; border-radius:50%; background:var(--accent-1); color:#000; border:none; cursor:pointer; font-size:1.2rem; display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:opacity .3s,transform .3s; box-shadow:0 4px 16px rgba(232,168,56,.35); z-index:100; font-weight:700; }
+.back-top.show { opacity:1; pointer-events:auto; }
+.back-top:hover { transform:scale(1.1); }
+footer { text-align:center; padding:40px 24px; color:var(--text-dim); font-size:.8rem; border-top:1px solid var(--border); margin-top:40px; }
+.summary-section { max-width:1000px; margin:0 auto 60px; padding:0 24px; }
+.summary-section h2 { font-family:'Playfair Display',serif; font-size:1.8rem; color:var(--text-bright); margin-bottom:24px; text-align:center; }
+@media(max-width:768px){ .overview-grid{grid-template-columns:1fr} .pattern-subtitle{padding-left:0} }
+</style>
+</head>
+<body>
+
+<section class="hero">
+  <div class="hero-badge">C# Design Patterns</div>
+  <h1>Creational <span>Patterns</span></h1>
+  <p>Object creation mechanisms — abstracting instantiation to make systems independent of how objects are created, composed, and represented.</p>
+  <div class="pattern-pills">
+    <a href="#factory">🏭 Factory Method</a>
+    <a href="#abstract-factory">🏭🏭 Abstract Factory</a>
+    <a href="#builder">🔨 Builder</a>
+    <a href="#prototype">🧬 Prototype</a>
+    <a href="#singleton">👑 Singleton</a>
+  </div>
+</section>
+
+<section class="overview-section">
+  <div class="overview-grid">
+    <a class="overview-card" href="#factory"><div class="icon">🏭</div><div><h3>Factory Method</h3><div class="intent">Let subclasses decide which object to create</div></div><div class="key-idea">One product, decided by subclass</div></a>
+    <a class="overview-card" href="#abstract-factory"><div class="icon">🏭🏭</div><div><h3>Abstract Factory</h3><div class="intent">Create families of related objects consistently</div></div><div class="key-idea">Matching set, swap whole family</div></a>
+    <a class="overview-card" href="#builder"><div class="icon">🔨</div><div><h3>Builder</h3><div class="intent">Construct complex objects step by step</div></div><div class="key-idea">Same steps → different result</div></a>
+    <a class="overview-card" href="#prototype"><div class="icon">🧬</div><div><h3>Prototype</h3><div class="intent">Clone existing objects instead of building from scratch</div></div><div class="key-idea">Copy &amp; tweak, avoid expensive creation</div></a>
+    <a class="overview-card" href="#singleton"><div class="icon">👑</div><div><h3>Singleton</h3><div class="intent">Guarantee only one instance exists globally</div></div><div class="key-idea">One instance, one access point</div></a>
+  </div>
+</section>
+
+<!-- ═══ PATTERN 1 — FACTORY METHOD ═══ -->
+<section id="factory" class="pattern-section p1">
+  <div class="pattern-header"><div class="pattern-num">01</div><h2>🏭 Factory Method</h2></div>
+  <div class="pattern-subtitle">Define an interface for creating an object, but let subclasses decide which class to instantiate.</div>
+  <div class="card"><h3>Intent</h3><p>Define an interface for creating an object, but let subclasses decide which class to instantiate. The creator defers instantiation to its subclasses.</p></div>
+  <div class="card"><h3>The Problem It Solves</h3><p>You are building a logistics app starting with trucks. Later you need ships, planes, drones. Hardcoding <code>new Truck()</code> everywhere means changing dozens of files for every new transport — that violates the Open/Closed Principle.</p></div>
+
+  <div class="diagram-wrapper">
+    <svg viewBox="0 0 780 360" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+      <defs>
+        <linearGradient id="gf1" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#e8a838" stop-opacity=".18"/><stop offset="100%" stop-color="#e8a838" stop-opacity=".04"/></linearGradient>
+        <linearGradient id="gf2" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#38bdf8" stop-opacity=".18"/><stop offset="100%" stop-color="#38bdf8" stop-opacity=".04"/></linearGradient>
+        <marker id="af1" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#626a8a"/></marker>
+        <marker id="af2" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#e8a838"/></marker>
+      </defs>
+      <rect x="40" y="20" width="280" height="100" rx="10" fill="url(#gf1)" stroke="#e8a838" stroke-width="1.5"/>
+      <text x="180" y="48" text-anchor="middle" fill="#e8a838" font-weight="700" font-size="14">Logistics «abstract»</text>
+      <line x1="60" y1="56" x2="300" y2="56" stroke="#e8a838" stroke-opacity=".3"/>
+      <text x="180" y="78" text-anchor="middle" fill="#8890a8" font-size="11" font-family="JetBrains Mono,monospace">+ CreateTransport() : ITransport</text>
+      <text x="180" y="96" text-anchor="middle" fill="#8890a8" font-size="11" font-family="JetBrains Mono,monospace">+ PlanDelivery()</text>
+      <rect x="460" y="20" width="280" height="80" rx="10" fill="url(#gf2)" stroke="#38bdf8" stroke-width="1.5"/>
+      <text x="600" y="48" text-anchor="middle" fill="#38bdf8" font-weight="700" font-size="14">«interface» ITransport</text>
+      <line x1="480" y1="56" x2="720" y2="56" stroke="#38bdf8" stroke-opacity=".3"/>
+      <text x="600" y="78" text-anchor="middle" fill="#8890a8" font-size="11" font-family="JetBrains Mono,monospace">+ Deliver()</text>
+      <line x1="320" y1="60" x2="460" y2="60" stroke="#626a8a" stroke-width="1" stroke-dasharray="6 4" marker-end="url(#af1)"/>
+      <text x="390" y="52" text-anchor="middle" fill="#626a8a" font-size="9">uses</text>
+      <rect x="20" y="210" width="200" height="60" rx="10" fill="rgba(232,168,56,.06)" stroke="#e8a838" stroke-width="1" stroke-opacity=".5"/>
+      <text x="120" y="235" text-anchor="middle" fill="#e8a838" font-weight="600" font-size="12">RoadLogistics</text>
+      <text x="120" y="255" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">→ new Truck()</text>
+      <rect x="240" y="210" width="200" height="60" rx="10" fill="rgba(232,168,56,.06)" stroke="#e8a838" stroke-width="1" stroke-opacity=".5"/>
+      <text x="340" y="235" text-anchor="middle" fill="#e8a838" font-weight="600" font-size="12">SeaLogistics</text>
+      <text x="340" y="255" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">→ new Ship()</text>
+      <rect x="500" y="210" width="120" height="50" rx="10" fill="rgba(56,189,248,.06)" stroke="#38bdf8" stroke-width="1" stroke-opacity=".5"/>
+      <text x="560" y="240" text-anchor="middle" fill="#38bdf8" font-weight="600" font-size="12">Truck</text>
+      <rect x="640" y="210" width="120" height="50" rx="10" fill="rgba(56,189,248,.06)" stroke="#38bdf8" stroke-width="1" stroke-opacity=".5"/>
+      <text x="700" y="240" text-anchor="middle" fill="#38bdf8" font-weight="600" font-size="12">Ship</text>
+      <line x1="120" y1="210" x2="150" y2="120" stroke="#626a8a" stroke-width="1" marker-end="url(#af1)"/>
+      <line x1="340" y1="210" x2="220" y2="120" stroke="#626a8a" stroke-width="1" marker-end="url(#af1)"/>
+      <text x="100" y="168" fill="#626a8a" font-size="9">extends</text>
+      <text x="290" y="168" fill="#626a8a" font-size="9">extends</text>
+      <line x1="560" y1="210" x2="580" y2="100" stroke="#626a8a" stroke-width="1" marker-end="url(#af1)"/>
+      <line x1="700" y1="210" x2="620" y2="100" stroke="#626a8a" stroke-width="1" marker-end="url(#af1)"/>
+      <text x="546" y="158" fill="#626a8a" font-size="9">implements</text>
+      <text x="672" y="158" fill="#626a8a" font-size="9">implements</text>
+      <path d="M220,240 L500,240" fill="none" stroke="#e8a838" stroke-width="1.2" stroke-dasharray="6 4" marker-end="url(#af2)"/>
+      <path d="M440,240 L640,240" fill="none" stroke="#e8a838" stroke-width="1.2" stroke-dasharray="6 4" marker-end="url(#af2)"/>
+      <text x="350" y="232" fill="#e8a838" font-size="9">creates</text>
+      <text x="536" y="232" fill="#e8a838" font-size="9">creates</text>
+      <rect x="100" y="310" width="500" height="32" rx="8" fill="rgba(74,222,128,.06)" stroke="rgba(74,222,128,.2)" stroke-width="1"/>
+      <text x="350" y="330" text-anchor="middle" fill="#4ade80" font-size="11">New transport? Add AirLogistics : Logistics — zero changes to existing code (OCP)</text>
+    </svg>
+  </div>
+
+  <button class="collapsible-trigger" onclick="toggleCollapsible(this)">C# Implementation <span class="chevron">▼</span></button>
+  <div class="collapsible-body"><div class="inner">
+    <div class="code-block"><div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span>Step 1 — Product interface</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><span class="kw">public interface</span> <span class="tp">ITransport</span>
+{
+    <span class="kw">void</span> <span class="fn">Deliver</span>();
+}</pre></div>
+    <div class="code-block"><div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span>Step 2 — Concrete products</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><span class="kw">public class</span> <span class="tp">Truck</span> : <span class="tp">ITransport</span>
+{
+    <span class="kw">public void</span> <span class="fn">Deliver</span>() =>
+        <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">"Delivering by road in a truck."</span>);
+}
+
+<span class="kw">public class</span> <span class="tp">Ship</span> : <span class="tp">ITransport</span>
+{
+    <span class="kw">public void</span> <span class="fn">Deliver</span>() =>
+        <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">"Delivering by sea on a ship."</span>);
+}</pre></div>
+    <div class="code-block"><div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span>Step 3 — Abstract Creator</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><span class="kw">public abstract class</span> <span class="tp">Logistics</span>
+{
+    <span class="cm">// The Factory Method — subclasses decide what to create</span>
+    <span class="kw">public abstract</span> <span class="tp">ITransport</span> <span class="fn">CreateTransport</span>();
+
+    <span class="cm">// Business logic uses the product WITHOUT knowing its type</span>
+    <span class="kw">public void</span> <span class="fn">PlanDelivery</span>()
+    {
+        <span class="tp">ITransport</span> transport = <span class="fn">CreateTransport</span>();
+        <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">"Planning delivery..."</span>);
+        transport.<span class="fn">Deliver</span>();
+    }
+}</pre></div>
+    <div class="code-block"><div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span>Step 4 — Concrete creators</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><span class="kw">public class</span> <span class="tp">RoadLogistics</span> : <span class="tp">Logistics</span>
+{
+    <span class="kw">public override</span> <span class="tp">ITransport</span> <span class="fn">CreateTransport</span>() => <span class="kw">new</span> <span class="tp">Truck</span>();
+}
+
+<span class="kw">public class</span> <span class="tp">SeaLogistics</span> : <span class="tp">Logistics</span>
+{
+    <span class="kw">public override</span> <span class="tp">ITransport</span> <span class="fn">CreateTransport</span>() => <span class="kw">new</span> <span class="tp">Ship</span>();
+}</pre></div>
+    <div class="code-block"><div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span>Step 5 — Client code</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><span class="tp">Logistics</span> logistics = <span class="kw">new</span> <span class="tp">RoadLogistics</span>();
+logistics.<span class="fn">PlanDelivery</span>();
+<span class="cm">// Output: Planning delivery... Delivering by road in a truck.</span>
+
+logistics = <span class="kw">new</span> <span class="tp">SeaLogistics</span>();
+logistics.<span class="fn">PlanDelivery</span>();
+<span class="cm">// Output: Planning delivery... Delivering by sea on a ship.</span></pre></div>
+  </div></div>
+
+  <div class="note"><span class="bulb">💡</span><span>Adding a new transport type? Just create <code>AirLogistics : Logistics</code> — zero changes to existing code. This is the Open/Closed Principle in action.</span></div>
+  <div class="analogy"><span class="icon">🎯</span><span><strong>Real-World Analogy:</strong> A hiring agency is a Factory Method. You ask the agency for a developer, and the agency (the subclass) decides whether to send a frontend dev, backend dev, or full-stack. You use whoever shows up — you do not know or care about the specifics.</span></div>
+
+  <button class="collapsible-trigger" onclick="toggleCollapsible(this)">Interview Q&A <span class="chevron">▼</span></button>
+  <div class="collapsible-body"><div class="inner">
+    <div class="qa-block"><div class="qa-q" onclick="toggleQA(this)"><span class="arrow">▶</span>What is the difference between Factory Method and just calling new?</div><div class="qa-a">With <code>new</code>, the calling class is tightly coupled to the concrete type. Factory Method isolates creation behind an abstraction so the client code never changes when new product types are added.</div></div>
+    <div class="qa-block"><div class="qa-q" onclick="toggleQA(this)"><span class="arrow">▶</span>Is Factory Method the same as a static factory method like DateTime.Now?</div><div class="qa-a">No. A static factory is just a convenience method on the same class. Factory Method is a full pattern involving inheritance — a subclass overrides a method to decide what gets created.</div></div>
+    <div class="qa-block"><div class="qa-q" onclick="toggleQA(this)"><span class="arrow">▶</span>When would you use this?</div><div class="qa-a">When you do not know ahead of time which class to instantiate, or when you want subclasses to control which objects get created.</div></div>
+  </div></div>
+  <div class="use-avoid">
+    <div class="use-col"><h4>✅ Use When</h4><ul><li>You don't know the exact type at compile time</li><li>Subclasses should choose the product</li><li>Adding new products shouldn't touch existing code</li></ul></div>
+    <div class="avoid-col"><h4>❌ Avoid When</h4><ul><li>You only ever have one product type</li><li>The creation logic is trivial — a single new call</li><li>Inheritance adds unnecessary complexity</li></ul></div>
+  </div>
+</section>
+
+<!-- ═══ PATTERN 2 — ABSTRACT FACTORY ═══ -->
+<section id="abstract-factory" class="pattern-section p2">
+  <div class="pattern-header"><div class="pattern-num">02</div><h2>🏭🏭 Abstract Factory</h2></div>
+  <div class="pattern-subtitle">Provide an interface for creating families of related objects without specifying their concrete classes.</div>
+  <div class="card"><h3>Intent</h3><p>Provide an interface for creating families of related objects without specifying their concrete classes. Think of it as a factory of factories.</p></div>
+  <div class="card"><h3>Factory Method vs Abstract Factory</h3><div class="table-wrap"><table><thead><tr><th></th><th>Factory Method</th><th>Abstract Factory</th></tr></thead><tbody>
+    <tr><td><strong>Creates</strong></td><td>One product</td><td>A family of related products</td></tr>
+    <tr><td><strong>How</strong></td><td>Inheritance — subclass overrides</td><td>Composition — factory injected</td></tr>
+    <tr><td><strong>Use when</strong></td><td>One varying product type</td><td>Multiple products that must match</td></tr>
+  </tbody></table></div></div>
+
+  <div class="diagram-wrapper">
+    <svg viewBox="0 0 780 380" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+      <defs>
+        <linearGradient id="ga1" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#38bdf8" stop-opacity=".18"/><stop offset="100%" stop-color="#38bdf8" stop-opacity=".04"/></linearGradient>
+        <marker id="aa1" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#626a8a"/></marker>
+        <marker id="aa2" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#38bdf8"/></marker>
+      </defs>
+      <rect x="260" y="10" width="260" height="80" rx="10" fill="url(#ga1)" stroke="#38bdf8" stroke-width="1.5"/>
+      <text x="390" y="36" text-anchor="middle" fill="#38bdf8" font-weight="700" font-size="13">«interface» IUIFactory</text>
+      <line x1="280" y1="44" x2="500" y2="44" stroke="#38bdf8" stroke-opacity=".3"/>
+      <text x="390" y="64" text-anchor="middle" fill="#8890a8" font-size="11" font-family="JetBrains Mono,monospace">CreateButton() / CreateCheckbox()</text>
+      <rect x="60" y="140" width="200" height="55" rx="10" fill="rgba(56,189,248,.06)" stroke="#38bdf8" stroke-width="1" stroke-opacity=".6"/>
+      <text x="160" y="172" text-anchor="middle" fill="#38bdf8" font-weight="600" font-size="12">WindowsFactory</text>
+      <rect x="520" y="140" width="200" height="55" rx="10" fill="rgba(56,189,248,.06)" stroke="#38bdf8" stroke-width="1" stroke-opacity=".6"/>
+      <text x="620" y="172" text-anchor="middle" fill="#38bdf8" font-weight="600" font-size="12">MacFactory</text>
+      <rect x="100" y="250" width="140" height="45" rx="8" fill="rgba(232,168,56,.08)" stroke="#e8a838" stroke-width="1"/>
+      <text x="170" y="278" text-anchor="middle" fill="#e8a838" font-weight="600" font-size="12">IButton</text>
+      <rect x="540" y="250" width="140" height="45" rx="8" fill="rgba(232,168,56,.08)" stroke="#e8a838" stroke-width="1"/>
+      <text x="610" y="278" text-anchor="middle" fill="#e8a838" font-weight="600" font-size="12">ICheckbox</text>
+      <rect x="20" y="330" width="120" height="38" rx="8" fill="#181c2a" stroke="#e8a838" stroke-width="1" stroke-opacity=".4"/>
+      <text x="80" y="354" text-anchor="middle" fill="#c4c9d8" font-size="11">WinButton</text>
+      <rect x="160" y="330" width="120" height="38" rx="8" fill="#181c2a" stroke="#e8a838" stroke-width="1" stroke-opacity=".4"/>
+      <text x="220" y="354" text-anchor="middle" fill="#c4c9d8" font-size="11">MacButton</text>
+      <rect x="500" y="330" width="120" height="38" rx="8" fill="#181c2a" stroke="#e8a838" stroke-width="1" stroke-opacity=".4"/>
+      <text x="560" y="354" text-anchor="middle" fill="#c4c9d8" font-size="11">WinCheckbox</text>
+      <rect x="640" y="330" width="120" height="38" rx="8" fill="#181c2a" stroke="#e8a838" stroke-width="1" stroke-opacity=".4"/>
+      <text x="700" y="354" text-anchor="middle" fill="#c4c9d8" font-size="11">MacCheckbox</text>
+      <line x1="160" y1="140" x2="330" y2="90" stroke="#626a8a" stroke-width="1" marker-end="url(#aa1)"/>
+      <line x1="620" y1="140" x2="450" y2="90" stroke="#626a8a" stroke-width="1" marker-end="url(#aa1)"/>
+      <text x="220" y="118" fill="#626a8a" font-size="9">implements</text>
+      <text x="540" y="118" fill="#626a8a" font-size="9">implements</text>
+      <path d="M160,195 L170,250" fill="none" stroke="#38bdf8" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#aa2)"/>
+      <path d="M620,195 L610,250" fill="none" stroke="#38bdf8" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#aa2)"/>
+      <line x1="80" y1="330" x2="150" y2="295" stroke="#626a8a" stroke-width="1" marker-end="url(#aa1)"/>
+      <line x1="220" y1="330" x2="190" y2="295" stroke="#626a8a" stroke-width="1" marker-end="url(#aa1)"/>
+      <line x1="560" y1="330" x2="590" y2="295" stroke="#626a8a" stroke-width="1" marker-end="url(#aa1)"/>
+      <line x1="700" y1="330" x2="630" y2="295" stroke="#626a8a" stroke-width="1" marker-end="url(#aa1)"/>
+    </svg>
+  </div>
+
+  <button class="collapsible-trigger" onclick="toggleCollapsible(this)">C# Implementation <span class="chevron">▼</span></button>
+  <div class="collapsible-body"><div class="inner">
+    <div class="code-block"><div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span>Step 1 — Product interfaces</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><span class="kw">public interface</span> <span class="tp">IButton</span> { <span class="kw">void</span> <span class="fn">Render</span>(); <span class="kw">void</span> <span class="fn">OnClick</span>(); }
+<span class="kw">public interface</span> <span class="tp">ICheckbox</span> { <span class="kw">void</span> <span class="fn">Render</span>(); <span class="kw">void</span> <span class="fn">Toggle</span>(); }</pre></div>
+    <div class="code-block"><div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span>Step 2 — Windows family</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><span class="kw">public class</span> <span class="tp">WindowsButton</span> : <span class="tp">IButton</span>
+{
+    <span class="kw">public void</span> <span class="fn">Render</span>() => <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">"[Windows] Rendering a flat button."</span>);
+    <span class="kw">public void</span> <span class="fn">OnClick</span>() => <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">"[Windows] Button clicked."</span>);
+}
+<span class="kw">public class</span> <span class="tp">WindowsCheckbox</span> : <span class="tp">ICheckbox</span>
+{
+    <span class="kw">public void</span> <span class="fn">Render</span>() => <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">"[Windows] Rendering a square checkbox."</span>);
+    <span class="kw">public void</span> <span class="fn">Toggle</span>() => <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">"[Windows] Checkbox toggled."</span>);
+}</pre></div>
+    <div class="code-block"><div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span>Step 3 — Mac family</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><span class="kw">public class</span> <span class="tp">MacButton</span> : <span class="tp">IButton</span>
+{
+    <span class="kw">public void</span> <span class="fn">Render</span>() => <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">"[Mac] Rendering a rounded button."</span>);
+    <span class="kw">public void</span> <span class="fn">OnClick</span>() => <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">"[Mac] Button clicked."</span>);
+}
+<span class="kw">public class</span> <span class="tp">MacCheckbox</span> : <span class="tp">ICheckbox</span>
+{
+    <span class="kw">public void</span> <span class="fn">Render</span>() => <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">"[Mac] Rendering a rounded checkbox."</span>);
+    <span class="kw">public void</span> <span class="fn">Toggle</span>() => <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">"[Mac] Checkbox toggled."</span>);
+}</pre></div>
+    <div class="code-block"><div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span>Step 4 — Abstract Factory + Concrete Factories</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><span class="kw">public interface</span> <span class="tp">IUIFactory</span>
+{
+    <span class="tp">IButton</span> <span class="fn">CreateButton</span>();
+    <span class="tp">ICheckbox</span> <span class="fn">CreateCheckbox</span>();
+}
+
+<span class="kw">public class</span> <span class="tp">WindowsFactory</span> : <span class="tp">IUIFactory</span>
+{
+    <span class="kw">public</span> <span class="tp">IButton</span> <span class="fn">CreateButton</span>() => <span class="kw">new</span> <span class="tp">WindowsButton</span>();
+    <span class="kw">public</span> <span class="tp">ICheckbox</span> <span class="fn">CreateCheckbox</span>() => <span class="kw">new</span> <span class="tp">WindowsCheckbox</span>();
+}
+
+<span class="kw">public class</span> <span class="tp">MacFactory</span> : <span class="tp">IUIFactory</span>
+{
+    <span class="kw">public</span> <span class="tp">IButton</span> <span class="fn">CreateButton</span>() => <span class="kw">new</span> <span class="tp">MacButton</span>();
+    <span class="kw">public</span> <span class="tp">ICheckbox</span> <span class="fn">CreateCheckbox</span>() => <span class="kw">new</span> <span class="tp">MacCheckbox</span>();
+}</pre></div>
+    <div class="code-block"><div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span>Step 5 — Client depends only on interfaces</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><span class="kw">public class</span> <span class="tp">Application</span>
+{
+    <span class="kw">private readonly</span> <span class="tp">IButton</span> _button;
+    <span class="kw">private readonly</span> <span class="tp">ICheckbox</span> _checkbox;
+
+    <span class="kw">public</span> <span class="fn">Application</span>(<span class="tp">IUIFactory</span> factory)
+    {
+        _button = factory.<span class="fn">CreateButton</span>();
+        _checkbox = factory.<span class="fn">CreateCheckbox</span>();
+    }
+    <span class="kw">public void</span> <span class="fn">RenderUI</span>() { _button.<span class="fn">Render</span>(); _checkbox.<span class="fn">Render</span>(); }
+}</pre></div>
+    <div class="code-block"><div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span>Step 6 — Entry point, family decided once</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><span class="tp">IUIFactory</span> factory = <span class="kw">new</span> <span class="tp">WindowsFactory</span>();
+<span class="kw">var</span> app = <span class="kw">new</span> <span class="tp">Application</span>(factory);
+app.<span class="fn">RenderUI</span>();
+<span class="cm">// [Windows] Rendering a flat button.</span>
+<span class="cm">// [Windows] Rendering a square checkbox.</span></pre></div>
+  </div></div>
+
+  <div class="note"><span class="bulb">💡</span><span>Want to switch to Mac? Change only <code>new WindowsFactory()</code> to <code>new MacFactory()</code> at the entry point. Every product automatically switches — the Application class remains untouched.</span></div>
+  <div class="analogy"><span class="icon">🎯</span><span><strong>Real-World Analogy:</strong> Think of IKEA vs. Pottery Barn. Each store produces a matching family — sofa, table, chair — all in the same style. You pick one store (factory) and everything you buy matches.</span></div>
+
+  <button class="collapsible-trigger" onclick="toggleCollapsible(this)">Interview Q&A <span class="chevron">▼</span></button>
+  <div class="collapsible-body"><div class="inner">
+    <div class="qa-block"><div class="qa-q" onclick="toggleQA(this)"><span class="arrow">▶</span>What is the core benefit of Abstract Factory over multiple Factory Methods?</div><div class="qa-a">Abstract Factory guarantees consistency across a family. It is impossible to accidentally mix products from different families because one factory is the single source for the entire set.</div></div>
+    <div class="qa-block"><div class="qa-q" onclick="toggleQA(this)"><span class="arrow">▶</span>What is the downside of Abstract Factory?</div><div class="qa-a">Adding a new product type requires changing the abstract factory interface and every concrete factory. It scales well for new families, but poorly for new product types.</div></div>
+    <div class="qa-block"><div class="qa-q" onclick="toggleQA(this)"><span class="arrow">▶</span>How is Abstract Factory related to Factory Method?</div><div class="qa-a">Abstract Factory is often implemented using Factory Methods internally. Each <code>Create___()</code> method on the concrete factory is itself a Factory Method.</div></div>
+  </div></div>
+  <div class="use-avoid">
+    <div class="use-col"><h4>✅ Use When</h4><ul><li>Products come in families that must stay consistent</li><li>You want to swap entire families at runtime</li><li>Isolate client code from concrete types</li></ul></div>
+    <div class="avoid-col"><h4>❌ Avoid When</h4><ul><li>You only have one product type</li><li>Your families rarely change</li><li>Adding new product types is frequent</li></ul></div>
+  </div>
+</section>
+
+<!-- ═══ PATTERN 3 — BUILDER ═══ -->
+<section id="builder" class="pattern-section p3">
+  <div class="pattern-header"><div class="pattern-num">03</div><h2>🔨 Builder</h2></div>
+  <div class="pattern-subtitle">Construct a complex object step by step. The same construction process can create different representations.</div>
+  <div class="card"><h3>Intent</h3><p>Construct a complex object step by step. The same construction process can produce different results depending on who executes the steps and which steps are called.</p></div>
+  <div class="card"><h3>The Problem It Solves</h3><p style="margin-bottom:12px">A telescoping constructor — one constructor with too many parameters — is unreadable and error-prone:</p>
+    <div class="code-block"><div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span>The problem</span></div><pre><span class="cm">// Telescoping constructor — what does true, false, true even mean?</span>
+<span class="kw">var</span> house = <span class="kw">new</span> <span class="tp">House</span>(<span class="num">4</span>, <span class="kw">true</span>, <span class="kw">false</span>, <span class="kw">true</span>, <span class="kw">false</span>, <span class="str">"brick"</span>, <span class="num">2</span>, <span class="kw">true</span>, <span class="str">"red"</span>);</pre></div>
+  </div>
+
+  <div class="diagram-wrapper">
+    <svg viewBox="0 0 780 300" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+      <defs>
+        <linearGradient id="gb1" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#a78bfa" stop-opacity=".18"/><stop offset="100%" stop-color="#a78bfa" stop-opacity=".04"/></linearGradient>
+        <marker id="ab1" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#626a8a"/></marker>
+        <marker id="ab2" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#a78bfa"/></marker>
+      </defs>
+      <rect x="40" y="20" width="220" height="90" rx="10" fill="#181c2a" stroke="#a78bfa" stroke-width="1" stroke-dasharray="6 4"/>
+      <text x="150" y="48" text-anchor="middle" fill="#a78bfa" font-weight="600" font-size="13">Director (optional)</text>
+      <line x1="60" y1="56" x2="240" y2="56" stroke="#a78bfa" stroke-opacity=".2"/>
+      <text x="150" y="76" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">BuildBasicHouse()</text>
+      <text x="150" y="92" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">BuildLuxuryHouse()</text>
+      <rect x="320" y="20" width="220" height="100" rx="10" fill="url(#gb1)" stroke="#a78bfa" stroke-width="1.5"/>
+      <text x="430" y="48" text-anchor="middle" fill="#a78bfa" font-weight="700" font-size="13">«interface» IHouseBuilder</text>
+      <line x1="340" y1="56" x2="520" y2="56" stroke="#a78bfa" stroke-opacity=".3"/>
+      <text x="430" y="74" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">BuildWalls() / BuildRoof()</text>
+      <text x="430" y="90" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">BuildPool() / BuildGarage()</text>
+      <text x="430" y="106" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">GetResult() : House</text>
+      <rect x="610" y="30" width="140" height="70" rx="10" fill="rgba(232,168,56,.08)" stroke="#e8a838" stroke-width="1"/>
+      <text x="680" y="58" text-anchor="middle" fill="#e8a838" font-weight="600" font-size="13">House</text>
+      <line x1="630" y1="66" x2="730" y2="66" stroke="#e8a838" stroke-opacity=".3"/>
+      <text x="680" y="84" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">Walls, Roof, Pool…</text>
+      <rect x="260" y="200" width="180" height="55" rx="10" fill="rgba(164,139,250,.06)" stroke="#a78bfa" stroke-width="1" stroke-opacity=".5"/>
+      <text x="350" y="232" text-anchor="middle" fill="#a78bfa" font-weight="600" font-size="12">WoodenHouseBuilder</text>
+      <rect x="470" y="200" width="180" height="55" rx="10" fill="rgba(164,139,250,.06)" stroke="#a78bfa" stroke-width="1" stroke-opacity=".5"/>
+      <text x="560" y="232" text-anchor="middle" fill="#a78bfa" font-weight="600" font-size="12">StoneHouseBuilder</text>
+      <line x1="260" y1="65" x2="320" y2="65" stroke="#626a8a" stroke-width="1" marker-end="url(#ab1)"/>
+      <text x="290" y="58" fill="#626a8a" font-size="9">uses</text>
+      <path d="M540,70 L610,70" fill="none" stroke="#a78bfa" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#ab2)"/>
+      <text x="575" y="62" fill="#a78bfa" font-size="9">builds</text>
+      <line x1="350" y1="200" x2="400" y2="120" stroke="#626a8a" stroke-width="1" marker-end="url(#ab1)"/>
+      <line x1="560" y1="200" x2="460" y2="120" stroke="#626a8a" stroke-width="1" marker-end="url(#ab1)"/>
+      <text x="350" y="165" fill="#626a8a" font-size="9">implements</text>
+      <text x="520" y="165" fill="#626a8a" font-size="9">implements</text>
+    </svg>
+  </div>
+
+  <button class="collapsible-trigger" onclick="toggleCollapsible(this)">C# Implementation <span class="chevron">▼</span></button>
+  <div class="collapsible-body"><div class="inner">
+    <div class="code-block"><div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span>Step 1 — Product</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><span class="kw">public class</span> <span class="tp">House</span>
+{
+    <span class="kw">public string</span> Walls { <span class="kw">get</span>; <span class="kw">set</span>; }
+    <span class="kw">public string</span> Roof { <span class="kw">get</span>; <span class="kw">set</span>; }
+    <span class="kw">public bool</span> HasPool { <span class="kw">get</span>; <span class="kw">set</span>; }
+    <span class="kw">public bool</span> HasGarage { <span class="kw">get</span>; <span class="kw">set</span>; }
+    <span class="kw">public override string</span> <span class="fn">ToString</span>() =>
+        <span class="str">$"House: Walls={Walls}, Roof={Roof}, Pool={HasPool}, Garage={HasGarage}"</span>;
+}</pre></div>
+    <div class="code-block"><div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span>Step 2 — Builder interface</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><span class="kw">public interface</span> <span class="tp">IHouseBuilder</span>
+{
+    <span class="kw">void</span> <span class="fn">BuildWalls</span>();
+    <span class="kw">void</span> <span class="fn">BuildRoof</span>();
+    <span class="kw">void</span> <span class="fn">BuildPool</span>();
+    <span class="kw">void</span> <span class="fn">BuildGarage</span>();
+    <span class="tp">House</span> <span class="fn">GetResult</span>();
+}</pre></div>
+    <div class="code-block"><div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span>Step 3 — Concrete Builders</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><span class="kw">public class</span> <span class="tp">WoodenHouseBuilder</span> : <span class="tp">IHouseBuilder</span>
+{
+    <span class="kw">private</span> <span class="tp">House</span> _house = <span class="kw">new</span> <span class="tp">House</span>();
+    <span class="kw">public void</span> <span class="fn">BuildWalls</span>() => _house.Walls = <span class="str">"Wooden walls"</span>;
+    <span class="kw">public void</span> <span class="fn">BuildRoof</span>() => _house.Roof = <span class="str">"Wooden roof"</span>;
+    <span class="kw">public void</span> <span class="fn">BuildPool</span>() => _house.HasPool = <span class="kw">false</span>;
+    <span class="kw">public void</span> <span class="fn">BuildGarage</span>() => _house.HasGarage = <span class="kw">true</span>;
+    <span class="kw">public</span> <span class="tp">House</span> <span class="fn">GetResult</span>() => _house;
+}
+
+<span class="kw">public class</span> <span class="tp">StoneHouseBuilder</span> : <span class="tp">IHouseBuilder</span>
+{
+    <span class="kw">private</span> <span class="tp">House</span> _house = <span class="kw">new</span> <span class="tp">House</span>();
+    <span class="kw">public void</span> <span class="fn">BuildWalls</span>() => _house.Walls = <span class="str">"Stone walls"</span>;
+    <span class="kw">public void</span> <span class="fn">BuildRoof</span>() => _house.Roof = <span class="str">"Slate roof"</span>;
+    <span class="kw">public void</span> <span class="fn">BuildPool</span>() => _house.HasPool = <span class="kw">true</span>;
+    <span class="kw">public void</span> <span class="fn">BuildGarage</span>() => _house.HasGarage = <span class="kw">true</span>;
+    <span class="kw">public</span> <span class="tp">House</span> <span class="fn">GetResult</span>() => _house;
+}</pre></div>
+    <div class="code-block"><div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span>Step 4 — Director controls build order</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><span class="kw">public class</span> <span class="tp">ConstructionDirector</span>
+{
+    <span class="kw">private</span> <span class="tp">IHouseBuilder</span> _builder;
+    <span class="kw">public</span> <span class="fn">ConstructionDirector</span>(<span class="tp">IHouseBuilder</span> builder) => _builder = builder;
+
+    <span class="kw">public void</span> <span class="fn">BuildBasicHouse</span>()
+    {
+        _builder.<span class="fn">BuildWalls</span>();
+        _builder.<span class="fn">BuildRoof</span>();
+        _builder.<span class="fn">BuildGarage</span>();
+    }
+
+    <span class="kw">public void</span> <span class="fn">BuildLuxuryHouse</span>()
+    {
+        _builder.<span class="fn">BuildWalls</span>();
+        _builder.<span class="fn">BuildRoof</span>();
+        _builder.<span class="fn">BuildGarage</span>();
+        _builder.<span class="fn">BuildPool</span>();
+    }
+}</pre></div>
+    <div class="code-block"><div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span>Step 5 — Client code</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><span class="tp">IHouseBuilder</span> builder = <span class="kw">new</span> <span class="tp">WoodenHouseBuilder</span>();
+<span class="kw">var</span> director = <span class="kw">new</span> <span class="tp">ConstructionDirector</span>(builder);
+director.<span class="fn">BuildBasicHouse</span>();
+<span class="tp">Console</span>.<span class="fn">WriteLine</span>(builder.<span class="fn">GetResult</span>());
+<span class="cm">// House: Walls=Wooden walls, Roof=Wooden roof, Pool=False, Garage=True</span>
+
+builder = <span class="kw">new</span> <span class="tp">StoneHouseBuilder</span>();
+director = <span class="kw">new</span> <span class="tp">ConstructionDirector</span>(builder);
+director.<span class="fn">BuildLuxuryHouse</span>();
+<span class="tp">Console</span>.<span class="fn">WriteLine</span>(builder.<span class="fn">GetResult</span>());
+<span class="cm">// House: Walls=Stone walls, Roof=Slate roof, Pool=True, Garage=True</span></pre></div>
+    <div class="code-block"><div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span>Fluent Builder — Common in Real C# Code</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><span class="kw">public class</span> <span class="tp">HouseBuilder</span>
+{
+    <span class="kw">private</span> <span class="tp">House</span> _house = <span class="kw">new</span> <span class="tp">House</span>();
+    <span class="kw">public</span> <span class="tp">HouseBuilder</span> <span class="fn">WithWalls</span>(<span class="kw">string</span> type) { _house.Walls = type; <span class="kw">return this</span>; }
+    <span class="kw">public</span> <span class="tp">HouseBuilder</span> <span class="fn">WithRoof</span>(<span class="kw">string</span> type) { _house.Roof = type; <span class="kw">return this</span>; }
+    <span class="kw">public</span> <span class="tp">HouseBuilder</span> <span class="fn">WithPool</span>() { _house.HasPool = <span class="kw">true</span>; <span class="kw">return this</span>; }
+    <span class="kw">public</span> <span class="tp">HouseBuilder</span> <span class="fn">WithGarage</span>() { _house.HasGarage = <span class="kw">true</span>; <span class="kw">return this</span>; }
+    <span class="kw">public</span> <span class="tp">House</span> <span class="fn">Build</span>() => _house;
+}
+
+<span class="tp">House</span> house = <span class="kw">new</span> <span class="tp">HouseBuilder</span>()
+    .<span class="fn">WithWalls</span>(<span class="str">"Brick"</span>)
+    .<span class="fn">WithRoof</span>(<span class="str">"Tile"</span>)
+    .<span class="fn">WithGarage</span>()
+    .<span class="fn">WithPool</span>()
+    .<span class="fn">Build</span>();</pre></div>
+  </div></div>
+
+  <div class="note"><span class="bulb">💡</span><span>The Fluent Builder is the style you will encounter most in real C# codebases. <code>StringBuilder</code>, <code>IHostBuilder</code> in ASP.NET Core, and EF Core's <code>ModelBuilder</code> all follow this style.</span></div>
+
+  <button class="collapsible-trigger" onclick="toggleCollapsible(this)">Interview Q&A <span class="chevron">▼</span></button>
+  <div class="collapsible-body"><div class="inner">
+    <div class="qa-block"><div class="qa-q" onclick="toggleQA(this)"><span class="arrow">▶</span>What is the difference between Builder and Factory patterns?</div><div class="qa-a">Factory patterns focus on <em>which type</em> to create. Builder focuses on <em>how</em> to construct a complex object step by step. Use Factory when the type varies, use Builder when the construction process is complex.</div></div>
+    <div class="qa-block"><div class="qa-q" onclick="toggleQA(this)"><span class="arrow">▶</span>Is the Director mandatory in the Builder pattern?</div><div class="qa-a">No. The Director is optional. It is useful when you have predefined build sequences to reuse. Without a Director, the client drives the steps directly — which is the Fluent Builder style.</div></div>
+    <div class="qa-block"><div class="qa-q" onclick="toggleQA(this)"><span class="arrow">▶</span>Why return this in a Fluent Builder?</div><div class="qa-a">Returning <code>this</code> from each method allows you to chain calls on the same object. It makes the construction read like a sentence, improving clarity and readability.</div></div>
+  </div></div>
+  <div class="use-avoid">
+    <div class="use-col"><h4>✅ Use When</h4><ul><li>Object construction involves many optional steps</li><li>You want readable, self-documenting creation</li><li>Same steps can produce different representations</li></ul></div>
+    <div class="avoid-col"><h4>❌ Avoid When</h4><ul><li>The object is simple with few fields</li><li>All fields are always required</li><li>Construction order does not matter</li></ul></div>
+  </div>
+</section>
+
+<!-- ═══ PATTERN 4 — PROTOTYPE ═══ -->
+<section id="prototype" class="pattern-section p4">
+  <div class="pattern-header"><div class="pattern-num">04</div><h2>🧬 Prototype</h2></div>
+  <div class="pattern-subtitle">Create new objects by cloning an existing object instead of building from scratch.</div>
+  <div class="card"><h3>Intent</h3><p>Create new objects by cloning an existing object — the prototype — instead of building from scratch. Use this when object creation is expensive and you need many similar objects.</p></div>
+  <div class="card"><h3>Shallow Copy vs Deep Copy — Critical Concept</h3><div class="table-wrap"><table><thead><tr><th>Shallow Copy ❌</th><th>Deep Copy ✅</th></tr></thead><tbody>
+    <tr><td>Copies the object but shares references to nested objects. Modifying a nested object on the clone also affects the original.</td><td>Copies the object and all nested objects recursively. Clone and original are fully independent.</td></tr>
+  </tbody></table></div></div>
+
+  <div class="diagram-wrapper">
+    <svg viewBox="0 0 700 240" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+      <defs><marker id="ap1" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#4ade80"/></marker></defs>
+      <rect x="40" y="30" width="200" height="120" rx="10" fill="rgba(74,222,128,.08)" stroke="#4ade80" stroke-width="1.5"/>
+      <text x="140" y="55" text-anchor="middle" fill="#4ade80" font-weight="700" font-size="13">Employee (original)</text>
+      <line x1="60" y1="62" x2="220" y2="62" stroke="#4ade80" stroke-opacity=".3"/>
+      <text x="140" y="82" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">Name: "Omar"</text>
+      <text x="140" y="98" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">Dept: "Engineering"</text>
+      <rect x="70" y="108" width="140" height="32" rx="6" fill="rgba(232,168,56,.08)" stroke="#e8a838" stroke-width="1" stroke-opacity=".5"/>
+      <text x="140" y="128" text-anchor="middle" fill="#e8a838" font-size="10" font-family="JetBrains Mono,monospace">Address: Cairo</text>
+      <path d="M240,90 L340,90" fill="none" stroke="#4ade80" stroke-width="2" marker-end="url(#ap1)"/>
+      <text x="290" y="82" text-anchor="middle" fill="#4ade80" font-weight="700" font-size="12">.Clone()</text>
+      <text x="290" y="108" text-anchor="middle" fill="#626a8a" font-size="10">deep copy</text>
+      <rect x="360" y="30" width="200" height="120" rx="10" fill="rgba(74,222,128,.08)" stroke="#4ade80" stroke-width="1.5" stroke-dasharray="6 4"/>
+      <text x="460" y="55" text-anchor="middle" fill="#4ade80" font-weight="700" font-size="13">Employee (clone)</text>
+      <line x1="380" y1="62" x2="540" y2="62" stroke="#4ade80" stroke-opacity=".3"/>
+      <text x="460" y="82" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">Name: "Ahmed"</text>
+      <text x="460" y="98" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">Dept: "Engineering"</text>
+      <rect x="390" y="108" width="140" height="32" rx="6" fill="rgba(232,168,56,.08)" stroke="#e8a838" stroke-width="1" stroke-opacity=".5"/>
+      <text x="460" y="128" text-anchor="middle" fill="#e8a838" font-size="10" font-family="JetBrains Mono,monospace">Address: Alexandria</text>
+      <text x="350" y="190" text-anchor="middle" fill="#626a8a" font-size="11">✓ Changing clone's Address does NOT affect original</text>
+      <rect x="100" y="200" width="500" height="30" rx="8" fill="rgba(74,222,128,.05)" stroke="rgba(74,222,128,.15)" stroke-width="1"/>
+      <text x="350" y="220" text-anchor="middle" fill="#4ade80" font-size="10">Deep copy: Address.Clone() creates a brand new Address object</text>
+    </svg>
+  </div>
+
+  <button class="collapsible-trigger" onclick="toggleCollapsible(this)">C# Implementation <span class="chevron">▼</span></button>
+  <div class="collapsible-body"><div class="inner">
+    <div class="code-block"><div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span>Step 1 — Prototype interface</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><span class="kw">public interface</span> <span class="tp">IPrototype</span>&lt;<span class="tp">T</span>&gt;
+{
+    <span class="tp">T</span> <span class="fn">Clone</span>();
+}</pre></div>
+    <div class="code-block"><div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span>Step 2 — Nested object with its own copy</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><span class="kw">public class</span> <span class="tp">Address</span>
+{
+    <span class="kw">public string</span> Street { <span class="kw">get</span>; <span class="kw">set</span>; }
+    <span class="kw">public string</span> City { <span class="kw">get</span>; <span class="kw">set</span>; }
+    <span class="kw">public</span> <span class="fn">Address</span>(<span class="kw">string</span> street, <span class="kw">string</span> city) { Street = street; City = city; }
+    <span class="cm">// Address clones itself — responsible for its own copy</span>
+    <span class="kw">public</span> <span class="tp">Address</span> <span class="fn">Clone</span>() => <span class="kw">new</span> <span class="tp">Address</span>(Street, City);
+}</pre></div>
+    <div class="code-block"><div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span>Step 3 — Prototype class with deep copy</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><span class="kw">public class</span> <span class="tp">Employee</span> : <span class="tp">IPrototype</span>&lt;<span class="tp">Employee</span>&gt;
+{
+    <span class="kw">public string</span> Name { <span class="kw">get</span>; <span class="kw">set</span>; }
+    <span class="kw">public string</span> Department { <span class="kw">get</span>; <span class="kw">set</span>; }
+    <span class="kw">public</span> <span class="tp">Address</span> Address { <span class="kw">get</span>; <span class="kw">set</span>; }
+
+    <span class="kw">public</span> <span class="fn">Employee</span>(<span class="kw">string</span> name, <span class="kw">string</span> department, <span class="tp">Address</span> address)
+    { Name = name; Department = department; Address = address; }
+
+    <span class="kw">public</span> <span class="tp">Employee</span> <span class="fn">Clone</span>()
+    {
+        <span class="cm">// Deep copy — Address.Clone() creates a brand new Address object</span>
+        <span class="kw">return new</span> <span class="tp">Employee</span>(Name, Department, Address.<span class="fn">Clone</span>());
+    }
+}</pre></div>
+    <div class="code-block"><div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span>Step 4 — Client code</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><span class="kw">var</span> original = <span class="kw">new</span> <span class="tp">Employee</span>(<span class="str">"Omar"</span>, <span class="str">"Engineering"</span>, <span class="kw">new</span> <span class="tp">Address</span>(<span class="str">"Tahrir St"</span>, <span class="str">"Cairo"</span>));
+
+<span class="kw">var</span> clone = original.<span class="fn">Clone</span>();
+clone.Name = <span class="str">"Ahmed"</span>;
+clone.Address.City = <span class="str">"Alexandria"</span>;
+
+<span class="tp">Console</span>.<span class="fn">WriteLine</span>(original.Name);          <span class="cm">// Omar</span>
+<span class="tp">Console</span>.<span class="fn">WriteLine</span>(original.Address.City);  <span class="cm">// Cairo  ← untouched</span>
+<span class="tp">Console</span>.<span class="fn">WriteLine</span>(clone.Name);             <span class="cm">// Ahmed</span>
+<span class="tp">Console</span>.<span class="fn">WriteLine</span>(clone.Address.City);     <span class="cm">// Alexandria</span></pre></div>
+  </div></div>
+
+  <div class="note"><span class="bulb">💡</span><span><code>MemberwiseClone()</code> built into .NET gives a shallow copy only. For deep copy you must manually clone each nested object. This is why many developers avoid <code>ICloneable</code> in production — it does not make the shallow/deep distinction clear to the caller.</span></div>
+
+  <button class="collapsible-trigger" onclick="toggleCollapsible(this)">Interview Q&A <span class="chevron">▼</span></button>
+  <div class="collapsible-body"><div class="inner">
+    <div class="qa-block"><div class="qa-q" onclick="toggleQA(this)"><span class="arrow">▶</span>When would you use Prototype over just calling new?</div><div class="qa-a">When object creation is expensive — involves DB calls, file I/O, or complex initialization — and you need many similar objects. Cloning is far cheaper than rebuilding from scratch each time.</div></div>
+    <div class="qa-block"><div class="qa-q" onclick="toggleQA(this)"><span class="arrow">▶</span>What is the risk of shallow copy?</div><div class="qa-a">Shared nested object references. Modifying a nested object on the clone will silently modify the original too, causing hard-to-find bugs.</div></div>
+    <div class="qa-block"><div class="qa-q" onclick="toggleQA(this)"><span class="arrow">▶</span>How is Prototype different from Builder?</div><div class="qa-a">Builder constructs an object step by step from scratch. Prototype skips construction entirely by copying an already-built object.</div></div>
+  </div></div>
+  <div class="use-avoid">
+    <div class="use-col"><h4>✅ Use When</h4><ul><li>Object creation is expensive or complex</li><li>You need many similar objects with small differences</li><li>Avoid subclassing just to vary an object</li></ul></div>
+    <div class="avoid-col"><h4>❌ Avoid When</h4><ul><li>Objects are simple and cheap to create</li><li>Deep copy logic becomes too complex</li><li>Objects have no meaningful copy concept</li></ul></div>
+  </div>
+</section>
+
+<!-- ═══ PATTERN 5 — SINGLETON ═══ -->
+<section id="singleton" class="pattern-section p5">
+  <div class="pattern-header"><div class="pattern-num">05</div><h2>👑 Singleton</h2></div>
+  <div class="pattern-subtitle">Ensure a class has only one instance and provide a global access point to it.</div>
+  <div class="card"><h3>Intent</h3><p>Ensure a class has only one instance for the entire application lifetime, and provide a single global access point to that instance.</p></div>
+
+  <div class="diagram-wrapper">
+    <svg viewBox="0 0 700 200" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+      <defs><marker id="as1" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#f472b6"/></marker></defs>
+      <rect x="220" y="20" width="260" height="110" rx="10" fill="rgba(244,114,182,.08)" stroke="#f472b6" stroke-width="1.5"/>
+      <text x="350" y="48" text-anchor="middle" fill="#f472b6" font-weight="700" font-size="14">Logger (Singleton)</text>
+      <line x1="240" y1="56" x2="460" y2="56" stroke="#f472b6" stroke-opacity=".3"/>
+      <text x="350" y="76" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">- static _instance: Logger</text>
+      <text x="350" y="92" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">- Logger() «private»</text>
+      <text x="350" y="108" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">+ static Instance → Logger</text>
+      <text x="350" y="122" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">+ Log(message)</text>
+      <rect x="40" y="160" width="100" height="32" rx="8" fill="#181c2a" stroke="#626a8a" stroke-width="1"/>
+      <text x="90" y="180" text-anchor="middle" fill="#c4c9d8" font-size="10">Client A</text>
+      <rect x="300" y="160" width="100" height="32" rx="8" fill="#181c2a" stroke="#626a8a" stroke-width="1"/>
+      <text x="350" y="180" text-anchor="middle" fill="#c4c9d8" font-size="10">Client B</text>
+      <rect x="560" y="160" width="100" height="32" rx="8" fill="#181c2a" stroke="#626a8a" stroke-width="1"/>
+      <text x="610" y="180" text-anchor="middle" fill="#c4c9d8" font-size="10">Client C</text>
+      <line x1="90" y1="160" x2="280" y2="130" stroke="#f472b6" stroke-width="1" marker-end="url(#as1)"/>
+      <line x1="350" y1="160" x2="350" y2="130" stroke="#f472b6" stroke-width="1" marker-end="url(#as1)"/>
+      <line x1="610" y1="160" x2="420" y2="130" stroke="#f472b6" stroke-width="1" marker-end="url(#as1)"/>
+      <text x="350" y="152" text-anchor="middle" fill="#f472b6" font-size="9">same instance</text>
+    </svg>
+  </div>
+
+  <button class="collapsible-trigger" onclick="toggleCollapsible(this)">C# Implementation <span class="chevron">▼</span></button>
+  <div class="collapsible-body"><div class="inner">
+    <div class="code-block"><div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span>Version 1 — Basic (not thread-safe)</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><span class="kw">public class</span> <span class="tp">Logger</span>
+{
+    <span class="kw">private static</span> <span class="tp">Logger</span> _instance;
+    <span class="kw">private</span> <span class="fn">Logger</span>() { } <span class="cm">// Private constructor — blocks new from outside</span>
+
+    <span class="kw">public static</span> <span class="tp">Logger</span> <span class="fn">GetInstance</span>()
+    {
+        <span class="kw">if</span> (_instance == <span class="kw">null</span>)
+            _instance = <span class="kw">new</span> <span class="tp">Logger</span>();
+        <span class="kw">return</span> _instance;
+    }
+    <span class="kw">public void</span> <span class="fn">Log</span>(<span class="kw">string</span> message) => <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">$"[LOG] {message}"</span>);
+}</pre></div>
+    <div class="note"><span class="bulb">💡</span><span>This basic version is not safe in multithreaded environments. Two threads could both pass the null check simultaneously and each create a separate instance.</span></div>
+    <div class="code-block"><div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span>Version 2 — Thread-safe with double-checked locking</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><span class="kw">public class</span> <span class="tp">Logger</span>
+{
+    <span class="kw">private static</span> <span class="tp">Logger</span> _instance;
+    <span class="kw">private static readonly object</span> _lock = <span class="kw">new object</span>();
+    <span class="kw">private</span> <span class="fn">Logger</span>() { }
+
+    <span class="kw">public static</span> <span class="tp">Logger</span> <span class="fn">GetInstance</span>()
+    {
+        <span class="kw">if</span> (_instance == <span class="kw">null</span>) <span class="cm">// outer check — avoids locking every call</span>
+        {
+            <span class="kw">lock</span> (_lock)
+            {
+                <span class="kw">if</span> (_instance == <span class="kw">null</span>) <span class="cm">// inner check — handles the race condition</span>
+                    _instance = <span class="kw">new</span> <span class="tp">Logger</span>();
+            }
+        }
+        <span class="kw">return</span> _instance;
+    }
+}</pre></div>
+    <div class="code-block"><div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span>Version 3 — Modern C# using Lazy&lt;T&gt; (recommended)</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><span class="kw">public class</span> <span class="tp">Logger</span>
+{
+    <span class="cm">// Lazy&lt;T&gt; handles thread safety and lazy initialization automatically</span>
+    <span class="kw">private static readonly</span> <span class="tp">Lazy</span>&lt;<span class="tp">Logger</span>&gt; _instance =
+        <span class="kw">new</span> <span class="tp">Lazy</span>&lt;<span class="tp">Logger</span>&gt;(() => <span class="kw">new</span> <span class="tp">Logger</span>());
+
+    <span class="kw">private</span> <span class="fn">Logger</span>() { }
+    <span class="kw">public static</span> <span class="tp">Logger</span> Instance => _instance.Value;
+    <span class="kw">public void</span> <span class="fn">Log</span>(<span class="kw">string</span> message) => <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">$"[LOG] {message}"</span>);
+}
+
+<span class="tp">Logger</span>.Instance.<span class="fn">Log</span>(<span class="str">"App started"</span>);
+<span class="tp">Logger</span>.Instance.<span class="fn">Log</span>(<span class="str">"User logged in"</span>);</pre></div>
+    <div class="note"><span class="bulb">💡</span><span><code>Lazy&lt;T&gt;</code> is the cleanest and most idiomatic C# approach. It is thread-safe by default, lazy (created only when first accessed), and requires no manual locking code.</span></div>
+    <div class="code-block"><div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span>ASP.NET Core DI — The Modern Alternative</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><span class="cm">// Program.cs — register once</span>
+builder.Services.<span class="fn">AddSingleton</span>&lt;<span class="tp">ILogger</span>, <span class="tp">AppLogger</span>&gt;();
+
+<span class="cm">// Any class just declares the dependency — DI injects the single instance</span>
+<span class="kw">public class</span> <span class="tp">OrderService</span>
+{
+    <span class="kw">private readonly</span> <span class="tp">ILogger</span> _logger;
+    <span class="kw">public</span> <span class="fn">OrderService</span>(<span class="tp">ILogger</span> logger) { _logger = logger; }
+}</pre></div>
+    <div class="note"><span class="bulb">💡</span><span>DI-based Singleton is preferred in real applications. The class does not need to know it is a Singleton. It also makes unit testing easier since you can inject a mock.</span></div>
+  </div></div>
+
+  <div class="card"><h3>AddSingleton vs AddScoped vs AddTransient</h3><div class="table-wrap"><table><thead><tr><th>Lifetime</th><th>Created</th><th>Shared?</th></tr></thead><tbody>
+    <tr><td><strong>AddSingleton</strong></td><td>Once for the app lifetime</td><td>Everyone gets the same instance</td></tr>
+    <tr><td><strong>AddScoped</strong></td><td>Once per HTTP request</td><td>Shared within one request only</td></tr>
+    <tr><td><strong>AddTransient</strong></td><td>Every time it is requested</td><td>Never shared</td></tr>
+  </tbody></table></div></div>
+
+  <button class="collapsible-trigger" onclick="toggleCollapsible(this)">Interview Q&A <span class="chevron">▼</span></button>
+  <div class="collapsible-body"><div class="inner">
+    <div class="qa-block"><div class="qa-q" onclick="toggleQA(this)"><span class="arrow">▶</span>Why is Singleton considered an anti-pattern by some developers?</div><div class="qa-a">Because it introduces hidden global state, making code hard to test. A class calling <code>Logger.GetInstance()</code> is tightly coupled to that implementation — you cannot swap it for a mock in tests. DI-based Singletons solve this.</div></div>
+    <div class="qa-block"><div class="qa-q" onclick="toggleQA(this)"><span class="arrow">▶</span>Can a Singleton have multiple instances in some scenarios?</div><div class="qa-a">Yes. If your app runs across multiple servers or processes, each process gets its own Singleton. It is only guaranteed to be one instance per process, not per distributed system.</div></div>
+    <div class="qa-block"><div class="qa-q" onclick="toggleQA(this)"><span class="arrow">▶</span>What is lazy initialization in Singleton?</div><div class="qa-a">The instance is not created when the app starts — it is created only on the first call. This saves resources if the Singleton is never actually needed at runtime.</div></div>
+  </div></div>
+  <div class="use-avoid">
+    <div class="use-col"><h4>✅ Use When</h4><ul><li>Exactly one shared instance is genuinely needed</li><li>Managing shared resources like config or logging</li><li>The instance is stateless or carefully thread-managed</li></ul></div>
+    <div class="avoid-col"><h4>❌ Avoid When</h4><ul><li>Using it just for global convenience</li><li>It makes unit testing harder</li><li>Multiple instances are actually perfectly fine</li></ul></div>
+  </div>
+</section>
+
+<!-- ═══ CHOOSING ═══ -->
+<section class="summary-section">
+  <h2>Choosing the Right Pattern</h2>
+  <div class="card"><div class="table-wrap"><table>
+    <thead><tr><th>If you need to...</th><th>Use this pattern</th></tr></thead>
+    <tbody>
+      <tr><td>Create one object, type decided by subclass</td><td><strong>🏭 Factory Method</strong></td></tr>
+      <tr><td>Create a matching family of objects</td><td><strong>🏭🏭 Abstract Factory</strong></td></tr>
+      <tr><td>Build a complex object step by step</td><td><strong>🔨 Builder</strong></td></tr>
+      <tr><td>Copy an expensive object cheaply</td><td><strong>🧬 Prototype</strong></td></tr>
+      <tr><td>Guarantee only one instance exists</td><td><strong>👑 Singleton</strong></td></tr>
+    </tbody>
+  </table></div></div>
+</section>
+
+<button class="back-top" id="backTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+<footer><p>Creational Design Patterns — C# Interactive Study Guide</p></footer>
+
+<script>
+function toggleCollapsible(btn){btn.classList.toggle('open');btn.nextElementSibling.classList.toggle('open')}
+function toggleQA(el){el.classList.toggle('open');el.nextElementSibling.classList.toggle('open')}
+function copyCode(btn){const pre=btn.closest('.code-block').querySelector('pre');navigator.clipboard.writeText(pre.textContent).then(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',1500)})}
+window.addEventListener('scroll',()=>{document.getElementById('backTop').classList.toggle('show',window.scrollY>400)})
+</script>
+</body>
+</html>

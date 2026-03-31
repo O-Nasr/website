@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dependency Injection — .NET Interview Study Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=DM+Sans:ital,wght@0,400;0,500;0,700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#060810;--bg-card:#0d0f18;--bg-code:#090b12;--bg-el:#151828;--border:#191d30;--border-gl:#242840;--text:#c2c8d8;--text-dim:#5c6486;--text-br:#e4eaf4;--c1:#10b981;--c2:#3b82f6;--c3:#f59e0b;--c4:#a855f7;--c5:#06b6d4;--c6:#ef4444;--ok:#4ade80;--bad:#f87171;--kw:#c678dd;--str:#98c379;--tp:#61afef;--cm:#5c6370;--fn:#e5c07b;--r:12px}
+*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.72;overflow-x:hidden}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border-gl);border-radius:3px}
+.hero{position:relative;min-height:42vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:80px 24px 46px;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 500px 350px at 30% 40%,rgba(16,185,129,.12),transparent),radial-gradient(ellipse 400px 300px at 70% 55%,rgba(59,130,246,.07),transparent)}
+.hero-badge{position:relative;display:inline-flex;padding:6px 18px;border:1px solid var(--c1);border-radius:100px;font-size:.8rem;color:var(--c1);letter-spacing:.08em;text-transform:uppercase;margin-bottom:20px}
+.hero h1{position:relative;font-family:'Playfair Display',serif;font-size:clamp(2.2rem,5.5vw,3.6rem);font-weight:900;line-height:1.15;color:var(--text-br)}
+.hero h1 span{background:linear-gradient(135deg,var(--c1),var(--c2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{position:relative;max-width:620px;margin-top:14px;color:var(--text-dim);font-size:1rem}
+.np{position:relative;display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:24px}
+.np a{padding:6px 14px;border:1px solid var(--border-gl);border-radius:100px;color:var(--text-dim);text-decoration:none;font-size:.82rem;transition:all .25s}
+.np a:hover{border-color:var(--c1);color:var(--c1)}
+.sec{max-width:1000px;margin:0 auto 55px;padding:0 24px;scroll-margin-top:32px}
+.sh{display:flex;align-items:center;gap:14px;margin-bottom:6px}
+.sn{display:flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:12px;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:.95rem;flex-shrink:0;background:color-mix(in srgb,var(--pat) 16%,transparent);color:var(--pat);border:1px solid color-mix(in srgb,var(--pat) 28%,transparent)}
+.sh h2{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;color:var(--text-br)}
+.ss{color:var(--text-dim);font-style:italic;margin-bottom:18px;padding-left:56px;font-size:.9rem}
+.s1{--pat:var(--c6)}.s2{--pat:var(--c1)}.s3{--pat:var(--c2)}.s4{--pat:var(--c5)}.s5{--pat:var(--c6)}.s6{--pat:var(--c4)}
+.card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:14px}
+.card h3{font-size:.9rem;color:var(--text-br);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.card h3::before{content:'';display:inline-block;width:3px;height:14px;border-radius:2px;background:var(--pat,var(--c1))}
+.dw{background:var(--bg-code);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:14px;overflow-x:auto}
+.dw svg{display:block;margin:0 auto;max-width:100%;height:auto}
+.cb{position:relative;background:var(--bg-code);border:1px solid var(--border);border-radius:var(--r);margin-bottom:12px;overflow:hidden}
+.cb-h{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;background:var(--bg-el);border-bottom:1px solid var(--border);font-size:.74rem;color:var(--text-dim);font-family:'JetBrains Mono',monospace}
+.cb-h .dots{display:flex;gap:5px}.cb-h .dots span{width:9px;height:9px;border-radius:50%}
+.cb-h .dots span:nth-child(1){background:#ff5f57}.cb-h .dots span:nth-child(2){background:#febc2e}.cb-h .dots span:nth-child(3){background:#28c840}
+.cb-h.bad{border-left:3px solid var(--bad)}.cb-h.good{border-left:3px solid var(--ok)}
+.cpb{background:none;border:1px solid var(--border-gl);color:var(--text-dim);padding:2px 8px;border-radius:5px;cursor:pointer;font-size:.68rem;font-family:'JetBrains Mono',monospace;transition:all .2s}
+.cpb:hover{border-color:var(--ok);color:var(--ok)}
+.cb pre{padding:12px 14px;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:.76rem;line-height:1.6;color:var(--text)}
+.kw{color:var(--kw)}.tp{color:var(--tp)}.str{color:var(--str)}.cm{color:var(--cm);font-style:italic}.fn{color:var(--fn)}
+.cg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+@media(max-width:700px){.cg{grid-template-columns:1fr}}
+.cg .cb{margin-bottom:0}
+.tw{overflow-x:auto;margin-bottom:14px}table{width:100%;border-collapse:collapse;font-size:.8rem}
+thead th{background:var(--bg-el);color:var(--text-br);padding:9px 11px;text-align:left;font-weight:600;border-bottom:2px solid var(--border-gl);white-space:nowrap}
+tbody td{padding:7px 11px;border-bottom:1px solid var(--border);vertical-align:top}tbody tr:hover{background:rgba(16,185,129,.03)}
+.tip{display:flex;gap:10px;padding:11px 14px;border-radius:var(--r);margin-bottom:12px;font-size:.83rem}
+.tip-g{background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.16)}.tip-g .ic{color:var(--c1)}
+.tip-r{background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.16)}.tip-r .ic{color:var(--c6)}
+.tip-b{background:rgba(59,130,246,.06);border:1px solid rgba(59,130,246,.16)}.tip-b .ic{color:var(--c2)}
+.tip .ic{font-size:1rem;flex-shrink:0}
+.qa-b{margin-bottom:8px}
+.qa-q{display:flex;align-items:start;gap:8px;padding:11px 14px;background:var(--bg-el);border:1px solid var(--border);border-radius:var(--r);cursor:pointer;color:var(--text-br);font-size:.84rem;font-weight:500;transition:all .25s;user-select:none}
+.qa-q:hover{border-color:var(--c1)}.qa-q .ar{flex-shrink:0;transition:transform .3s;color:var(--c1);font-size:.8rem}.qa-q.open .ar{transform:rotate(90deg)}
+.qa-a{max-height:0;overflow:hidden;transition:max-height .35s ease,padding .35s;padding:0 14px;color:var(--text);font-size:.82rem;line-height:1.7;background:var(--bg-card);border:1px solid var(--border);border-top:none;border-radius:0 0 var(--r) var(--r)}
+.qa-a.open{max-height:600px;padding:12px 14px}
+.bt{position:fixed;bottom:24px;right:24px;width:42px;height:42px;border-radius:50%;background:var(--c1);color:#fff;border:none;cursor:pointer;font-size:1.1rem;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s;box-shadow:0 4px 16px rgba(16,185,129,.35);z-index:100;font-weight:700}
+.bt.show{opacity:1;pointer-events:auto}
+footer{text-align:center;padding:30px 24px;color:var(--text-dim);font-size:.78rem;border-top:1px solid var(--border);margin-top:30px}
+.sum{max-width:1000px;margin:0 auto 45px;padding:0 24px}.sum h2{font-family:'Playfair Display',serif;font-size:1.4rem;color:var(--text-br);margin-bottom:16px;text-align:center}
+@media(max-width:768px){.ss{padding-left:0}}
+</style>
+</head>
+<body>
+<section class="hero">
+  <div class="hero-badge">.NET Interview Guide</div>
+  <h1><span>Dependency</span> Injection</h1>
+  <p>Tight coupling to loose coupling — three injection types, three service lifetimes, the captive dependency problem, and testing with mocks.</p>
+  <div class="np"><a href="#problem">Problem</a><a href="#solution">Solution</a><a href="#types">3 Types</a><a href="#lifetimes">Lifetimes</a><a href="#captive">Captive</a><a href="#testing">Testing</a><a href="#interview">Interview</a></div>
+</section>
+
+<!-- 1. PROBLEM -->
+<section id="problem" class="sec s1">
+  <div class="sh"><div class="sn">1</div><h2>The Problem — Tight Coupling</h2></div>
+  <div class="ss">When a class creates its own dependencies, changing or testing becomes impossible.</div>
+  <div class="dw">
+    <svg viewBox="0 0 780 170" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+      <defs><marker id="adc" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#ef4444"/></marker><marker id="adi" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#10b981"/></marker></defs>
+      <text x="195" y="18" text-anchor="middle" fill="#ef4444" font-weight="700" font-size="13">❌ Tight Coupling</text>
+      <rect x="40" y="30" width="310" height="100" rx="10" fill="rgba(239,68,68,.04)" stroke="#ef4444" stroke-width="1"/>
+      <rect x="60" y="45" width="120" height="35" rx="8" fill="rgba(239,68,68,.08)" stroke="#ef4444" stroke-width="1"/>
+      <text x="120" y="67" text-anchor="middle" fill="#ef4444" font-size="10" font-weight="600">OrderService</text>
+      <rect x="210" y="45" width="120" height="35" rx="8" fill="rgba(239,68,68,.08)" stroke="#ef4444" stroke-width="1"/>
+      <text x="270" y="62" text-anchor="middle" fill="#ef4444" font-size="9">EmailService</text>
+      <text x="270" y="74" text-anchor="middle" fill="#ef4444" font-size="7" font-family="JetBrains Mono,monospace">new EmailService()</text>
+      <path d="M180,62 L210,62" fill="none" stroke="#ef4444" stroke-width="1.5" marker-end="url(#adc)"/>
+      <text x="195" y="100" text-anchor="middle" fill="#ef4444" font-size="8">Can't swap. Can't test. Can't change.</text>
+      <text x="195" y="122" text-anchor="middle" fill="#ef4444" font-size="8" font-family="JetBrains Mono,monospace">new = hardcoded = coupled</text>
+      <!-- Fix side -->
+      <text x="585" y="18" text-anchor="middle" fill="#10b981" font-weight="700" font-size="13">✅ Loose Coupling (DI)</text>
+      <rect x="430" y="30" width="310" height="100" rx="10" fill="rgba(16,185,129,.04)" stroke="#10b981" stroke-width="1"/>
+      <rect x="450" y="45" width="120" height="35" rx="8" fill="rgba(16,185,129,.08)" stroke="#10b981" stroke-width="1"/>
+      <text x="510" y="67" text-anchor="middle" fill="#10b981" font-size="10" font-weight="600">OrderService</text>
+      <rect x="600" y="30" width="120" height="25" rx="6" fill="rgba(59,130,246,.08)" stroke="#3b82f6" stroke-width="1"/>
+      <text x="660" y="47" text-anchor="middle" fill="#3b82f6" font-size="8">INotificationService</text>
+      <rect x="600" y="60" width="85" height="20" rx="4" fill="rgba(16,185,129,.06)" stroke="#10b981" stroke-width=".8"/>
+      <text x="643" y="74" text-anchor="middle" fill="#10b981" font-size="7">Email</text>
+      <rect x="695" y="60" width="50" height="20" rx="4" fill="rgba(16,185,129,.06)" stroke="#10b981" stroke-width=".8"/>
+      <text x="720" y="74" text-anchor="middle" fill="#10b981" font-size="7">SMS</text>
+      <rect x="600" y="85" width="60" height="20" rx="4" fill="rgba(168,85,247,.06)" stroke="#a855f7" stroke-width=".8"/>
+      <text x="630" y="99" text-anchor="middle" fill="#a855f7" font-size="7">Mock</text>
+      <path d="M570,62 L600,45" fill="none" stroke="#10b981" stroke-width="1.2" marker-end="url(#adi)"/>
+      <text x="585" y="110" text-anchor="middle" fill="#10b981" font-size="8">Swap freely. Test easily. Zero changes.</text>
+      <text x="585" y="122" text-anchor="middle" fill="#10b981" font-size="8" font-family="JetBrains Mono,monospace">injected = flexible = decoupled</text>
+      <rect x="180" y="145" width="420" height="22" rx="6" fill="rgba(16,185,129,.05)" stroke="rgba(16,185,129,.15)" stroke-width="1"/>
+      <text x="390" y="160" text-anchor="middle" fill="#10b981" font-size="9">DI = class receives dependencies from outside, not creating them itself</text>
+    </svg>
+  </div>
+  <div class="cg">
+    <div class="cb"><div class="cb-h bad"><div class="dots"><span></span><span></span><span></span></div><span>❌ Tight coupling</span></div><pre><span class="kw">public class</span> <span class="tp">OrderService</span>
+{
+    <span class="kw">private</span> <span class="tp">EmailService</span> _email = <span class="kw">new</span> <span class="tp">EmailService</span>();
+    <span class="kw">public void</span> <span class="fn">PlaceOrder</span>(<span class="kw">string</span> num)
+    {
+        _email.<span class="fn">SendEmail</span>(num);
+    }
+}
+<span class="cm">// Can't swap, can't mock, can't test</span></pre></div>
+    <div class="cb"><div class="cb-h good"><div class="dots"><span></span><span></span><span></span></div><span>✅ Loose coupling (DI)</span><button class="cpb" onclick="copyCode(this)">Copy</button></div><pre><span class="kw">public class</span> <span class="tp">OrderService</span>
+{
+    <span class="kw">private readonly</span> <span class="tp">INotificationService</span> _svc;
+    <span class="kw">public</span> <span class="fn">OrderService</span>(<span class="tp">INotificationService</span> svc)
+    { _svc = svc; }
+    <span class="kw">public void</span> <span class="fn">PlaceOrder</span>(<span class="kw">string</span> num)
+    { _svc.<span class="fn">Send</span>(num); }
+}
+<span class="cm">// Swap Email/SMS/Mock — zero changes</span></pre></div>
+  </div>
+</section>
+
+<!-- 3. THREE TYPES -->
+<section id="types" class="sec s3">
+  <div class="sh"><div class="sn">3</div><h2>Three Types of DI</h2></div>
+  <div class="cb"><div class="cb-h good"><div class="dots"><span></span><span></span><span></span></div><span>1. Constructor Injection — Most Common</span><button class="cpb" onclick="copyCode(this)">Copy</button></div><pre><span class="kw">public class</span> <span class="tp">OrderService</span>
+{
+    <span class="kw">private readonly</span> <span class="tp">INotificationService</span> _notification;
+    <span class="kw">private readonly</span> <span class="tp">ILogger</span> _logger;
+
+    <span class="cm">// All required dependencies declared upfront</span>
+    <span class="kw">public</span> <span class="fn">OrderService</span>(<span class="tp">INotificationService</span> notification, <span class="tp">ILogger</span> logger)
+    {
+        _notification = notification;
+        _logger = logger;
+    }
+}</pre></div>
+  <div class="cb"><div class="cb-h"><div class="dots"><span></span><span></span><span></span></div><span>2. Property Injection — Optional Dependencies</span><button class="cpb" onclick="copyCode(this)">Copy</button></div><pre><span class="kw">public class</span> <span class="tp">OrderService</span>
+{
+    <span class="kw">private readonly</span> <span class="tp">INotificationService</span> _notification;
+    <span class="kw">public</span> <span class="tp">ILogger</span> Logger { <span class="kw">get</span>; <span class="kw">set</span>; } <span class="cm">// optional — can be null</span>
+
+    <span class="kw">public</span> <span class="fn">OrderService</span>(<span class="tp">INotificationService</span> notification)
+    { _notification = notification; }
+
+    <span class="kw">public void</span> <span class="fn">PlaceOrder</span>(<span class="kw">string</span> num)
+    {
+        Logger?.<span class="fn">Log</span>(<span class="str">"Placing: "</span> + num); <span class="cm">// null-safe</span>
+        _notification.<span class="fn">Send</span>(num);
+    }
+}</pre></div>
+  <div class="cb"><div class="cb-h"><div class="dots"><span></span><span></span><span></span></div><span>3. Method Injection — Per-Method</span></div><pre><span class="kw">public class</span> <span class="tp">OrderService</span>
+{
+    <span class="kw">public void</span> <span class="fn">PlaceOrder</span>(<span class="kw">string</span> num, <span class="tp">INotificationService</span> svc)
+    {
+        svc.<span class="fn">Send</span>(num); <span class="cm">// per-call, not stored</span>
+    }
+}</pre></div>
+  <div class="card"><h3>Comparison</h3><div class="tw"><table><thead><tr><th></th><th>Constructor</th><th>Property</th><th>Method</th></tr></thead><tbody>
+    <tr><td><strong>Type</strong></td><td>Required</td><td>Optional</td><td>Per-method</td></tr>
+    <tr><td><strong>Set when</strong></td><td>At construction</td><td>After construction</td><td>Per call</td></tr>
+    <tr><td><strong>Best for</strong></td><td>Core dependencies</td><td>Optional features</td><td>One-time use</td></tr>
+  </tbody></table></div></div>
+</section>
+
+<!-- 4. SERVICE LIFETIMES -->
+<section id="lifetimes" class="sec s4">
+  <div class="sh"><div class="sn">4</div><h2>Service Lifetimes in ASP.NET Core</h2></div>
+  <div class="cb"><div class="cb-h good"><div class="dots"><span></span><span></span><span></span></div><span>Program.cs — Registration</span><button class="cpb" onclick="copyCode(this)">Copy</button></div><pre>builder.Services.<span class="fn">AddTransient</span>&lt;<span class="tp">INotificationService</span>, <span class="tp">EmailNotification</span>&gt;(); <span class="cm">// new every time</span>
+builder.Services.<span class="fn">AddScoped</span>&lt;<span class="tp">IOrderService</span>, <span class="tp">OrderService</span>&gt;();                 <span class="cm">// once per request</span>
+builder.Services.<span class="fn">AddSingleton</span>&lt;<span class="tp">ILogger</span>, <span class="tp">Logger</span>&gt;();                          <span class="cm">// once forever</span></pre></div>
+
+  <div class="dw">
+    <svg viewBox="0 0 780 210" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+      <!-- Transient -->
+      <rect x="20" y="10" width="230" height="130" rx="12" fill="rgba(245,158,11,.06)" stroke="#f59e0b" stroke-width="1.5"/>
+      <text x="135" y="35" text-anchor="middle" fill="#f59e0b" font-weight="700" font-size="14">Transient</text>
+      <text x="135" y="55" text-anchor="middle" fill="#8890a8" font-size="10">New instance every injection</text>
+      <text x="135" y="78" text-anchor="middle" fill="#f59e0b" font-size="9" font-family="JetBrains Mono,monospace">Req1: #1, #2</text>
+      <text x="135" y="95" text-anchor="middle" fill="#f59e0b" font-size="9" font-family="JetBrains Mono,monospace">Req2: #3, #4</text>
+      <text x="135" y="115" text-anchor="middle" fill="#8890a8" font-size="8">email sender, validators</text>
+      <text x="135" y="132" text-anchor="middle" fill="#f59e0b" font-size="8" font-weight="600">lightweight, stateless</text>
+      <!-- Scoped -->
+      <rect x="275" y="10" width="230" height="130" rx="12" fill="rgba(59,130,246,.06)" stroke="#3b82f6" stroke-width="1.5"/>
+      <text x="390" y="35" text-anchor="middle" fill="#3b82f6" font-weight="700" font-size="14">Scoped</text>
+      <text x="390" y="55" text-anchor="middle" fill="#8890a8" font-size="10">One instance per HTTP request</text>
+      <text x="390" y="78" text-anchor="middle" fill="#3b82f6" font-size="9" font-family="JetBrains Mono,monospace">Req1: all get #1</text>
+      <text x="390" y="95" text-anchor="middle" fill="#3b82f6" font-size="9" font-family="JetBrains Mono,monospace">Req2: all get #2</text>
+      <text x="390" y="115" text-anchor="middle" fill="#8890a8" font-size="8">DbContext, Unit of Work</text>
+      <text x="390" y="132" text-anchor="middle" fill="#3b82f6" font-size="8" font-weight="600">shared within request</text>
+      <!-- Singleton -->
+      <rect x="530" y="10" width="230" height="130" rx="12" fill="rgba(168,85,247,.06)" stroke="#a855f7" stroke-width="1.5"/>
+      <text x="645" y="35" text-anchor="middle" fill="#a855f7" font-weight="700" font-size="14">Singleton</text>
+      <text x="645" y="55" text-anchor="middle" fill="#8890a8" font-size="10">One instance for entire app</text>
+      <text x="645" y="78" text-anchor="middle" fill="#a855f7" font-size="9" font-family="JetBrains Mono,monospace">All requests: same #1</text>
+      <text x="645" y="95" text-anchor="middle" fill="#ef4444" font-size="9" font-weight="600">MUST be thread-safe!</text>
+      <text x="645" y="115" text-anchor="middle" fill="#8890a8" font-size="8">Logger, Config, Cache</text>
+      <text x="645" y="132" text-anchor="middle" fill="#a855f7" font-size="8" font-weight="600">shared across everything</text>
+      <!-- Legend bar -->
+      <rect x="100" y="160" width="580" height="40" rx="8" fill="rgba(59,130,246,.04)" stroke="rgba(59,130,246,.12)" stroke-width="1"/>
+      <text x="195" y="178" text-anchor="middle" fill="#f59e0b" font-size="9">Transient: not shared</text>
+      <text x="390" y="178" text-anchor="middle" fill="#3b82f6" font-size="9">Scoped: shared in request</text>
+      <text x="585" y="178" text-anchor="middle" fill="#a855f7" font-size="9">Singleton: shared everywhere</text>
+      <text x="390" y="194" text-anchor="middle" fill="#5c6486" font-size="8">← cheaper creation                                                                        more sharing →</text>
+    </svg>
+  </div>
+
+  <div class="card"><h3>Lifetime Comparison</h3><div class="tw"><table><thead><tr><th></th><th>Transient</th><th>Scoped</th><th>Singleton</th></tr></thead><tbody>
+    <tr><td><strong>Created</strong></td><td>Every injection</td><td>Once per request</td><td>Once per app</td></tr>
+    <tr><td><strong>Shared in request?</strong></td><td style="color:var(--bad)">❌ No</td><td style="color:var(--ok)">✅ Yes</td><td style="color:var(--ok)">✅ Yes</td></tr>
+    <tr><td><strong>Shared across requests?</strong></td><td style="color:var(--bad)">❌ No</td><td style="color:var(--bad)">❌ No</td><td style="color:var(--ok)">✅ Yes</td></tr>
+    <tr><td><strong>Thread safe needed?</strong></td><td style="color:var(--bad)">❌ No</td><td style="color:var(--bad)">❌ No</td><td style="color:var(--ok)">✅ Yes — must be</td></tr>
+    <tr><td><strong>Best for</strong></td><td>Lightweight stateless</td><td>DbContext, UoW</td><td>Logger, Cache</td></tr>
+  </tbody></table></div></div>
+</section>
+
+<!-- 5. CAPTIVE DEPENDENCY -->
+<section id="captive" class="sec s5">
+  <div class="sh"><div class="sn">5</div><h2>Captive Dependency Problem</h2></div>
+  <div class="tip tip-r"><span class="ic">⚠️</span><span>A Singleton holding a Scoped dependency traps it forever — the Scoped service never gets disposed per request. ASP.NET Core throws <code>InvalidOperationException</code> at runtime.</span></div>
+  <div class="cb"><div class="cb-h bad"><div class="dots"><span></span><span></span><span></span></div><span>❌ Singleton holding Scoped — CAPTIVE!</span></div><pre><span class="kw">public class</span> <span class="tp">MySingletonService</span>
+{
+    <span class="kw">private readonly</span> <span class="tp">IOrderService</span> _orderService; <span class="cm">// Scoped!</span>
+    <span class="kw">public</span> <span class="fn">MySingletonService</span>(<span class="tp">IOrderService</span> orderService)
+    { _orderService = orderService; } <span class="cm">// captured forever 😱</span>
+}
+<span class="cm">// ASP.NET Core throws:</span>
+<span class="cm">// InvalidOperationException: Cannot consume scoped service</span>
+<span class="cm">// 'IOrderService' from singleton 'MySingletonService'</span></pre></div>
+  <div class="card"><h3>Lifetime Rules</h3>
+    <p><strong>Singleton</strong> → can use → Singleton only. <strong>Scoped</strong> → can use → Singleton + Scoped. <strong>Transient</strong> → can use → Singleton + Scoped + Transient.</p>
+  </div>
+</section>
+
+<!-- 6. TESTING -->
+<section id="testing" class="sec s6">
+  <div class="sh"><div class="sn">6</div><h2>DI Makes Testing Easy</h2></div>
+  <div class="cb"><div class="cb-h good"><div class="dots"><span></span><span></span><span></span></div><span>Unit test with mock — no real services</span><button class="cpb" onclick="copyCode(this)">Copy</button></div><pre><span class="kw">public class</span> <span class="tp">MockNotificationService</span> : <span class="tp">INotificationService</span>
+{
+    <span class="kw">public</span> <span class="tp">List</span>&lt;<span class="kw">string</span>&gt; SentMessages = <span class="kw">new</span>();
+    <span class="kw">public void</span> <span class="fn">Send</span>(<span class="kw">string</span> msg) { SentMessages.<span class="fn">Add</span>(msg); }
+}
+
+[<span class="tp">Test</span>]
+<span class="kw">public void</span> <span class="fn">PlaceOrder_ShouldSendNotification</span>()
+{
+    <span class="kw">var</span> mock = <span class="kw">new</span> <span class="tp">MockNotificationService</span>();
+    <span class="kw">var</span> service = <span class="kw">new</span> <span class="tp">OrderService</span>(mock); <span class="cm">// inject mock</span>
+
+    service.<span class="fn">PlaceOrder</span>(<span class="str">"ORD-001"</span>);
+
+    <span class="tp">Assert</span>.<span class="fn">AreEqual</span>(<span class="num">1</span>, mock.SentMessages.Count);
+    <span class="tp">Assert</span>.<span class="fn">AreEqual</span>(<span class="str">"ORD-001"</span>, mock.SentMessages[<span class="num">0</span>]);
+}</pre></div>
+</section>
+
+<!-- INTERVIEW -->
+<section id="interview" class="sum">
+  <h2>Interview Questions</h2>
+  <div class="qa-b"><div class="qa-q" onclick="toggleQA(this)"><span class="ar">▶</span>What is Dependency Injection and why do we use it?</div><div class="qa-a">Dependency Injection is a design pattern where a class receives its dependencies from outside rather than creating them itself. This promotes <strong>loose coupling</strong> — the class depends on abstractions not implementations, making it easy to swap implementations and test in isolation using mocks without touching production code.</div></div>
+  <div class="qa-b"><div class="qa-q" onclick="toggleQA(this)"><span class="ar">▶</span>What are the three service lifetimes in ASP.NET Core?</div><div class="qa-a"><strong>Transient</strong> creates a new instance on every injection — best for lightweight stateless services. <strong>Scoped</strong> creates one instance per HTTP request shared across that request — best for DbContext and Unit of Work. <strong>Singleton</strong> creates one instance for the entire application lifetime — best for Logger, Cache, and Configuration. Singletons must be thread-safe since they are shared across all requests.</div></div>
+  <div class="qa-b"><div class="qa-q" onclick="toggleQA(this)"><span class="ar">▶</span>What is the captive dependency problem?</div><div class="qa-a">A captive dependency occurs when a <strong>Singleton</strong> service holds a reference to a <strong>Scoped</strong> service, preventing the Scoped service from being properly disposed after each request. The Scoped service becomes trapped in the Singleton forever. ASP.NET Core detects this and throws an <code>InvalidOperationException</code> at runtime.</div></div>
+</section>
+
+<button class="bt" id="backTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+<footer><p>Dependency Injection — .NET Interview Study Guide 🚀</p></footer>
+<script>
+function toggleQA(el){el.classList.toggle('open');el.nextElementSibling.classList.toggle('open')}
+function copyCode(btn){const pre=btn.closest('.cb').querySelector('pre');navigator.clipboard.writeText(pre.textContent).then(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',1500)})}
+window.addEventListener('scroll',()=>{document.getElementById('backTop').classList.toggle('show',window.scrollY>400)})
+</script>
+</body>
+</html>

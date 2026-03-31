@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Database Indexes — Interactive Study Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#08090c;--surface:#10131c;--surface2:#181d2c;--border:#252e44;--text:#e0e4f0;--text-dim:#6e7a9a;--accent:#38bdf8;--accent2:#0ea5e9;--green:#4ade80;--red:#f87171;--orange:#fb923c;--yellow:#fbbf24;--purple:#a78bfa;--teal:#2dd4bf;--code-bg:#0b0e16;--glow:rgba(56,189,248,.12)}
+*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;min-height:100vh}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 20% 5%,rgba(56,189,248,.04)0%,transparent 55%),radial-gradient(ellipse at 80% 95%,rgba(14,165,233,.03)0%,transparent 55%);pointer-events:none;z-index:0}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.container{max-width:920px;margin:0 auto;padding:2rem 1.5rem 4rem;position:relative;z-index:1}
+.hero{text-align:center;padding:3rem 0 2.5rem}.hero-badge{display:inline-block;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-weight:700;font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;padding:.35rem 1rem;border-radius:99px;margin-bottom:1.2rem}
+.hero h1{font-size:2.3rem;font-weight:800;background:linear-gradient(135deg,#fff 30%,var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1.15;margin-bottom:.5rem}.hero p{color:var(--text-dim);font-size:1rem}
+.nav{display:flex;flex-wrap:wrap;gap:.4rem;justify-content:center;margin-bottom:2.5rem;position:sticky;top:0;z-index:10;background:rgba(8,9,12,.88);backdrop-filter:blur(12px);padding:.7rem 0;border-bottom:1px solid var(--border)}
+.nav a{color:var(--text-dim);text-decoration:none;font-size:.72rem;font-weight:600;padding:.35rem .7rem;border-radius:8px;transition:all .2s;border:1px solid transparent}.nav a:hover,.nav a.active{color:var(--accent);background:rgba(56,189,248,.08);border-color:rgba(56,189,248,.2)}
+.section{margin-bottom:2.5rem;animation:fadeUp .5s ease both}.section-header{display:flex;align-items:center;gap:.75rem;margin-bottom:1rem;padding-bottom:.7rem;border-bottom:1px solid var(--border)}
+.section-num{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.8rem;color:#fff;flex-shrink:0}.section-header h2{font-size:1.25rem;font-weight:700}
+.callout{background:linear-gradient(135deg,rgba(56,189,248,.07),rgba(14,165,233,.04));border-left:3px solid var(--accent);border-radius:0 10px 10px 0;padding:.9rem 1.1rem;margin:.8rem 0;font-size:.88rem}
+.callout.green{border-left-color:var(--green);background:linear-gradient(135deg,rgba(74,222,128,.07),rgba(74,222,128,.03))}.callout.warn{border-left-color:var(--orange);background:linear-gradient(135deg,rgba(251,146,60,.07),rgba(251,146,60,.03))}.callout.red{border-left-color:var(--red);background:linear-gradient(135deg,rgba(248,113,113,.07),rgba(248,113,113,.03))}
+pre{background:var(--code-bg);border:1px solid var(--border);border-radius:10px;padding:1rem;overflow-x:auto;margin:.7rem 0;font-family:'JetBrains Mono',monospace;font-size:.75rem;line-height:1.6;position:relative}
+pre .label{position:absolute;top:.4rem;right:.5rem;font-size:.58rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em;font-family:'Outfit',sans-serif;font-weight:600;background:var(--surface);padding:.12rem .4rem;border-radius:4px}
+.kw{color:var(--accent)}.tp{color:var(--purple)}.cm{color:#3a4a68;font-style:italic}.st{color:var(--green)}.fn{color:var(--yellow)}.nu{color:var(--orange)}.er{color:var(--red)}
+.table-wrap{overflow-x:auto;margin:.7rem 0;border-radius:10px;border:1px solid var(--border)}table{width:100%;border-collapse:collapse;font-size:.8rem}th{background:var(--surface2);color:var(--accent);font-weight:600;text-align:left;padding:.6rem .8rem;white-space:nowrap}td{padding:.5rem .8rem;border-top:1px solid var(--border)}tr:hover td{background:rgba(56,189,248,.03)}
+.accordion{margin:.7rem 0}.accordion-btn{width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:'Outfit',sans-serif;font-size:.85rem;font-weight:600;padding:.8rem 1rem;border-radius:10px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;transition:all .2s}
+.accordion-btn:hover{border-color:var(--accent);background:var(--surface2)}.accordion-btn .arrow{transition:transform .3s;font-size:.75rem;color:var(--accent)}.accordion-btn.open .arrow{transform:rotate(180deg)}
+.accordion-body{max-height:0;overflow:hidden;transition:max-height .4s ease;background:var(--surface);border:1px solid var(--border);border-top:none;border-radius:0 0 10px 10px;padding:0 1rem}.accordion-body.open{max-height:5000px;padding:1rem}
+
+/* B-Tree visual */
+.btree{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.2rem;margin:.8rem 0;text-align:center}
+.bt-row{display:flex;justify-content:center;gap:.6rem;margin:.4rem 0;flex-wrap:wrap}
+.bt-node{background:var(--surface2);border:2px solid var(--border);border-radius:10px;padding:.4rem 1rem;font-family:'JetBrains Mono',monospace;font-size:.8rem;font-weight:700;transition:all .4s;cursor:default;min-width:40px}
+.bt-node.visited{border-color:var(--accent);color:var(--accent);background:rgba(56,189,248,.1);box-shadow:0 0 12px var(--glow)}
+.bt-node.found{border-color:var(--green);color:var(--green);background:rgba(74,222,128,.1);box-shadow:0 0 12px rgba(74,222,128,.2)}
+.bt-arrows{color:var(--text-dim);font-size:.7rem;margin:.2rem 0}
+.bt-controls{display:flex;gap:.4rem;justify-content:center;margin-top:.8rem;flex-wrap:wrap}
+.bt-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);font-family:'Outfit',sans-serif;font-size:.74rem;font-weight:600;padding:.4rem .9rem;border-radius:8px;cursor:pointer;transition:all .2s}
+.bt-btn:hover{color:var(--text);border-color:var(--accent)}.bt-btn.active{background:rgba(56,189,248,.12);border-color:var(--accent);color:var(--accent)}
+.bt-status{margin-top:.5rem;font-size:.78rem;font-weight:600;min-height:1.5rem;color:var(--text-dim)}
+
+/* Quiz */
+.quiz-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.3rem;margin-bottom:.8rem}.quiz-card h3{font-size:.9rem;margin-bottom:.8rem;color:var(--accent)}
+.quiz-option{display:block;width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'Outfit',sans-serif;font-size:.8rem;padding:.6rem .9rem;border-radius:8px;cursor:pointer;margin-bottom:.35rem;text-align:left;transition:all .2s}
+.quiz-option:hover{border-color:var(--accent);transform:translateX(4px)}.quiz-option.correct{background:rgba(74,222,128,.15);border-color:var(--green);color:var(--green)}.quiz-option.wrong{background:rgba(248,113,113,.1);border-color:var(--red);color:var(--red)}.quiz-option:disabled{cursor:default;transform:none}
+.quiz-explanation{margin-top:.6rem;padding:.7rem;border-radius:8px;background:rgba(56,189,248,.06);font-size:.8rem;display:none;line-height:1.6}.quiz-explanation.show{display:block}
+.quiz-score{text-align:center;padding:1.3rem;background:var(--surface);border:1px solid var(--accent);border-radius:14px;margin-top:.8rem}.quiz-score .big{font-size:2rem;font-weight:800;color:var(--accent)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:640px){.hero h1{font-size:1.5rem}.container{padding:1rem}}
+</style>
+</head>
+<body>
+<div class="container">
+<div class="hero"><div class="hero-badge">Database Interview Study Guide</div><h1>Database Indexes</h1><p>B-Tree, Clustered, Covering, Composite, Selectivity & more</p></div>
+<nav class="nav"><a href="#s1">What is an Index</a><a href="#s2">B-Tree</a><a href="#s3">Index Types</a><a href="#s4">Selectivity</a><a href="#s5">When NOT Used</a><a href="#s6">Quiz</a></nav>
+
+<!-- S1 -->
+<div class="section" id="s1"><div class="section-header"><div class="section-num">1</div><h2>What is an Index?</h2></div>
+<p style="margin-bottom:.6rem">A separate data structure storing sorted column values with pointers to rows. Enables <strong>O(log n)</strong> lookups instead of <strong>O(n)</strong> full table scans.</p>
+<div class="callout">For <strong>10 million rows</strong>: without index = 10,000,000 checks. With B-Tree = ~23 steps. For 1 billion rows: ~30 steps.</div>
+<div class="callout warn">⚠️ <strong>Read/Write trade-off:</strong> Every index speeds up reads but slows down writes (INSERT, UPDATE, DELETE must update all indexes). Never add indexes blindly.</div>
+<div class="table-wrap"><table><tr><th>Operation</th><th>Without Index</th><th>With Index</th></tr><tr><td>SELECT</td><td style="color:var(--red)">Slow — full scan</td><td style="color:var(--green)">Fast — direct lookup</td></tr><tr><td>INSERT</td><td style="color:var(--green)">Fast</td><td style="color:var(--orange)">Slower — must update index</td></tr><tr><td>UPDATE</td><td style="color:var(--green)">Fast</td><td style="color:var(--orange)">Slower — must update index</td></tr><tr><td>Storage</td><td>Less</td><td>More — extra space</td></tr></table></div></div>
+
+<!-- S2: B-Tree -->
+<div class="section" id="s2"><div class="section-header"><div class="section-num">2</div><h2>B-Tree Index — Interactive Visualizer</h2></div>
+<p style="margin-bottom:.6rem">The default index type. Click a value to watch the tree traversal step by step:</p>
+<div class="btree">
+<div class="bt-row"><div class="bt-node" id="n-50">50</div></div>
+<div class="bt-arrows">↙ &nbsp;&nbsp;&nbsp;&nbsp; ↘</div>
+<div class="bt-row"><div class="bt-node" id="n-25">25</div><div class="bt-node" id="n-75">75</div></div>
+<div class="bt-arrows">↙ ↘ &nbsp;&nbsp;&nbsp; ↙ ↘</div>
+<div class="bt-row"><div class="bt-node" id="n-10">10</div><div class="bt-node" id="n-30">30</div><div class="bt-node" id="n-60">60</div><div class="bt-node" id="n-90">90</div></div>
+<div class="bt-controls">
+<button class="bt-btn" onclick="searchBT(30)">Find 30</button>
+<button class="bt-btn" onclick="searchBT(60)">Find 60</button>
+<button class="bt-btn" onclick="searchBT(90)">Find 90</button>
+<button class="bt-btn" onclick="searchBT(10)">Find 10</button>
+</div>
+<div class="bt-status" id="bt-status"></div>
+</div>
+<div class="callout green"><strong>Clustered Index:</strong> Leaf level IS the table (stores full row data). Only ONE per table — data can only be physically sorted one way. <strong>Non-Clustered:</strong> Separate structure with pointers — needs Key Lookup for non-indexed columns.</div></div>
+
+<!-- S3: Index Types -->
+<div class="section" id="s3"><div class="section-header"><div class="section-num">3</div><h2>Index Types</h2></div>
+<div class="accordion"><button class="accordion-btn" onclick="toggleAcc(this)"><span>Covering Index — Eliminates Key Lookups</span><span class="arrow">▼</span></button><div class="accordion-body">
+<p style="font-size:.85rem;margin-bottom:.5rem">Includes all columns the query needs directly inside the index → Index Only Scan (fastest possible read).</p>
+<pre><span class="label">SQL</span><span class="cm">-- Regular: finds customer_id, then Key Lookup for other cols</span>
+<span class="kw">CREATE INDEX</span> idx ON orders(customer_id);
+
+<span class="cm">-- Covering: everything needed is in the index</span>
+<span class="kw">CREATE INDEX</span> idx ON orders(customer_id) <span class="kw">INCLUDE</span> (id, total, status);</pre>
+</div></div>
+<div class="accordion"><button class="accordion-btn" onclick="toggleAcc(this)"><span>Composite Index — Left-Most Prefix Rule</span><span class="arrow">▼</span></button><div class="accordion-body">
+<pre><span class="label">SQL</span><span class="kw">CREATE INDEX</span> idx ON orders(customer_id, status);
+
+<span class="cm">-- ✅ Uses index (leading column present)</span>
+<span class="kw">WHERE</span> customer_id = <span class="nu">5</span>
+<span class="kw">WHERE</span> customer_id = <span class="nu">5</span> <span class="kw">AND</span> status = <span class="st">'active'</span>
+<span class="kw">WHERE</span> status = <span class="st">'active'</span> <span class="kw">AND</span> customer_id = <span class="nu">5</span>  <span class="cm">-- optimizer reorders!</span>
+
+<span class="cm">-- ❌ Does NOT use index (leading column missing)</span>
+<span class="kw">WHERE</span> status = <span class="st">'active'</span></pre>
+<div class="callout warn">WHERE clause order does NOT matter — optimizer reorders. What matters is the column order in the <strong>index definition</strong>.</div>
+</div></div>
+<div class="accordion"><button class="accordion-btn" onclick="toggleAcc(this)"><span>Partial / Filtered Index — Subset of Rows</span><span class="arrow">▼</span></button><div class="accordion-body">
+<pre><span class="label">SQL</span><span class="cm">-- Only index pending orders (50K out of 10M rows)</span>
+<span class="kw">CREATE INDEX</span> idx ON orders(customer_id) <span class="kw">WHERE</span> status = <span class="st">'pending'</span>;
+<span class="cm">-- 200x smaller than a full index!</span></pre>
+</div></div>
+<div class="accordion"><button class="accordion-btn" onclick="toggleAcc(this)"><span>Hash Index — Equality Only</span><span class="arrow">▼</span></button><div class="accordion-body">
+<div class="table-wrap"><table><tr><th>Operation</th><th>B-Tree</th><th>Hash</th></tr><tr><td>Equality (=)</td><td style="color:var(--green)">Fast</td><td style="color:var(--green)"><strong>Faster</strong></td></tr><tr><td>Range (BETWEEN)</td><td style="color:var(--green)">Works</td><td style="color:var(--red)">❌ No</td></tr><tr><td>ORDER BY</td><td style="color:var(--green)">Works</td><td style="color:var(--red)">❌ No</td></tr></table></div>
+</div></div></div>
+
+<!-- S4: Selectivity -->
+<div class="section" id="s4"><div class="section-header"><div class="section-num">4</div><h2>Selectivity</h2></div>
+<p style="margin-bottom:.6rem">Measures how unique values are. <strong>High selectivity = index very useful. Low = optimizer may skip it.</strong></p>
+<div class="table-wrap"><table><tr><th>Column</th><th>Distinct</th><th>Selectivity</th><th>Index?</th><th>Operation</th></tr>
+<tr><td>gender</td><td>2</td><td style="color:var(--red)">Very Low</td><td>Rarely</td><td>Table Scan</td></tr>
+<tr><td>status</td><td>3-5</td><td style="color:var(--orange)">Low</td><td>Depends</td><td>Index Scan</td></tr>
+<tr><td>city</td><td>500</td><td style="color:var(--yellow)">Medium</td><td>Usually</td><td>Index Seek</td></tr>
+<tr><td>customer_id</td><td>100K</td><td style="color:var(--green)">High</td><td>Yes</td><td>Index Seek</td></tr>
+<tr><td>email</td><td>1M</td><td style="color:var(--green)"><strong>Very High</strong></td><td>Absolutely</td><td>Index Seek</td></tr></table></div></div>
+
+<!-- S5: When NOT Used -->
+<div class="section" id="s5"><div class="section-header"><div class="section-num">5</div><h2>When Indexes Are NOT Used</h2></div>
+<div class="table-wrap"><table><tr><th>Scenario</th><th>Bad Query</th><th>Fix</th></tr>
+<tr><td>Function on column</td><td><code style="color:var(--red)">WHERE YEAR(created_at) = 2024</code></td><td><code style="color:var(--green)">WHERE created_at >= '2024-01-01'</code></td></tr>
+<tr><td>Leading wildcard</td><td><code style="color:var(--red)">WHERE name LIKE '%Omar%'</code></td><td><code style="color:var(--green)">LIKE 'Omar%'</code> or Full-Text</td></tr>
+<tr><td>Type mismatch</td><td><code style="color:var(--red)">WHERE user_id = '123'</code> (INT col)</td><td><code style="color:var(--green)">WHERE user_id = 123</code></td></tr>
+<tr><td>Low selectivity</td><td><code style="color:var(--red)">WHERE gender = 'M'</code></td><td>Partial index or accept scan</td></tr>
+<tr><td>OR conditions</td><td><code style="color:var(--red)">WHERE col1=1 OR col2=2</code></td><td>Separate indexes or UNION</td></tr></table></div></div>
+
+<!-- S6: Quiz -->
+<div class="section" id="s6"><div class="section-header"><div class="section-num">6</div><h2>Test Yourself</h2></div>
+<div class="quiz-card" id="q1"><h3>Q1: Why can there only be ONE clustered index per table?</h3><button class="quiz-option" onclick="answer(this,'q1',true)">Data can only be physically sorted one way on disk</button><button class="quiz-option" onclick="answer(this,'q1',false)">It's a SQL Server limitation with no reason</button><button class="quiz-option" onclick="answer(this,'q1',false)">Performance would degrade</button><div class="quiz-explanation" id="q1-exp">A clustered index determines the physical row order on disk. You can't sort rows by customer_id AND order_date simultaneously — just like a filing cabinet can only be organized one way.</div></div>
+<div class="quiz-card" id="q2"><h3>Q2: Index on <code>(customer_id, status)</code> — does <code>WHERE status = 'active'</code> use it?</h3><button class="quiz-option" onclick="answer(this,'q2',true)">No — the leading column customer_id is missing</button><button class="quiz-option" onclick="answer(this,'q2',false)">Yes — the optimizer finds the column</button><div class="quiz-explanation" id="q2-exp">The Left-Most Prefix Rule: the query must include the leading column(s) of the composite index. Since <code>customer_id</code> is missing, the index is skipped.</div></div>
+<div class="quiz-card" id="q3"><h3>Q3: What is a Key Lookup and how do you fix it?</h3><button class="quiz-option" onclick="answer(this,'q3',false)">A failed index — rebuild the index</button><button class="quiz-option" onclick="answer(this,'q3',true)">Index found the row but needs to fetch other columns from the table — fix with a covering index (INCLUDE)</button><div class="quiz-explanation" id="q3-exp">A Key Lookup means the non-clustered index found matching rows, but the query needs columns not in the index. The fix is a covering index with <code>INCLUDE</code> to store all needed columns, enabling an Index Only Scan.</div></div>
+<div class="quiz-card" id="q4"><h3>Q4: Why does <code>WHERE YEAR(created_at) = 2024</code> not use the index?</h3><button class="quiz-option" onclick="answer(this,'q4',true)">The function transforms every row — index stores raw values, not function results</button><button class="quiz-option" onclick="answer(this,'q4',false)">YEAR() is not supported by indexes</button><div class="quiz-explanation" id="q4-exp">The index stores raw <code>created_at</code> values. Applying <code>YEAR()</code> means the DB must evaluate the function on every row — defeating the index. Fix: use range conditions like <code>created_at >= '2024-01-01' AND created_at < '2025-01-01'</code>.</div></div>
+<div class="quiz-score" id="score-box" style="display:none"><div class="big" id="score-text"></div><p style="color:var(--text-dim);margin-top:.3rem">Database Indexes Quiz</p></div></div>
+
+<!-- Interview Answers -->
+<div class="section" id="s7"><div class="section-header"><div class="section-num">★</div><h2>Interview Answer Bank</h2></div>
+<div class="accordion"><button class="accordion-btn" onclick="toggleAcc(this)"><span>Q: What is an index and what problem does it solve?</span><span class="arrow">▼</span></button><div class="accordion-body"><div class="callout green">An index is a separate data structure enabling O(log n) lookups instead of O(n) full scans. For 10M rows: 23 steps vs 10M checks. Trade-off: every index slows INSERT/UPDATE/DELETE because the index must be updated too.</div></div></div>
+<div class="accordion"><button class="accordion-btn" onclick="toggleAcc(this)"><span>Q: Clustered vs Non-Clustered?</span><span class="arrow">▼</span></button><div class="accordion-body"><div class="callout green">Clustered = physical row order on disk, leaf level IS the table, only ONE per table. Non-Clustered = separate structure with pointers, needs Key Lookup for non-indexed columns. SQL Server creates clustered on PK by default; PostgreSQL has no true clustered index.</div></div></div>
+<div class="accordion"><button class="accordion-btn" onclick="toggleAcc(this)"><span>Q: What is selectivity?</span><span class="arrow">▼</span></button><div class="accordion-body"><div class="callout green">How unique column values are. High selectivity (email: 1M distinct) = index very useful, optimizer does Index Seek. Low selectivity (gender: 2 values) = optimizer skips index. Stale statistics → wrong decisions — run ANALYZE / UPDATE STATISTICS.</div></div></div></div>
+</div>
+
+<script>
+function toggleAcc(btn){btn.classList.toggle('open');btn.nextElementSibling.classList.toggle('open')}
+
+// B-Tree search visualization
+let btTimer=null;
+function searchBT(target){
+  clearTimeout(btTimer);
+  document.querySelectorAll('.bt-node').forEach(n=>{n.className='bt-node'});
+  document.getElementById('bt-status').textContent='';
+  const paths={
+    10:[{id:'n-50',msg:'50: 10 < 50 → go LEFT'},{id:'n-25',msg:'25: 10 < 25 → go LEFT'},{id:'n-10',msg:'10: FOUND! ✅'}],
+    30:[{id:'n-50',msg:'50: 30 < 50 → go LEFT'},{id:'n-25',msg:'25: 30 > 25 → go RIGHT'},{id:'n-30',msg:'30: FOUND! ✅'}],
+    60:[{id:'n-50',msg:'50: 60 > 50 → go RIGHT'},{id:'n-75',msg:'75: 60 < 75 → go LEFT'},{id:'n-60',msg:'60: FOUND! ✅'}],
+    90:[{id:'n-50',msg:'50: 90 > 50 → go RIGHT'},{id:'n-75',msg:'75: 90 > 75 → go RIGHT'},{id:'n-90',msg:'90: FOUND! ✅'}]
+  };
+  const path=paths[target];let i=0;
+  document.querySelectorAll('.bt-btn').forEach(b=>b.classList.remove('active'));
+  event.target.classList.add('active');
+  function step(){
+    if(i>=path.length)return;
+    const s=path[i];const el=document.getElementById(s.id);
+    el.classList.add(i===path.length-1?'found':'visited');
+    document.getElementById('bt-status').textContent=`Step ${i+1}: ${s.msg}`;
+    i++;btTimer=setTimeout(step,700);
+  }
+  step();
+}
+
+// Quiz
+let answered=0,correct=0,total=4;
+function answer(btn,qId,isCorrect){const card=document.getElementById(qId);if(card.dataset.answered)return;card.dataset.answered='1';answered++;if(isCorrect){btn.classList.add('correct');correct++;}else btn.classList.add('wrong');card.querySelectorAll('.quiz-option').forEach(o=>o.disabled=true);document.getElementById(qId+'-exp').classList.add('show');if(answered===total){document.getElementById('score-box').style.display='block';document.getElementById('score-text').textContent=correct+' / '+total;}}
+const sections=document.querySelectorAll('.section');const navLinks=document.querySelectorAll('.nav a');
+window.addEventListener('scroll',()=>{let c='';sections.forEach(s=>{if(window.scrollY>=s.offsetTop-120)c=s.id});navLinks.forEach(a=>{a.classList.remove('active');if(a.getAttribute('href')==='#'+c)a.classList.add('active')})});
+</script>
+</body>
+</html>

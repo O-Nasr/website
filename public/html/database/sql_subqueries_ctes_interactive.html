@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Subqueries & CTEs — Interactive Study Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#060a0a;--surface:#0e1818;--surface2:#162424;--border:#243838;--text:#dce8e8;--text-dim:#6a9090;--accent:#14b8a6;--accent2:#0d9488;--green:#4ade80;--red:#f87171;--orange:#fb923c;--yellow:#fbbf24;--blue:#60a5fa;--purple:#c084fc;--pink:#f472b6;--code-bg:#0a1212;--glow:rgba(20,184,166,.12)}
+*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;min-height:100vh}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 20% 5%,rgba(20,184,166,.04)0%,transparent 55%),radial-gradient(ellipse at 80% 95%,rgba(13,148,136,.03)0%,transparent 55%);pointer-events:none;z-index:0}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.container{max-width:920px;margin:0 auto;padding:2rem 1.5rem 4rem;position:relative;z-index:1}
+.hero{text-align:center;padding:3rem 0 2.5rem}.hero-badge{display:inline-block;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-weight:700;font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;padding:.35rem 1rem;border-radius:99px;margin-bottom:1.2rem}
+.hero h1{font-size:2.2rem;font-weight:800;background:linear-gradient(135deg,#fff 30%,var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1.15;margin-bottom:.5rem}.hero p{color:var(--text-dim);font-size:1rem}
+.nav{display:flex;flex-wrap:wrap;gap:.4rem;justify-content:center;margin-bottom:2.5rem;position:sticky;top:0;z-index:10;background:rgba(6,10,10,.88);backdrop-filter:blur(12px);padding:.7rem 0;border-bottom:1px solid var(--border)}
+.nav a{color:var(--text-dim);text-decoration:none;font-size:.72rem;font-weight:600;padding:.35rem .7rem;border-radius:8px;transition:all .2s;border:1px solid transparent}.nav a:hover,.nav a.active{color:var(--accent);background:rgba(20,184,166,.08);border-color:rgba(20,184,166,.2)}
+.section{margin-bottom:2.5rem;animation:fadeUp .5s ease both}.section-header{display:flex;align-items:center;gap:.75rem;margin-bottom:1rem;padding-bottom:.7rem;border-bottom:1px solid var(--border)}
+.section-num{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.8rem;color:#fff;flex-shrink:0}.section-header h2{font-size:1.25rem;font-weight:700}
+.callout{background:linear-gradient(135deg,rgba(20,184,166,.07),rgba(13,148,136,.04));border-left:3px solid var(--accent);border-radius:0 10px 10px 0;padding:.9rem 1.1rem;margin:.8rem 0;font-size:.88rem}
+.callout.green{border-left-color:var(--green);background:linear-gradient(135deg,rgba(74,222,128,.07),rgba(74,222,128,.03))}.callout.warn{border-left-color:var(--orange);background:linear-gradient(135deg,rgba(251,146,60,.07),rgba(251,146,60,.03))}.callout.red{border-left-color:var(--red);background:linear-gradient(135deg,rgba(248,113,113,.07),rgba(248,113,113,.03))}
+pre{background:var(--code-bg);border:1px solid var(--border);border-radius:10px;padding:1rem;overflow-x:auto;margin:.7rem 0;font-family:'JetBrains Mono',monospace;font-size:.76rem;line-height:1.6;position:relative}
+pre .label{position:absolute;top:.4rem;right:.5rem;font-size:.58rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em;font-family:'Outfit',sans-serif;font-weight:600;background:var(--surface);padding:.12rem .4rem;border-radius:4px}
+.kw{color:var(--accent)}.tp{color:var(--purple)}.cm{color:#3a5858;font-style:italic}.st{color:var(--green)}.fn{color:var(--yellow)}.nu{color:var(--orange)}.er{color:var(--red)}
+.table-wrap{overflow-x:auto;margin:.7rem 0;border-radius:10px;border:1px solid var(--border)}table{width:100%;border-collapse:collapse;font-size:.8rem}th{background:var(--surface2);color:var(--accent);font-weight:600;text-align:left;padding:.6rem .8rem;white-space:nowrap}td{padding:.5rem .8rem;border-top:1px solid var(--border)}tr:hover td{background:rgba(20,184,166,.03)}
+.accordion{margin:.7rem 0}.accordion-btn{width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:'Outfit',sans-serif;font-size:.85rem;font-weight:600;padding:.8rem 1rem;border-radius:10px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;transition:all .2s}.accordion-btn:hover{border-color:var(--accent);background:var(--surface2)}.accordion-btn .arrow{transition:transform .3s;font-size:.75rem;color:var(--accent)}.accordion-btn.open .arrow{transform:rotate(180deg)}.accordion-body{max-height:0;overflow:hidden;transition:max-height .4s ease;background:var(--surface);border:1px solid var(--border);border-top:none;border-radius:0 0 10px 10px;padding:0 1rem}.accordion-body.open{max-height:6000px;padding:1rem}
+
+/* Subquery type cards */
+.sq-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:.5rem;margin:1rem 0}
+.sq-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:.9rem;cursor:pointer;transition:all .3s;text-align:center}
+.sq-card:hover{border-color:var(--accent);transform:translateY(-2px)}.sq-card.active{border-color:var(--accent);background:rgba(20,184,166,.06);box-shadow:0 4px 12px var(--glow)}
+.sq-card .icon{font-size:1.4rem;margin-bottom:.2rem}.sq-card h4{font-size:.78rem;font-weight:700;margin-bottom:.15rem}.sq-card p{font-size:.66rem;color:var(--text-dim)}
+.sq-detail{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.1rem;margin-top:.5rem;display:none}.sq-detail.show{display:block}
+
+/* CTE flow viz */
+.cte-flow{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.3rem;margin:1rem 0}
+.cte-tabs{display:flex;gap:.3rem;flex-wrap:wrap;margin-bottom:.8rem}
+.cte-tab{background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);font-family:'Outfit',sans-serif;font-size:.72rem;font-weight:600;padding:.45rem .8rem;border-radius:8px;cursor:pointer;transition:all .2s}
+.cte-tab:hover{color:var(--text);border-color:var(--accent)}.cte-tab.active{background:rgba(20,184,166,.12);border-color:var(--accent);color:var(--accent)}
+.cte-panel{display:none}.cte-panel.active{display:block}
+
+/* IN vs EXISTS sim */
+.ine-sim{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.3rem;margin:1rem 0}
+.ine-tabs{display:flex;gap:.3rem;flex-wrap:wrap;margin-bottom:.8rem}
+.ine-tab{background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);font-family:'Outfit',sans-serif;font-size:.72rem;font-weight:600;padding:.45rem .8rem;border-radius:8px;cursor:pointer;transition:all .2s}
+.ine-tab:hover{color:var(--text);border-color:var(--accent)}.ine-tab.active{background:rgba(20,184,166,.12);border-color:var(--accent);color:var(--accent)}
+.ine-log{background:var(--code-bg);border:1px solid var(--border);border-radius:10px;padding:.8rem;font-family:'JetBrains Mono',monospace;font-size:.7rem;line-height:1.8;max-height:220px;overflow-y:auto}
+.ine-log .ok{color:var(--green)}.ine-log .bad{color:var(--red)}.ine-log .warn{color:var(--orange)}.ine-log .dim{color:var(--text-dim)}.ine-log .hl{color:var(--accent)}
+
+/* Quiz */
+.quiz-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.3rem;margin-bottom:.8rem}.quiz-card h3{font-size:.9rem;margin-bottom:.8rem;color:var(--accent)}
+.quiz-option{display:block;width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'Outfit',sans-serif;font-size:.8rem;padding:.6rem .9rem;border-radius:8px;cursor:pointer;margin-bottom:.35rem;text-align:left;transition:all .2s}.quiz-option:hover{border-color:var(--accent);transform:translateX(4px)}.quiz-option.correct{background:rgba(74,222,128,.15);border-color:var(--green);color:var(--green)}.quiz-option.wrong{background:rgba(248,113,113,.1);border-color:var(--red);color:var(--red)}.quiz-option:disabled{cursor:default;transform:none}
+.quiz-explanation{margin-top:.6rem;padding:.7rem;border-radius:8px;background:rgba(20,184,166,.06);font-size:.8rem;display:none;line-height:1.6}.quiz-explanation.show{display:block}
+.quiz-score{text-align:center;padding:1.3rem;background:var(--surface);border:1px solid var(--accent);border-radius:14px;margin-top:.8rem}.quiz-score .big{font-size:2rem;font-weight:800;color:var(--accent)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:640px){.hero h1{font-size:1.5rem}.container{padding:1rem}.sq-grid{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<div class="container">
+<div class="hero"><div class="hero-badge">SQL Interview Study Guide</div><h1>Subqueries & CTEs</h1><p>Scalar, Correlated, EXISTS, Common Table Expressions & Recursive CTEs</p></div>
+<nav class="nav"><a href="#s1">Subquery Types</a><a href="#s2">IN vs EXISTS</a><a href="#s3">CTE</a><a href="#s4">Recursive CTE</a><a href="#s5">Quiz</a></nav>
+
+<!-- S1: Subquery Types -->
+<div class="section" id="s1"><div class="section-header"><div class="section-num">1</div><h2>Subquery Types</h2></div>
+<p style="margin-bottom:.6rem;font-size:.88rem">A subquery is a query inside another query. The inner query runs first, its result is passed to the outer. Click each type:</p>
+
+<div class="sq-grid">
+<div class="sq-card" onclick="showSQ('scalar')"><div class="icon">1️⃣</div><h4>Scalar</h4><p>Returns one value</p></div>
+<div class="sq-card" onclick="showSQ('table')"><div class="icon">📊</div><h4>Derived Table</h4><p>Virtual table in FROM</p></div>
+<div class="sq-card" onclick="showSQ('correlated')"><div class="icon">🔄</div><h4>Correlated</h4><p>Runs per outer row</p></div>
+<div class="sq-card" onclick="showSQ('exists')"><div class="icon">✅</div><h4>EXISTS</h4><p>TRUE/FALSE check</p></div>
+</div>
+
+<div class="sq-detail" id="sq-scalar">
+<h4 style="color:var(--accent);margin-bottom:.4rem">Scalar Subquery — Returns Exactly One Value</h4>
+<pre><span class="label">SQL</span><span class="cm">-- Orders above the average total</span>
+<span class="kw">SELECT</span> order_id, total
+<span class="kw">FROM</span> orders
+<span class="kw">WHERE</span> total > (
+    <span class="kw">SELECT</span> <span class="fn">AVG</span>(total) <span class="kw">FROM</span> orders  <span class="cm">-- returns one number e.g. 450.00</span>
+);</pre>
+<div class="callout red">⚠️ If a scalar subquery returns more than one row → <strong>ERROR</strong>. Always ensure it can only return one value.</div>
+</div>
+
+<div class="sq-detail" id="sq-table">
+<h4 style="color:var(--accent);margin-bottom:.4rem">Derived Table — Virtual Table in FROM</h4>
+<pre><span class="label">SQL</span><span class="cm">-- Average orders per customer</span>
+<span class="kw">SELECT</span> <span class="fn">AVG</span>(order_count) <span class="kw">AS</span> avg_orders
+<span class="kw">FROM</span> (
+    <span class="kw">SELECT</span> customer_id, <span class="fn">COUNT</span>(*) <span class="kw">AS</span> order_count
+    <span class="kw">FROM</span> orders <span class="kw">GROUP BY</span> customer_id
+) <span class="kw">AS</span> customer_totals;  <span class="cm">-- alias is REQUIRED</span></pre>
+<div class="callout warn">⚠️ Derived tables MUST have an alias. Forgetting it causes an error in every database.</div>
+</div>
+
+<div class="sq-detail" id="sq-correlated">
+<h4 style="color:var(--accent);margin-bottom:.4rem">Correlated Subquery — Runs Per Row (Slow!)</h4>
+<pre><span class="label">SQL</span><span class="cm">-- Customers whose total spending > 1000</span>
+<span class="kw">SELECT</span> name <span class="kw">FROM</span> customers c
+<span class="kw">WHERE</span> (
+    <span class="kw">SELECT</span> <span class="fn">SUM</span>(total) <span class="kw">FROM</span> orders o
+    <span class="kw">WHERE</span> o.customer_id = c.customer_id  <span class="cm">-- references OUTER query</span>
+) > <span class="nu">1000</span>;
+<span class="cm">-- 1M customers → inner query runs 1M times! 😱</span></pre>
+<div class="callout red">⚠️ <strong>Performance:</strong> Runs once per outer row. Rewrite as JOIN + GROUP BY for large tables.</div>
+</div>
+
+<div class="sq-detail" id="sq-exists">
+<h4 style="color:var(--accent);margin-bottom:.4rem">EXISTS — Check If Any Row Exists</h4>
+<pre><span class="label">SQL</span><span class="cm">-- Customers who have at least one order</span>
+<span class="kw">SELECT</span> name <span class="kw">FROM</span> customers c
+<span class="kw">WHERE EXISTS</span> (
+    <span class="kw">SELECT</span> <span class="nu">1</span> <span class="kw">FROM</span> orders o      <span class="cm">-- SELECT 1: value doesn't matter</span>
+    <span class="kw">WHERE</span> o.customer_id = c.customer_id
+);
+
+<span class="cm">-- NOT EXISTS: customers with NO orders</span>
+<span class="kw">WHERE NOT EXISTS</span> ( ... );</pre>
+<div class="callout green">EXISTS stops at the first match — fast! <code>SELECT 1</code> is convention showing only existence matters, not the actual data.</div>
+</div>
+
+<div class="table-wrap" style="margin-top:1rem"><table><tr><th>Type</th><th>Returns</th><th>Used In</th><th>Performance</th></tr>
+<tr><td><strong>Scalar</strong></td><td>One value</td><td>WHERE, SELECT, HAVING</td><td>Fast (runs once)</td></tr>
+<tr><td><strong>Derived Table</strong></td><td>Multiple rows/cols</td><td>FROM clause</td><td>Runs once</td></tr>
+<tr><td><strong>Correlated</strong></td><td>Depends</td><td>WHERE</td><td style="color:var(--red)">Slow (per row)</td></tr>
+<tr><td><strong>EXISTS</strong></td><td>TRUE/FALSE</td><td>WHERE</td><td style="color:var(--green)">Fast (stops early)</td></tr></table></div></div>
+
+<!-- S2: IN vs EXISTS -->
+<div class="section" id="s2"><div class="section-header"><div class="section-num">2</div><h2>IN vs EXISTS — The Classic Interview Question</h2></div>
+
+<div class="ine-sim">
+<p style="font-size:.85rem;font-weight:600;margin-bottom:.6rem;color:var(--accent)">Watch how each behaves:</p>
+<div class="ine-tabs">
+<button class="ine-tab" onclick="runINE('in')">IN (builds full list)</button>
+<button class="ine-tab" onclick="runINE('exists')">EXISTS (stops early)</button>
+<button class="ine-tab" onclick="runINE('null')">NOT IN NULL Trap! 💥</button>
+</div>
+<div class="ine-log" id="ine-log"><span class="dim">Click a scenario to compare...</span></div>
+</div>
+
+<div class="table-wrap"><table><tr><th></th><th>IN</th><th>EXISTS</th></tr>
+<tr><td><strong>How</strong></td><td>Builds full list, checks membership</td><td>Stops at first match</td></tr>
+<tr><td><strong>NULLs</strong></td><td style="color:var(--red)">NOT IN fails silently with NULLs!</td><td style="color:var(--green)">Handles NULLs correctly</td></tr>
+<tr><td><strong>Performance</strong></td><td>Better for small result sets</td><td>Better for large result sets</td></tr>
+<tr><td><strong>Safer?</strong></td><td style="color:var(--red)">No — NULL trap</td><td style="color:var(--green)">Yes — always safe</td></tr></table></div>
+
+<div class="callout red">⚠️ <strong>NOT IN NULL Trap:</strong> If the subquery returns ANY NULL value, <code>NOT IN</code> returns <strong>zero rows</strong>. Silent bug. Always use <code>NOT EXISTS</code> instead.</div></div>
+
+<!-- S3: CTE -->
+<div class="section" id="s3"><div class="section-header"><div class="section-num">3</div><h2>CTE — Common Table Expression</h2></div>
+<p style="margin-bottom:.6rem;font-size:.88rem">A named temporary result set using <code>WITH</code>. Breaks complex queries into readable steps. Only exists for the single query it belongs to.</p>
+
+<div class="cte-flow">
+<p style="font-size:.82rem;font-weight:600;color:var(--accent);margin-bottom:.5rem">Same logic — two ways to write it:</p>
+<div class="cte-tabs">
+<button class="cte-tab" onclick="showCTE('sub')">❌ Nested Subquery (messy)</button>
+<button class="cte-tab active" onclick="showCTE('cte')">✅ CTE (clean steps)</button>
+<button class="cte-tab" onclick="showCTE('chain')">✅ Chained CTEs</button>
+</div>
+<div class="cte-panel" id="cte-sub">
+<pre><span class="label">SQL</span><span class="cm">-- Deeply nested — hard to read and debug</span>
+<span class="kw">SELECT</span> name <span class="kw">FROM</span> customers
+<span class="kw">WHERE</span> customer_id <span class="kw">IN</span> (
+    <span class="kw">SELECT</span> customer_id <span class="kw">FROM</span> orders
+    <span class="kw">WHERE</span> total > (
+        <span class="kw">SELECT</span> <span class="fn">AVG</span>(total) <span class="kw">FROM</span> orders
+    )
+);</pre>
+</div>
+<div class="cte-panel active" id="cte-cte">
+<pre><span class="label">SQL</span><span class="cm">-- Clean, named steps — reads like a recipe</span>
+<span class="kw">WITH</span> avg_total <span class="kw">AS</span> (
+    <span class="kw">SELECT</span> <span class="fn">AVG</span>(total) <span class="kw">AS</span> avg <span class="kw">FROM</span> orders
+),
+high_value_orders <span class="kw">AS</span> (
+    <span class="kw">SELECT</span> customer_id <span class="kw">FROM</span> orders
+    <span class="kw">WHERE</span> total > (<span class="kw">SELECT</span> avg <span class="kw">FROM</span> avg_total)
+)
+<span class="kw">SELECT</span> name <span class="kw">FROM</span> customers
+<span class="kw">WHERE</span> customer_id <span class="kw">IN</span> (<span class="kw">SELECT</span> customer_id <span class="kw">FROM</span> high_value_orders);</pre>
+</div>
+<div class="cte-panel" id="cte-chain">
+<pre><span class="label">SQL</span><span class="cm">-- Multiple CTEs — each builds on the previous</span>
+<span class="kw">WITH</span>
+completed_orders <span class="kw">AS</span> (
+    <span class="kw">SELECT</span> customer_id, total <span class="kw">FROM</span> orders <span class="kw">WHERE</span> status = <span class="st">'completed'</span>
+),
+customer_totals <span class="kw">AS</span> (
+    <span class="kw">SELECT</span> customer_id, <span class="fn">SUM</span>(total) <span class="kw">AS</span> total_spent
+    <span class="kw">FROM</span> completed_orders  <span class="cm">-- references first CTE</span>
+    <span class="kw">GROUP BY</span> customer_id
+),
+top_customers <span class="kw">AS</span> (
+    <span class="kw">SELECT</span> customer_id <span class="kw">FROM</span> customer_totals
+    <span class="kw">WHERE</span> total_spent > <span class="nu">1000</span>  <span class="cm">-- references second CTE</span>
+)
+<span class="kw">SELECT</span> name <span class="kw">FROM</span> customers
+<span class="kw">WHERE</span> customer_id <span class="kw">IN</span> (<span class="kw">SELECT</span> customer_id <span class="kw">FROM</span> top_customers);</pre>
+</div>
+</div>
+
+<div class="table-wrap"><table><tr><th></th><th>Subquery</th><th>CTE</th></tr>
+<tr><td><strong>Readability</strong></td><td style="color:var(--red)">Messy when nested</td><td style="color:var(--green)">Clean named steps</td></tr>
+<tr><td><strong>Reusability</strong></td><td style="color:var(--red)">Must repeat logic</td><td style="color:var(--green)">Reference multiple times</td></tr>
+<tr><td><strong>Debugging</strong></td><td style="color:var(--red)">Hard — one big block</td><td style="color:var(--green)">Easy — run each CTE alone</td></tr>
+<tr><td><strong>Performance</strong></td><td>Same</td><td>Same (optimizer treats similarly)</td></tr>
+<tr><td><strong>Recursion</strong></td><td style="color:var(--red)">Cannot</td><td style="color:var(--green)">✅ Supports recursive queries</td></tr></table></div></div>
+
+<!-- S4: Recursive CTE -->
+<div class="section" id="s4"><div class="section-header"><div class="section-num">4</div><h2>Recursive CTE — Hierarchies & Trees</h2></div>
+<p style="margin-bottom:.6rem;font-size:.88rem">A CTE that calls itself. Base case + recursive case joined with <code>UNION ALL</code>.</p>
+
+<pre><span class="label">SQL</span><span class="cm">-- Employee hierarchy traversal (PostgreSQL)</span>
+<span class="kw">WITH RECURSIVE</span> employee_tree <span class="kw">AS</span> (
+    <span class="cm">-- Base case: CEO (no manager)</span>
+    <span class="kw">SELECT</span> employee_id, name, manager_id, <span class="nu">0</span> <span class="kw">AS</span> level
+    <span class="kw">FROM</span> employees <span class="kw">WHERE</span> manager_id <span class="kw">IS NULL</span>
+
+    <span class="kw">UNION ALL</span>
+
+    <span class="cm">-- Recursive case: find direct reports</span>
+    <span class="kw">SELECT</span> e.employee_id, e.name, e.manager_id, et.level + <span class="nu">1</span>
+    <span class="kw">FROM</span> employees e
+    <span class="kw">INNER JOIN</span> employee_tree et <span class="kw">ON</span> e.manager_id = et.employee_id
+)
+<span class="kw">SELECT</span> name, level <span class="kw">FROM</span> employee_tree <span class="kw">ORDER BY</span> level;
+
+<span class="cm">-- Ahmed │ 0  ← CEO</span>
+<span class="cm">-- Sara  │ 1  ← reports to Ahmed</span>
+<span class="cm">-- Omar  │ 1  ← reports to Ahmed</span>
+<span class="cm">-- Mona  │ 2  ← reports to Sara</span></pre>
+
+<div class="table-wrap"><table><tr><th>Feature</th><th>PostgreSQL</th><th>SQL Server</th></tr>
+<tr><td>Keyword</td><td><code>WITH RECURSIVE</code></td><td>Just <code>WITH</code></td></tr>
+<tr><td>Loop protection</td><td>CYCLE clause (v14+)</td><td>MAXRECURSION option</td></tr>
+<tr><td>Default max depth</td><td>No limit</td><td>100 levels</td></tr></table></div>
+
+<div class="callout warn">⚠️ Recursive CTEs can <strong>loop forever</strong> if the base case or join is wrong. Always test on small data first. Use <code>MAXRECURSION</code> in SQL Server.</div></div>
+
+<!-- S5: Quiz -->
+<div class="section" id="s5"><div class="section-header"><div class="section-num">5</div><h2>Test Yourself</h2></div>
+
+<div class="quiz-card" id="q1"><h3>Q1: Why is a correlated subquery slow?</h3>
+<button class="quiz-option" onclick="answer(this,'q1',true)">It references the outer query — runs once per outer row. 1M rows = 1M executions.</button>
+<button class="quiz-option" onclick="answer(this,'q1',false)">It uses too much memory</button>
+<div class="quiz-explanation" id="q1-exp">A correlated subquery depends on the outer row, so it can't run independently — it must execute for every single outer row. Fix: rewrite as JOIN + GROUP BY for a single-pass approach.</div></div>
+
+<div class="quiz-card" id="q2"><h3>Q2: <code>WHERE customer_id NOT IN (SELECT customer_id FROM orders)</code> — orders has a NULL customer_id. What happens?</h3>
+<button class="quiz-option" onclick="answer(this,'q2',true)">Returns zero rows — NOT IN fails silently with NULLs</button>
+<button class="quiz-option" onclick="answer(this,'q2',false)">Works normally, ignoring the NULL</button>
+<div class="quiz-explanation" id="q2-exp">Any comparison with NULL is unknown. NOT IN can't determine if the outer value is "not in" a list containing NULL — so every row evaluates to unknown and nothing is returned. Fix: use <code>NOT EXISTS</code> which handles NULLs correctly.</div></div>
+
+<div class="quiz-card" id="q3"><h3>Q3: When would you use a CTE over a subquery?</h3>
+<button class="quiz-option" onclick="answer(this,'q3',true)">Complex logic needing named steps, same result referenced multiple times, or recursive queries</button>
+<button class="quiz-option" onclick="answer(this,'q3',false)">When you need better performance</button>
+<div class="quiz-explanation" id="q3-exp">Performance is typically the same — the optimizer treats them similarly. CTEs win on readability (named steps), reusability (reference the same CTE multiple times), and recursion support (subqueries can't recurse).</div></div>
+
+<div class="quiz-card" id="q4"><h3>Q4: What are the two required parts of a recursive CTE?</h3>
+<button class="quiz-option" onclick="answer(this,'q4',false)">SELECT and WHERE</button>
+<button class="quiz-option" onclick="answer(this,'q4',true)">Base case (anchor) + recursive case, joined with UNION ALL</button>
+<div class="quiz-explanation" id="q4-exp">The base case provides starting rows (e.g., CEO with no manager). The recursive case joins back to the CTE to find the next level (direct reports). UNION ALL combines them. It keeps running until no new rows are found.</div></div>
+
+<div class="quiz-card" id="q5"><h3>Q5: Why does EXISTS use <code>SELECT 1</code>?</h3>
+<button class="quiz-option" onclick="answer(this,'q5',true)">EXISTS only checks if rows exist — the actual value doesn't matter. SELECT 1 is a convention for clarity.</button>
+<button class="quiz-option" onclick="answer(this,'q5',false)">SELECT 1 is faster than SELECT *</button>
+<div class="quiz-explanation" id="q5-exp">EXISTS returns TRUE/FALSE based on whether any rows exist — it doesn't care about the values returned. <code>SELECT 1</code>, <code>SELECT *</code>, or <code>SELECT 'hello'</code> all behave identically. The convention makes intent clear.</div></div>
+
+<div class="quiz-score" id="score-box" style="display:none"><div class="big" id="score-text"></div><p style="color:var(--text-dim);margin-top:.3rem">Subqueries & CTEs Quiz</p></div></div>
+
+<!-- Interview Answers -->
+<div class="section" id="s6"><div class="section-header"><div class="section-num">★</div><h2>Interview Answer Bank</h2></div>
+<div class="accordion"><button class="accordion-btn" onclick="toggleAcc(this)"><span>Q: IN vs EXISTS?</span><span class="arrow">▼</span></button><div class="accordion-body"><div class="callout green">IN builds a complete list then checks membership. EXISTS checks if any row exists and stops at the first match. EXISTS is faster for large datasets. Critically, NOT IN fails silently when NULLs are present — NOT EXISTS handles NULLs correctly and is always safer.</div></div></div>
+<div class="accordion"><button class="accordion-btn" onclick="toggleAcc(this)"><span>Q: Correlated subquery — why slow?</span><span class="arrow">▼</span></button><div class="accordion-body"><div class="callout green">References outer query — runs once per outer row. For 1M rows, executes 1M times. Fix: rewrite as JOIN + GROUP BY which processes everything in a single pass. Correlated subqueries are sometimes unavoidable but should be avoided on large tables.</div></div></div>
+<div class="accordion"><button class="accordion-btn" onclick="toggleAcc(this)"><span>Q: CTE vs Subquery?</span><span class="arrow">▼</span></button><div class="accordion-body"><div class="callout green">CTEs provide named steps for readability, reusability in the same query, and recursion support. Performance is the same — optimizer treats them similarly. CTEs read like a recipe; deeply nested subqueries are hard to read and debug.</div></div></div>
+<div class="accordion"><button class="accordion-btn" onclick="toggleAcc(this)"><span>Q: Recursive CTE — real example?</span><span class="arrow">▼</span></button><div class="accordion-body"><div class="callout green">A CTE that calls itself. Base case selects starting rows (CEO). Recursive case joins back to find next level (direct reports). UNION ALL combines them. Uses: org charts, category trees, bill of materials. PostgreSQL needs <code>WITH RECURSIVE</code>, SQL Server just <code>WITH</code>.</div></div></div>
+<div class="accordion"><button class="accordion-btn" onclick="toggleAcc(this)"><span>Q: NOT IN NULL trap?</span><span class="arrow">▼</span></button><div class="accordion-body"><div class="callout green">If the subquery returns any NULL, NOT IN returns zero rows — silent bug. Any comparison with NULL is unknown, so the entire WHERE evaluates to unknown for every row. Fix: use NOT EXISTS (handles NULLs correctly) or add <code>WHERE col IS NOT NULL</code> in the subquery.</div></div></div></div>
+</div>
+
+<script>
+function toggleAcc(btn){btn.classList.toggle('open');btn.nextElementSibling.classList.toggle('open')}
+
+// Subquery type cards
+function showSQ(id){document.querySelectorAll('.sq-card').forEach(c=>c.classList.remove('active'));document.querySelectorAll('.sq-detail').forEach(d=>d.classList.remove('show'));event.target.closest('.sq-card').classList.add('active');document.getElementById('sq-'+id).classList.add('show')}
+
+// CTE tabs
+function showCTE(id){document.querySelectorAll('.cte-tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.cte-panel').forEach(p=>p.classList.remove('active'));event.target.classList.add('active');document.getElementById('cte-'+id).classList.add('active')}
+
+// IN vs EXISTS sim
+let ineTimer=null;
+function runINE(mode){
+  clearInterval(ineTimer);const log=document.getElementById('ine-log');log.innerHTML='';
+  document.querySelectorAll('.ine-tab').forEach(b=>b.classList.remove('active'));event.target.classList.add('active');
+  const lines=[];
+  if(mode==='in'){
+    lines.push({c:'hl',t:'WHERE customer_id IN (SELECT customer_id FROM orders)'});
+    lines.push({c:'dim',t:''});
+    lines.push({c:'dim',t:'Step 1: Run inner query → build full list'});
+    lines.push({c:'hl',t:'→ Inner result: (1, 2, 3, 5, 8, 12, 15, ...)'});
+    lines.push({c:'warn',t:'→ Must scan ALL orders to build complete list'});
+    lines.push({c:'dim',t:''});
+    lines.push({c:'dim',t:'Step 2: For each outer row, check membership'});
+    lines.push({c:'ok',t:'→ customer_id = 1  →  IN (1, 2, 3, ...) = TRUE ✅'});
+    lines.push({c:'ok',t:'→ customer_id = 2  →  IN (1, 2, 3, ...) = TRUE ✅'});
+    lines.push({c:'dim',t:'→ Works but builds entire list first'});
+  } else if(mode==='exists'){
+    lines.push({c:'hl',t:'WHERE EXISTS (SELECT 1 FROM orders WHERE o.cust_id = c.cust_id)'});
+    lines.push({c:'dim',t:''});
+    lines.push({c:'dim',t:'For each outer row, check if ANY match exists:'});
+    lines.push({c:'ok',t:'→ customer 1: found order 101 → STOP → TRUE ✅ (didn\'t scan all orders!)'});
+    lines.push({c:'ok',t:'→ customer 2: found order 103 → STOP → TRUE ✅'});
+    lines.push({c:'ok',t:'→ customer 3: scanned all → no match → FALSE'});
+    lines.push({c:'dim',t:''});
+    lines.push({c:'ok',t:'✅ EXISTS stops at first match — much faster for large tables'});
+  } else {
+    lines.push({c:'hl',t:'WHERE customer_id NOT IN (SELECT customer_id FROM orders)'});
+    lines.push({c:'dim',t:''});
+    lines.push({c:'dim',t:'Inner query returns: (1, 2, NULL, 5)'});
+    lines.push({c:'warn',t:'⚠ NULL is in the list!'});
+    lines.push({c:'dim',t:''});
+    lines.push({c:'dim',t:'For customer_id = 99:'});
+    lines.push({c:'dim',t:'→ 99 != 1 → TRUE'});
+    lines.push({c:'dim',t:'→ 99 != 2 → TRUE'});
+    lines.push({c:'bad',t:'→ 99 != NULL → UNKNOWN 💥'});
+    lines.push({c:'bad',t:'→ TRUE AND TRUE AND UNKNOWN = UNKNOWN'});
+    lines.push({c:'bad',t:'→ WHERE treats UNKNOWN as FALSE → row removed!'});
+    lines.push({c:'dim',t:''});
+    lines.push({c:'bad',t:'⚠ EVERY outer row fails the same way → ZERO results returned!'});
+    lines.push({c:'ok',t:'Fix: Use NOT EXISTS — handles NULLs correctly'});
+  }
+  let i=0;ineTimer=setInterval(()=>{if(i>=lines.length){clearInterval(ineTimer);return}const l=lines[i];log.innerHTML+=`<span class="${l.c}">${l.t}</span>\n`;log.scrollTop=log.scrollHeight;i++},250);
+}
+
+// Quiz
+let answered=0,correct=0,total=5;
+function answer(btn,qId,isCorrect){const card=document.getElementById(qId);if(card.dataset.answered)return;card.dataset.answered='1';answered++;if(isCorrect){btn.classList.add('correct');correct++;}else btn.classList.add('wrong');card.querySelectorAll('.quiz-option').forEach(o=>o.disabled=true);document.getElementById(qId+'-exp').classList.add('show');if(answered===total){document.getElementById('score-box').style.display='block';document.getElementById('score-text').textContent=correct+' / '+total;}}
+const sections=document.querySelectorAll('.section');const navLinks=document.querySelectorAll('.nav a');
+window.addEventListener('scroll',()=>{let c='';sections.forEach(s=>{if(window.scrollY>=s.offsetTop-120)c=s.id});navLinks.forEach(a=>{a.classList.remove('active');if(a.getAttribute('href')==='#'+c)a.classList.add('active')})});
+</script>
+</body>
+</html>

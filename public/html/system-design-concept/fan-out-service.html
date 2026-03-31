@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fan-Out Service — System Design Study Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=DM+Sans:ital,wght@0,400;0,500;0,700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#060810;--bg-card:#0d0f18;--bg-code:#090b12;--bg-el:#151828;--border:#191d30;--border-gl:#242840;--text:#c2c8d8;--text-dim:#5c6486;--text-br:#e4eaf4;--push:#3b82f6;--pull:#f59e0b;--c1:#06b6d4;--c2:#a855f7;--c3:#10b981;--c4:#ec4899;--bad:#ef4444;--ok:#4ade80;--r:12px}
+*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.72;overflow-x:hidden}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border-gl);border-radius:3px}
+.hero{position:relative;min-height:44vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:80px 24px 50px;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 500px 350px at 30% 40%,rgba(6,182,212,.1),transparent),radial-gradient(ellipse 400px 300px at 70% 55%,rgba(168,85,247,.07),transparent)}
+.hero-badge{position:relative;display:inline-flex;align-items:center;gap:8px;padding:6px 18px;border:1px solid var(--c1);border-radius:100px;font-size:.8rem;color:var(--c1);letter-spacing:.08em;text-transform:uppercase;margin-bottom:20px}
+.hero h1{position:relative;font-family:'Playfair Display',serif;font-size:clamp(2.2rem,5.5vw,3.8rem);font-weight:900;line-height:1.15;color:var(--text-br);max-width:700px}
+.hero h1 span{background:linear-gradient(135deg,var(--c1),var(--c2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{position:relative;max-width:620px;margin-top:16px;color:var(--text-dim);font-size:1.05rem}
+.nav-pills{position:relative;display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:28px}
+.nav-pills a{display:inline-block;padding:6px 14px;border:1px solid var(--border-gl);border-radius:100px;color:var(--text-dim);text-decoration:none;font-size:.82rem;transition:all .25s}
+.nav-pills a:hover{border-color:var(--c1);color:var(--c1);background:rgba(6,182,212,.06)}
+.sec{max-width:1000px;margin:0 auto 70px;padding:0 24px;scroll-margin-top:32px}
+.sec-h{display:flex;align-items:center;gap:16px;margin-bottom:8px}
+.sec-n{display:flex;align-items:center;justify-content:center;width:46px;height:46px;border-radius:14px;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:1rem;flex-shrink:0;background:color-mix(in srgb,var(--pat) 16%,transparent);color:var(--pat);border:1px solid color-mix(in srgb,var(--pat) 28%,transparent)}
+.sec-h h2{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:700;color:var(--text-br)}
+.sec-sub{color:var(--text-dim);font-style:italic;margin-bottom:24px;padding-left:62px;font-size:.93rem}
+.s1{--pat:var(--c1)}.s2{--pat:var(--c2)}.s3{--pat:var(--push)}.s4{--pat:var(--pull)}.s5{--pat:var(--c3)}
+.card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r);padding:22px;margin-bottom:18px}
+.card h3{font-size:.95rem;color:var(--text-br);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card h3::before{content:'';display:inline-block;width:3px;height:16px;border-radius:2px;background:var(--pat,var(--c1))}
+.dw{background:var(--bg-code);border:1px solid var(--border);border-radius:var(--r);padding:24px;margin-bottom:18px;overflow-x:auto}
+.dw svg{display:block;margin:0 auto;max-width:100%;height:auto}
+.tw{overflow-x:auto;margin-bottom:18px}table{width:100%;border-collapse:collapse;font-size:.84rem}
+thead th{background:var(--bg-el);color:var(--text-br);padding:11px 14px;text-align:left;font-weight:600;border-bottom:2px solid var(--border-gl);white-space:nowrap}
+tbody td{padding:9px 14px;border-bottom:1px solid var(--border);vertical-align:top}tbody tr:hover{background:rgba(6,182,212,.03)}
+.tip{display:flex;gap:12px;padding:14px 16px;border-radius:var(--r);margin-bottom:18px;font-size:.87rem}
+.tip-c{background:rgba(6,182,212,.06);border:1px solid rgba(6,182,212,.16)}.tip-c .ic{color:var(--c1)}
+.tip-p{background:rgba(168,85,247,.06);border:1px solid rgba(168,85,247,.16)}.tip-p .ic{color:var(--c2)}
+.tip-r{background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.16)}.tip-r .ic{color:var(--bad)}
+.tip-g{background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.16)}.tip-g .ic{color:var(--c3)}
+.tip .ic{font-size:1.2rem;flex-shrink:0}
+.pros-cons{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px}
+@media(max-width:600px){.pros-cons{grid-template-columns:1fr}}
+.pro,.con{padding:14px 16px;border-radius:var(--r);font-size:.85rem}
+.pro{background:rgba(74,222,128,.06);border:1px solid rgba(74,222,128,.18)}.con{background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.18)}
+.pro h4{color:var(--ok);margin-bottom:6px}.con h4{color:var(--bad);margin-bottom:6px}
+.pro li,.con li{margin-bottom:4px;list-style:none;padding-left:16px;position:relative}
+.pro li::before{content:'✓';position:absolute;left:0;color:var(--ok);font-weight:700}
+.con li::before{content:'✗';position:absolute;left:0;color:var(--bad);font-weight:700}
+.qa-b{margin-bottom:10px}
+.qa-q{display:flex;align-items:start;gap:10px;padding:13px 16px;background:var(--bg-el);border:1px solid var(--border);border-radius:var(--r);cursor:pointer;color:var(--text-br);font-size:.88rem;font-weight:500;transition:all .25s;user-select:none}
+.qa-q:hover{border-color:var(--c1)}.qa-q .ar{flex-shrink:0;transition:transform .3s;color:var(--c1);font-size:.8rem}.qa-q.open .ar{transform:rotate(90deg)}
+.qa-a{max-height:0;overflow:hidden;transition:max-height .35s ease,padding .35s;padding:0 16px;color:var(--text);font-size:.86rem;line-height:1.7;background:var(--bg-card);border:1px solid var(--border);border-top:none;border-radius:0 0 var(--r) var(--r)}
+.qa-a.open{max-height:600px;padding:14px 16px}
+.tmpl{background:var(--bg-code);border:1px solid var(--c1);border-radius:var(--r);padding:20px;margin-bottom:18px;font-size:.9rem;line-height:1.8;color:var(--text-br);border-left:4px solid var(--c1)}
+.bt{position:fixed;bottom:24px;right:24px;width:44px;height:44px;border-radius:50%;background:var(--c1);color:#fff;border:none;cursor:pointer;font-size:1.2rem;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s,transform .3s;box-shadow:0 4px 16px rgba(6,182,212,.35);z-index:100;font-weight:700}
+.bt.show{opacity:1;pointer-events:auto}.bt:hover{transform:scale(1.1)}
+footer{text-align:center;padding:36px 24px;color:var(--text-dim);font-size:.8rem;border-top:1px solid var(--border);margin-top:40px}
+.sum{max-width:1000px;margin:0 auto 60px;padding:0 24px}.sum h2{font-family:'Playfair Display',serif;font-size:1.6rem;color:var(--text-br);margin-bottom:20px;text-align:center}
+@media(max-width:768px){.sec-sub{padding-left:0}}
+</style>
+</head>
+<body>
+
+<section class="hero">
+  <div class="hero-badge">System Design Pattern</div>
+  <h1>What Is a <span>Fan-Out</span> Service?</h1>
+  <p>Taking one incoming event and distributing it to many downstream consumers — the 1 → N distribution pattern used in feeds, notifications, and chat systems.</p>
+  <div class="nav-pills">
+    <a href="#what">What Is It</a><a href="#why">Why Separate</a><a href="#push">Push Model</a><a href="#pull">Pull Model</a><a href="#celebrity">Celebrity Problem</a><a href="#interview">Interview</a>
+  </div>
+</section>
+
+<!-- ═══════ 1. WHAT IS FAN-OUT ═══════ -->
+<section id="what" class="sec s1">
+  <div class="sec-h"><div class="sec-n">1</div><h2>What Is Fan-Out?</h2></div>
+  <div class="sec-sub">1 → N distribution: one event, many consumers.</div>
+
+  <div class="dw">
+    <svg viewBox="0 0 780 280" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+      <defs>
+        <marker id="af" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#06b6d4"/></marker>
+      </defs>
+      <!-- User A posts -->
+      <rect x="40" y="100" width="150" height="65" rx="12" fill="rgba(168,85,247,.1)" stroke="#a855f7" stroke-width="1.5"/>
+      <text x="115" y="125" text-anchor="middle" fill="#a855f7" font-weight="700" font-size="14">User A</text>
+      <text x="115" y="145" text-anchor="middle" fill="#8890a8" font-size="10">posts something</text>
+      <text x="115" y="158" text-anchor="middle" fill="#a855f7" font-size="9" font-family="JetBrains Mono,monospace">1M followers</text>
+      <!-- Fan-out service -->
+      <rect x="270" y="80" width="180" height="100" rx="14" fill="rgba(6,182,212,.1)" stroke="#06b6d4" stroke-width="2"/>
+      <text x="360" y="115" text-anchor="middle" fill="#06b6d4" font-weight="700" font-size="14">Fan-Out</text>
+      <text x="360" y="135" text-anchor="middle" fill="#06b6d4" font-weight="700" font-size="14">Service</text>
+      <text x="360" y="158" text-anchor="middle" fill="#8890a8" font-size="10">1 → N distribution</text>
+      <text x="360" y="172" text-anchor="middle" fill="#8890a8" font-size="9">async, background</text>
+      <!-- Arrow: User → Fan-out -->
+      <path d="M190,132 L270,130" fill="none" stroke="#a855f7" stroke-width="1.5" marker-end="url(#af)"/>
+      <text x="230" y="122" text-anchor="middle" fill="#a855f7" font-size="9">1 event</text>
+      <!-- Fan-out arrows to many consumers -->
+      <path d="M450,100 L560,40" fill="none" stroke="#06b6d4" stroke-width="1.2" marker-end="url(#af)"/>
+      <path d="M450,110 L560,75" fill="none" stroke="#06b6d4" stroke-width="1.2" marker-end="url(#af)"/>
+      <path d="M450,120 L560,110" fill="none" stroke="#06b6d4" stroke-width="1.2" marker-end="url(#af)"/>
+      <path d="M450,130 L560,145" fill="none" stroke="#06b6d4" stroke-width="1.2" marker-end="url(#af)"/>
+      <path d="M450,140 L560,180" fill="none" stroke="#06b6d4" stroke-width="1.2" marker-end="url(#af)"/>
+      <path d="M450,150 L560,215" fill="none" stroke="#06b6d4" stroke-width="1.2" marker-end="url(#af)"/>
+      <!-- Followers -->
+      <rect x="560" y="22" width="120" height="30" rx="8" fill="rgba(236,72,153,.06)" stroke="#ec4899" stroke-width="1" stroke-opacity=".5"/>
+      <text x="620" y="42" text-anchor="middle" fill="#ec4899" font-size="10">Follower Feed 1</text>
+      <rect x="560" y="60" width="120" height="30" rx="8" fill="rgba(236,72,153,.06)" stroke="#ec4899" stroke-width="1" stroke-opacity=".5"/>
+      <text x="620" y="80" text-anchor="middle" fill="#ec4899" font-size="10">Follower Feed 2</text>
+      <rect x="560" y="98" width="120" height="30" rx="8" fill="rgba(236,72,153,.06)" stroke="#ec4899" stroke-width="1" stroke-opacity=".5"/>
+      <text x="620" y="118" text-anchor="middle" fill="#ec4899" font-size="10">Follower Feed 3</text>
+      <text x="620" y="150" text-anchor="middle" fill="#5c6486" font-size="14">...</text>
+      <rect x="560" y="168" width="120" height="30" rx="8" fill="rgba(236,72,153,.06)" stroke="#ec4899" stroke-width="1" stroke-opacity=".5"/>
+      <text x="620" y="188" text-anchor="middle" fill="#ec4899" font-size="10">Feed 999,999</text>
+      <rect x="560" y="203" width="120" height="30" rx="8" fill="rgba(236,72,153,.06)" stroke="#ec4899" stroke-width="1" stroke-opacity=".5"/>
+      <text x="620" y="223" text-anchor="middle" fill="#ec4899" font-size="10">Feed 1,000,000</text>
+      <!-- N label -->
+      <rect x="700" y="100" width="60" height="55" rx="10" fill="rgba(6,182,212,.08)" stroke="#06b6d4" stroke-width="1.2"/>
+      <text x="730" y="125" text-anchor="middle" fill="#06b6d4" font-weight="900" font-size="18">N</text>
+      <text x="730" y="145" text-anchor="middle" fill="#06b6d4" font-size="9">consumers</text>
+      <!-- Summary -->
+      <rect x="140" y="245" width="480" height="26" rx="8" fill="rgba(6,182,212,.05)" stroke="rgba(6,182,212,.15)" stroke-width="1"/>
+      <text x="380" y="262" text-anchor="middle" fill="#06b6d4" font-size="10" font-weight="600">1 post → 1,000,000 feed writes. That spreading process = Fan-Out.</text>
+    </svg>
+  </div>
+
+  <div class="card"><h3>Simple Definition</h3><p><strong>Fan-out</strong> means taking one incoming event and distributing it to many downstream consumers. The service responsible for doing this is called a <strong>fan-out service</strong>. It's a <strong>1 → N distribution</strong> pattern.</p></div>
+</section>
+
+<!-- ═══════ 2. WHY SEPARATE ═══════ -->
+<section id="why" class="sec s2">
+  <div class="sec-h"><div class="sec-n">2</div><h2>Why a Separate Fan-Out Service?</h2></div>
+  <div class="sec-sub">Because doing this inside the main API would block requests and crash the system.</div>
+
+  <div class="dw">
+    <svg viewBox="0 0 780 240" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+      <defs>
+        <marker id="af2" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#06b6d4"/></marker>
+        <marker id="af2g" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#5c6486"/></marker>
+      </defs>
+      <!-- Step 1: Client → API -->
+      <rect x="30" y="80" width="100" height="50" rx="10" fill="rgba(168,85,247,.08)" stroke="#a855f7" stroke-width="1.2"/>
+      <text x="80" y="102" text-anchor="middle" fill="#a855f7" font-weight="600" font-size="11">Client</text>
+      <text x="80" y="120" text-anchor="middle" fill="#5c6486" font-size="8">"create post"</text>
+      <!-- Step 2: API Server -->
+      <rect x="175" y="70" width="120" height="70" rx="10" fill="rgba(59,130,246,.08)" stroke="#3b82f6" stroke-width="1.2"/>
+      <text x="235" y="95" text-anchor="middle" fill="#3b82f6" font-weight="600" font-size="11">API Server</text>
+      <text x="235" y="112" text-anchor="middle" fill="#5c6486" font-size="8">writes to DB</text>
+      <text x="235" y="126" text-anchor="middle" fill="#3b82f6" font-size="8">returns fast ✓</text>
+      <!-- Step 3: Queue -->
+      <rect x="345" y="80" width="100" height="50" rx="10" fill="rgba(245,158,11,.08)" stroke="#f59e0b" stroke-width="1.5"/>
+      <text x="395" y="102" text-anchor="middle" fill="#f59e0b" font-weight="700" font-size="11">Queue</text>
+      <text x="395" y="118" text-anchor="middle" fill="#5c6486" font-size="8">async buffer</text>
+      <!-- Step 4: Fan-out Service -->
+      <rect x="495" y="65" width="140" height="80" rx="12" fill="rgba(6,182,212,.1)" stroke="#06b6d4" stroke-width="2"/>
+      <text x="565" y="95" text-anchor="middle" fill="#06b6d4" font-weight="700" font-size="12">Fan-Out</text>
+      <text x="565" y="112" text-anchor="middle" fill="#06b6d4" font-weight="700" font-size="12">Service</text>
+      <text x="565" y="132" text-anchor="middle" fill="#5c6486" font-size="8">background worker</text>
+      <!-- Step 5: DB/Feeds -->
+      <rect x="685" y="80" width="80" height="50" rx="10" fill="rgba(16,185,129,.08)" stroke="#10b981" stroke-width="1.2"/>
+      <text x="725" y="102" text-anchor="middle" fill="#10b981" font-weight="600" font-size="11">Feeds</text>
+      <text x="725" y="118" text-anchor="middle" fill="#10b981" font-size="8">DB / Cache</text>
+      <!-- Arrows -->
+      <path d="M130,105 L175,105" fill="none" stroke="#5c6486" stroke-width="1.2" marker-end="url(#af2g)"/>
+      <path d="M295,105 L345,105" fill="none" stroke="#f59e0b" stroke-width="1.2" marker-end="url(#af2)"/>
+      <path d="M445,105 L495,105" fill="none" stroke="#06b6d4" stroke-width="1.2" marker-end="url(#af2)"/>
+      <path d="M635,105 L685,105" fill="none" stroke="#10b981" stroke-width="1.2" marker-end="url(#af2)"/>
+      <!-- Step numbers -->
+      <circle cx="152" cy="92" r="10" fill="#a855f7"/><text x="152" y="96" text-anchor="middle" fill="#fff" font-size="9" font-weight="700">1</text>
+      <circle cx="320" cy="92" r="10" fill="#f59e0b"/><text x="320" y="96" text-anchor="middle" fill="#fff" font-size="9" font-weight="700">2</text>
+      <circle cx="470" cy="92" r="10" fill="#06b6d4"/><text x="470" y="96" text-anchor="middle" fill="#fff" font-size="9" font-weight="700">3</text>
+      <circle cx="660" cy="92" r="10" fill="#10b981"/><text x="660" y="96" text-anchor="middle" fill="#fff" font-size="9" font-weight="700">4</text>
+      <!-- Labels below -->
+      <text x="80" y="155" text-anchor="middle" fill="#5c6486" font-size="9">sends request</text>
+      <text x="235" y="155" text-anchor="middle" fill="#5c6486" font-size="9">saves & enqueues</text>
+      <text x="395" y="155" text-anchor="middle" fill="#5c6486" font-size="9">buffers event</text>
+      <text x="565" y="155" text-anchor="middle" fill="#5c6486" font-size="9">distributes to N</text>
+      <text x="725" y="155" text-anchor="middle" fill="#5c6486" font-size="9">writes feeds</text>
+      <!-- Key insight -->
+      <rect x="100" y="185" width="560" height="42" rx="10" fill="rgba(6,182,212,.05)" stroke="rgba(6,182,212,.15)" stroke-width="1"/>
+      <text x="380" y="205" text-anchor="middle" fill="#06b6d4" font-weight="600" font-size="11">Client → API → Queue → Fan-Out Service → DB</text>
+      <text x="380" y="220" text-anchor="middle" fill="#8890a8" font-size="10">API returns fast. Fan-out happens asynchronously in the background.</text>
+    </svg>
+  </div>
+
+  <div class="card"><h3>Why Not Inside the API?</h3><p>This operation is write-heavy, potentially huge (millions of followers), CPU and IO intensive, and asynchronous. If done inside your main API server, the request becomes very slow, the server blocks, and the system becomes unstable. Instead, the API writes to a queue and the fan-out service processes it in the background.</p></div>
+</section>
+
+<!-- ═══════ 3. FAN-OUT ON WRITE (PUSH) ═══════ -->
+<section id="push" class="sec s3">
+  <div class="sec-h"><div class="sec-n">3</div><h2>Fan-Out on Write (Push Model)</h2></div>
+  <div class="sec-sub">When user posts → immediately push the post to all followers' feeds. Precompute feeds.</div>
+
+  <div class="dw">
+    <svg viewBox="0 0 780 200" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+      <defs><marker id="ap" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#3b82f6"/></marker></defs>
+      <!-- User posts -->
+      <rect x="40" y="60" width="130" height="60" rx="10" fill="rgba(168,85,247,.1)" stroke="#a855f7" stroke-width="1.5"/>
+      <text x="105" y="85" text-anchor="middle" fill="#a855f7" font-weight="700" font-size="12">User A</text>
+      <text x="105" y="105" text-anchor="middle" fill="#8890a8" font-size="9">"Hello world!"</text>
+      <!-- PUSH arrows -->
+      <path d="M170,70 L300,30" fill="none" stroke="#3b82f6" stroke-width="1.5" marker-end="url(#ap)"/>
+      <path d="M170,80 L300,60" fill="none" stroke="#3b82f6" stroke-width="1.5" marker-end="url(#ap)"/>
+      <path d="M170,90 L300,90" fill="none" stroke="#3b82f6" stroke-width="1.5" marker-end="url(#ap)"/>
+      <path d="M170,100 L300,120" fill="none" stroke="#3b82f6" stroke-width="1.5" marker-end="url(#ap)"/>
+      <path d="M170,110 L300,150" fill="none" stroke="#3b82f6" stroke-width="1.5" marker-end="url(#ap)"/>
+      <text x="235" y="58" fill="#3b82f6" font-weight="700" font-size="10">PUSH</text>
+      <!-- Pre-computed feeds -->
+      <rect x="300" y="15" width="160" height="30" rx="6" fill="rgba(59,130,246,.06)" stroke="#3b82f6" stroke-width="1" stroke-opacity=".5"/>
+      <text x="380" y="34" text-anchor="middle" fill="#3b82f6" font-size="10">Follower 1 Feed ✓</text>
+      <rect x="300" y="50" width="160" height="30" rx="6" fill="rgba(59,130,246,.06)" stroke="#3b82f6" stroke-width="1" stroke-opacity=".5"/>
+      <text x="380" y="69" text-anchor="middle" fill="#3b82f6" font-size="10">Follower 2 Feed ✓</text>
+      <rect x="300" y="85" width="160" height="30" rx="6" fill="rgba(59,130,246,.06)" stroke="#3b82f6" stroke-width="1" stroke-opacity=".5"/>
+      <text x="380" y="104" text-anchor="middle" fill="#3b82f6" font-size="10">Follower 3 Feed ✓</text>
+      <text x="380" y="132" text-anchor="middle" fill="#5c6486" font-size="12">...</text>
+      <rect x="300" y="140" width="160" height="30" rx="6" fill="rgba(59,130,246,.06)" stroke="#3b82f6" stroke-width="1" stroke-opacity=".5"/>
+      <text x="380" y="159" text-anchor="middle" fill="#3b82f6" font-size="10">Follower N Feed ✓</text>
+      <!-- Read time -->
+      <rect x="520" y="60" width="220" height="70" rx="10" fill="rgba(16,185,129,.06)" stroke="#10b981" stroke-width="1.2"/>
+      <text x="630" y="85" text-anchor="middle" fill="#10b981" font-weight="700" font-size="12">At Read Time:</text>
+      <text x="630" y="105" text-anchor="middle" fill="#10b981" font-size="10">Feed is pre-computed → instant!</text>
+      <text x="630" y="120" text-anchor="middle" fill="#10b981" font-size="10" font-family="JetBrains Mono,monospace">O(1) read latency</text>
+    </svg>
+  </div>
+
+  <div class="pros-cons">
+    <div class="pro"><h4>✅ Pros</h4><ul><li>Fast reads — feed is pre-computed</li><li>Good for heavy-read systems</li><li>Simple read path — just fetch from cache</li></ul></div>
+    <div class="con"><h4>❌ Cons</h4><ul><li>Very expensive write — push to all followers</li><li>Celebrity problem — 10M+ followers = massive write amplification</li><li>Wasted work if followers never read the feed</li></ul></div>
+  </div>
+</section>
+
+<!-- ═══════ 4. FAN-OUT ON READ (PULL) ═══════ -->
+<section id="pull" class="sec s4">
+  <div class="sec-h"><div class="sec-n">4</div><h2>Fan-Out on Read (Pull Model)</h2></div>
+  <div class="sec-sub">When user opens app → system gathers posts dynamically from followed users.</div>
+
+  <div class="dw">
+    <svg viewBox="0 0 780 200" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+      <defs><marker id="apl" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#f59e0b"/></marker></defs>
+      <!-- Follower opens app -->
+      <rect x="40" y="60" width="130" height="60" rx="10" fill="rgba(236,72,153,.1)" stroke="#ec4899" stroke-width="1.5"/>
+      <text x="105" y="80" text-anchor="middle" fill="#ec4899" font-weight="700" font-size="12">Follower</text>
+      <text x="105" y="100" text-anchor="middle" fill="#8890a8" font-size="9">opens app</text>
+      <text x="105" y="112" text-anchor="middle" fill="#ec4899" font-size="9">"show me my feed"</text>
+      <!-- PULL arrows (going backward to gather) -->
+      <path d="M170,70 L300,30" fill="none" stroke="#f59e0b" stroke-width="1.5" marker-end="url(#apl)"/>
+      <path d="M170,80 L300,65" fill="none" stroke="#f59e0b" stroke-width="1.5" marker-end="url(#apl)"/>
+      <path d="M170,90 L300,100" fill="none" stroke="#f59e0b" stroke-width="1.5" marker-end="url(#apl)"/>
+      <path d="M170,100 L300,135" fill="none" stroke="#f59e0b" stroke-width="1.5" marker-end="url(#apl)"/>
+      <path d="M170,110 L300,165" fill="none" stroke="#f59e0b" stroke-width="1.5" marker-end="url(#apl)"/>
+      <text x="235" y="62" fill="#f59e0b" font-weight="700" font-size="10">PULL</text>
+      <!-- Source users' posts -->
+      <rect x="300" y="15" width="170" height="30" rx="6" fill="rgba(245,158,11,.06)" stroke="#f59e0b" stroke-width="1" stroke-opacity=".5"/>
+      <text x="385" y="34" text-anchor="middle" fill="#f59e0b" font-size="10">User A's posts</text>
+      <rect x="300" y="50" width="170" height="30" rx="6" fill="rgba(245,158,11,.06)" stroke="#f59e0b" stroke-width="1" stroke-opacity=".5"/>
+      <text x="385" y="69" text-anchor="middle" fill="#f59e0b" font-size="10">User B's posts</text>
+      <rect x="300" y="85" width="170" height="30" rx="6" fill="rgba(245,158,11,.06)" stroke="#f59e0b" stroke-width="1" stroke-opacity=".5"/>
+      <text x="385" y="104" text-anchor="middle" fill="#f59e0b" font-size="10">User C's posts</text>
+      <text x="385" y="132" text-anchor="middle" fill="#5c6486" font-size="12">...</text>
+      <rect x="300" y="150" width="170" height="30" rx="6" fill="rgba(245,158,11,.06)" stroke="#f59e0b" stroke-width="1" stroke-opacity=".5"/>
+      <text x="385" y="169" text-anchor="middle" fill="#f59e0b" font-size="10">Celebrity X's posts</text>
+      <!-- Merge & sort -->
+      <rect x="530" y="55" width="210" height="80" rx="10" fill="rgba(245,158,11,.06)" stroke="#f59e0b" stroke-width="1.2"/>
+      <text x="635" y="80" text-anchor="middle" fill="#f59e0b" font-weight="700" font-size="12">At Read Time:</text>
+      <text x="635" y="100" text-anchor="middle" fill="#f59e0b" font-size="10">Gather → Merge → Sort → Display</text>
+      <text x="635" y="120" text-anchor="middle" fill="#f59e0b" font-size="10" font-family="JetBrains Mono,monospace">O(followed) per read</text>
+    </svg>
+  </div>
+
+  <div class="pros-cons">
+    <div class="pro"><h4>✅ Pros</h4><ul><li>Writes are cheap — just store the post once</li><li>Good for celebrity users — no write amplification</li><li>No wasted work</li></ul></div>
+    <div class="con"><h4>❌ Cons</h4><ul><li>Reads become expensive — must gather from many sources</li><li>Slower feed loading</li><li>More complex read path</li></ul></div>
+  </div>
+</section>
+
+<!-- ═══════ 5. CELEBRITY PROBLEM + COMPARISON ═══════ -->
+<section id="celebrity" class="sec s5">
+  <div class="sec-h"><div class="sec-n">5</div><h2>The Celebrity Problem &amp; Hybrid Approach</h2></div>
+
+  <div class="dw">
+    <svg viewBox="0 0 780 220" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+      <!-- Celebrity icon -->
+      <rect x="40" y="30" width="160" height="80" rx="12" fill="rgba(239,68,68,.08)" stroke="#ef4444" stroke-width="1.5"/>
+      <text x="120" y="55" text-anchor="middle" fill="#ef4444" font-weight="700" font-size="14">👑 Celebrity</text>
+      <text x="120" y="75" text-anchor="middle" fill="#ef4444" font-size="11" font-family="JetBrains Mono,monospace">20M followers</text>
+      <text x="120" y="100" text-anchor="middle" fill="#ef4444" font-size="9">posts "Good morning!"</text>
+      <!-- Explosion -->
+      <rect x="240" y="20" width="300" height="100" rx="10" fill="rgba(239,68,68,.06)" stroke="#ef4444" stroke-width="1.2"/>
+      <text x="390" y="45" text-anchor="middle" fill="#ef4444" font-weight="700" font-size="13">💥 Fan-Out on Write Problem</text>
+      <text x="390" y="68" text-anchor="middle" fill="#8890a8" font-size="10">1 post = 20,000,000 feed writes</text>
+      <text x="390" y="86" text-anchor="middle" fill="#ef4444" font-size="10" font-weight="600">Minutes of processing delay</text>
+      <text x="390" y="104" text-anchor="middle" fill="#8890a8" font-size="9">System overloaded, other users' posts delayed</text>
+      <!-- Solution -->
+      <rect x="580" y="20" width="180" height="100" rx="10" fill="rgba(16,185,129,.08)" stroke="#10b981" stroke-width="1.5"/>
+      <text x="670" y="45" text-anchor="middle" fill="#10b981" font-weight="700" font-size="12">✅ Hybrid Solution</text>
+      <text x="670" y="68" text-anchor="middle" fill="#8890a8" font-size="9">Normal users: Push (write)</text>
+      <text x="670" y="84" text-anchor="middle" fill="#8890a8" font-size="9">Celebrities: Pull (read)</text>
+      <text x="670" y="104" text-anchor="middle" fill="#10b981" font-size="9" font-weight="600">Best of both worlds</text>
+      <!-- Comparison table -->
+      <rect x="80" y="140" width="600" height="65" rx="10" fill="rgba(168,85,247,.04)" stroke="rgba(168,85,247,.12)" stroke-width="1"/>
+      <text x="180" y="162" text-anchor="middle" fill="#3b82f6" font-weight="600" font-size="10">Push (Fan-out on Write)</text>
+      <text x="180" y="180" text-anchor="middle" fill="#8890a8" font-size="9">Fast reads, expensive writes</text>
+      <text x="180" y="196" text-anchor="middle" fill="#8890a8" font-size="9">Good for: regular users</text>
+      <line x1="380" y1="148" x2="380" y2="198" stroke="#242840" stroke-width="1"/>
+      <text x="380" y="160" text-anchor="middle" fill="#a855f7" font-weight="700" font-size="10">vs</text>
+      <text x="500" y="162" text-anchor="middle" fill="#f59e0b" font-weight="600" font-size="10">Pull (Fan-out on Read)</text>
+      <text x="500" y="180" text-anchor="middle" fill="#8890a8" font-size="9">Cheap writes, expensive reads</text>
+      <text x="500" y="196" text-anchor="middle" fill="#8890a8" font-size="9">Good for: celebrities</text>
+    </svg>
+  </div>
+
+  <div class="card"><h3>Push vs Pull Comparison</h3><div class="tw"><table>
+    <thead><tr><th></th><th>Fan-Out on Write (Push)</th><th>Fan-Out on Read (Pull)</th></tr></thead>
+    <tbody>
+      <tr><td><strong>When it happens</strong></td><td>At post time</td><td>At read time</td></tr>
+      <tr><td><strong>Write cost</strong></td><td style="color:var(--bad)">High — push to all followers</td><td style="color:var(--ok)">Low — store once</td></tr>
+      <tr><td><strong>Read cost</strong></td><td style="color:var(--ok)">Low — feed pre-computed</td><td style="color:var(--bad)">High — gather at read time</td></tr>
+      <tr><td><strong>Celebrity handling</strong></td><td style="color:var(--bad)">Terrible — 20M writes per post</td><td style="color:var(--ok)">Great — no write amplification</td></tr>
+      <tr><td><strong>Best for</strong></td><td>Heavy-read systems, regular users</td><td>Celebrity users, write-heavy systems</td></tr>
+    </tbody>
+  </table></div></div>
+
+  <div class="tip tip-g"><span class="ic">💡</span><span><strong>Hybrid approach (used by Twitter/Instagram):</strong> Use Push for normal users (< 10K followers) and Pull for celebrities (> 10K followers). Merge both at read time. Best of both worlds.</span></div>
+</section>
+
+<!-- ═══════ WHERE YOU'LL SEE IT ═══════ -->
+<section class="sum">
+  <h2>Where Fan-Out Appears Again</h2>
+  <div class="card" style="--pat:var(--c2)"><div class="tw"><table>
+    <thead><tr><th>Chapter</th><th>System</th><th>How Fan-Out Is Used</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Chapter 10</strong></td><td>Notification System</td><td>1 event → push to millions of devices</td></tr>
+      <tr><td><strong>Chapter 11</strong></td><td>News Feed System</td><td>Push/Pull model for feed distribution</td></tr>
+      <tr><td><strong>Chapter 12</strong></td><td>Chat System</td><td>1 message → deliver to all group members</td></tr>
+    </tbody>
+  </table></div></div>
+  <div class="tip tip-p"><span class="ic">🧠</span><span>Fan-out is a <strong>recurring distributed systems pattern</strong> — not just a one-off concept. It's about scalability, async processing, decoupling, handling traffic spikes, and preventing API blocking.</span></div>
+</section>
+
+<!-- ═══════ INTERVIEW ═══════ -->
+<section id="interview" class="sum">
+  <h2>Interview-Level Definition</h2>
+  <div class="tmpl">A <strong>fan-out service</strong> distributes a single event to multiple downstream consumers, typically asynchronously, to handle high fan-out workloads like notifications or feed updates without blocking the main request path.</div>
+
+  <div class="qa-b"><div class="qa-q" onclick="toggleQA(this)"><span class="ar">▶</span>If a celebrity with 20 million followers posts something, what problem occurs with fan-out on write?</div><div class="qa-a">A single post triggers 20 million write operations to individual follower feeds. This causes minutes of processing delay, overloads the fan-out workers, and delays other users' posts. The solution is a <strong>hybrid approach</strong>: use fan-out on write for regular users, but fan-out on read for celebrities — merging both at read time.</div></div>
+  <div class="qa-b"><div class="qa-q" onclick="toggleQA(this)"><span class="ar">▶</span>Why shouldn't fan-out happen inside the API server?</div><div class="qa-a">Because it's write-heavy, potentially millions of operations, CPU/IO intensive, and must be asynchronous. Doing it inside the API would block the request, make the server slow, and crash the system under load. Instead: API → Queue → Fan-out Service (background).</div></div>
+  <div class="qa-b"><div class="qa-q" onclick="toggleQA(this)"><span class="ar">▶</span>What's the difference between push and pull fan-out?</div><div class="qa-a"><strong>Push (write):</strong> Pre-compute feeds at post time. Fast reads, expensive writes. Bad for celebrities. <strong>Pull (read):</strong> Gather feeds dynamically when user opens app. Cheap writes, expensive reads. Good for celebrities. Most real systems use a <strong>hybrid</strong> of both.</div></div>
+</section>
+
+<button class="bt" id="backTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+<footer><p>Fan-Out Service — System Design Study Guide</p></footer>
+
+<script>
+function toggleQA(el){el.classList.toggle('open');el.nextElementSibling.classList.toggle('open')}
+window.addEventListener('scroll',()=>{document.getElementById('backTop').classList.toggle('show',window.scrollY>400)})
+</script>
+</body>
+</html>

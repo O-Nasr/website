@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Window Functions — Interactive Study Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0608;--surface:#18101a;--surface2:#241828;--border:#3a2644;--text:#f0e4f8;--text-dim:#9070a0;--accent:#a855f7;--accent2:#7c3aed;--green:#4ade80;--red:#f87171;--orange:#fb923c;--yellow:#fbbf24;--blue:#60a5fa;--teal:#2dd4bf;--pink:#f472b6;--code-bg:#120a14;--glow:rgba(168,85,247,.12)}
+*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;min-height:100vh}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 20% 5%,rgba(168,85,247,.04)0%,transparent 55%),radial-gradient(ellipse at 80% 95%,rgba(124,58,237,.03)0%,transparent 55%);pointer-events:none;z-index:0}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.container{max-width:920px;margin:0 auto;padding:2rem 1.5rem 4rem;position:relative;z-index:1}
+.hero{text-align:center;padding:3rem 0 2.5rem}.hero-badge{display:inline-block;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-weight:700;font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;padding:.35rem 1rem;border-radius:99px;margin-bottom:1.2rem}
+.hero h1{font-size:2.2rem;font-weight:800;background:linear-gradient(135deg,#fff 30%,var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1.15;margin-bottom:.5rem}.hero p{color:var(--text-dim);font-size:1rem}
+.nav{display:flex;flex-wrap:wrap;gap:.4rem;justify-content:center;margin-bottom:2.5rem;position:sticky;top:0;z-index:10;background:rgba(10,6,8,.88);backdrop-filter:blur(12px);padding:.7rem 0;border-bottom:1px solid var(--border)}
+.nav a{color:var(--text-dim);text-decoration:none;font-size:.72rem;font-weight:600;padding:.35rem .7rem;border-radius:8px;transition:all .2s;border:1px solid transparent}.nav a:hover,.nav a.active{color:var(--accent);background:rgba(168,85,247,.08);border-color:rgba(168,85,247,.2)}
+.section{margin-bottom:2.5rem;animation:fadeUp .5s ease both}.section-header{display:flex;align-items:center;gap:.75rem;margin-bottom:1rem;padding-bottom:.7rem;border-bottom:1px solid var(--border)}
+.section-num{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.8rem;color:#fff;flex-shrink:0}.section-header h2{font-size:1.25rem;font-weight:700}
+.callout{background:linear-gradient(135deg,rgba(168,85,247,.07),rgba(124,58,237,.04));border-left:3px solid var(--accent);border-radius:0 10px 10px 0;padding:.9rem 1.1rem;margin:.8rem 0;font-size:.88rem}
+.callout.green{border-left-color:var(--green);background:linear-gradient(135deg,rgba(74,222,128,.07),rgba(74,222,128,.03))}.callout.warn{border-left-color:var(--orange);background:linear-gradient(135deg,rgba(251,146,60,.07),rgba(251,146,60,.03))}.callout.red{border-left-color:var(--red);background:linear-gradient(135deg,rgba(248,113,113,.07),rgba(248,113,113,.03))}
+pre{background:var(--code-bg);border:1px solid var(--border);border-radius:10px;padding:1rem;overflow-x:auto;margin:.7rem 0;font-family:'JetBrains Mono',monospace;font-size:.76rem;line-height:1.6;position:relative}
+pre .label{position:absolute;top:.4rem;right:.5rem;font-size:.58rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em;font-family:'Outfit',sans-serif;font-weight:600;background:var(--surface);padding:.12rem .4rem;border-radius:4px}
+.kw{color:var(--accent)}.cm{color:#4a3060;font-style:italic}.st{color:var(--green)}.fn{color:var(--yellow)}.nu{color:var(--orange)}.er{color:var(--red)}
+.table-wrap{overflow-x:auto;margin:.7rem 0;border-radius:10px;border:1px solid var(--border)}table{width:100%;border-collapse:collapse;font-size:.8rem}th{background:var(--surface2);color:var(--accent);font-weight:600;text-align:left;padding:.6rem .8rem;white-space:nowrap}td{padding:.5rem .8rem;border-top:1px solid var(--border)}tr:hover td{background:rgba(168,85,247,.03)}
+.accordion{margin:.7rem 0}.accordion-btn{width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:'Outfit',sans-serif;font-size:.85rem;font-weight:600;padding:.8rem 1rem;border-radius:10px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;transition:all .2s}.accordion-btn:hover{border-color:var(--accent);background:var(--surface2)}.accordion-btn .arrow{transition:transform .3s;font-size:.75rem;color:var(--accent)}.accordion-btn.open .arrow{transform:rotate(180deg)}.accordion-body{max-height:0;overflow:hidden;transition:max-height .4s ease;background:var(--surface);border:1px solid var(--border);border-top:none;border-radius:0 0 10px 10px;padding:0 1rem}.accordion-body.open{max-height:6000px;padding:1rem}
+
+/* Ranking visualizer */
+.rank-viz{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.3rem;margin:1rem 0}
+.rv-tabs{display:flex;gap:.3rem;flex-wrap:wrap;margin-bottom:.8rem}
+.rv-tab{background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);font-family:'Outfit',sans-serif;font-size:.72rem;font-weight:600;padding:.45rem .8rem;border-radius:8px;cursor:pointer;transition:all .2s}
+.rv-tab:hover{color:var(--text);border-color:var(--accent)}.rv-tab.active{background:rgba(168,85,247,.12);border-color:var(--accent);color:var(--accent)}
+.rv-panel{display:none}.rv-panel.active{display:block}
+.mini-table{width:100%;border-collapse:collapse;font-size:.74rem;font-family:'JetBrains Mono',monospace}.mini-table th{background:var(--surface2);padding:.35rem .6rem;font-size:.68rem;color:var(--accent)}.mini-table td{padding:.3rem .6rem;border-top:1px solid var(--border)}
+.mini-table .hl{color:var(--accent);font-weight:700}.mini-table .tie{background:rgba(251,191,36,.06)}.mini-table .skip{color:var(--orange)}
+
+/* Running total sim */
+.rt-sim{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.3rem;margin:1rem 0}
+.rt-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);font-family:'Outfit',sans-serif;font-size:.74rem;font-weight:600;padding:.45rem .9rem;border-radius:8px;cursor:pointer;transition:all .2s;margin-bottom:.8rem}
+.rt-btn:hover{color:var(--text);border-color:var(--accent)}.rt-btn.active{background:rgba(168,85,247,.12);border-color:var(--accent);color:var(--accent)}
+.rt-row{display:flex;align-items:center;gap:.4rem;margin:.3rem 0;opacity:.3;transition:all .4s}
+.rt-row.visible{opacity:1}
+.rt-cell{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:.3rem .6rem;font-family:'JetBrains Mono',monospace;font-size:.72rem;min-width:70px;text-align:center;transition:all .3s}
+.rt-cell.accent{border-color:var(--accent);color:var(--accent);background:rgba(168,85,247,.08)}
+.rt-cell.green{border-color:var(--green);color:var(--green);background:rgba(74,222,128,.08)}
+.rt-arrow{color:var(--text-dim);font-size:.7rem}
+.rt-header{display:flex;gap:.4rem;margin-bottom:.4rem}
+.rt-header span{font-size:.65rem;font-weight:700;color:var(--text-dim);min-width:70px;text-align:center;padding:0 .6rem}
+
+/* LAG demo */
+.lag-demo{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.3rem;margin:1rem 0}
+
+/* Quiz */
+.quiz-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.3rem;margin-bottom:.8rem}.quiz-card h3{font-size:.9rem;margin-bottom:.8rem;color:var(--accent)}
+.quiz-option{display:block;width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'Outfit',sans-serif;font-size:.8rem;padding:.6rem .9rem;border-radius:8px;cursor:pointer;margin-bottom:.35rem;text-align:left;transition:all .2s}.quiz-option:hover{border-color:var(--accent);transform:translateX(4px)}.quiz-option.correct{background:rgba(74,222,128,.15);border-color:var(--green);color:var(--green)}.quiz-option.wrong{background:rgba(248,113,113,.1);border-color:var(--red);color:var(--red)}.quiz-option:disabled{cursor:default;transform:none}
+.quiz-explanation{margin-top:.6rem;padding:.7rem;border-radius:8px;background:rgba(168,85,247,.06);font-size:.8rem;display:none;line-height:1.6}.quiz-explanation.show{display:block}
+.quiz-score{text-align:center;padding:1.3rem;background:var(--surface);border:1px solid var(--accent);border-radius:14px;margin-top:.8rem}.quiz-score .big{font-size:2rem;font-weight:800;color:var(--accent)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:640px){.hero h1{font-size:1.5rem}.container{padding:1rem}}
+</style>
+</head>
+<body>
+<div class="container">
+<div class="hero"><div class="hero-badge">SQL Interview Study Guide</div><h1>Window Functions</h1><p>ROW_NUMBER, RANK, DENSE_RANK, LAG, LEAD, Running Totals & Frames</p></div>
+<nav class="nav"><a href="#s1">The Problem</a><a href="#s2">Ranking</a><a href="#s3">Running Total</a><a href="#s4">LAG / LEAD</a><a href="#s5">Frames</a><a href="#s6">Quiz</a></nav>
+
+<!-- S1 -->
+<div class="section" id="s1"><div class="section-header"><div class="section-num">1</div><h2>The Problem Window Functions Solve</h2></div>
+<p style="margin-bottom:.6rem">GROUP BY collapses rows — you lose individual details. Window functions compute across rows <strong>without collapsing them</strong>.</p>
+<pre><span class="label">SQL</span><span class="cm">-- GROUP BY: 2 rows, order details GONE</span>
+<span class="kw">SELECT</span> customer_id, <span class="fn">MAX</span>(total) <span class="kw">FROM</span> orders <span class="kw">GROUP BY</span> customer_id;
+
+<span class="cm">-- Window function: ALL 4 rows, each knows its customer max</span>
+<span class="kw">SELECT</span> order_id, customer_id, total,
+    <span class="fn">MAX</span>(total) <span class="kw">OVER</span> (<span class="kw">PARTITION BY</span> customer_id) <span class="kw">AS</span> customer_max
+<span class="kw">FROM</span> orders;</pre>
+<div class="callout green"><strong>Key Insight:</strong> Window functions perform calculations across rows WITHOUT collapsing them. Every row stays. This is the fundamental difference from GROUP BY.</div>
+<div class="table-wrap"><table><tr><th></th><th>GROUP BY</th><th>PARTITION BY</th></tr>
+<tr><td><strong>Rows</strong></td><td style="color:var(--red)">Collapses — one per group</td><td style="color:var(--green)">Keeps all rows</td></tr>
+<tr><td><strong>Other columns</strong></td><td style="color:var(--red)">Only aggregated allowed</td><td style="color:var(--green)">All accessible</td></tr>
+<tr><td><strong>Row count</strong></td><td>Fewer than input</td><td>Same as input</td></tr></table></div></div>
+
+<!-- S2: Ranking -->
+<div class="section" id="s2"><div class="section-header"><div class="section-num">2</div><h2>Ranking Functions — Interactive Comparison</h2></div>
+<p style="margin-bottom:.6rem;font-size:.88rem">Same data, three different ranking strategies. Click to see how ties are handled:</p>
+
+<div class="rank-viz">
+<div class="rv-tabs">
+<button class="rv-tab active" onclick="showRank('rn')">ROW_NUMBER</button>
+<button class="rv-tab" onclick="showRank('rank')">RANK</button>
+<button class="rv-tab" onclick="showRank('dense')">DENSE_RANK</button>
+<button class="rv-tab" onclick="showRank('all')">All Three Side by Side</button>
+</div>
+
+<div class="rv-panel active" id="rv-rn">
+<p style="font-size:.8rem;color:var(--text-dim);margin-bottom:.4rem"><strong>Always unique</strong> — no ties ever. 1, 2, 3, 4</p>
+<table class="mini-table"><tr><th>name</th><th>total</th><th>ROW_NUMBER</th></tr>
+<tr><td>Ahmed</td><td>500</td><td class="hl">1</td></tr>
+<tr class="tie"><td>Sara</td><td>500</td><td class="hl">2</td></tr>
+<tr><td>Omar</td><td>300</td><td class="hl">3</td></tr>
+<tr><td>Mona</td><td>150</td><td class="hl">4</td></tr></table>
+<p style="font-size:.72rem;color:var(--orange);margin-top:.3rem">Ahmed & Sara both have 500 — but get different numbers (1, 2)</p>
+</div>
+
+<div class="rv-panel" id="rv-rank">
+<p style="font-size:.8rem;color:var(--text-dim);margin-bottom:.4rem"><strong>Ties share rank, gaps after</strong> — 1, 1, 3, 4 (skips 2)</p>
+<table class="mini-table"><tr><th>name</th><th>total</th><th>RANK</th></tr>
+<tr class="tie"><td>Ahmed</td><td>500</td><td class="hl">1</td></tr>
+<tr class="tie"><td>Sara</td><td>500</td><td class="hl">1</td></tr>
+<tr><td>Omar</td><td>300</td><td class="skip">3 ← skipped 2!</td></tr>
+<tr><td>Mona</td><td>150</td><td class="hl">4</td></tr></table>
+</div>
+
+<div class="rv-panel" id="rv-dense">
+<p style="font-size:.8rem;color:var(--text-dim);margin-bottom:.4rem"><strong>Ties share rank, no gaps</strong> — 1, 1, 2, 3</p>
+<table class="mini-table"><tr><th>name</th><th>total</th><th>DENSE_RANK</th></tr>
+<tr class="tie"><td>Ahmed</td><td>500</td><td class="hl">1</td></tr>
+<tr class="tie"><td>Sara</td><td>500</td><td class="hl">1</td></tr>
+<tr><td>Omar</td><td>300</td><td class="hl">2 ← no gap!</td></tr>
+<tr><td>Mona</td><td>150</td><td class="hl">3</td></tr></table>
+</div>
+
+<div class="rv-panel" id="rv-all">
+<p style="font-size:.8rem;color:var(--text-dim);margin-bottom:.4rem"><strong>All three side by side</strong> — spot the differences on ties:</p>
+<table class="mini-table"><tr><th>name</th><th>total</th><th>ROW_NUMBER</th><th>RANK</th><th>DENSE_RANK</th></tr>
+<tr class="tie"><td>Ahmed</td><td>500</td><td>1</td><td>1</td><td>1</td></tr>
+<tr class="tie"><td>Sara</td><td>500</td><td>2</td><td>1</td><td>1</td></tr>
+<tr><td>Omar</td><td>300</td><td>3</td><td class="skip">3</td><td>2</td></tr>
+<tr><td>Mona</td><td>150</td><td>4</td><td>4</td><td>3</td></tr></table>
+</div>
+</div>
+
+<div class="callout warn">⚠️ <strong>Top N Per Group:</strong> Use ROW_NUMBER, not RANK. If two orders tie, RANK gives both rank=1 → more than N rows. ROW_NUMBER always picks exactly N. Must wrap in CTE/subquery — can't filter window functions in WHERE.</div>
+
+<pre><span class="label">SQL</span><span class="cm">-- Top 1 order per customer (classic interview question)</span>
+<span class="kw">WITH</span> ranked <span class="kw">AS</span> (
+    <span class="kw">SELECT</span> *, <span class="fn">ROW_NUMBER</span>() <span class="kw">OVER</span> (
+        <span class="kw">PARTITION BY</span> customer_id <span class="kw">ORDER BY</span> total <span class="kw">DESC</span>
+    ) <span class="kw">AS</span> rn <span class="kw">FROM</span> orders
+)
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> ranked <span class="kw">WHERE</span> rn = <span class="nu">1</span>;</pre></div>
+
+<!-- S3: Running Total -->
+<div class="section" id="s3"><div class="section-header"><div class="section-num">3</div><h2>Running Total — Live Animation</h2></div>
+<p style="margin-bottom:.6rem;font-size:.88rem">Adding <code>ORDER BY</code> inside OVER changes SUM from a total to a <strong>cumulative running sum</strong>:</p>
+
+<div class="rt-sim">
+<button class="rt-btn" id="rt-start" onclick="animateRT()">▶ Animate Running Total</button>
+<div class="rt-header"><span>order_id</span><span>cust</span><span>total</span><span style="color:var(--accent)">running</span></div>
+<div class="rt-row" id="rt-0"><div class="rt-cell">101</div><div class="rt-cell">1</div><div class="rt-cell accent">500</div><div class="rt-arrow">=</div><div class="rt-cell green" id="rt-v0">?</div></div>
+<div class="rt-row" id="rt-1"><div class="rt-cell">102</div><div class="rt-cell">1</div><div class="rt-cell accent">200</div><div class="rt-arrow">=</div><div class="rt-cell green" id="rt-v1">?</div></div>
+<div class="rt-row" id="rt-2"><div class="rt-cell">103</div><div class="rt-cell">2</div><div class="rt-cell accent">300</div><div class="rt-arrow">=</div><div class="rt-cell green" id="rt-v2">?</div></div>
+<div class="rt-row" id="rt-3"><div class="rt-cell">104</div><div class="rt-cell">2</div><div class="rt-cell accent">150</div><div class="rt-arrow">=</div><div class="rt-cell green" id="rt-v3">?</div></div>
+</div>
+
+<div class="callout"><strong>Key:</strong> Without ORDER BY in OVER → partition total (same for all rows). With ORDER BY → cumulative running total. The ORDER BY is what creates the running behavior.</div></div>
+
+<!-- S4: LAG / LEAD -->
+<div class="section" id="s4"><div class="section-header"><div class="section-num">4</div><h2>LAG & LEAD — Access Other Rows</h2></div>
+<p style="margin-bottom:.6rem;font-size:.88rem">Access previous/next row values without a self join:</p>
+
+<div class="lag-demo">
+<table class="mini-table"><tr><th>order_id</th><th>total</th><th style="color:var(--blue)">LAG(total,1)</th><th style="color:var(--accent)">change</th></tr>
+<tr><td>101</td><td>500</td><td style="color:var(--text-dim);font-style:italic">NULL</td><td style="color:var(--text-dim)">NULL</td></tr>
+<tr><td>102</td><td>200</td><td style="color:var(--blue)">500</td><td style="color:var(--red)">-300</td></tr>
+<tr><td>103</td><td>300</td><td style="color:var(--blue)">200</td><td style="color:var(--green)">+100</td></tr>
+<tr><td>104</td><td>150</td><td style="color:var(--blue)">300</td><td style="color:var(--red)">-150</td></tr></table>
+<p style="font-size:.75rem;color:var(--text-dim);margin-top:.4rem">LAG = previous row (NULL for first). LEAD = next row (NULL for last). Real use: month-over-month growth, daily comparisons.</p>
+</div>
+
+<div class="accordion"><button class="accordion-btn" onclick="toggleAcc(this)"><span>NTILE, FIRST_VALUE, LAST_VALUE</span><span class="arrow">▼</span></button><div class="accordion-body">
+<pre><span class="label">SQL</span><span class="cm">-- NTILE: divide into quartiles</span>
+<span class="fn">NTILE</span>(<span class="nu">4</span>) <span class="kw">OVER</span> (<span class="kw">ORDER BY</span> total_spent <span class="kw">DESC</span>) <span class="kw">AS</span> quartile
+<span class="cm">-- quartile 1 = top 25%, quartile 4 = bottom 25%</span>
+
+<span class="cm">-- FIRST_VALUE: first order total per customer</span>
+<span class="fn">FIRST_VALUE</span>(total) <span class="kw">OVER</span> (
+    <span class="kw">PARTITION BY</span> customer_id <span class="kw">ORDER BY</span> order_id
+) <span class="kw">AS</span> first_order</pre></div></div></div>
+
+<!-- S5: Frames -->
+<div class="section" id="s5"><div class="section-header"><div class="section-num">5</div><h2>ROWS BETWEEN — Frame Definition</h2></div>
+<p style="margin-bottom:.5rem;font-size:.88rem">Controls exactly which rows are included in the calculation window:</p>
+<div class="table-wrap"><table><tr><th>Frame</th><th>Meaning</th><th>Use Case</th></tr>
+<tr><td><code>UNBOUNDED PRECEDING AND CURRENT ROW</code></td><td>First row → current</td><td>Running total</td></tr>
+<tr><td><code>2 PRECEDING AND CURRENT ROW</code></td><td>Last 3 rows</td><td>Moving average</td></tr>
+<tr><td><code>CURRENT ROW AND UNBOUNDED FOLLOWING</code></td><td>Current → last row</td><td>Reverse running</td></tr>
+<tr><td><code>UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING</code></td><td>All rows</td><td>Partition total</td></tr></table></div>
+<pre><span class="label">SQL</span><span class="cm">-- 7-day moving average</span>
+<span class="kw">SELECT</span> sale_date, daily_total,
+    <span class="fn">AVG</span>(daily_total) <span class="kw">OVER</span> (
+        <span class="kw">ORDER BY</span> sale_date
+        <span class="kw">ROWS BETWEEN</span> <span class="nu">6</span> <span class="kw">PRECEDING AND CURRENT ROW</span>
+    ) <span class="kw">AS</span> moving_avg_7d
+<span class="kw">FROM</span> daily_sales;</pre>
+<div class="callout red">⚠️ Window functions run after WHERE/GROUP BY/HAVING but before final SELECT. Can't use in WHERE — must wrap in CTE/subquery first.</div></div>
+
+<!-- S6: Quiz -->
+<div class="section" id="s6"><div class="section-header"><div class="section-num">6</div><h2>Test Yourself</h2></div>
+
+<div class="quiz-card" id="q1"><h3>Q1: ROW_NUMBER vs RANK — two rows tied at 500. What happens?</h3>
+<button class="quiz-option" onclick="answer(this,'q1',true)">ROW_NUMBER: 1, 2 (always unique). RANK: 1, 1 (tie), then 3 (gap).</button>
+<button class="quiz-option" onclick="answer(this,'q1',false)">Both give 1, 1</button>
+<div class="quiz-explanation" id="q1-exp">ROW_NUMBER never ties — assigns unique sequential numbers. RANK gives tied values the same rank but skips the next. DENSE_RANK gives same rank but doesn't skip: 1, 1, 2.</div></div>
+
+<div class="quiz-card" id="q2"><h3>Q2: Top 1 per customer — why ROW_NUMBER not RANK?</h3>
+<button class="quiz-option" onclick="answer(this,'q2',true)">If two orders tie, RANK gives both rank=1 → more than 1 row. ROW_NUMBER guarantees exactly 1.</button>
+<button class="quiz-option" onclick="answer(this,'q2',false)">ROW_NUMBER is faster</button>
+<div class="quiz-explanation" id="q2-exp">RANK returns ALL tied rows at rank 1 — so you might get 2 or 3 rows per customer. ROW_NUMBER arbitrarily picks one even for ties, guaranteeing exactly 1 row per partition when filtered with <code>WHERE rn = 1</code>.</div></div>
+
+<div class="quiz-card" id="q3"><h3>Q3: What does ORDER BY inside OVER do to SUM()?</h3>
+<button class="quiz-option" onclick="answer(this,'q3',false)">Sorts the final output</button>
+<button class="quiz-option" onclick="answer(this,'q3',true)">Changes SUM from a partition total to a cumulative running total</button>
+<div class="quiz-explanation" id="q3-exp">Without ORDER BY in OVER: SUM returns the same total for every row in the partition. With ORDER BY: SUM becomes cumulative — each row shows the running sum up to that point. The ORDER BY creates the "running" behavior.</div></div>
+
+<div class="quiz-card" id="q4"><h3>Q4: Why can't you use a window function in WHERE?</h3>
+<button class="quiz-option" onclick="answer(this,'q4',true)">WHERE runs before window functions in execution order — the result doesn't exist yet</button>
+<button class="quiz-option" onclick="answer(this,'q4',false)">SQL syntax doesn't allow functions in WHERE</button>
+<div class="quiz-explanation" id="q4-exp">Execution order: FROM → WHERE → GROUP BY → HAVING → <strong>Window Functions</strong> → SELECT → ORDER BY. Window functions run after WHERE, so at WHERE time the window result doesn't exist. Wrap in CTE/subquery first.</div></div>
+
+<div class="quiz-card" id="q5"><h3>Q5: What is LAG(total, 1) used for?</h3>
+<button class="quiz-option" onclick="answer(this,'q5',true)">Returns the value from the previous row — used for period-over-period comparison without a self join</button>
+<button class="quiz-option" onclick="answer(this,'q5',false)">Delays the query execution by 1 second</button>
+<div class="quiz-explanation" id="q5-exp">LAG(column, n) looks back n rows. Real use: month-over-month revenue (<code>current - LAG(revenue,1)</code> = change). Without LAG, you'd need a complex self join with offset conditions.</div></div>
+
+<div class="quiz-score" id="score-box" style="display:none"><div class="big" id="score-text"></div><p style="color:var(--text-dim);margin-top:.3rem">Window Functions Quiz</p></div></div>
+
+<!-- Interview Answers -->
+<div class="section" id="s7"><div class="section-header"><div class="section-num">★</div><h2>Interview Answer Bank</h2></div>
+<div class="accordion"><button class="accordion-btn" onclick="toggleAcc(this)"><span>Q: Window function vs GROUP BY?</span><span class="arrow">▼</span></button><div class="accordion-body"><div class="callout green">Window functions compute across rows WITHOUT collapsing them — every row stays. GROUP BY reduces to one row per group, losing individual details. With GROUP BY you get max total per customer but lose order_id. With OVER(PARTITION BY) every order row stays and also shows the customer max.</div></div></div>
+<div class="accordion"><button class="accordion-btn" onclick="toggleAcc(this)"><span>Q: ROW_NUMBER vs RANK vs DENSE_RANK?</span><span class="arrow">▼</span></button><div class="accordion-body"><div class="callout green">All assign positions but differ on ties. ROW_NUMBER = 1,2,3,4 (always unique). RANK = 1,1,3,4 (ties share, gaps after). DENSE_RANK = 1,1,2,3 (ties share, no gaps). Use ROW_NUMBER for exactly-one-per-group. RANK/DENSE_RANK when ties should be visible.</div></div></div>
+<div class="accordion"><button class="accordion-btn" onclick="toggleAcc(this)"><span>Q: How to calculate a running total?</span><span class="arrow">▼</span></button><div class="accordion-body"><div class="callout green"><code>SUM(total) OVER (PARTITION BY customer_id ORDER BY order_id)</code>. The ORDER BY inside OVER changes SUM from partition total to cumulative. Without ORDER BY = same total for all rows. With = running sum up to current row.</div></div></div>
+<div class="accordion"><button class="accordion-btn" onclick="toggleAcc(this)"><span>Q: LAG() — real-world use?</span><span class="arrow">▼</span></button><div class="accordion-body"><div class="callout green">LAG(column, n) returns value from n rows back. Use: month-over-month revenue growth — current month minus LAG(revenue, 1). Also daily metrics vs yesterday. Without LAG you'd need a complex self join. LAG is cleaner and faster.</div></div></div>
+<div class="accordion"><button class="accordion-btn" onclick="toggleAcc(this)"><span>Q: Why can't you filter window functions in WHERE?</span><span class="arrow">▼</span></button><div class="accordion-body"><div class="callout green">Execution order: WHERE runs before window functions. At WHERE time, the window result doesn't exist. Fix: wrap in CTE or subquery. Window function runs in inner query, outer WHERE filters the result.</div></div></div></div>
+</div>
+
+<script>
+function toggleAcc(btn){btn.classList.toggle('open');btn.nextElementSibling.classList.toggle('open')}
+function showRank(id){document.querySelectorAll('.rv-tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.rv-panel').forEach(p=>p.classList.remove('active'));event.target.classList.add('active');document.getElementById('rv-'+id).classList.add('active')}
+
+// Running total animation
+let rtTimer=null;
+function animateRT(){
+  clearInterval(rtTimer);
+  document.querySelectorAll('.rt-row').forEach(r=>r.classList.remove('visible'));
+  ['rt-v0','rt-v1','rt-v2','rt-v3'].forEach(id=>document.getElementById(id).textContent='?');
+  document.getElementById('rt-start').textContent='▶ Running...';
+  document.getElementById('rt-start').classList.add('active');
+  const steps=[
+    {row:'rt-0',val:'rt-v0',v:'500',label:'500'},
+    {row:'rt-1',val:'rt-v1',v:'700',label:'500+200=700'},
+    {row:'rt-2',val:'rt-v2',v:'300',label:'300 (new customer, resets!)'},
+    {row:'rt-3',val:'rt-v3',v:'450',label:'300+150=450'},
+  ];
+  let i=0;
+  rtTimer=setInterval(()=>{
+    if(i>=steps.length){clearInterval(rtTimer);document.getElementById('rt-start').textContent='▶ Run Again';document.getElementById('rt-start').classList.remove('active');return}
+    const s=steps[i];
+    document.getElementById(s.row).classList.add('visible');
+    document.getElementById(s.val).textContent=s.v;
+    document.getElementById(s.val).title=s.label;
+    i++;
+  },800);
+}
+
+// Quiz
+let answered=0,correct=0,total=5;
+function answer(btn,qId,isCorrect){const card=document.getElementById(qId);if(card.dataset.answered)return;card.dataset.answered='1';answered++;if(isCorrect){btn.classList.add('correct');correct++;}else btn.classList.add('wrong');card.querySelectorAll('.quiz-option').forEach(o=>o.disabled=true);document.getElementById(qId+'-exp').classList.add('show');if(answered===total){document.getElementById('score-box').style.display='block';document.getElementById('score-text').textContent=correct+' / '+total;}}
+const sections=document.querySelectorAll('.section');const navLinks=document.querySelectorAll('.nav a');
+window.addEventListener('scroll',()=>{let c='';sections.forEach(s=>{if(window.scrollY>=s.offsetTop-120)c=s.id});navLinks.forEach(a=>{a.classList.remove('active');if(a.getAttribute('href')==='#'+c)a.classList.add('active')})});
+</script>
+</body>
+</html>

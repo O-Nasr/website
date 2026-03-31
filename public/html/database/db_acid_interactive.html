@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ACID in Databases — Interactive Study Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0c0808;--surface:#1c1214;--surface2:#2a1c1e;--border:#442830;--text:#f0e0e2;--text-dim:#a07880;--accent:#fb7185;--accent2:#e11d48;--green:#4ade80;--red:#f87171;--orange:#fb923c;--yellow:#fbbf24;--blue:#60a5fa;--purple:#c084fc;--teal:#2dd4bf;--code-bg:#140c0e;--glow:rgba(251,113,133,.12)}
+*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;min-height:100vh}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 20% 5%,rgba(251,113,133,.04)0%,transparent 55%),radial-gradient(ellipse at 80% 95%,rgba(225,29,72,.03)0%,transparent 55%);pointer-events:none;z-index:0}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.container{max-width:920px;margin:0 auto;padding:2rem 1.5rem 4rem;position:relative;z-index:1}
+.hero{text-align:center;padding:3rem 0 2.5rem}.hero-badge{display:inline-block;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-weight:700;font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;padding:.35rem 1rem;border-radius:99px;margin-bottom:1.2rem}
+.hero h1{font-size:2.5rem;font-weight:800;background:linear-gradient(135deg,#fff 30%,var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1.15;margin-bottom:.5rem}.hero p{color:var(--text-dim);font-size:1rem}
+.nav{display:flex;flex-wrap:wrap;gap:.4rem;justify-content:center;margin-bottom:2.5rem;position:sticky;top:0;z-index:10;background:rgba(12,8,8,.88);backdrop-filter:blur(12px);padding:.7rem 0;border-bottom:1px solid var(--border)}
+.nav a{color:var(--text-dim);text-decoration:none;font-size:.72rem;font-weight:600;padding:.35rem .7rem;border-radius:8px;transition:all .2s;border:1px solid transparent}.nav a:hover,.nav a.active{color:var(--accent);background:rgba(251,113,133,.08);border-color:rgba(251,113,133,.2)}
+.section{margin-bottom:2.5rem;animation:fadeUp .5s ease both}.section-header{display:flex;align-items:center;gap:.75rem;margin-bottom:1rem;padding-bottom:.7rem;border-bottom:1px solid var(--border)}
+.section-num{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.8rem;color:#fff;flex-shrink:0}.section-header h2{font-size:1.25rem;font-weight:700}
+.callout{background:linear-gradient(135deg,rgba(251,113,133,.07),rgba(225,29,72,.04));border-left:3px solid var(--accent);border-radius:0 10px 10px 0;padding:.9rem 1.1rem;margin:.8rem 0;font-size:.88rem}
+.callout.green{border-left-color:var(--green);background:linear-gradient(135deg,rgba(74,222,128,.07),rgba(74,222,128,.03))}.callout.blue{border-left-color:var(--blue);background:linear-gradient(135deg,rgba(96,165,250,.07),rgba(96,165,250,.03))}
+.table-wrap{overflow-x:auto;margin:.7rem 0;border-radius:10px;border:1px solid var(--border)}table{width:100%;border-collapse:collapse;font-size:.8rem}th{background:var(--surface2);color:var(--accent);font-weight:600;text-align:left;padding:.6rem .8rem;white-space:nowrap}td{padding:.5rem .8rem;border-top:1px solid var(--border)}tr:hover td{background:rgba(251,113,133,.03)}
+.accordion{margin:.7rem 0}.accordion-btn{width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:'Outfit',sans-serif;font-size:.85rem;font-weight:600;padding:.8rem 1rem;border-radius:10px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;transition:all .2s}
+.accordion-btn:hover{border-color:var(--accent);background:var(--surface2)}.accordion-btn .arrow{transition:transform .3s;font-size:.75rem;color:var(--accent)}.accordion-btn.open .arrow{transform:rotate(180deg)}
+.accordion-body{max-height:0;overflow:hidden;transition:max-height .4s ease;background:var(--surface);border:1px solid var(--border);border-top:none;border-radius:0 0 10px 10px;padding:0 1rem}.accordion-body.open{max-height:5000px;padding:1rem}
+
+/* ACID cards */
+.acid-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.6rem;margin:1rem 0}
+.acid-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.1rem;cursor:pointer;transition:all .3s}
+.acid-card:hover{border-color:var(--accent);transform:translateY(-2px)}
+.acid-card.active{border-color:var(--accent);box-shadow:0 4px 16px var(--glow)}
+.acid-letter{font-size:1.8rem;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:.2rem}
+.acid-name{font-size:.85rem;font-weight:700;margin-bottom:.3rem}
+.acid-desc{font-size:.78rem;color:var(--text-dim);line-height:1.5}
+.acid-detail{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.2rem;margin-top:.5rem;display:none}
+.acid-detail.show{display:block}
+
+/* TX sim */
+.tx-sim{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.2rem;margin:.8rem 0}
+.tx-controls{display:flex;gap:.3rem;flex-wrap:wrap;margin-bottom:.8rem}
+.tx-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);font-family:'Outfit',sans-serif;font-size:.74rem;font-weight:600;padding:.45rem .9rem;border-radius:8px;cursor:pointer;transition:all .2s}
+.tx-btn:hover{color:var(--text);border-color:var(--accent)}.tx-btn.active{background:rgba(251,113,133,.12);border-color:var(--accent);color:var(--accent)}
+.tx-log{background:var(--code-bg);border:1px solid var(--border);border-radius:10px;padding:.8rem;font-family:'JetBrains Mono',monospace;font-size:.7rem;line-height:1.8;max-height:220px;overflow-y:auto}
+.tx-log .ok{color:var(--green)}.tx-log .bad{color:var(--red)}.tx-log .warn{color:var(--orange)}.tx-log .dim{color:var(--text-dim)}.tx-log .hl{color:var(--accent)}
+
+/* Quiz */
+.quiz-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.3rem;margin-bottom:.8rem}.quiz-card h3{font-size:.9rem;margin-bottom:.8rem;color:var(--accent)}
+.quiz-option{display:block;width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'Outfit',sans-serif;font-size:.8rem;padding:.6rem .9rem;border-radius:8px;cursor:pointer;margin-bottom:.35rem;text-align:left;transition:all .2s}
+.quiz-option:hover{border-color:var(--accent);transform:translateX(4px)}.quiz-option.correct{background:rgba(74,222,128,.15);border-color:var(--green);color:var(--green)}.quiz-option.wrong{background:rgba(248,113,113,.1);border-color:var(--red);color:var(--red)}.quiz-option:disabled{cursor:default;transform:none}
+.quiz-explanation{margin-top:.6rem;padding:.7rem;border-radius:8px;background:rgba(251,113,133,.06);font-size:.8rem;display:none;line-height:1.6}.quiz-explanation.show{display:block}
+.quiz-score{text-align:center;padding:1.3rem;background:var(--surface);border:1px solid var(--accent);border-radius:14px;margin-top:.8rem}.quiz-score .big{font-size:2rem;font-weight:800;color:var(--accent)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:640px){.hero h1{font-size:1.7rem}.container{padding:1rem}.acid-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="container">
+<div class="hero"><div class="hero-badge">Database Interview Study Guide</div><h1>ACID</h1><p>Atomicity, Consistency, Isolation, Durability — deep dive</p></div>
+<nav class="nav"><a href="#s1">Overview</a><a href="#s2">Isolation Deep Dive</a><a href="#s3">TX Simulator</a><a href="#s4">Quiz</a></nav>
+
+<!-- S1: Overview -->
+<div class="section" id="s1"><div class="section-header"><div class="section-num">1</div><h2>The Four Properties</h2></div>
+<p style="margin-bottom:.8rem">Click each card for details:</p>
+<div class="acid-grid">
+<div class="acid-card" onclick="showAcid('a')"><div class="acid-letter">A</div><div class="acid-name">Atomicity</div><div class="acid-desc">All or nothing. Transaction fully completes or fully rolls back.</div></div>
+<div class="acid-card" onclick="showAcid('c')"><div class="acid-letter">C</div><div class="acid-name">Consistency</div><div class="acid-desc">Valid state to valid state. All constraints respected.</div></div>
+<div class="acid-card" onclick="showAcid('i')"><div class="acid-letter">I</div><div class="acid-name">Isolation</div><div class="acid-desc">Concurrent transactions don't see each other's intermediate states.</div></div>
+<div class="acid-card" onclick="showAcid('d')"><div class="acid-letter">D</div><div class="acid-name">Durability</div><div class="acid-desc">Committed = permanent, even after crashes.</div></div>
+</div>
+
+<div class="acid-detail" id="acid-a"><p style="font-size:.88rem"><strong>Bank transfer:</strong> Deduct $100 from A, add $100 to B. If crash mid-way, both operations roll back. Implemented via <strong>Write-Ahead Logging (WAL)</strong> — changes logged to disk before applying. Undo logs reverse uncommitted changes on recovery.</p></div>
+<div class="acid-detail" id="acid-c"><p style="font-size:.88rem"><strong>Constraint:</strong> <code>balance >= 0</code>. If a TX tries to set balance = -500, the DB rejects and rolls back. Both the DB (structural constraints) and the developer (business logic) are responsible.</p></div>
+<div class="acid-detail" id="acid-i"><p style="font-size:.88rem"><strong>Isolation levels</strong> define how much interaction is allowed between concurrent TXs. Implemented via <strong>Locking</strong> (pessimistic) or <strong>MVCC</strong> (keeps multiple row versions — writers don't block readers). See deep dive below.</p></div>
+<div class="acid-detail" id="acid-d"><p style="font-size:.88rem"><strong>How:</strong> Changes written to WAL on disk first → <code>fsync</code> forces to physical disk → COMMIT acknowledged → On crash, DB replays WAL to restore all committed TXs.</p></div>
+</div>
+
+<!-- S2: Isolation -->
+<div class="section" id="s2"><div class="section-header"><div class="section-num">2</div><h2>Isolation — Deep Dive</h2></div>
+<p style="font-size:.88rem;margin-bottom:.6rem"><strong>The 3 core anomalies:</strong></p>
+<div class="table-wrap"><table><tr><th>Anomaly</th><th>What Happens</th></tr>
+<tr><td style="color:var(--red)"><strong>Dirty Read</strong></td><td>Reading data another TX modified but NOT committed yet. May be rolled back.</td></tr>
+<tr><td style="color:var(--orange)"><strong>Non-Repeatable Read</strong></td><td>Same row read twice → different values (another TX updated & committed in between).</td></tr>
+<tr><td style="color:var(--yellow)"><strong>Phantom Read</strong></td><td>Same query twice → different ROW SET (another TX inserted/deleted matching rows).</td></tr></table></div>
+<div class="callout blue"><strong>Key distinction:</strong> Non-Repeatable = existing row changed. Phantom = row <em>set</em> changed (new/deleted rows).</div>
+
+<div class="table-wrap" style="margin-top:.8rem"><table><tr><th>Level</th><th>Dirty Read</th><th>Non-Repeatable</th><th>Phantom</th><th>Use Case</th></tr>
+<tr><td><strong>Read Uncommitted</strong></td><td style="color:var(--red)">YES</td><td style="color:var(--red)">YES</td><td style="color:var(--red)">YES</td><td>Rough analytics</td></tr>
+<tr><td><strong>Read Committed</strong></td><td style="color:var(--green)">NO</td><td style="color:var(--red)">YES</td><td style="color:var(--red)">YES</td><td>Most web apps (PG default)</td></tr>
+<tr><td><strong>Repeatable Read</strong></td><td style="color:var(--green)">NO</td><td style="color:var(--green)">NO</td><td style="color:var(--orange)">DB-dependent</td><td>Reports (MySQL default)</td></tr>
+<tr><td><strong>Serializable</strong></td><td style="color:var(--green)">NO</td><td style="color:var(--green)">NO</td><td style="color:var(--green)">NO</td><td>Banking, inventory</td></tr></table></div>
+<div class="callout"><strong>Defaults:</strong> PostgreSQL = Read Committed. MySQL InnoDB = Repeatable Read.</div>
+</div>
+
+<!-- S3: TX Simulator -->
+<div class="section" id="s3"><div class="section-header"><div class="section-num">3</div><h2>Transaction Scenario Simulator</h2></div>
+<div class="tx-sim">
+<div class="tx-controls">
+<button class="tx-btn" onclick="runTX('crash')">Crash Mid-Transfer (Atomicity)</button>
+<button class="tx-btn" onclick="runTX('constraint')">Constraint Violation (Consistency)</button>
+<button class="tx-btn" onclick="runTX('dirty')">Dirty Read (Isolation)</button>
+<button class="tx-btn" onclick="runTX('power')">Power Failure After Commit (Durability)</button>
+</div>
+<div class="tx-log" id="tx-log"><span class="dim">Click a scenario...</span></div>
+</div></div>
+
+<!-- S4: Quiz -->
+<div class="section" id="s4"><div class="section-header"><div class="section-num">4</div><h2>Test Yourself</h2></div>
+<div class="quiz-card" id="q1"><h3>Q1: Bank transfer crashes after deducting A but before adding to B. Which property handles this?</h3><button class="quiz-option" onclick="answer(this,'q1',true)">Atomicity — undo logs roll back the incomplete transaction</button><button class="quiz-option" onclick="answer(this,'q1',false)">Durability</button><button class="quiz-option" onclick="answer(this,'q1',false)">Consistency</button><div class="quiz-explanation" id="q1-exp">Atomicity = all or nothing. The DB uses WAL and undo logs to roll back the incomplete deduction. Neither account is modified — as if the transaction never happened.</div></div>
+<div class="quiz-card" id="q2"><h3>Q2: What's the difference between Non-Repeatable Read and Phantom Read?</h3><button class="quiz-option" onclick="answer(this,'q2',true)">Non-Repeatable = existing row changed. Phantom = row set changed (new/deleted rows)</button><button class="quiz-option" onclick="answer(this,'q2',false)">They're the same thing</button><div class="quiz-explanation" id="q2-exp">Non-Repeatable: you read the same row twice and get different values because another TX updated it. Phantom: you run the same query twice and get a different <em>set of rows</em> because another TX inserted or deleted matching rows.</div></div>
+<div class="quiz-card" id="q3"><h3>Q3: 1000 concurrent users, good performance, minor inconsistencies OK. Which isolation level?</h3><button class="quiz-option" onclick="answer(this,'q3',true)">Read Committed — prevents dirty reads, good balance of safety and performance</button><button class="quiz-option" onclick="answer(this,'q3',false)">Serializable — safest option</button><button class="quiz-option" onclick="answer(this,'q3',false)">Read Uncommitted — fastest</button><div class="quiz-explanation" id="q3-exp">Read Committed prevents dirty reads while avoiding long-term locks. It's PostgreSQL's default for a reason — good balance. Serializable would be too expensive for 1000 concurrent users.</div></div>
+<div class="quiz-card" id="q4"><h3>Q4: TX commits, then power failure 1 second later. Is the data still there?</h3><button class="quiz-option" onclick="answer(this,'q4',true)">Yes — Durability guarantees committed data survives crashes (via WAL + fsync)</button><button class="quiz-option" onclick="answer(this,'q4',false)">No — data in RAM is lost</button><div class="quiz-explanation" id="q4-exp">Durability: the DB writes to WAL and calls fsync (forces to physical disk) BEFORE acknowledging COMMIT. On restart, it replays the WAL to restore all committed transactions.</div></div>
+<div class="quiz-score" id="score-box" style="display:none"><div class="big" id="score-text"></div><p style="color:var(--text-dim);margin-top:.3rem">ACID Quiz</p></div></div>
+
+<!-- Interview Answers -->
+<div class="section" id="s5"><div class="section-header"><div class="section-num">★</div><h2>Interview Answer Bank</h2></div>
+<div class="accordion"><button class="accordion-btn" onclick="toggleAcc(this)"><span>Q: Explain ACID</span><span class="arrow">▼</span></button><div class="accordion-body"><div class="callout green">Atomicity (all or nothing), Consistency (valid state to valid state), Isolation (no interference between concurrent TXs), Durability (committed survives crashes). Bank transfer example: deduct A + add B must both succeed or both roll back. ACID ensures reliable transaction processing.</div></div></div>
+<div class="accordion"><button class="accordion-btn" onclick="toggleAcc(this)"><span>Q: Why do isolation levels exist?</span><span class="arrow">▼</span></button><div class="accordion-body"><div class="callout green">Multiple transactions run concurrently and without control they can interfere — dirty reads (reading uncommitted data), non-repeatable reads (same row changed), phantom reads (row set changed). Isolation levels balance safety vs performance.</div></div></div>
+<div class="accordion"><button class="accordion-btn" onclick="toggleAcc(this)"><span>Q: How is durability implemented?</span><span class="arrow">▼</span></button><div class="accordion-body"><div class="callout green">Changes written to WAL (Write-Ahead Log) on disk first → fsync forces to physical disk → COMMIT acknowledged to client. On crash, DB replays WAL to restore all committed transactions. This is why committed = permanent.</div></div></div></div>
+</div>
+
+<script>
+function toggleAcc(btn){btn.classList.toggle('open');btn.nextElementSibling.classList.toggle('open')}
+function showAcid(letter){
+  document.querySelectorAll('.acid-card').forEach(c=>c.classList.remove('active'));
+  document.querySelectorAll('.acid-detail').forEach(d=>d.classList.remove('show'));
+  event.target.closest('.acid-card').classList.add('active');
+  document.getElementById('acid-'+letter).classList.add('show');
+}
+
+// TX simulator
+let txTimer=null;
+function runTX(mode){
+  clearInterval(txTimer);
+  const log=document.getElementById('tx-log');log.innerHTML='';
+  document.querySelectorAll('.tx-btn').forEach(b=>b.classList.remove('active'));
+  event.target.classList.add('active');
+  const lines=[];
+  if(mode==='crash'){
+    lines.push({c:'hl',t:'BEGIN TRANSACTION'});
+    lines.push({c:'dim',t:'Account A: $1000  |  Account B: $500'});
+    lines.push({c:'warn',t:'UPDATE accounts SET balance = 900 WHERE id = A  ← deducted $100'});
+    lines.push({c:'bad',t:'💥 SYSTEM CRASH — before adding to B!'});
+    lines.push({c:'dim',t:'...'});
+    lines.push({c:'hl',t:'RECOVERY: reading WAL undo logs...'});
+    lines.push({c:'ok',t:'ROLLBACK: Account A restored to $1000'});
+    lines.push({c:'ok',t:'Account A: $1000  |  Account B: $500  ← as if TX never happened ✅'});
+    lines.push({c:'ok',t:'✅ ATOMICITY — all or nothing'});
+  } else if(mode==='constraint'){
+    lines.push({c:'hl',t:'BEGIN TRANSACTION'});
+    lines.push({c:'dim',t:'Account A: $200  |  CHECK (balance >= 0)'});
+    lines.push({c:'warn',t:'UPDATE accounts SET balance = balance - 500 WHERE id = A'});
+    lines.push({c:'bad',t:'❌ CHECK CONSTRAINT VIOLATED: balance would be -300'});
+    lines.push({c:'ok',t:'ROLLBACK — transaction rejected'});
+    lines.push({c:'ok',t:'Account A: $200 ← unchanged ✅'});
+    lines.push({c:'ok',t:'✅ CONSISTENCY — DB stays in valid state'});
+  } else if(mode==='dirty'){
+    lines.push({c:'hl',t:'TX1: BEGIN  |  TX2: BEGIN'});
+    lines.push({c:'warn',t:'TX1: UPDATE balance = 0 WHERE id = A  (not committed yet!)'});
+    lines.push({c:'dim',t:'TX2: SELECT balance FROM accounts WHERE id = A'});
+    lines.push({c:'bad',t:'Read Uncommitted → TX2 sees balance = 0 (DIRTY READ!)'});
+    lines.push({c:'bad',t:'TX1: ROLLBACK — balance is actually $1000'});
+    lines.push({c:'bad',t:'TX2 made decisions based on phantom data 😱'});
+    lines.push({c:'dim',t:''});
+    lines.push({c:'ok',t:'Read Committed → TX2 would NOT see the uncommitted change'});
+    lines.push({c:'ok',t:'✅ ISOLATION — higher levels prevent this'});
+  } else {
+    lines.push({c:'hl',t:'BEGIN TRANSACTION'});
+    lines.push({c:'dim',t:'INSERT INTO orders VALUES (1001, "Laptop", 999)'});
+    lines.push({c:'hl',t:'COMMIT — writing to WAL...'});
+    lines.push({c:'ok',t:'WAL written to disk via fsync ✅'});
+    lines.push({c:'ok',t:'COMMIT acknowledged to client ✅'});
+    lines.push({c:'bad',t:'⚡ POWER FAILURE — 1 second later'});
+    lines.push({c:'dim',t:'...'});
+    lines.push({c:'hl',t:'SYSTEM RESTART — replaying WAL...'});
+    lines.push({c:'ok',t:'Order 1001 restored from WAL ✅'});
+    lines.push({c:'ok',t:'✅ DURABILITY — committed = permanent'});
+  }
+  let i=0;
+  txTimer=setInterval(()=>{if(i>=lines.length){clearInterval(txTimer);return}const l=lines[i];log.innerHTML+=`<span class="${l.c}">${l.t}</span>\n`;log.scrollTop=log.scrollHeight;i++},350);
+}
+
+let answered=0,correct=0,total=4;
+function answer(btn,qId,isCorrect){const card=document.getElementById(qId);if(card.dataset.answered)return;card.dataset.answered='1';answered++;if(isCorrect){btn.classList.add('correct');correct++;}else btn.classList.add('wrong');card.querySelectorAll('.quiz-option').forEach(o=>o.disabled=true);document.getElementById(qId+'-exp').classList.add('show');if(answered===total){document.getElementById('score-box').style.display='block';document.getElementById('score-text').textContent=correct+' / '+total;}}
+const sections=document.querySelectorAll('.section');const navLinks=document.querySelectorAll('.nav a');
+window.addEventListener('scroll',()=>{let c='';sections.forEach(s=>{if(window.scrollY>=s.offsetTop-120)c=s.id});navLinks.forEach(a=>{a.classList.remove('active');if(a.getAttribute('href')==='#'+c)a.classList.add('active')})});
+</script>
+</body>
+</html>

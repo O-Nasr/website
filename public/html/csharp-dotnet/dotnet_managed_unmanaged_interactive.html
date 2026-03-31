@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>.NET Managed vs Unmanaged — Interactive Study Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0c08;--surface:#151a10;--surface2:#1e2618;--border:#333d28;--text:#e4e8dc;--text-dim:#8a9478;--accent:#a3e635;--accent2:#65a30d;--green:#4ade80;--red:#f87171;--orange:#fb923c;--yellow:#fbbf24;--blue:#60a5fa;--purple:#c084fc;--code-bg:#0e1009;--glow:rgba(163,230,53,.12)}
+*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;min-height:100vh}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 20% 5%,rgba(163,230,53,.04)0%,transparent 55%),radial-gradient(ellipse at 80% 95%,rgba(101,163,13,.03)0%,transparent 55%);pointer-events:none;z-index:0}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.container{max-width:900px;margin:0 auto;padding:2rem 1.5rem 4rem;position:relative;z-index:1}
+.hero{text-align:center;padding:3rem 0 2.5rem}
+.hero-badge{display:inline-block;background:linear-gradient(135deg,var(--accent),var(--accent2));color:var(--bg);font-weight:700;font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;padding:.35rem 1rem;border-radius:99px;margin-bottom:1.2rem}
+.hero h1{font-size:2.2rem;font-weight:800;background:linear-gradient(135deg,#fff 30%,var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1.15;margin-bottom:.5rem}
+.hero p{color:var(--text-dim);font-size:1.05rem}
+.nav{display:flex;flex-wrap:wrap;gap:.5rem;justify-content:center;margin-bottom:2.5rem;position:sticky;top:0;z-index:10;background:rgba(10,12,8,.88);backdrop-filter:blur(12px);padding:.75rem 0;border-bottom:1px solid var(--border)}
+.nav a{color:var(--text-dim);text-decoration:none;font-size:.75rem;font-weight:600;padding:.4rem .8rem;border-radius:8px;transition:all .2s;border:1px solid transparent;letter-spacing:.02em}
+.nav a:hover,.nav a.active{color:var(--accent);background:rgba(163,230,53,.08);border-color:rgba(163,230,53,.2)}
+.section{margin-bottom:3rem;animation:fadeUp .5s ease both}
+.section-header{display:flex;align-items:center;gap:.75rem;margin-bottom:1.2rem;padding-bottom:.8rem;border-bottom:1px solid var(--border)}
+.section-num{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.85rem;color:var(--bg);flex-shrink:0}
+.section-header h2{font-size:1.35rem;font-weight:700}
+.callout{background:linear-gradient(135deg,rgba(163,230,53,.07),rgba(101,163,13,.04));border-left:3px solid var(--accent);border-radius:0 10px 10px 0;padding:1rem 1.2rem;margin:1rem 0;font-size:.92rem}
+.callout.green{border-left-color:var(--green);background:linear-gradient(135deg,rgba(74,222,128,.07),rgba(74,222,128,.03))}
+.callout.red{border-left-color:var(--red);background:linear-gradient(135deg,rgba(248,113,113,.07),rgba(248,113,113,.03))}
+.callout.warn{border-left-color:var(--orange);background:linear-gradient(135deg,rgba(251,146,60,.07),rgba(251,146,60,.03))}
+pre{background:var(--code-bg);border:1px solid var(--border);border-radius:10px;padding:1.2rem;overflow-x:auto;margin:.8rem 0;font-family:'JetBrains Mono',monospace;font-size:.78rem;line-height:1.65;position:relative}
+pre .label{position:absolute;top:.5rem;right:.6rem;font-size:.6rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em;font-family:'Outfit',sans-serif;font-weight:600;background:var(--surface);padding:.15rem .5rem;border-radius:4px}
+.kw{color:var(--accent)}.tp{color:var(--blue)}.cm{color:#4a5a38;font-style:italic}.st{color:var(--green)}.fn{color:var(--yellow)}.nu{color:var(--orange)}.er{color:var(--red)}
+.table-wrap{overflow-x:auto;margin:.8rem 0;border-radius:10px;border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:.83rem}
+th{background:var(--surface2);color:var(--accent);font-weight:600;text-align:left;padding:.7rem 1rem;white-space:nowrap}
+td{padding:.6rem 1rem;border-top:1px solid var(--border)}
+tr:hover td{background:rgba(163,230,53,.03)}
+.accordion{margin:.8rem 0}
+.accordion-btn{width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:600;padding:.9rem 1.2rem;border-radius:10px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;transition:all .2s}
+.accordion-btn:hover{border-color:var(--accent);background:var(--surface2)}
+.accordion-btn .arrow{transition:transform .3s;font-size:.8rem;color:var(--accent)}
+.accordion-btn.open .arrow{transform:rotate(180deg)}
+.accordion-body{max-height:0;overflow:hidden;transition:max-height .4s ease;background:var(--surface);border:1px solid var(--border);border-top:none;border-radius:0 0 10px 10px;padding:0 1.2rem}
+.accordion-body.open{max-height:4000px;padding:1.2rem}
+.tabs{display:flex;gap:.4rem;margin-bottom:0;flex-wrap:wrap}
+.tab-btn{background:var(--surface);border:1px solid var(--border);color:var(--text-dim);font-family:'Outfit',sans-serif;font-size:.76rem;font-weight:600;padding:.5rem 1rem;border-radius:8px 8px 0 0;cursor:pointer;transition:all .2s}
+.tab-btn:hover{color:var(--text)}.tab-btn.active{color:var(--accent);background:var(--surface2);border-bottom-color:var(--surface2)}
+.tab-panel{display:none;background:var(--surface2);border:1px solid var(--border);border-radius:0 10px 10px 10px;padding:1.2rem}
+.tab-panel.active{display:block}
+
+/* Dispose flow */
+.flow-diagram{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.5rem;margin:1rem 0}
+.flow-row{display:flex;align-items:center;justify-content:center;gap:.5rem;flex-wrap:wrap;margin:.5rem 0}
+.flow-node{padding:.5rem 1rem;border-radius:10px;font-weight:600;font-size:.8rem;border:1px solid var(--border);background:var(--surface2);transition:all .3s}
+.flow-node:hover{transform:translateY(-2px)}
+.flow-node.managed{border-color:var(--accent);color:var(--accent);background:rgba(163,230,53,.08)}
+.flow-node.unmanaged{border-color:var(--red);color:var(--red);background:rgba(248,113,113,.08)}
+.flow-node.action{border-color:var(--yellow);color:var(--yellow);background:rgba(251,191,36,.08)}
+.flow-arrow{color:var(--text-dim);font-size:1rem}
+
+/* Scenario simulator */
+.sim{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.5rem;margin:1rem 0}
+.sim-controls{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.8rem}
+.sim-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);font-family:'Outfit',sans-serif;font-size:.76rem;font-weight:600;padding:.5rem 1rem;border-radius:8px;cursor:pointer;transition:all .2s}
+.sim-btn:hover{color:var(--text);border-color:var(--accent)}
+.sim-btn.active{background:rgba(163,230,53,.12);border-color:var(--accent);color:var(--accent)}
+.sim-log{background:var(--code-bg);border:1px solid var(--border);border-radius:10px;padding:1rem;font-family:'JetBrains Mono',monospace;font-size:.73rem;line-height:1.8;min-height:80px;max-height:280px;overflow-y:auto}
+.sim-log .ok{color:var(--green)}.sim-log .bad{color:var(--red)}.sim-log .warn{color:var(--orange)}.sim-log .info{color:var(--text-dim)}.sim-log .hl{color:var(--accent)}
+
+/* Quiz */
+.quiz-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.5rem;margin-bottom:1rem}
+.quiz-card h3{font-size:.95rem;margin-bottom:1rem;color:var(--accent)}
+.quiz-option{display:block;width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'Outfit',sans-serif;font-size:.83rem;padding:.7rem 1rem;border-radius:8px;cursor:pointer;margin-bottom:.4rem;text-align:left;transition:all .2s}
+.quiz-option:hover{border-color:var(--accent);transform:translateX(4px)}
+.quiz-option.correct{background:rgba(74,222,128,.15);border-color:var(--green);color:var(--green)}
+.quiz-option.wrong{background:rgba(248,113,113,.1);border-color:var(--red);color:var(--red)}
+.quiz-option:disabled{cursor:default;transform:none}
+.quiz-explanation{margin-top:.7rem;padding:.8rem;border-radius:8px;background:rgba(163,230,53,.06);font-size:.83rem;display:none;line-height:1.6}
+.quiz-explanation.show{display:block}
+.quiz-score{text-align:center;padding:1.5rem;background:var(--surface);border:1px solid var(--accent);border-radius:14px;margin-top:1rem}
+.quiz-score .big{font-size:2.2rem;font-weight:800;color:var(--accent)}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:640px){.hero h1{font-size:1.6rem}.container{padding:1rem}.flow-row{flex-direction:column}.flow-arrow{transform:rotate(90deg)}}
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="hero">
+  <div class="hero-badge">.NET Interview Study Guide</div>
+  <h1>Managed vs Unmanaged Code</h1>
+  <p>Dispose, Finalizer, SafeHandle & the IDisposable pattern</p>
+</div>
+
+<nav class="nav">
+  <a href="#s1">Managed vs Unmanaged</a>
+  <a href="#s2">SqlConnection</a>
+  <a href="#s3">IDisposable</a>
+  <a href="#s4">Finalizer</a>
+  <a href="#s5">Full Pattern</a>
+  <a href="#s6">Simulator</a>
+  <a href="#s7">SafeHandle</a>
+  <a href="#s8">Quiz</a>
+</nav>
+
+<!-- S1 -->
+<div class="section" id="s1">
+  <div class="section-header"><div class="section-num">1</div><h2>Managed vs Unmanaged Code</h2></div>
+
+  <div class="flow-diagram">
+    <div class="flow-row">
+      <div class="flow-node managed">Managed (CLR)</div>
+      <div class="flow-arrow">—</div>
+      <div class="flow-node unmanaged">Unmanaged (OS)</div>
+    </div>
+    <div style="display:flex;gap:2rem;margin-top:1rem;flex-wrap:wrap">
+      <div style="flex:1;min-width:180px">
+        <p style="font-size:.82rem;color:var(--accent);font-weight:600;margin-bottom:.3rem">Managed (GC handles)</p>
+        <p style="font-size:.8rem;color:var(--text-dim)">string, int, List&lt;T&gt;, Dictionary, any C# class, SqlConnection <em>object</em></p>
+      </div>
+      <div style="flex:1;min-width:180px">
+        <p style="font-size:.82rem;color:var(--red);font-weight:600;margin-bottom:.3rem">Unmanaged (YOU handle)</p>
+        <p style="font-size:.8rem;color:var(--text-dim)">File handles, DB connections (sockets), native memory (IntPtr), COM objects, GDI handles</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout red">⚠️ The GC <strong>only frees managed memory</strong>. It does NOT free unmanaged resources. This is one of the most important concepts in .NET internals.</div>
+</div>
+
+<!-- S2 -->
+<div class="section" id="s2">
+  <div class="section-header"><div class="section-num">2</div><h2>Real World — SqlConnection</h2></div>
+
+  <div class="table-wrap">
+    <table>
+      <tr><th>Part</th><th>Type</th><th>Who Cleans It?</th></tr>
+      <tr><td>SqlConnection object</td><td style="color:var(--accent)">Managed</td><td>Garbage Collector</td></tr>
+      <tr><td>Underlying OS socket</td><td style="color:var(--red)">Unmanaged</td><td><strong>You must call Dispose()</strong></td></tr>
+      <tr><td>Internal driver buffers</td><td style="color:var(--red)">Unmanaged</td><td><strong>You must call Dispose()</strong></td></tr>
+    </table>
+  </div>
+
+  <div class="callout warn">If you forget Dispose(): the managed object eventually gets collected, BUT the underlying OS connection may stay open → <strong>connection pool exhaustion, timeouts, memory leaks</strong>.</div>
+</div>
+
+<!-- S3 -->
+<div class="section" id="s3">
+  <div class="section-header"><div class="section-num">3</div><h2>IDisposable & the <code>using</code> Statement</h2></div>
+  <p style="margin-bottom:.8rem">GC is <strong>nondeterministic</strong> — runs when it decides. For scarce resources we need <strong>deterministic cleanup</strong> → that's Dispose().</p>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="openTab(event,'tab-using')">✅ using Statement</button>
+    <button class="tab-btn" onclick="openTab(event,'tab-manual')">Manual try/finally</button>
+  </div>
+  <div class="tab-panel active" id="tab-using">
+<pre><span class="label">C#</span><span class="kw">using</span> (<span class="tp">SqlConnection</span> con = <span class="kw">new</span> <span class="tp">SqlConnection</span>(connStr))
+{
+    <span class="cm">// do your work here</span>
+} <span class="cm">// Dispose() called automatically — even if exception thrown ✅</span></pre>
+  </div>
+  <div class="tab-panel" id="tab-manual">
+<pre><span class="label">C#</span><span class="tp">SqlConnection</span> con = <span class="kw">new</span> <span class="tp">SqlConnection</span>(connStr);
+<span class="kw">try</span>
+{
+    <span class="cm">// do work</span>
+}
+<span class="kw">finally</span>
+{
+    con.<span class="fn">Dispose</span>(); <span class="cm">// Always dispose in finally</span>
+}</pre>
+  </div>
+
+  <div class="callout green" style="font-weight:600;text-align:center">GC manages <strong>memory</strong>. IDisposable manages <strong>resources</strong>. Two completely different things.</div>
+</div>
+
+<!-- S4 -->
+<div class="section" id="s4">
+  <div class="section-header"><div class="section-num">4</div><h2>Finalizer (~ClassName) — Safety Net</h2></div>
+  <p style="margin-bottom:.8rem">A finalizer is called by GC when collecting an object. It's a safety net if the developer forgets Dispose(). But it's <strong>expensive</strong>.</p>
+
+<pre><span class="label">C#</span>~<span class="fn">MyClass</span>()
+{
+    <span class="cm">// Called by GC automatically</span>
+    <span class="cm">// You don't control WHEN this runs</span>
+}</pre>
+
+  <div class="callout red">
+    <strong>Why finalizers are expensive:</strong> Object moves to Finalization Queue → survives one full GC cycle (promoted to Gen 1/2) → finalizer thread processes it → only then eligible for collection. Objects with finalizers <strong>live longer in memory</strong>.
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <tr><th>Scenario</th><th>Need Finalizer?</th><th>Reason</th></tr>
+      <tr><td>Class owns IntPtr / native memory</td><td style="color:var(--red)"><strong>YES</strong></td><td>No other safety net</td></tr>
+      <tr><td>Class uses SafeHandle</td><td style="color:var(--green)">NO</td><td>SafeHandle has its own</td></tr>
+      <tr><td>Class only wraps managed objects</td><td style="color:var(--green)">NO</td><td>GC handles everything</td></tr>
+      <tr><td>Class uses SqlConnection/FileStream</td><td style="color:var(--green)">NO</td><td>They handle cleanup internally</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- S5: Full Pattern -->
+<div class="section" id="s5">
+  <div class="section-header"><div class="section-num">5</div><h2>Full Dispose + Finalizer Pattern</h2></div>
+  <p style="margin-bottom:.5rem;font-size:.88rem">Use ONLY when your class directly owns unmanaged resources (like IntPtr):</p>
+<pre><span class="label">C#</span><span class="kw">class</span> <span class="tp">MyUnmanagedClass</span> : <span class="tp">IDisposable</span>
+{
+    <span class="kw">private</span> <span class="tp">IntPtr</span> _nativeMemory;
+    <span class="kw">private</span> <span class="tp">bool</span> _disposed = <span class="kw">false</span>;
+
+    <span class="kw">public</span> <span class="fn">MyUnmanagedClass</span>()
+    {
+        _nativeMemory = <span class="tp">Marshal</span>.<span class="fn">AllocHGlobal</span>(<span class="nu">100</span>);
+    }
+
+    ~<span class="fn">MyUnmanagedClass</span>() { <span class="fn">Dispose</span>(<span class="kw">false</span>); } <span class="cm">// safety net</span>
+
+    <span class="kw">protected virtual void</span> <span class="fn">Dispose</span>(<span class="tp">bool</span> disposing)
+    {
+        <span class="kw">if</span> (!_disposed)
+        {
+            <span class="kw">if</span> (disposing) { <span class="cm">// free managed resources</span> }
+            <span class="kw">if</span> (_nativeMemory != <span class="tp">IntPtr</span>.Zero)
+            {
+                <span class="tp">Marshal</span>.<span class="fn">FreeHGlobal</span>(_nativeMemory); <span class="cm">// free unmanaged</span>
+                _nativeMemory = <span class="tp">IntPtr</span>.Zero;
+            }
+            _disposed = <span class="kw">true</span>;
+        }
+    }
+
+    <span class="kw">public void</span> <span class="fn">Dispose</span>()
+    {
+        <span class="fn">Dispose</span>(<span class="kw">true</span>);
+        <span class="tp">GC</span>.<span class="fn">SuppressFinalize</span>(<span class="kw">this</span>); <span class="cm">// skip finalizer — already cleaned ✅</span>
+    }
+}</pre>
+</div>
+
+<!-- S6: Scenario Simulator -->
+<div class="section" id="s6">
+  <div class="section-header"><div class="section-num">6</div><h2>Dispose Scenario Simulator</h2></div>
+
+  <div class="sim">
+    <p style="font-size:.85rem;font-weight:600;margin-bottom:.6rem;color:var(--accent)">What happens in each scenario?</p>
+    <div class="sim-controls">
+      <button class="sim-btn" onclick="runSim('dispose')">Developer calls Dispose()</button>
+      <button class="sim-btn" onclick="runSim('forget')">Developer forgets Dispose()</button>
+      <button class="sim-btn" onclick="runSim('nofinal')">No Dispose() AND no Finalizer</button>
+      <button class="sim-btn" onclick="runSim('setnull')">Sets con = null</button>
+    </div>
+    <div class="sim-log" id="sim-log"><span class="info">Click a scenario...</span></div>
+  </div>
+</div>
+
+<!-- S7 -->
+<div class="section" id="s7">
+  <div class="section-header"><div class="section-num">7</div><h2>SafeHandle — Modern Approach</h2></div>
+
+  <div class="table-wrap">
+    <table>
+      <tr><th>Approach</th><th>Need Your Own Finalizer?</th><th>Risk Level</th></tr>
+      <tr><td>Using IntPtr directly</td><td style="color:var(--red)">YES</td><td style="color:var(--red)">High — easy to leak</td></tr>
+      <tr><td>Using SafeHandle</td><td style="color:var(--green)">NO</td><td style="color:var(--green)">Low — SafeHandle handles it</td></tr>
+      <tr><td>Using FileStream / SqlConnection</td><td style="color:var(--green)">NO</td><td style="color:var(--green)">None — already managed</td></tr>
+    </table>
+  </div>
+
+  <div class="callout green">If your class uses SafeHandle (or classes that use it internally like FileStream), you do <strong>NOT</strong> need your own finalizer. SafeHandle implements a critical finalizer internally. Just implement IDisposable and call Dispose() on the SafeHandle.</div>
+
+  <div class="callout" style="margin-top:1rem">
+    <strong>Quick Rules:</strong><br>
+    • GC handles managed memory — you handle unmanaged resources<br>
+    • Always use <code>using(...)</code> for IDisposable objects<br>
+    • Add a finalizer ONLY if your class owns raw IntPtr<br>
+    • Call <code>GC.SuppressFinalize(this)</code> inside Dispose()<br>
+    • Setting a reference to null does NOT close the resource
+  </div>
+</div>
+
+<!-- S8: Quiz -->
+<div class="section" id="s8">
+  <div class="section-header"><div class="section-num">8</div><h2>Test Yourself</h2></div>
+
+  <div class="quiz-card" id="q1">
+    <h3>Q1: Why doesn't the GC clean unmanaged resources?</h3>
+    <button class="quiz-option" onclick="answer(this,'q1',false)">Because unmanaged resources are too large</button>
+    <button class="quiz-option" onclick="answer(this,'q1',true)">GC only tracks objects in the managed heap — unmanaged resources are allocated by the OS</button>
+    <button class="quiz-option" onclick="answer(this,'q1',false)">GC can clean them but it's slow</button>
+    <div class="quiz-explanation" id="q1-exp">The GC only tracks objects inside the managed heap under CLR control. File handles, sockets, native memory are allocated by the OS — the GC has no knowledge of them. We must use IDisposable and Dispose() to release them.</div>
+  </div>
+  <div class="quiz-card" id="q2">
+    <h3>Q2: Why implement BOTH Dispose() and a Finalizer?</h3>
+    <button class="quiz-option" onclick="answer(this,'q2',false)">They do the same thing for redundancy</button>
+    <button class="quiz-option" onclick="answer(this,'q2',true)">Dispose() for immediate cleanup; Finalizer as safety net if developer forgets</button>
+    <button class="quiz-option" onclick="answer(this,'q2',false)">Finalizer is for managed, Dispose for unmanaged</button>
+    <div class="quiz-explanation" id="q2-exp">Dispose() gives deterministic, immediate cleanup. The finalizer is a safety net for when Dispose() isn't called. Inside Dispose(), we call <code>GC.SuppressFinalize(this)</code> to skip the expensive finalization when it's not needed.</div>
+  </div>
+  <div class="quiz-card" id="q3">
+    <h3>Q3: What happens if you set <code>SqlConnection con = null</code>?</h3>
+    <button class="quiz-option" onclick="answer(this,'q3',false)">The connection closes immediately</button>
+    <button class="quiz-option" onclick="answer(this,'q3',true)">Only makes the object eligible for GC — the connection stays open</button>
+    <button class="quiz-option" onclick="answer(this,'q3',false)">It calls Dispose() automatically</button>
+    <div class="quiz-explanation" id="q3-exp">Setting to null only removes the reference — it does NOT close the connection. The GC is nondeterministic and may run seconds or minutes later. The underlying OS connection is only released when <code>Dispose()</code> is called explicitly.</div>
+  </div>
+  <div class="quiz-card" id="q4">
+    <h3>Q4: When should you add a finalizer to a class?</h3>
+    <button class="quiz-option" onclick="answer(this,'q4',false)">Always — it's best practice</button>
+    <button class="quiz-option" onclick="answer(this,'q4',false)">When using SqlConnection or FileStream</button>
+    <button class="quiz-option" onclick="answer(this,'q4',true)">Only when the class directly owns raw unmanaged resources like IntPtr</button>
+    <div class="quiz-explanation" id="q4-exp">Only when your class directly owns native memory (IntPtr). If you use SafeHandle, FileStream, SqlConnection, or other IDisposable wrappers — they already handle their own cleanup. Adding unnecessary finalizers makes objects live longer in memory.</div>
+  </div>
+
+  <div class="quiz-score" id="score-box" style="display:none">
+    <div class="big" id="score-text"></div>
+    <p style="color:var(--text-dim);margin-top:.3rem">Managed vs Unmanaged Quiz</p>
+  </div>
+</div>
+
+<!-- Interview Answers -->
+<div class="section" id="s9">
+  <div class="section-header"><div class="section-num">★</div><h2>Interview Answer Bank</h2></div>
+  <div class="accordion"><button class="accordion-btn" onclick="toggleAcc(this)"><span>Q: Why does GC not clean unmanaged objects?</span><span class="arrow">▼</span></button><div class="accordion-body"><div class="callout green">GC only tracks objects inside the managed heap. Unmanaged resources like file handles and sockets are allocated by the OS, not the CLR. The GC has no knowledge of them, so we must use IDisposable and Dispose() to release them.</div></div></div>
+  <div class="accordion"><button class="accordion-btn" onclick="toggleAcc(this)"><span>Q: Why implement both Dispose() and Finalizer?</span><span class="arrow">▼</span></button><div class="accordion-body"><div class="callout green">Dispose() provides deterministic, immediate cleanup when the developer calls it. The finalizer acts as a safety net when they forget. Inside Dispose(), we call GC.SuppressFinalize() to skip the finalizer when it's no longer needed.</div></div></div>
+  <div class="accordion"><button class="accordion-btn" onclick="toggleAcc(this)"><span>Q: What happens if I set SqlConnection con = null?</span><span class="arrow">▼</span></button><div class="accordion-body"><div class="callout green">Setting to null only makes the object eligible for GC — it does NOT close the connection. The GC is nondeterministic, may run much later. The underlying OS connection is only released when Dispose() is called explicitly.</div></div></div>
+  <div class="accordion"><button class="accordion-btn" onclick="toggleAcc(this)"><span>Q: When should you add a finalizer?</span><span class="arrow">▼</span></button><div class="accordion-body"><div class="callout green">Only when the class directly owns unmanaged resources like native memory (IntPtr). If the class uses SafeHandle, FileStream, SqlConnection, or other IDisposable wrappers, no finalizer is needed — those classes already handle their own cleanup.</div></div></div>
+</div>
+
+</div>
+
+<script>
+function toggleAcc(btn){btn.classList.toggle('open');btn.nextElementSibling.classList.toggle('open')}
+function openTab(e,id){const s=e.target.closest('.section');s.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));s.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));e.target.classList.add('active');document.getElementById(id).classList.add('active')}
+
+// Scenario Simulator
+function runSim(mode){
+  const log=document.getElementById('sim-log');
+  log.innerHTML='';
+  document.querySelectorAll('.sim-btn').forEach(b=>b.classList.remove('active'));
+  event.target.classList.add('active');
+  const lines=[];
+  if(mode==='dispose'){
+    lines.push({c:'hl',t:'using (var con = new SqlConnection(connStr)) { ... }'});
+    lines.push({c:'ok',t:'→ Dispose() called at end of using block'});
+    lines.push({c:'ok',t:'→ Unmanaged OS socket released IMMEDIATELY ✅'});
+    lines.push({c:'ok',t:'→ GC.SuppressFinalize() called — finalizer skipped'});
+    lines.push({c:'ok',t:'→ Managed object collected normally by GC later'});
+    lines.push({c:'ok',t:'✅ BEST OUTCOME — deterministic, clean, fast'});
+  } else if(mode==='forget'){
+    lines.push({c:'hl',t:'var con = new SqlConnection(connStr); // no using, no Dispose()'});
+    lines.push({c:'warn',t:'→ Method returns — only stack reference removed'});
+    lines.push({c:'warn',t:'→ Unmanaged socket STILL OPEN'});
+    lines.push({c:'info',t:'→ ...time passes...'});
+    lines.push({c:'warn',t:'→ GC eventually runs — finds object with finalizer'});
+    lines.push({c:'warn',t:'→ Object moved to Finalization Queue (survives GC cycle)'});
+    lines.push({c:'info',t:'→ ...more time passes...'});
+    lines.push({c:'warn',t:'→ Finalizer thread runs — releases socket LATE'});
+    lines.push({c:'bad',t:'⚠ Resource held longer than needed — connection pool pressure'});
+  } else if(mode==='nofinal'){
+    lines.push({c:'hl',t:'// Class owns IntPtr but has NO Dispose() and NO Finalizer'});
+    lines.push({c:'bad',t:'→ Method returns — managed object eventually collected'});
+    lines.push({c:'bad',t:'→ BUT unmanaged native memory was NEVER freed'});
+    lines.push({c:'bad',t:'→ Memory leaked PERMANENTLY'});
+    lines.push({c:'bad',t:'→ Over time — application memory grows unbounded'});
+    lines.push({c:'bad',t:'💥 MEMORY LEAK — never do this!'});
+  } else {
+    lines.push({c:'hl',t:'SqlConnection con = new SqlConnection(connStr);'});
+    lines.push({c:'hl',t:'con.Open();'});
+    lines.push({c:'hl',t:'con = null; // "I\'m done with it"'});
+    lines.push({c:'bad',t:'→ Reference removed — but Dispose() was NEVER called'});
+    lines.push({c:'bad',t:'→ OS connection STILL OPEN'});
+    lines.push({c:'bad',t:'→ GC is nondeterministic — may not run for seconds/minutes'});
+    lines.push({c:'bad',t:'→ Connection pool slowly exhausts'});
+    lines.push({c:'warn',t:'⚠ Setting to null ≠ closing the resource!'});
+    lines.push({c:'ok',t:'Fix: use using() or call con.Dispose() before nulling'});
+  }
+  let i=0;
+  const t=setInterval(()=>{if(i>=lines.length){clearInterval(t);return}const l=lines[i];log.innerHTML+=`<span class="${l.c}">${l.t}</span>\n`;log.scrollTop=log.scrollHeight;i++},250);
+}
+
+// Quiz
+let answered=0,correct=0,total=4;
+function answer(btn,qId,isCorrect){const card=document.getElementById(qId);if(card.dataset.answered)return;card.dataset.answered='1';answered++;if(isCorrect){btn.classList.add('correct');correct++;}else btn.classList.add('wrong');card.querySelectorAll('.quiz-option').forEach(o=>o.disabled=true);document.getElementById(qId+'-exp').classList.add('show');if(answered===total){document.getElementById('score-box').style.display='block';document.getElementById('score-text').textContent=correct+' / '+total;}}
+
+const sections=document.querySelectorAll('.section');const navLinks=document.querySelectorAll('.nav a');
+window.addEventListener('scroll',()=>{let c='';sections.forEach(s=>{if(window.scrollY>=s.offsetTop-120)c=s.id});navLinks.forEach(a=>{a.classList.remove('active');if(a.getAttribute('href')==='#'+c)a.classList.add('active')})});
+</script>
+</body>
+</html>

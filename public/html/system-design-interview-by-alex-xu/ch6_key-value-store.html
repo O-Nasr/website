@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ch6: Design a Key-Value Store — System Design Study Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=DM+Sans:ital,wght@0,400;0,500;0,700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#060810;--bg-card:#0d0f18;--bg-code:#090b12;--bg-el:#151828;--border:#191d30;--border-gl:#242840;--text:#c2c8d8;--text-dim:#5c6486;--text-br:#e4eaf4;--c1:#f97316;--c2:#06b6d4;--c3:#a855f7;--c4:#10b981;--c5:#3b82f6;--c6:#ef4444;--c7:#eab308;--syn-kw:#c678dd;--syn-str:#98c379;--syn-tp:#61afef;--syn-num:#d19a66;--syn-cm:#5c6370;--syn-fn:#e5c07b;--r:12px}
+*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.72;overflow-x:hidden}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border-gl);border-radius:3px}
+.hero{position:relative;min-height:46vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:80px 24px 50px;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 500px 350px at 30% 40%,rgba(249,115,22,.1),transparent),radial-gradient(ellipse 450px 300px at 70% 55%,rgba(6,182,212,.07),transparent)}
+.hero-badge{position:relative;display:inline-flex;align-items:center;gap:8px;padding:6px 18px;border:1px solid var(--c1);border-radius:100px;font-size:.8rem;color:var(--c1);letter-spacing:.08em;text-transform:uppercase;margin-bottom:20px}
+.hero h1{position:relative;font-family:'Playfair Display',serif;font-size:clamp(2.2rem,5.5vw,3.6rem);font-weight:900;line-height:1.15;color:var(--text-br);max-width:700px}
+.hero h1 span{background:linear-gradient(135deg,var(--c1),var(--c2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{position:relative;max-width:600px;margin-top:16px;color:var(--text-dim);font-size:1rem}
+.nav-pills{position:relative;display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:28px;max-width:700px}
+.nav-pills a{display:inline-block;padding:6px 14px;border:1px solid var(--border-gl);border-radius:100px;color:var(--text-dim);text-decoration:none;font-size:.82rem;transition:all .25s}
+.nav-pills a:hover{border-color:var(--c1);color:var(--c1);background:rgba(249,115,22,.06)}
+.sec{max-width:1000px;margin:0 auto 70px;padding:0 24px;scroll-margin-top:32px}
+.sec-h{display:flex;align-items:center;gap:16px;margin-bottom:8px}
+.sec-n{display:flex;align-items:center;justify-content:center;width:46px;height:46px;border-radius:14px;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:1rem;flex-shrink:0;background:color-mix(in srgb,var(--pat) 16%,transparent);color:var(--pat);border:1px solid color-mix(in srgb,var(--pat) 28%,transparent)}
+.sec-h h2{font-family:'Playfair Display',serif;font-size:1.65rem;font-weight:700;color:var(--text-br)}
+.sec-sub{color:var(--text-dim);font-style:italic;margin-bottom:24px;padding-left:62px;font-size:.93rem}
+.s1{--pat:var(--c1)}.s2{--pat:var(--c2)}.s3{--pat:var(--c3)}.s4{--pat:var(--c5)}.s5{--pat:var(--c6)}
+.card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r);padding:22px;margin-bottom:18px}
+.card h3{font-size:.95rem;color:var(--text-br);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card h3::before{content:'';display:inline-block;width:3px;height:16px;border-radius:2px;background:var(--pat,var(--c1))}
+.dw{background:var(--bg-code);border:1px solid var(--border);border-radius:var(--r);padding:24px;margin-bottom:18px;overflow-x:auto}
+.dw svg{display:block;margin:0 auto;max-width:100%;height:auto}
+.tw{overflow-x:auto;margin-bottom:18px}table{width:100%;border-collapse:collapse;font-size:.84rem}
+thead th{background:var(--bg-el);color:var(--text-br);padding:11px 14px;text-align:left;font-weight:600;border-bottom:2px solid var(--border-gl);white-space:nowrap}
+tbody td{padding:9px 14px;border-bottom:1px solid var(--border);vertical-align:top}tbody tr:hover{background:rgba(249,115,22,.03)}
+.tip{display:flex;gap:12px;padding:14px 16px;border-radius:var(--r);margin-bottom:18px;font-size:.87rem}
+.tip-i{background:rgba(249,115,22,.06);border:1px solid rgba(249,115,22,.16)}.tip-i .ic{color:var(--c1)}
+.tip-n{background:rgba(6,182,212,.06);border:1px solid rgba(6,182,212,.16)}.tip-n .ic{color:var(--c2)}
+.tip-w{background:rgba(168,85,247,.06);border:1px solid rgba(168,85,247,.16)}.tip-w .ic{color:var(--c3)}
+.tip .ic{font-size:1.2rem;flex-shrink:0}
+.qa-b{margin-bottom:10px}
+.qa-q{display:flex;align-items:start;gap:10px;padding:13px 16px;background:var(--bg-el);border:1px solid var(--border);border-radius:var(--r);cursor:pointer;color:var(--text-br);font-size:.88rem;font-weight:500;transition:all .25s;user-select:none}
+.qa-q:hover{border-color:var(--c1)}.qa-q .ar{flex-shrink:0;transition:transform .3s;color:var(--c1);font-size:.8rem}.qa-q.open .ar{transform:rotate(90deg)}
+.qa-a{max-height:0;overflow:hidden;transition:max-height .35s ease,padding .35s;padding:0 16px;color:var(--text);font-size:.86rem;line-height:1.7;background:var(--bg-card);border:1px solid var(--border);border-top:none;border-radius:0 0 var(--r) var(--r)}
+.qa-a.open{max-height:600px;padding:14px 16px}
+.ct{display:flex;align-items:center;justify-content:space-between;width:100%;padding:14px 18px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r);cursor:pointer;color:var(--text-br);font-size:.93rem;font-weight:600;margin-bottom:4px;transition:all .25s}
+.ct:hover{border-color:var(--pat,var(--c1))}.ct .ch{transition:transform .3s;color:var(--text-dim)}.ct.open .ch{transform:rotate(180deg)}
+.cb{max-height:0;overflow:hidden;transition:max-height .4s ease}.cb.open{max-height:8000px}.cb>.inner{padding:14px 0}
+.tmpl{background:var(--bg-code);border:1px solid var(--c1);border-radius:var(--r);padding:20px;margin-bottom:18px;font-size:.88rem;line-height:1.8;color:var(--text);font-style:italic;border-left:4px solid var(--c1)}
+.bt{position:fixed;bottom:24px;right:24px;width:44px;height:44px;border-radius:50%;background:var(--c1);color:#fff;border:none;cursor:pointer;font-size:1.2rem;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s,transform .3s;box-shadow:0 4px 16px rgba(249,115,22,.35);z-index:100;font-weight:700}
+.bt.show{opacity:1;pointer-events:auto}.bt:hover{transform:scale(1.1)}
+footer{text-align:center;padding:36px 24px;color:var(--text-dim);font-size:.8rem;border-top:1px solid var(--border);margin-top:40px}
+.sum{max-width:1000px;margin:0 auto 60px;padding:0 24px}.sum h2{font-family:'Playfair Display',serif;font-size:1.65rem;color:var(--text-br);margin-bottom:20px;text-align:center}
+@media(max-width:768px){.sec-sub{padding-left:0}}
+</style>
+</head>
+<body>
+
+<section class="hero">
+  <div class="hero-badge">System Design — Alex Xu</div>
+  <h1>Design a <span>Key-Value Store</span></h1>
+  <p>Chapter 6 — CAP Theorem, Replication, Consistency Models, Quorum, and Conflict Resolution</p>
+  <div class="nav-pills">
+    <a href="#cap">CAP Theorem</a><a href="#replication">Replication</a><a href="#consistency">Consistency</a><a href="#quorum">Quorum</a><a href="#conflict">Conflicts</a><a href="#ref">Quick Ref</a>
+  </div>
+</section>
+
+<!-- ═══════ 1. CAP THEOREM ═══════ -->
+<section id="cap" class="sec s1">
+  <div class="sec-h"><div class="sec-n">1</div><h2>CAP Theorem</h2></div>
+  <div class="sec-sub">In a distributed system, you can only fully guarantee 2 out of 3 properties at the same time.</div>
+
+  <!-- CAP Venn Diagram -->
+  <div class="dw">
+    <svg viewBox="0 0 780 380" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+      <!-- Three circles -->
+      <circle cx="310" cy="160" r="130" fill="rgba(6,182,212,.08)" stroke="#06b6d4" stroke-width="1.5"/>
+      <circle cx="470" cy="160" r="130" fill="rgba(168,85,247,.08)" stroke="#a855f7" stroke-width="1.5"/>
+      <circle cx="390" cy="290" r="130" fill="rgba(249,115,22,.08)" stroke="#f97316" stroke-width="1.5"/>
+      <!-- Labels -->
+      <text x="240" y="110" text-anchor="middle" fill="#06b6d4" font-weight="700" font-size="16">C</text>
+      <text x="240" y="130" text-anchor="middle" fill="#06b6d4" font-size="11">Consistency</text>
+      <text x="240" y="146" text-anchor="middle" fill="#5c6486" font-size="9">Every read = latest write</text>
+      <text x="540" y="110" text-anchor="middle" fill="#a855f7" font-weight="700" font-size="16">A</text>
+      <text x="540" y="130" text-anchor="middle" fill="#a855f7" font-size="11">Availability</text>
+      <text x="540" y="146" text-anchor="middle" fill="#5c6486" font-size="9">Always responds</text>
+      <text x="390" y="355" text-anchor="middle" fill="#f97316" font-weight="700" font-size="16">P</text>
+      <text x="390" y="372" text-anchor="middle" fill="#f97316" font-size="11">Partition Tolerance</text>
+      <!-- Intersection labels -->
+      <rect x="345" y="118" width="90" height="28" rx="6" fill="rgba(59,130,246,.15)" stroke="#3b82f6" stroke-width="1"/>
+      <text x="390" y="137" text-anchor="middle" fill="#3b82f6" font-weight="700" font-size="11">CA</text>
+      <rect x="245" y="218" width="90" height="28" rx="6" fill="rgba(16,185,129,.15)" stroke="#10b981" stroke-width="1"/>
+      <text x="290" y="237" text-anchor="middle" fill="#10b981" font-weight="700" font-size="11">CP</text>
+      <rect x="440" y="218" width="90" height="28" rx="6" fill="rgba(234,179,8,.15)" stroke="#eab308" stroke-width="1"/>
+      <text x="485" y="237" text-anchor="middle" fill="#eab308" font-weight="700" font-size="11">AP</text>
+      <!-- Key insight -->
+      <rect x="150" y="10" width="480" height="32" rx="8" fill="rgba(239,68,68,.06)" stroke="rgba(239,68,68,.2)" stroke-width="1"/>
+      <text x="390" y="30" text-anchor="middle" fill="#ef4444" font-size="11" font-weight="600">⚠ Network partitions WILL happen. P is mandatory. Real choice: C or A?</text>
+    </svg>
+  </div>
+
+  <div class="card"><h3>CAP Properties</h3><div class="tw"><table>
+    <thead><tr><th>Property</th><th>Meaning</th><th>Example</th></tr></thead>
+    <tbody>
+      <tr><td><strong style="color:var(--c2)">Consistency (C)</strong></td><td>Every read returns the most recent write</td><td>Bank balance</td></tr>
+      <tr><td><strong style="color:var(--c3)">Availability (A)</strong></td><td>Every request gets a response, even during failures</td><td>Facebook likes</td></tr>
+      <tr><td><strong style="color:var(--c1)">Partition Tolerance (P)</strong></td><td>System keeps working even if nodes can't communicate</td><td>Required in all distributed systems</td></tr>
+    </tbody>
+  </table></div></div>
+
+  <div class="tip tip-i"><span class="ic">💡</span><span><strong>Key Insight:</strong> Network partitions WILL happen in real systems. P is not optional. The real choice is: when a partition occurs, do you sacrifice C or A?</span></div>
+
+  <div class="card"><h3>CP vs AP Systems</h3><div class="tw"><table>
+    <thead><tr><th>System Type</th><th>Behavior During Partition</th><th>Use Case</th></tr></thead>
+    <tbody>
+      <tr><td><strong style="color:var(--c4)">CP (Consistency + Partition)</strong></td><td>Refuses to respond rather than return stale data</td><td>Bank transfers, financial systems</td></tr>
+      <tr><td><strong style="color:var(--c7)">AP (Availability + Partition)</strong></td><td>Responds with possibly stale data</td><td>Social feeds, location tracking, notifications</td></tr>
+    </tbody>
+  </table></div></div>
+
+  <div class="tip tip-w"><span class="ic">🎯</span><span><strong>Interview Tip:</strong> Always name both the system type (AP/CP) AND the consistency model (Eventual/Strong). Example: "Twitter uses an AP system with Eventual Consistency."</span></div>
+</section>
+
+<!-- ═══════ 2. REPLICATION ═══════ -->
+<section id="replication" class="sec s2">
+  <div class="sec-h"><div class="sec-n">2</div><h2>Replication</h2></div>
+  <div class="sec-sub">Copying data across multiple nodes so if one dies, others take over. Solves the Single Point of Failure (SPOF) problem.</div>
+
+  <!-- Leader-Follower Diagram -->
+  <div class="dw">
+    <svg viewBox="0 0 780 320" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+      <defs>
+        <marker id="arw" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#06b6d4"/></marker>
+        <marker id="arwg" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#5c6486"/></marker>
+      </defs>
+      <!-- Client -->
+      <rect x="20" y="120" width="100" height="60" rx="10" fill="rgba(249,115,22,.08)" stroke="#f97316" stroke-width="1.2"/>
+      <text x="70" y="146" text-anchor="middle" fill="#f97316" font-weight="600" font-size="12">Client</text>
+      <text x="70" y="164" text-anchor="middle" fill="#5c6486" font-size="9">write + read</text>
+      <!-- Leader -->
+      <rect x="200" y="80" width="160" height="80" rx="12" fill="rgba(6,182,212,.1)" stroke="#06b6d4" stroke-width="2"/>
+      <text x="280" y="110" text-anchor="middle" fill="#06b6d4" font-weight="700" font-size="14">LEADER</text>
+      <text x="280" y="128" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">handles all writes</text>
+      <text x="280" y="148" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">single source of truth</text>
+      <!-- Followers -->
+      <rect x="460" y="20" width="150" height="60" rx="10" fill="rgba(168,85,247,.08)" stroke="#a855f7" stroke-width="1.2"/>
+      <text x="535" y="46" text-anchor="middle" fill="#a855f7" font-weight="600" font-size="12">Follower 1</text>
+      <text x="535" y="64" text-anchor="middle" fill="#5c6486" font-size="9">read replica</text>
+      <rect x="460" y="110" width="150" height="60" rx="10" fill="rgba(168,85,247,.08)" stroke="#a855f7" stroke-width="1.2"/>
+      <text x="535" y="136" text-anchor="middle" fill="#a855f7" font-weight="600" font-size="12">Follower 2</text>
+      <text x="535" y="154" text-anchor="middle" fill="#5c6486" font-size="9">read replica</text>
+      <rect x="460" y="200" width="150" height="60" rx="10" fill="rgba(168,85,247,.08)" stroke="#a855f7" stroke-width="1.2"/>
+      <text x="535" y="226" text-anchor="middle" fill="#a855f7" font-weight="600" font-size="12">Follower 3</text>
+      <text x="535" y="244" text-anchor="middle" fill="#5c6486" font-size="9">read replica</text>
+      <!-- Client → Leader (write) -->
+      <path d="M120,140 L200,120" fill="none" stroke="#f97316" stroke-width="1.5" marker-end="url(#arw)"/>
+      <text x="155" y="122" fill="#f97316" font-size="9" font-weight="600">WRITE</text>
+      <!-- Leader → Followers (replicate) -->
+      <path d="M360,100 L460,50" fill="none" stroke="#06b6d4" stroke-width="1.2" stroke-dasharray="6 4" marker-end="url(#arw)"/>
+      <path d="M360,120 L460,140" fill="none" stroke="#06b6d4" stroke-width="1.2" stroke-dasharray="6 4" marker-end="url(#arw)"/>
+      <path d="M360,140 L460,230" fill="none" stroke="#06b6d4" stroke-width="1.2" stroke-dasharray="6 4" marker-end="url(#arw)"/>
+      <text x="410" y="92" fill="#06b6d4" font-size="9">replicate</text>
+      <!-- Client reads from followers -->
+      <rect x="650" y="120" width="100" height="50" rx="10" fill="rgba(249,115,22,.08)" stroke="#f97316" stroke-width="1"/>
+      <text x="700" y="142" text-anchor="middle" fill="#f97316" font-weight="600" font-size="11">Client</text>
+      <text x="700" y="158" text-anchor="middle" fill="#5c6486" font-size="9">reads</text>
+      <path d="M650,140 L610,140" fill="none" stroke="#5c6486" stroke-width="1" marker-end="url(#arwg)"/>
+      <text x="632" y="132" fill="#5c6486" font-size="8">READ</text>
+      <!-- Replication lag zone -->
+      <rect x="380" y="280" width="280" height="30" rx="8" fill="rgba(234,179,8,.06)" stroke="rgba(234,179,8,.2)" stroke-width="1"/>
+      <text x="520" y="299" text-anchor="middle" fill="#eab308" font-size="10">⏱ Replication Lag: followers may return stale data</text>
+    </svg>
+  </div>
+
+  <div class="card"><h3>Leader-Follower Replication</h3><div class="tw"><table>
+    <thead><tr><th>Pros</th><th>Cons</th></tr></thead>
+    <tbody>
+      <tr><td>Simple to reason about</td><td>Leader is bottleneck for writes</td></tr>
+      <tr><td>Reads scale easily — add more followers</td><td>Leader failure requires election process</td></tr>
+      <tr><td>Clear data flow</td><td>Replication lag causes stale reads</td></tr>
+    </tbody>
+  </table></div></div>
+
+  <div class="card"><h3>Replication Lag</h3><p>The delay between a write hitting the Leader and that write reaching Followers. During this window, reads from Followers return stale data.</p></div>
+
+  <div class="tip tip-n"><span class="ic">🌍</span><span><strong>Real World:</strong> A user posts a tweet and immediately refreshes — but doesn't see it for 2-3 seconds. That's replication lag in action.</span></div>
+</section>
+
+<!-- ═══════ 3. CONSISTENCY MODELS ═══════ -->
+<section id="consistency" class="sec s3">
+  <div class="sec-h"><div class="sec-n">3</div><h2>Consistency Models</h2></div>
+
+  <div class="dw">
+    <svg viewBox="0 0 780 200" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+      <!-- Strong -->
+      <rect x="40" y="20" width="320" height="120" rx="12" fill="rgba(16,185,129,.08)" stroke="#10b981" stroke-width="1.5"/>
+      <text x="200" y="48" text-anchor="middle" fill="#10b981" font-weight="700" font-size="14">Strong Consistency</text>
+      <line x1="60" y1="56" x2="340" y2="56" stroke="#10b981" stroke-opacity=".3"/>
+      <text x="200" y="76" text-anchor="middle" fill="#c2c8d8" font-size="11">Every read = most recent write</text>
+      <text x="200" y="96" text-anchor="middle" fill="#5c6486" font-size="10">Higher latency · Lower availability</text>
+      <text x="200" y="116" text-anchor="middle" fill="#10b981" font-size="10" font-family="JetBrains Mono,monospace">→ Bank balance, payments</text>
+      <text x="200" y="134" text-anchor="middle" fill="#10b981" font-size="10" font-weight="600">CP Systems</text>
+      <!-- Eventual -->
+      <rect x="420" y="20" width="320" height="120" rx="12" fill="rgba(234,179,8,.08)" stroke="#eab308" stroke-width="1.5"/>
+      <text x="580" y="48" text-anchor="middle" fill="#eab308" font-weight="700" font-size="14">Eventual Consistency</text>
+      <line x1="440" y1="56" x2="720" y2="56" stroke="#eab308" stroke-opacity=".3"/>
+      <text x="580" y="76" text-anchor="middle" fill="#c2c8d8" font-size="11">Data will catch up — reads may be stale</text>
+      <text x="580" y="96" text-anchor="middle" fill="#5c6486" font-size="10">Low latency · High availability</text>
+      <text x="580" y="116" text-anchor="middle" fill="#eab308" font-size="10" font-family="JetBrains Mono,monospace">→ Social feeds, likes, notifications</text>
+      <text x="580" y="134" text-anchor="middle" fill="#eab308" font-size="10" font-weight="600">AP Systems</text>
+      <!-- Connection -->
+      <rect x="180" y="165" width="420" height="26" rx="8" fill="rgba(239,68,68,.06)" stroke="rgba(239,68,68,.15)" stroke-width="1"/>
+      <text x="390" y="182" text-anchor="middle" fill="#ef4444" font-size="10">CP → Strong Consistency. AP → Eventual Consistency. They are locked together.</text>
+    </svg>
+  </div>
+
+  <div class="tip tip-i"><span class="ic">🔗</span><span><strong>Connection to CAP:</strong> CP systems use Strong Consistency. AP systems use Eventual Consistency. They are locked together — you cannot have AP with Strong Consistency.</span></div>
+</section>
+
+<!-- ═══════ 4. QUORUM ═══════ -->
+<section id="quorum" class="sec s4">
+  <div class="sec-h"><div class="sec-n">4</div><h2>Quorum (W, R, N)</h2></div>
+  <div class="sec-sub">Used in leaderless replication. Defines how many nodes must confirm an operation.</div>
+
+  <div class="card"><h3>Variables</h3><div class="tw"><table>
+    <thead><tr><th>Variable</th><th>Meaning</th></tr></thead>
+    <tbody>
+      <tr><td><strong style="color:var(--c5)">N</strong></td><td>Total number of replicas</td></tr>
+      <tr><td><strong style="color:var(--c4)">W</strong></td><td>Number of nodes that must confirm a write</td></tr>
+      <tr><td><strong style="color:var(--c2)">R</strong></td><td>Number of nodes that must respond to a read</td></tr>
+    </tbody>
+  </table></div></div>
+
+  <!-- Interactive Quorum Diagram -->
+  <div class="dw">
+    <svg viewBox="0 0 780 310" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+      <!-- The Magic Rule -->
+      <rect x="180" y="10" width="420" height="50" rx="12" fill="rgba(59,130,246,.1)" stroke="#3b82f6" stroke-width="2"/>
+      <text x="390" y="32" text-anchor="middle" fill="#3b82f6" font-weight="900" font-size="16" font-family="JetBrains Mono,monospace">W + R > N → Strong Consistency</text>
+      <text x="390" y="50" text-anchor="middle" fill="#5c6486" font-size="10">W + R ≤ N → Eventual Consistency</text>
+      <!-- Example 1: Strong (N=3, W=2, R=2) -->
+      <rect x="30" y="90" width="220" height="200" rx="10" fill="rgba(16,185,129,.06)" stroke="#10b981" stroke-width="1.2"/>
+      <text x="140" y="115" text-anchor="middle" fill="#10b981" font-weight="700" font-size="12">Strong (W+R=4 > 3)</text>
+      <text x="140" y="135" text-anchor="middle" fill="#8890a8" font-size="11" font-family="JetBrains Mono,monospace">N=3, W=2, R=2</text>
+      <!-- 3 nodes -->
+      <circle cx="80" cy="180" r="20" fill="rgba(16,185,129,.15)" stroke="#10b981" stroke-width="1.5"/>
+      <text x="80" y="185" text-anchor="middle" fill="#10b981" font-size="10" font-weight="700">N1</text>
+      <circle cx="140" cy="180" r="20" fill="rgba(16,185,129,.15)" stroke="#10b981" stroke-width="1.5"/>
+      <text x="140" y="185" text-anchor="middle" fill="#10b981" font-size="10" font-weight="700">N2</text>
+      <circle cx="200" cy="180" r="20" fill="rgba(100,116,139,.1)" stroke="#64748b" stroke-width="1" stroke-dasharray="4 3"/>
+      <text x="200" y="185" text-anchor="middle" fill="#64748b" font-size="10">N3</text>
+      <text x="110" y="218" text-anchor="middle" fill="#10b981" font-size="9">W=2 ✓</text>
+      <text x="140" y="238" text-anchor="middle" fill="#8890a8" font-size="9">Payments, DMs, critical data</text>
+      <text x="140" y="260" text-anchor="middle" fill="#10b981" font-size="9">At least 1 node has latest in R</text>
+      <!-- Example 2: Eventual (N=3, W=1, R=1) -->
+      <rect x="280" y="90" width="220" height="200" rx="10" fill="rgba(234,179,8,.06)" stroke="#eab308" stroke-width="1.2"/>
+      <text x="390" y="115" text-anchor="middle" fill="#eab308" font-weight="700" font-size="12">Eventual (W+R=2 ≤ 3)</text>
+      <text x="390" y="135" text-anchor="middle" fill="#8890a8" font-size="11" font-family="JetBrains Mono,monospace">N=3, W=1, R=1</text>
+      <circle cx="330" cy="180" r="20" fill="rgba(234,179,8,.15)" stroke="#eab308" stroke-width="1.5"/>
+      <text x="330" y="185" text-anchor="middle" fill="#eab308" font-size="10" font-weight="700">N1</text>
+      <circle cx="390" cy="180" r="20" fill="rgba(100,116,139,.1)" stroke="#64748b" stroke-width="1" stroke-dasharray="4 3"/>
+      <text x="390" y="185" text-anchor="middle" fill="#64748b" font-size="10">N2</text>
+      <circle cx="450" cy="180" r="20" fill="rgba(100,116,139,.1)" stroke="#64748b" stroke-width="1" stroke-dasharray="4 3"/>
+      <text x="450" y="185" text-anchor="middle" fill="#64748b" font-size="10">N3</text>
+      <text x="330" y="218" text-anchor="middle" fill="#eab308" font-size="9">W=1 ✓</text>
+      <text x="390" y="238" text-anchor="middle" fill="#8890a8" font-size="9">Likes, location, counters</text>
+      <text x="390" y="260" text-anchor="middle" fill="#eab308" font-size="9">Fast but may read stale data</text>
+      <!-- Example 3: Strongest (N=3, W=3, R=3) -->
+      <rect x="530" y="90" width="220" height="200" rx="10" fill="rgba(59,130,246,.06)" stroke="#3b82f6" stroke-width="1.2"/>
+      <text x="640" y="115" text-anchor="middle" fill="#3b82f6" font-weight="700" font-size="12">Strongest (W+R=6 > 3)</text>
+      <text x="640" y="135" text-anchor="middle" fill="#8890a8" font-size="11" font-family="JetBrains Mono,monospace">N=3, W=3, R=3</text>
+      <circle cx="580" cy="180" r="20" fill="rgba(59,130,246,.15)" stroke="#3b82f6" stroke-width="1.5"/>
+      <text x="580" y="185" text-anchor="middle" fill="#3b82f6" font-size="10" font-weight="700">N1</text>
+      <circle cx="640" cy="180" r="20" fill="rgba(59,130,246,.15)" stroke="#3b82f6" stroke-width="1.5"/>
+      <text x="640" y="185" text-anchor="middle" fill="#3b82f6" font-size="10" font-weight="700">N2</text>
+      <circle cx="700" cy="180" r="20" fill="rgba(59,130,246,.15)" stroke="#3b82f6" stroke-width="1.5"/>
+      <text x="700" y="185" text-anchor="middle" fill="#3b82f6" font-size="10" font-weight="700">N3</text>
+      <text x="640" y="218" text-anchor="middle" fill="#3b82f6" font-size="9">W=3 — wait for ALL</text>
+      <text x="640" y="238" text-anchor="middle" fill="#8890a8" font-size="9">Bank transactions</text>
+      <text x="640" y="260" text-anchor="middle" fill="#3b82f6" font-size="9">Max consistency, max latency</text>
+    </svg>
+  </div>
+
+  <div class="tip tip-w"><span class="ic">🎯</span><span><strong>Real Systems Mix Both:</strong> Same system, different W/R per feature. Twitter DMs use high W+R. Twitter likes use low W+R. Design per use case, not per system.</span></div>
+</section>
+
+<!-- ═══════ 5. CONFLICT RESOLUTION ═══════ -->
+<section id="conflict" class="sec s5">
+  <div class="sec-h"><div class="sec-n">5</div><h2>Conflict Resolution</h2></div>
+  <div class="sec-sub">In leaderless replication, two nodes can accept different writes for the same key simultaneously.</div>
+
+  <!-- Conflict Diagram -->
+  <div class="dw">
+    <svg viewBox="0 0 780 260" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+      <defs><marker id="acf" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#ef4444"/></marker></defs>
+      <!-- Two clients write simultaneously -->
+      <rect x="40" y="20" width="120" height="50" rx="10" fill="rgba(249,115,22,.08)" stroke="#f97316" stroke-width="1.2"/>
+      <text x="100" y="42" text-anchor="middle" fill="#f97316" font-weight="600" font-size="11">Client A</text>
+      <text x="100" y="58" text-anchor="middle" fill="#5c6486" font-size="9">key=X → "foo"</text>
+      <rect x="40" y="100" width="120" height="50" rx="10" fill="rgba(168,85,247,.08)" stroke="#a855f7" stroke-width="1.2"/>
+      <text x="100" y="122" text-anchor="middle" fill="#a855f7" font-weight="600" font-size="11">Client B</text>
+      <text x="100" y="138" text-anchor="middle" fill="#5c6486" font-size="9">key=X → "bar"</text>
+      <!-- Two nodes -->
+      <circle cx="300" cy="45" r="28" fill="rgba(6,182,212,.1)" stroke="#06b6d4" stroke-width="1.2"/>
+      <text x="300" y="50" text-anchor="middle" fill="#06b6d4" font-weight="700" font-size="11">Node 1</text>
+      <circle cx="300" cy="125" r="28" fill="rgba(6,182,212,.1)" stroke="#06b6d4" stroke-width="1.2"/>
+      <text x="300" y="130" text-anchor="middle" fill="#06b6d4" font-weight="700" font-size="11">Node 2</text>
+      <!-- Arrows to nodes -->
+      <path d="M160,45 L272,45" fill="none" stroke="#f97316" stroke-width="1.2" marker-end="url(#acf)"/>
+      <path d="M160,125 L272,125" fill="none" stroke="#a855f7" stroke-width="1.2" marker-end="url(#acf)"/>
+      <!-- Conflict! -->
+      <rect x="355" y="60" width="100" height="42" rx="8" fill="rgba(239,68,68,.15)" stroke="#ef4444" stroke-width="1.5"/>
+      <text x="405" y="78" text-anchor="middle" fill="#ef4444" font-weight="900" font-size="14">CONFLICT!</text>
+      <text x="405" y="94" text-anchor="middle" fill="#ef4444" font-size="9">X = "foo" or "bar"?</text>
+      <!-- Two resolution paths -->
+      <rect x="500" y="10" width="250" height="80" rx="10" fill="rgba(234,179,8,.06)" stroke="#eab308" stroke-width="1.2"/>
+      <text x="625" y="32" text-anchor="middle" fill="#eab308" font-weight="700" font-size="12">LWW (Last Write Wins)</text>
+      <text x="625" y="52" text-anchor="middle" fill="#8890a8" font-size="10">Latest timestamp wins</text>
+      <text x="625" y="68" text-anchor="middle" fill="#ef4444" font-size="9">⚠ Data loss — losing write discarded</text>
+      <text x="625" y="82" text-anchor="middle" fill="#5c6486" font-size="9">Safe for: caches, sessions</text>
+
+      <rect x="500" y="110" width="250" height="90" rx="10" fill="rgba(16,185,129,.06)" stroke="#10b981" stroke-width="1.2"/>
+      <text x="625" y="132" text-anchor="middle" fill="#10b981" font-weight="700" font-size="12">Version Vectors</text>
+      <text x="625" y="152" text-anchor="middle" fill="#8890a8" font-size="10">Keep BOTH versions</text>
+      <text x="625" y="168" text-anchor="middle" fill="#10b981" font-size="9">✅ No data loss — app decides merge</text>
+      <text x="625" y="184" text-anchor="middle" fill="#5c6486" font-size="9">Safe for: docs, carts, profiles</text>
+      <!-- Arrows -->
+      <path d="M455,75 L500,50" fill="none" stroke="#5c6486" stroke-width="1"/>
+      <path d="M455,85 L500,140" fill="none" stroke="#5c6486" stroke-width="1"/>
+
+      <!-- Merge strategies -->
+      <rect x="80" y="185" width="600" height="60" rx="10" fill="rgba(168,85,247,.04)" stroke="rgba(168,85,247,.12)" stroke-width="1"/>
+      <text x="380" y="207" text-anchor="middle" fill="#a855f7" font-size="11" font-weight="600">Version Vector Merge Strategies:</text>
+      <text x="380" y="228" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">Google Docs → CRDT merge  |  Shopping Cart → keep all items  |  Profile → ask user  |  Git → auto or ask</text>
+    </svg>
+  </div>
+
+  <div class="card"><h3>Last Write Wins (LWW)</h3><div class="tw"><table>
+    <thead><tr><th>Pros</th><th>Cons</th></tr></thead>
+    <tbody>
+      <tr><td>Simple to implement</td><td>Data loss — losing write is silent</td></tr>
+      <tr><td>Deterministic result</td><td>Clock skew makes timestamps unreliable</td></tr>
+      <tr><td></td><td>Never use for financial data or documents</td></tr>
+    </tbody>
+  </table></div></div>
+
+  <div class="card"><h3>Version Vectors — Merge Strategies</h3><div class="tw"><table>
+    <thead><tr><th>App Type</th><th>Merge Strategy</th></tr></thead>
+    <tbody>
+      <tr><td>Google Docs</td><td>Merge both edits (CRDT)</td></tr>
+      <tr><td>Shopping cart (Amazon Dynamo)</td><td>Keep all items from both versions</td></tr>
+      <tr><td>User profile</td><td>Ask the user to resolve</td></tr>
+      <tr><td>Git</td><td>Auto-merge if possible, else ask developer</td></tr>
+    </tbody>
+  </table></div></div>
+
+  <div class="tip tip-w"><span class="ic">🎯</span><span><strong>Interview Tip:</strong> For any system where data loss is unacceptable (documents, carts, profiles) — choose Version Vectors. LWW is only safe for cache entries and sessions.</span></div>
+</section>
+
+<!-- ═══════ INTERVIEW TEMPLATE ═══════ -->
+<section class="sum">
+  <h2>Interview Answer Template</h2>
+  <div class="tmpl">"Use <strong>consistent hashing</strong> to distribute keys across nodes. Replicate each key to <strong>N nodes</strong> for fault tolerance. Use <strong>quorum reads and writes (W, R, N)</strong> to tune between consistency and availability based on business needs. Handle write conflicts using <strong>Last Write Wins</strong> for simple cases or <strong>Version Vectors</strong> when data loss is unacceptable."</div>
+</section>
+
+<!-- ═══════ QUICK REFERENCE ═══════ -->
+<section id="ref" class="sum">
+  <h2>Quick Reference</h2>
+  <div class="card" style="--pat:var(--c1)"><div class="tw"><table>
+    <thead><tr><th>Concept</th><th>One-Line Summary</th></tr></thead>
+    <tbody>
+      <tr><td><strong>CAP Theorem</strong></td><td>Pick 2 of 3. P is mandatory, so choose C or A.</td></tr>
+      <tr><td><strong>CP System</strong></td><td>Consistency over availability. Refuses requests during partition.</td></tr>
+      <tr><td><strong>AP System</strong></td><td>Availability over consistency. Returns stale data during partition.</td></tr>
+      <tr><td><strong>Replication</strong></td><td>Copy data across nodes to eliminate SPOF.</td></tr>
+      <tr><td><strong>Replication Lag</strong></td><td>Delay before followers receive the latest write.</td></tr>
+      <tr><td><strong>Strong Consistency</strong></td><td>Always returns most recent write. Higher latency.</td></tr>
+      <tr><td><strong>Eventual Consistency</strong></td><td>May return stale data temporarily. Low latency.</td></tr>
+      <tr><td><strong>Quorum</strong></td><td>W+R>N = Strong. W+R≤N = Eventual.</td></tr>
+      <tr><td><strong>LWW</strong></td><td>Latest timestamp wins. Simple but causes data loss.</td></tr>
+      <tr><td><strong>Version Vectors</strong></td><td>Keep all conflicting versions. App resolves. No data loss.</td></tr>
+    </tbody>
+  </table></div></div>
+</section>
+
+<button class="bt" id="backTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+<footer><p>Chapter 6: Design a Key-Value Store — System Design Interview (Alex Xu)</p></footer>
+
+<script>
+function toggleQA(el){el.classList.toggle('open');el.nextElementSibling.classList.toggle('open')}
+function toggleCollapsible(btn){btn.classList.toggle('open');btn.nextElementSibling.classList.toggle('open')}
+function copyCode(btn){const pre=btn.closest('.code-block').querySelector('pre');navigator.clipboard.writeText(pre.textContent).then(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',1500)})}
+window.addEventListener('scroll',()=>{document.getElementById('backTop').classList.toggle('show',window.scrollY>400)})
+</script>
+</body>
+</html>

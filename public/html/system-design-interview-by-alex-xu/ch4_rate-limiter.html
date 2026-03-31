@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rate Limiting Algorithms — Interactive Study Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=DM+Sans:ital,wght@0,400;0,500;0,700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#060810;--bg-card:#0d0f18;--bg-code:#090b12;--bg-el:#151828;--border:#191d30;--border-gl:#242840;--text:#c2c8d8;--text-dim:#5c6486;--text-br:#e4eaf4;--fw:#3b82f6;--sl:#a855f7;--sw:#f59e0b;--tb:#10b981;--bad:#ef4444;--ok:#4ade80;--r:12px}
+*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.72;overflow-x:hidden}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border-gl);border-radius:3px}
+.hero{position:relative;min-height:44vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:80px 24px 50px;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 500px 350px at 25% 40%,rgba(59,130,246,.1),transparent),radial-gradient(ellipse 400px 300px at 55% 55%,rgba(168,85,247,.07),transparent),radial-gradient(ellipse 400px 280px at 80% 50%,rgba(16,185,129,.06),transparent)}
+.hero-badge{position:relative;display:inline-flex;align-items:center;gap:8px;padding:6px 18px;border:1px solid var(--fw);border-radius:100px;font-size:.8rem;color:var(--fw);letter-spacing:.08em;text-transform:uppercase;margin-bottom:20px}
+.hero h1{position:relative;font-family:'Playfair Display',serif;font-size:clamp(2.2rem,5.5vw,3.8rem);font-weight:900;line-height:1.15;color:var(--text-br);max-width:700px}
+.hero h1 span{background:linear-gradient(135deg,var(--fw),var(--tb));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{position:relative;max-width:600px;margin-top:16px;color:var(--text-dim);font-size:1rem}
+.nav-pills{position:relative;display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:28px}
+.nav-pills a{display:inline-block;padding:6px 14px;border:1px solid var(--border-gl);border-radius:100px;color:var(--text-dim);text-decoration:none;font-size:.82rem;transition:all .25s}
+.nav-pills a:hover{border-color:var(--fw);color:var(--fw);background:rgba(59,130,246,.06)}
+.sec{max-width:1000px;margin:0 auto 70px;padding:0 24px;scroll-margin-top:32px}
+.sec-h{display:flex;align-items:center;gap:16px;margin-bottom:8px}
+.sec-n{display:flex;align-items:center;justify-content:center;width:46px;height:46px;border-radius:14px;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:1rem;flex-shrink:0;background:color-mix(in srgb,var(--pat) 16%,transparent);color:var(--pat);border:1px solid color-mix(in srgb,var(--pat) 28%,transparent)}
+.sec-h h2{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:700;color:var(--text-br)}
+.sec-sub{color:var(--text-dim);font-style:italic;margin-bottom:24px;padding-left:62px;font-size:.93rem}
+.s1{--pat:var(--fw)}.s2{--pat:var(--sl)}.s3{--pat:var(--sw)}.s4{--pat:var(--tb)}
+.card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r);padding:22px;margin-bottom:18px}
+.card h3{font-size:.95rem;color:var(--text-br);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card h3::before{content:'';display:inline-block;width:3px;height:16px;border-radius:2px;background:var(--pat,var(--fw))}
+.dw{background:var(--bg-code);border:1px solid var(--border);border-radius:var(--r);padding:24px;margin-bottom:18px;overflow-x:auto}
+.dw svg{display:block;margin:0 auto;max-width:100%;height:auto}
+.tw{overflow-x:auto;margin-bottom:18px}table{width:100%;border-collapse:collapse;font-size:.84rem}
+thead th{background:var(--bg-el);color:var(--text-br);padding:11px 14px;text-align:left;font-weight:600;border-bottom:2px solid var(--border-gl);white-space:nowrap}
+tbody td{padding:9px 14px;border-bottom:1px solid var(--border);vertical-align:top}tbody tr:hover{background:rgba(59,130,246,.03)}
+.tip{display:flex;gap:12px;padding:14px 16px;border-radius:var(--r);margin-bottom:18px;font-size:.87rem}
+.tip-b{background:rgba(59,130,246,.06);border:1px solid rgba(59,130,246,.16)}.tip-b .ic{color:var(--fw)}
+.tip-p{background:rgba(168,85,247,.06);border:1px solid rgba(168,85,247,.16)}.tip-p .ic{color:var(--sl)}
+.tip-y{background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.16)}.tip-y .ic{color:var(--sw)}
+.tip-g{background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.16)}.tip-g .ic{color:var(--tb)}
+.tip .ic{font-size:1.2rem;flex-shrink:0}
+.pros-cons{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px}
+@media(max-width:600px){.pros-cons{grid-template-columns:1fr}}
+.pro,.con{padding:14px 16px;border-radius:var(--r);font-size:.85rem}
+.pro{background:rgba(74,222,128,.06);border:1px solid rgba(74,222,128,.18)}.con{background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.18)}
+.pro h4{color:var(--ok);margin-bottom:6px}.con h4{color:var(--bad);margin-bottom:6px}
+.pro li,.con li{margin-bottom:4px;list-style:none;padding-left:16px;position:relative}
+.pro li::before{content:'✓';position:absolute;left:0;color:var(--ok);font-weight:700}
+.con li::before{content:'✗';position:absolute;left:0;color:var(--bad);font-weight:700}
+.bt{position:fixed;bottom:24px;right:24px;width:44px;height:44px;border-radius:50%;background:var(--fw);color:#fff;border:none;cursor:pointer;font-size:1.2rem;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s,transform .3s;box-shadow:0 4px 16px rgba(59,130,246,.35);z-index:100;font-weight:700}
+.bt.show{opacity:1;pointer-events:auto}.bt:hover{transform:scale(1.1)}
+footer{text-align:center;padding:36px 24px;color:var(--text-dim);font-size:.8rem;border-top:1px solid var(--border);margin-top:40px}
+.sum{max-width:1000px;margin:0 auto 60px;padding:0 24px}.sum h2{font-family:'Playfair Display',serif;font-size:1.6rem;color:var(--text-br);margin-bottom:20px;text-align:center}
+@media(max-width:768px){.sec-sub{padding-left:0}}
+</style>
+</head>
+<body>
+
+<section class="hero">
+  <div class="hero-badge">System Design</div>
+  <h1><span>Rate Limiting</span> Algorithms</h1>
+  <p>Four algorithms for controlling request rates — Fixed Window Counter, Sliding Log, Sliding Window Counter, and Token Bucket.</p>
+  <div class="nav-pills">
+    <a href="#fixed">Fixed Window</a><a href="#log">Sliding Log</a><a href="#sliding">Sliding Window</a><a href="#token">Token Bucket</a><a href="#compare">Comparison</a>
+  </div>
+</section>
+
+<!-- ═══════ OVERVIEW DIAGRAM ═══════ -->
+<section class="sec" style="--pat:var(--fw)">
+  <div class="dw">
+    <svg viewBox="0 0 780 180" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+      <!-- Four algorithm cards -->
+      <rect x="15" y="15" width="175" height="150" rx="12" fill="rgba(59,130,246,.06)" stroke="#3b82f6" stroke-width="1.5"/>
+      <!-- Calendar icon -->
+      <rect x="72" y="30" width="40" height="36" rx="6" fill="rgba(59,130,246,.15)" stroke="#3b82f6" stroke-width="1.2"/>
+      <line x1="82" y1="30" x2="82" y2="24" stroke="#3b82f6" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="102" y1="30" x2="102" y2="24" stroke="#3b82f6" stroke-width="1.5" stroke-linecap="round"/>
+      <text x="92" y="55" text-anchor="middle" fill="#3b82f6" font-size="12" font-weight="700">×</text>
+      <text x="102" y="88" text-anchor="middle" fill="#3b82f6" font-weight="700" font-size="13">Fixed Window</text>
+      <text x="102" y="104" text-anchor="middle" fill="#3b82f6" font-size="12">Counter</text>
+      <text x="102" y="125" text-anchor="middle" fill="#5c6486" font-size="9">Count requests in</text>
+      <text x="102" y="138" text-anchor="middle" fill="#5c6486" font-size="9">fixed time intervals</text>
+      <text x="102" y="158" text-anchor="middle" fill="#3b82f6" font-size="9" font-style="italic">→ Simple API limiting</text>
+
+      <rect x="205" y="15" width="175" height="150" rx="12" fill="rgba(168,85,247,.06)" stroke="#a855f7" stroke-width="1.5"/>
+      <!-- Clock/log icon -->
+      <circle cx="292" cy="46" r="18" fill="none" stroke="#a855f7" stroke-width="1.5"/>
+      <path d="M292,46 L292,35" stroke="#a855f7" stroke-width="1.5" stroke-linecap="round"/>
+      <path d="M292,46 L302,50" stroke="#a855f7" stroke-width="1.2" stroke-linecap="round"/>
+      <text x="292" y="88" text-anchor="middle" fill="#a855f7" font-weight="700" font-size="13">Sliding Log</text>
+      <text x="292" y="115" text-anchor="middle" fill="#5c6486" font-size="9">Store timestamps of</text>
+      <text x="292" y="128" text-anchor="middle" fill="#5c6486" font-size="9">each request</text>
+      <text x="292" y="158" text-anchor="middle" fill="#a855f7" font-size="9" font-style="italic">→ Financial APIs</text>
+
+      <rect x="395" y="15" width="175" height="150" rx="12" fill="rgba(245,158,11,.06)" stroke="#f59e0b" stroke-width="1.5"/>
+      <!-- Compass/sliding icon -->
+      <circle cx="482" cy="46" r="18" fill="rgba(245,158,11,.1)" stroke="#f59e0b" stroke-width="1.5"/>
+      <line x1="482" y1="36" x2="482" y2="30" stroke="#f59e0b" stroke-width="1.2"/>
+      <line x1="492" y1="46" x2="498" y2="46" stroke="#f59e0b" stroke-width="1.2"/>
+      <path d="M478,42 L486,50" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round"/>
+      <text x="482" y="88" text-anchor="middle" fill="#f59e0b" font-weight="700" font-size="13">Sliding Window</text>
+      <text x="482" y="104" text-anchor="middle" fill="#f59e0b" font-size="12">Counter</text>
+      <text x="482" y="125" text-anchor="middle" fill="#5c6486" font-size="9">Approximate sliding</text>
+      <text x="482" y="138" text-anchor="middle" fill="#5c6486" font-size="9">window count</text>
+      <text x="482" y="158" text-anchor="middle" fill="#f59e0b" font-size="9" font-style="italic">→ Social media APIs</text>
+
+      <rect x="585" y="15" width="175" height="150" rx="12" fill="rgba(16,185,129,.06)" stroke="#10b981" stroke-width="1.5"/>
+      <!-- Bucket icon -->
+      <path d="M652,30 L672,30 L668,56 L656,56 Z" fill="rgba(16,185,129,.15)" stroke="#10b981" stroke-width="1.2"/>
+      <circle cx="660" cy="27" r="3" fill="#10b981"/><circle cx="668" cy="25" r="3" fill="#10b981"/><circle cx="664" cy="22" r="2.5" fill="#10b981"/>
+      <text x="672" y="88" text-anchor="middle" fill="#10b981" font-weight="700" font-size="13">Token Bucket</text>
+      <text x="672" y="115" text-anchor="middle" fill="#5c6486" font-size="9">Tokens refill at</text>
+      <text x="672" y="128" text-anchor="middle" fill="#5c6486" font-size="9">fixed rate</text>
+      <text x="672" y="158" text-anchor="middle" fill="#10b981" font-size="9" font-style="italic">→ Streaming services</text>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════ 1. FIXED WINDOW COUNTER ═══════ -->
+<section id="fixed" class="sec s1">
+  <div class="sec-h"><div class="sec-n">1</div><h2>Fixed Window Counter</h2></div>
+  <div class="sec-sub">Count requests in fixed time intervals. Reset counter at each window boundary.</div>
+
+  <div class="dw">
+    <svg viewBox="0 0 780 240" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+      <!-- Timeline -->
+      <line x1="40" y1="100" x2="740" y2="100" stroke="#242840" stroke-width="2"/>
+      <!-- Window 1 -->
+      <rect x="60" y="30" width="200" height="130" rx="0" fill="rgba(59,130,246,.04)" stroke="#3b82f6" stroke-width="1" stroke-dasharray="6 4"/>
+      <text x="160" y="22" text-anchor="middle" fill="#3b82f6" font-size="11" font-weight="600">Window 1 (0:00-1:00)</text>
+      <!-- Requests as dots -->
+      <circle cx="85" cy="80" r="6" fill="#3b82f6"/><circle cx="110" cy="75" r="6" fill="#3b82f6"/><circle cx="140" cy="82" r="6" fill="#3b82f6"/>
+      <circle cx="170" cy="78" r="6" fill="#3b82f6"/><circle cx="200" cy="85" r="6" fill="#3b82f6"/>
+      <text x="160" y="120" text-anchor="middle" fill="#3b82f6" font-size="10" font-family="JetBrains Mono,monospace">count: 5 / limit: 5 ✓</text>
+      <text x="160" y="155" text-anchor="middle" fill="#3b82f6" font-size="9">counter resets →</text>
+      <!-- Window 2 -->
+      <rect x="260" y="30" width="200" height="130" rx="0" fill="rgba(59,130,246,.04)" stroke="#3b82f6" stroke-width="1" stroke-dasharray="6 4"/>
+      <text x="360" y="22" text-anchor="middle" fill="#3b82f6" font-size="11" font-weight="600">Window 2 (1:00-2:00)</text>
+      <circle cx="285" cy="80" r="6" fill="#3b82f6"/><circle cx="310" cy="78" r="6" fill="#3b82f6"/><circle cx="340" cy="82" r="6" fill="#3b82f6"/>
+      <text x="360" y="120" text-anchor="middle" fill="#3b82f6" font-size="10" font-family="JetBrains Mono,monospace">count: 3 / limit: 5 ✓</text>
+      <!-- Burst problem -->
+      <rect x="480" y="20" width="280" height="150" rx="10" fill="rgba(239,68,68,.05)" stroke="#ef4444" stroke-width="1.2"/>
+      <text x="620" y="45" text-anchor="middle" fill="#ef4444" font-weight="700" font-size="12">⚠ Boundary Burst Problem</text>
+      <text x="620" y="68" text-anchor="middle" fill="#8890a8" font-size="10">5 requests at 0:59</text>
+      <text x="620" y="84" text-anchor="middle" fill="#8890a8" font-size="10">5 requests at 1:01</text>
+      <text x="620" y="104" text-anchor="middle" fill="#ef4444" font-size="10" font-weight="600">= 10 requests in 2 seconds!</text>
+      <text x="620" y="124" text-anchor="middle" fill="#8890a8" font-size="9">Both windows pass the limit check</text>
+      <text x="620" y="140" text-anchor="middle" fill="#8890a8" font-size="9">but actual rate is 2x the intended limit</text>
+      <!-- Time labels -->
+      <text x="60" y="190" fill="#5c6486" font-size="9">0:00</text>
+      <text x="260" y="190" fill="#5c6486" font-size="9">1:00</text>
+      <text x="460" y="190" fill="#5c6486" font-size="9">2:00</text>
+    </svg>
+  </div>
+
+  <div class="pros-cons">
+    <div class="pro"><h4>✅ Pros</h4><ul><li>Simple to implement</li><li>Predictable reset — easy to reason about</li><li>Low memory — just one counter per window</li></ul></div>
+    <div class="con"><h4>❌ Cons</h4><ul><li>Allows bursts at window boundaries</li><li>Not smooth — all capacity can be used at window edges</li></ul></div>
+  </div>
+
+  <div class="tip tip-b"><span class="ic">📌</span><span><strong>Use Case:</strong> Simple API rate limiting — allow 100 requests per minute per user. Common in internal APIs or low-traffic services where burstiness is acceptable.</span></div>
+</section>
+
+<!-- ═══════ 2. SLIDING LOG ═══════ -->
+<section id="log" class="sec s2">
+  <div class="sec-h"><div class="sec-n">2</div><h2>Sliding Log</h2></div>
+  <div class="sec-sub">Store the timestamp of every request. Count how many fall within the last window.</div>
+
+  <div class="dw">
+    <svg viewBox="0 0 780 220" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+      <!-- Timeline -->
+      <line x1="40" y1="110" x2="740" y2="110" stroke="#242840" stroke-width="2"/>
+      <!-- Sliding window -->
+      <rect x="260" y="30" width="350" height="140" rx="0" fill="rgba(168,85,247,.04)" stroke="#a855f7" stroke-width="1.5" stroke-dasharray="8 4"/>
+      <text x="435" y="22" text-anchor="middle" fill="#a855f7" font-size="11" font-weight="600">Sliding Window (last 60 seconds)</text>
+      <!-- Arrow showing it slides -->
+      <path d="M610,170 L650,170" fill="none" stroke="#a855f7" stroke-width="1.5" marker-end="url(#arl)"/>
+      <defs><marker id="arl" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#a855f7"/></marker></defs>
+      <text x="630" y="186" fill="#a855f7" font-size="9" font-weight="600">slides with time →</text>
+      <!-- Old requests (outside window — expired) -->
+      <circle cx="100" cy="90" r="5" fill="#64748b" opacity=".4"/><circle cx="150" cy="95" r="5" fill="#64748b" opacity=".4"/><circle cx="200" cy="88" r="5" fill="#64748b" opacity=".4"/>
+      <text x="150" y="80" text-anchor="middle" fill="#64748b" font-size="9">expired — removed</text>
+      <!-- Requests inside window -->
+      <circle cx="290" cy="90" r="6" fill="#a855f7"/><circle cx="340" cy="85" r="6" fill="#a855f7"/><circle cx="400" cy="92" r="6" fill="#a855f7"/>
+      <circle cx="460" cy="88" r="6" fill="#a855f7"/><circle cx="520" cy="90" r="6" fill="#a855f7"/>
+      <!-- Log entries -->
+      <rect x="280" y="120" width="320" height="40" rx="6" fill="rgba(168,85,247,.08)" stroke="#a855f7" stroke-width="1" stroke-opacity=".4"/>
+      <text x="440" y="138" text-anchor="middle" fill="#a855f7" font-size="9" font-family="JetBrains Mono,monospace">[1:05, 1:18, 1:32, 1:45, 1:52]</text>
+      <text x="440" y="154" text-anchor="middle" fill="#a855f7" font-size="9">count: 5 / limit: 5 — exact!</text>
+      <!-- New request -->
+      <circle cx="580" cy="90" r="6" fill="#ef4444" stroke="#ef4444" stroke-width="2"/>
+      <text x="580" y="78" text-anchor="middle" fill="#ef4444" font-size="9" font-weight="600">DENIED</text>
+      <text x="580" y="68" text-anchor="middle" fill="#ef4444" font-size="8">6th request</text>
+    </svg>
+  </div>
+
+  <div class="pros-cons">
+    <div class="pro"><h4>✅ Pros</h4><ul><li>Most accurate — no boundary burst problem</li><li>Exact count within any rolling window</li></ul></div>
+    <div class="con"><h4>❌ Cons</h4><ul><li>High memory — stores every timestamp</li><li>Expensive for high-traffic services</li></ul></div>
+  </div>
+
+  <div class="tip tip-p"><span class="ic">📌</span><span><strong>Use Case:</strong> Payment gateways and financial APIs where exceeding limits could cause fraud. Stores exact timestamps for precise enforcement.</span></div>
+</section>
+
+<!-- ═══════ 3. SLIDING WINDOW COUNTER ═══════ -->
+<section id="sliding" class="sec s3">
+  <div class="sec-h"><div class="sec-n">3</div><h2>Sliding Window Counter</h2></div>
+  <div class="sec-sub">Combines fixed window simplicity with sliding window smoothness using weighted averages.</div>
+
+  <div class="dw">
+    <svg viewBox="0 0 780 240" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+      <!-- Timeline -->
+      <line x1="40" y1="100" x2="740" y2="100" stroke="#242840" stroke-width="2"/>
+      <!-- Previous window -->
+      <rect x="60" y="30" width="250" height="130" rx="0" fill="rgba(245,158,11,.03)" stroke="#f59e0b" stroke-width="1" stroke-opacity=".4"/>
+      <text x="185" y="22" text-anchor="middle" fill="#f59e0b" font-size="11" font-weight="600" opacity=".6">Previous Window</text>
+      <text x="185" y="60" text-anchor="middle" fill="#f59e0b" font-size="12" font-family="JetBrains Mono,monospace">count: 42</text>
+      <!-- Current window -->
+      <rect x="310" y="30" width="250" height="130" rx="0" fill="rgba(245,158,11,.06)" stroke="#f59e0b" stroke-width="1.5"/>
+      <text x="435" y="22" text-anchor="middle" fill="#f59e0b" font-size="11" font-weight="600">Current Window</text>
+      <text x="435" y="60" text-anchor="middle" fill="#f59e0b" font-size="12" font-family="JetBrains Mono,monospace">count: 18</text>
+      <!-- Overlap indicator -->
+      <rect x="310" y="30" width="75" height="130" rx="0" fill="rgba(245,158,11,.08)"/>
+      <text x="347" y="88" text-anchor="middle" fill="#f59e0b" font-size="9">30%</text>
+      <text x="347" y="100" text-anchor="middle" fill="#f59e0b" font-size="9">overlap</text>
+      <!-- Formula -->
+      <rect x="580" y="30" width="190" height="130" rx="10" fill="rgba(245,158,11,.06)" stroke="#f59e0b" stroke-width="1.2"/>
+      <text x="675" y="55" text-anchor="middle" fill="#f59e0b" font-weight="700" font-size="12">Formula</text>
+      <text x="675" y="80" text-anchor="middle" fill="#c2c8d8" font-size="10" font-family="JetBrains Mono,monospace">prev × overlap%</text>
+      <text x="675" y="96" text-anchor="middle" fill="#c2c8d8" font-size="10" font-family="JetBrains Mono,monospace">+ current</text>
+      <line x1="600" y1="108" x2="750" y2="108" stroke="#f59e0b" stroke-opacity=".3"/>
+      <text x="675" y="128" text-anchor="middle" fill="#f59e0b" font-size="11" font-family="JetBrains Mono,monospace" font-weight="700">42×0.3 + 18 = 30.6</text>
+      <text x="675" y="148" text-anchor="middle" fill="#f59e0b" font-size="10">≈ 31 requests (approx)</text>
+      <!-- Benefit note -->
+      <rect x="100" y="190" width="560" height="30" rx="8" fill="rgba(245,158,11,.05)" stroke="rgba(245,158,11,.15)" stroke-width="1"/>
+      <text x="380" y="209" text-anchor="middle" fill="#f59e0b" font-size="10">Smooth rate limiting with low memory — just 2 counters instead of a full timestamp log</text>
+    </svg>
+  </div>
+
+  <div class="pros-cons">
+    <div class="pro"><h4>✅ Pros</h4><ul><li>Smooth rate limiting — no boundary bursts</li><li>Low memory — only 2 counters per window</li></ul></div>
+    <div class="con"><h4>❌ Cons</h4><ul><li>Slightly complex formula</li><li>Approximate — not exact count (close enough for most use cases)</li></ul></div>
+  </div>
+
+  <div class="tip tip-y"><span class="ic">📌</span><span><strong>Use Case:</strong> Social media APIs (Twitter, Facebook). Prevents bursts while allowing flexibility. The approximation is good enough for non-critical rate limiting.</span></div>
+</section>
+
+<!-- ═══════ 4. TOKEN BUCKET ═══════ -->
+<section id="token" class="sec s4">
+  <div class="sec-h"><div class="sec-n">4</div><h2>Token Bucket</h2></div>
+  <div class="sec-sub">Tokens are added at a fixed rate. Each request consumes one token. No tokens = request denied.</div>
+
+  <div class="dw">
+    <svg viewBox="0 0 780 260" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+      <defs><marker id="atb2" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#10b981"/></marker><marker id="atbr" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#ef4444"/></marker></defs>
+      <!-- Token refiller -->
+      <rect x="40" y="30" width="140" height="70" rx="10" fill="rgba(16,185,129,.08)" stroke="#10b981" stroke-width="1.2"/>
+      <text x="110" y="55" text-anchor="middle" fill="#10b981" font-weight="700" font-size="12">Token Refiller</text>
+      <text x="110" y="74" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">10 tokens / sec</text>
+      <text x="110" y="90" text-anchor="middle" fill="#8890a8" font-size="9">steady drip rate</text>
+      <!-- Arrow: refiller → bucket -->
+      <path d="M180,65 L260,65" fill="none" stroke="#10b981" stroke-width="1.5" marker-end="url(#atb2)"/>
+      <text x="220" y="58" text-anchor="middle" fill="#10b981" font-size="9">add tokens</text>
+      <!-- Bucket -->
+      <path d="M260,30 L380,30 L370,130 L270,130 Z" fill="rgba(16,185,129,.08)" stroke="#10b981" stroke-width="2"/>
+      <!-- Tokens inside bucket -->
+      <circle cx="300" cy="110" r="8" fill="#10b981" opacity=".8"/><circle cx="320" cy="108" r="8" fill="#10b981" opacity=".8"/>
+      <circle cx="340" cy="112" r="8" fill="#10b981" opacity=".8"/><circle cx="355" cy="108" r="8" fill="#10b981" opacity=".8"/>
+      <circle cx="310" cy="90" r="8" fill="#10b981" opacity=".6"/><circle cx="335" cy="88" r="8" fill="#10b981" opacity=".6"/>
+      <circle cx="325" cy="72" r="8" fill="#10b981" opacity=".4"/>
+      <text x="320" y="55" text-anchor="middle" fill="#10b981" font-size="10" font-family="JetBrains Mono,monospace">7 tokens</text>
+      <text x="320" y="148" text-anchor="middle" fill="#5c6486" font-size="9">max capacity: 10</text>
+      <!-- Request arrives -->
+      <rect x="440" y="50" width="130" height="50" rx="10" fill="rgba(59,130,246,.08)" stroke="#3b82f6" stroke-width="1.2"/>
+      <text x="505" y="72" text-anchor="middle" fill="#3b82f6" font-weight="600" font-size="11">Request</text>
+      <text x="505" y="90" text-anchor="middle" fill="#5c6486" font-size="9">needs 1 token</text>
+      <!-- Arrow: request takes token -->
+      <path d="M400,80 L440,75" fill="none" stroke="#3b82f6" stroke-width="1.2" marker-end="url(#atb2)"/>
+      <text x="420" y="70" fill="#3b82f6" font-size="8">-1 token</text>
+      <!-- Allowed path -->
+      <path d="M570,65 L640,45" fill="none" stroke="#10b981" stroke-width="1.5" marker-end="url(#atb2)"/>
+      <rect x="640" y="25" width="120" height="40" rx="8" fill="rgba(16,185,129,.1)" stroke="#10b981" stroke-width="1.2"/>
+      <text x="700" y="50" text-anchor="middle" fill="#10b981" font-weight="700" font-size="12">✅ ALLOWED</text>
+      <!-- Denied path -->
+      <path d="M570,85 L640,110" fill="none" stroke="#ef4444" stroke-width="1.5" marker-end="url(#atbr)"/>
+      <rect x="640" y="90" width="120" height="40" rx="8" fill="rgba(239,68,68,.1)" stroke="#ef4444" stroke-width="1.2"/>
+      <text x="700" y="115" text-anchor="middle" fill="#ef4444" font-weight="700" font-size="12">❌ DENIED</text>
+      <text x="700" y="145" text-anchor="middle" fill="#ef4444" font-size="9">bucket empty!</text>
+      <!-- Burst capability note -->
+      <rect x="80" y="180" width="600" height="55" rx="10" fill="rgba(16,185,129,.05)" stroke="rgba(16,185,129,.15)" stroke-width="1"/>
+      <text x="380" y="202" text-anchor="middle" fill="#10b981" font-weight="600" font-size="11">Key Advantage: Controlled Bursts</text>
+      <text x="380" y="222" text-anchor="middle" fill="#8890a8" font-size="10">A full bucket (10 tokens) allows a burst of 10 requests instantly — then refill rate takes over.</text>
+      <text x="380" y="234" text-anchor="middle" fill="#8890a8" font-size="9">Perfect for video buffering: burst to fill buffer, then steady stream.</text>
+    </svg>
+  </div>
+
+  <div class="pros-cons">
+    <div class="pro"><h4>✅ Pros</h4><ul><li>Allows controlled bursts — critical for buffering/streaming</li><li>Smooth overall rate control</li><li>Flexible — adjust bucket size and refill rate independently</li></ul></div>
+    <div class="con"><h4>❌ Cons</h4><ul><li>More complex to implement than fixed window</li><li>Two parameters to tune (bucket size + refill rate)</li></ul></div>
+  </div>
+
+  <div class="tip tip-g"><span class="ic">📌</span><span><strong>Use Case:</strong> Video streaming platforms (Netflix, YouTube). Allows bursts for buffering but enforces overall rate. Also used by AWS API Gateway and Stripe.</span></div>
+</section>
+
+<!-- ═══════ COMPARISON TABLE ═══════ -->
+<section id="compare" class="sum">
+  <h2>Full Comparison</h2>
+  <div class="card" style="--pat:var(--fw)"><div class="tw"><table>
+    <thead><tr><th>Algorithm</th><th>How It Works</th><th>Accuracy</th><th>Memory</th><th>Burst Handling</th><th>Best For</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><strong style="color:var(--fw)">Fixed Window Counter</strong></td>
+        <td>Count requests in fixed intervals</td>
+        <td style="color:var(--sw)">Low — boundary bursts</td>
+        <td style="color:var(--ok)">Very low</td>
+        <td style="color:var(--bad)">Allows 2x burst at edges</td>
+        <td>Simple internal APIs</td>
+      </tr>
+      <tr>
+        <td><strong style="color:var(--sl)">Sliding Log</strong></td>
+        <td>Store timestamp per request</td>
+        <td style="color:var(--ok)">Highest — exact</td>
+        <td style="color:var(--bad)">High — every timestamp</td>
+        <td style="color:var(--ok)">No bursts — exact window</td>
+        <td>Financial/payment APIs</td>
+      </tr>
+      <tr>
+        <td><strong style="color:var(--sw)">Sliding Window Counter</strong></td>
+        <td>Weighted average of 2 windows</td>
+        <td style="color:var(--ok)">Good — approximate</td>
+        <td style="color:var(--ok)">Low — 2 counters</td>
+        <td style="color:var(--ok)">Smooth — weighted blend</td>
+        <td>Social media / public APIs</td>
+      </tr>
+      <tr>
+        <td><strong style="color:var(--tb)">Token Bucket</strong></td>
+        <td>Tokens refill at fixed rate</td>
+        <td style="color:var(--ok)">Good</td>
+        <td style="color:var(--ok)">Low — counter + timestamp</td>
+        <td style="color:var(--ok)">Controlled bursts ✅</td>
+        <td>Streaming, AWS, Stripe</td>
+      </tr>
+    </tbody>
+  </table></div></div>
+</section>
+
+<!-- ═══════ REAL-WORLD USE CASES ═══════ -->
+<section class="sum">
+  <h2>Real-World Use Cases</h2>
+  <div class="card" style="--pat:var(--tb)"><div class="tw"><table>
+    <thead><tr><th>Algorithm</th><th>Use Case</th><th>Example</th></tr></thead>
+    <tbody>
+      <tr><td><strong style="color:var(--fw)">Fixed Window Counter</strong></td><td>Simple API rate limiting</td><td>Allow 100 req/min per user. Internal APIs, low-traffic services.</td></tr>
+      <tr><td><strong style="color:var(--sl)">Sliding Log</strong></td><td>High-accuracy critical services</td><td>Payment gateways, financial APIs where exceeding limits = fraud risk.</td></tr>
+      <tr><td><strong style="color:var(--sw)">Sliding Window Counter</strong></td><td>Public APIs with smooth traffic</td><td>Twitter API, Facebook Graph API. Prevents bursts, allows flexibility.</td></tr>
+      <tr><td><strong style="color:var(--tb)">Token Bucket</strong></td><td>Streaming & real-time services</td><td>Netflix, YouTube (burst for buffering). AWS API Gateway, Stripe.</td></tr>
+    </tbody>
+  </table></div></div>
+</section>
+
+<!-- ═══════ CHOOSING GUIDE ═══════ -->
+<section class="sum">
+  <h2>Which Algorithm to Choose?</h2>
+  <div class="card" style="--pat:var(--fw)"><div class="tw"><table>
+    <thead><tr><th>If you need...</th><th>Choose</th></tr></thead>
+    <tbody>
+      <tr><td>Simplest possible implementation, bursts are acceptable</td><td><strong style="color:var(--fw)">Fixed Window Counter</strong></td></tr>
+      <tr><td>100% accurate enforcement, no data loss acceptable</td><td><strong style="color:var(--sl)">Sliding Log</strong></td></tr>
+      <tr><td>Smooth rate limiting with low memory footprint</td><td><strong style="color:var(--sw)">Sliding Window Counter</strong></td></tr>
+      <tr><td>Allow controlled bursts while enforcing average rate</td><td><strong style="color:var(--tb)">Token Bucket</strong></td></tr>
+    </tbody>
+  </table></div></div>
+</section>
+
+<button class="bt" id="backTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+<footer><p>Rate Limiting Algorithms — System Design Study Guide</p></footer>
+
+<script>
+window.addEventListener('scroll',()=>{document.getElementById('backTop').classList.toggle('show',window.scrollY>400)})
+</script>
+</body>
+</html>

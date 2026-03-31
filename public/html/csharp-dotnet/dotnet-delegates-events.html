@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Delegates &amp; Events — .NET Interview Study Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=DM+Sans:ital,wght@0,400;0,500;0,700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#060810;--bg-card:#0d0f18;--bg-code:#090b12;--bg-el:#151828;--border:#191d30;--border-gl:#242840;--text:#c2c8d8;--text-dim:#5c6486;--text-br:#e4eaf4;--c1:#ec4899;--c2:#3b82f6;--c3:#10b981;--c4:#f59e0b;--c5:#a855f7;--c6:#ef4444;--ok:#4ade80;--bad:#f87171;--kw:#c678dd;--str:#98c379;--tp:#61afef;--cm:#5c6370;--fn:#e5c07b;--r:12px}
+*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.72;overflow-x:hidden}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border-gl);border-radius:3px}
+.hero{position:relative;min-height:42vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:80px 24px 46px;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 500px 350px at 30% 40%,rgba(236,72,153,.1),transparent),radial-gradient(ellipse 400px 300px at 70% 55%,rgba(168,85,247,.07),transparent)}
+.hero-badge{position:relative;display:inline-flex;padding:6px 18px;border:1px solid var(--c1);border-radius:100px;font-size:.8rem;color:var(--c1);letter-spacing:.08em;text-transform:uppercase;margin-bottom:20px}
+.hero h1{position:relative;font-family:'Playfair Display',serif;font-size:clamp(2.2rem,5.5vw,3.6rem);font-weight:900;line-height:1.15;color:var(--text-br)}
+.hero h1 span{background:linear-gradient(135deg,var(--c1),var(--c5));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{position:relative;max-width:620px;margin-top:14px;color:var(--text-dim);font-size:1rem}
+.np{position:relative;display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:24px}
+.np a{padding:6px 14px;border:1px solid var(--border-gl);border-radius:100px;color:var(--text-dim);text-decoration:none;font-size:.82rem;transition:all .25s}
+.np a:hover{border-color:var(--c1);color:var(--c1)}
+.sec{max-width:1000px;margin:0 auto 55px;padding:0 24px;scroll-margin-top:32px}
+.sh{display:flex;align-items:center;gap:14px;margin-bottom:6px}
+.sn{display:flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:12px;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:.95rem;flex-shrink:0;background:color-mix(in srgb,var(--pat) 16%,transparent);color:var(--pat);border:1px solid color-mix(in srgb,var(--pat) 28%,transparent)}
+.sh h2{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;color:var(--text-br)}
+.ss{color:var(--text-dim);font-style:italic;margin-bottom:18px;padding-left:56px;font-size:.9rem}
+.s1{--pat:var(--c1)}.s2{--pat:var(--c5)}.s3{--pat:var(--c3)}.s4{--pat:var(--c2)}
+.card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:14px}
+.card h3{font-size:.9rem;color:var(--text-br);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.card h3::before{content:'';display:inline-block;width:3px;height:14px;border-radius:2px;background:var(--pat,var(--c1))}
+.dw{background:var(--bg-code);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:14px;overflow-x:auto}
+.dw svg{display:block;margin:0 auto;max-width:100%;height:auto}
+.cb{position:relative;background:var(--bg-code);border:1px solid var(--border);border-radius:var(--r);margin-bottom:12px;overflow:hidden}
+.cb-h{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;background:var(--bg-el);border-bottom:1px solid var(--border);font-size:.74rem;color:var(--text-dim);font-family:'JetBrains Mono',monospace}
+.cb-h .dots{display:flex;gap:5px}.cb-h .dots span{width:9px;height:9px;border-radius:50%}
+.cb-h .dots span:nth-child(1){background:#ff5f57}.cb-h .dots span:nth-child(2){background:#febc2e}.cb-h .dots span:nth-child(3){background:#28c840}
+.cb-h.bad{border-left:3px solid var(--bad)}.cb-h.good{border-left:3px solid var(--ok)}
+.cpb{background:none;border:1px solid var(--border-gl);color:var(--text-dim);padding:2px 8px;border-radius:5px;cursor:pointer;font-size:.68rem;font-family:'JetBrains Mono',monospace;transition:all .2s}
+.cpb:hover{border-color:var(--ok);color:var(--ok)}
+.cb pre{padding:12px 14px;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:.76rem;line-height:1.6;color:var(--text)}
+.kw{color:var(--kw)}.tp{color:var(--tp)}.str{color:var(--str)}.cm{color:var(--cm);font-style:italic}.fn{color:var(--fn)}.num{color:#d19a66}
+.cg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+@media(max-width:700px){.cg{grid-template-columns:1fr}}
+.cg .cb{margin-bottom:0}
+.tw{overflow-x:auto;margin-bottom:14px}table{width:100%;border-collapse:collapse;font-size:.8rem}
+thead th{background:var(--bg-el);color:var(--text-br);padding:9px 11px;text-align:left;font-weight:600;border-bottom:2px solid var(--border-gl);white-space:nowrap}
+tbody td{padding:7px 11px;border-bottom:1px solid var(--border);vertical-align:top}tbody tr:hover{background:rgba(236,72,153,.03)}
+.tip{display:flex;gap:10px;padding:11px 14px;border-radius:var(--r);margin-bottom:12px;font-size:.83rem}
+.tip-p{background:rgba(236,72,153,.06);border:1px solid rgba(236,72,153,.16)}.tip-p .ic{color:var(--c1)}
+.tip-r{background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.16)}.tip-r .ic{color:var(--c6)}
+.tip-g{background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.16)}.tip-g .ic{color:var(--c3)}
+.tip .ic{font-size:1rem;flex-shrink:0}
+.qa-b{margin-bottom:8px}
+.qa-q{display:flex;align-items:start;gap:8px;padding:11px 14px;background:var(--bg-el);border:1px solid var(--border);border-radius:var(--r);cursor:pointer;color:var(--text-br);font-size:.84rem;font-weight:500;transition:all .25s;user-select:none}
+.qa-q:hover{border-color:var(--c1)}.qa-q .ar{flex-shrink:0;transition:transform .3s;color:var(--c1);font-size:.8rem}.qa-q.open .ar{transform:rotate(90deg)}
+.qa-a{max-height:0;overflow:hidden;transition:max-height .35s ease,padding .35s;padding:0 14px;color:var(--text);font-size:.82rem;line-height:1.7;background:var(--bg-card);border:1px solid var(--border);border-top:none;border-radius:0 0 var(--r) var(--r)}
+.qa-a.open{max-height:600px;padding:12px 14px}
+.bt{position:fixed;bottom:24px;right:24px;width:42px;height:42px;border-radius:50%;background:var(--c1);color:#fff;border:none;cursor:pointer;font-size:1.1rem;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s;box-shadow:0 4px 16px rgba(236,72,153,.35);z-index:100;font-weight:700}
+.bt.show{opacity:1;pointer-events:auto}
+footer{text-align:center;padding:30px 24px;color:var(--text-dim);font-size:.78rem;border-top:1px solid var(--border);margin-top:30px}
+.sum{max-width:1000px;margin:0 auto 45px;padding:0 24px}.sum h2{font-family:'Playfair Display',serif;font-size:1.4rem;color:var(--text-br);margin-bottom:16px;text-align:center}
+@media(max-width:768px){.ss{padding-left:0}}
+</style>
+</head>
+<body>
+<section class="hero">
+  <div class="hero-badge">.NET Interview Guide</div>
+  <h1><span>Delegates</span> &amp; Events</h1>
+  <p>Type-safe method references, Action/Func shortcuts, multicast delegates, the event keyword, and the publisher-subscriber pattern.</p>
+  <div class="np"><a href="#delegate">Delegates</a><a href="#actionfunc">Action/Func</a><a href="#multicast">Multicast</a><a href="#events">Events</a><a href="#vs">Delegate vs Event</a><a href="#interview">Interview</a></div>
+</section>
+
+<!-- 1. DELEGATES -->
+<section id="delegate" class="sec s1">
+  <div class="sh"><div class="sn">1</div><h2>What is a Delegate?</h2></div>
+  <div class="ss">A type-safe reference to a method — pass methods as parameters, store them, call them later.</div>
+  <div class="tip tip-p"><span class="ic">🧠</span><span><code>int x = 5;</code> holds an integer. <code>string s = "Hi";</code> holds a string. <code>MyDelegate d = SomeMethod;</code> holds a <strong>METHOD</strong>. That's a delegate.</span></div>
+  <div class="cb"><div class="cb-h"><div class="dots"><span></span><span></span><span></span></div><span>Raw Delegate — The Old Way</span><button class="cpb" onclick="copyCode(this)">Copy</button></div><pre><span class="cm">// Step 1 — declare the delegate type</span>
+<span class="kw">public delegate void</span> <span class="tp">PrintDelegate</span>(<span class="kw">string</span> message);
+
+<span class="cm">// Step 2 — create a method matching the signature</span>
+<span class="kw">static void</span> <span class="fn">PrintMessage</span>(<span class="kw">string</span> message)
+{
+    <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">"Message: "</span> + message);
+}
+
+<span class="cm">// Step 3 — assign and call</span>
+<span class="tp">PrintDelegate</span> del = PrintMessage;
+del(<span class="str">"Hello!"</span>); <span class="cm">// calls PrintMessage("Hello!")</span></pre></div>
+</section>
+
+<!-- 2. ACTION / FUNC -->
+<section id="actionfunc" class="sec s2">
+  <div class="sh"><div class="sn">2</div><h2>Action and Func — The Modern Way</h2></div>
+  <div class="ss">Built-in delegate types so you don't declare your own every time.</div>
+  <div class="cb"><div class="cb-h good"><div class="dots"><span></span><span></span><span></span></div><span>Action (void) and Func (returns value)</span><button class="cpb" onclick="copyCode(this)">Copy</button></div><pre><span class="cm">// Action — delegate that returns void</span>
+<span class="tp">Action</span>&lt;<span class="kw">string</span>&gt; print = message => <span class="tp">Console</span>.<span class="fn">WriteLine</span>(message);
+print(<span class="str">"Hello!"</span>);
+
+<span class="cm">// Func — delegate that returns a value (last type = return type)</span>
+<span class="tp">Func</span>&lt;<span class="kw">int</span>, <span class="kw">int</span>, <span class="kw">int</span>&gt; add = (a, b) => a + b;
+<span class="kw">int</span> result = add(<span class="num">3</span>, <span class="num">5</span>); <span class="cm">// returns 8</span>
+
+<span class="cm">// Func with no parameters</span>
+<span class="tp">Func</span>&lt;<span class="kw">string</span>&gt; getName = () => <span class="str">"Omar"</span>;
+<span class="tp">Console</span>.<span class="fn">WriteLine</span>(getName()); <span class="cm">// Omar</span></pre></div>
+
+  <div class="card"><h3>Comparison</h3><div class="tw"><table><thead><tr><th></th><th>Raw Delegate</th><th>Action</th><th>Func</th></tr></thead><tbody>
+    <tr><td><strong>Returns void</strong></td><td>✅ Can</td><td style="color:var(--ok)">✅ Always</td><td style="color:var(--bad)">❌ Never</td></tr>
+    <tr><td><strong>Returns value</strong></td><td>✅ Can</td><td style="color:var(--bad)">❌ Never</td><td style="color:var(--ok)">✅ Always</td></tr>
+    <tr><td><strong>Custom name</strong></td><td>✅ Yes</td><td>❌ No</td><td>❌ No</td></tr>
+    <tr><td><strong>Built-in</strong></td><td>❌ No</td><td style="color:var(--ok)">✅ Yes</td><td style="color:var(--ok)">✅ Yes</td></tr>
+  </tbody></table></div></div>
+
+  <div class="cb"><div class="cb-h good"><div class="dots"><span></span><span></span><span></span></div><span>Passing methods as parameters</span><button class="cpb" onclick="copyCode(this)">Copy</button></div><pre><span class="kw">static void</span> <span class="fn">ProcessData</span>(<span class="tp">List</span>&lt;<span class="kw">int</span>&gt; numbers, <span class="tp">Func</span>&lt;<span class="kw">int</span>, <span class="kw">bool</span>&gt; filter)
+{
+    <span class="kw">foreach</span> (<span class="kw">int</span> n <span class="kw">in</span> numbers)
+    {
+        <span class="kw">if</span> (filter(n))
+            <span class="tp">Console</span>.<span class="fn">WriteLine</span>(n);
+    }
+}
+
+<span class="kw">var</span> numbers = <span class="kw">new</span> <span class="tp">List</span>&lt;<span class="kw">int</span>&gt; { <span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>, <span class="num">5</span>, <span class="num">6</span> };
+<span class="fn">ProcessData</span>(numbers, n => n > <span class="num">3</span>);       <span class="cm">// prints 4, 5, 6</span>
+<span class="fn">ProcessData</span>(numbers, n => n % <span class="num">2</span> == <span class="num">0</span>);  <span class="cm">// prints 2, 4, 6</span></pre></div>
+</section>
+
+<!-- 3. MULTICAST -->
+<section id="multicast" class="sec s3">
+  <div class="sh"><div class="sn">3</div><h2>Multicast Delegate</h2></div>
+  <div class="ss">One call, many methods — all registered methods execute in sequence.</div>
+  <div class="cb"><div class="cb-h"><div class="dots"><span></span><span></span><span></span></div><span>One delegate, three handlers</span><button class="cpb" onclick="copyCode(this)">Copy</button></div><pre><span class="tp">Action</span>&lt;<span class="kw">string</span>&gt; del = <span class="kw">null</span>;
+del += message => <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">"Logger 1: "</span> + message);
+del += message => <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">"Logger 2: "</span> + message);
+del += message => <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">"Logger 3: "</span> + message);
+
+del(<span class="str">"Error occurred!"</span>);
+<span class="cm">// Logger 1: Error occurred!</span>
+<span class="cm">// Logger 2: Error occurred!</span>
+<span class="cm">// Logger 3: Error occurred!</span></pre></div>
+</section>
+
+<!-- 4. EVENTS -->
+<section id="events" class="sec s4">
+  <div class="sh"><div class="sn">4</div><h2>Events — The Safe Wrapper</h2></div>
+  <div class="ss">An event wraps a delegate to enforce the publisher-subscriber pattern safely.</div>
+  <div class="tip tip-r"><span class="ic">⚠️</span><span>The <code>event</code> keyword restricts outside code to only <strong>subscribe (+=) or unsubscribe (-=)</strong>. Only the class that owns the event can fire it.</span></div>
+  <div class="cg">
+    <div class="cb"><div class="cb-h bad"><div class="dots"><span></span><span></span><span></span></div><span>❌ Raw delegate — dangerous</span></div><pre><span class="kw">class</span> <span class="tp">Button</span>
+{
+    <span class="kw">public</span> <span class="tp">Action</span> OnClick; <span class="cm">// raw!</span>
+}
+
+button.OnClick = <span class="kw">null</span>;     <span class="cm">// ❌ wipes ALL</span>
+button.OnClick(<span class="str">"hacked"</span>);  <span class="cm">// ❌ fires from outside</span>
+button.OnClick += MyHandler; <span class="cm">// ✅ fine</span></pre></div>
+    <div class="cb"><div class="cb-h good"><div class="dots"><span></span><span></span><span></span></div><span>✅ Event keyword — safe</span></div><pre><span class="kw">class</span> <span class="tp">Button</span>
+{
+    <span class="kw">public event</span> <span class="tp">Action</span> OnClick; <span class="cm">// safe!</span>
+}
+
+button.OnClick = <span class="kw">null</span>;      <span class="cm">// ❌ COMPILE ERROR</span>
+button.OnClick(<span class="str">"hacked"</span>);   <span class="cm">// ❌ COMPILE ERROR</span>
+button.OnClick += MyHandler; <span class="cm">// ✅ only +=/-=</span></pre></div>
+  </div>
+
+  <div class="cb"><div class="cb-h good"><div class="dots"><span></span><span></span><span></span></div><span>Full Publisher-Subscriber Example</span><button class="cpb" onclick="copyCode(this)">Copy</button></div><pre><span class="kw">class</span> <span class="tp">OrderService</span>
+{
+    <span class="kw">public event</span> <span class="tp">Action</span>&lt;<span class="kw">string</span>&gt; OnOrderPlaced; <span class="cm">// declare event</span>
+
+    <span class="kw">public void</span> <span class="fn">PlaceOrder</span>(<span class="kw">string</span> orderNumber)
+    {
+        <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">"Order placed: "</span> + orderNumber);
+        OnOrderPlaced?.<span class="fn">Invoke</span>(orderNumber); <span class="cm">// fire event safely</span>
+    }
+}
+
+<span class="kw">class</span> <span class="tp">EmailService</span>
+{
+    <span class="kw">public void</span> <span class="fn">SendConfirmationEmail</span>(<span class="kw">string</span> num)
+        => <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">"Email sent for: "</span> + num);
+}
+
+<span class="kw">class</span> <span class="tp">SmsService</span>
+{
+    <span class="kw">public void</span> <span class="fn">SendSms</span>(<span class="kw">string</span> num)
+        => <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">"SMS sent for: "</span> + num);
+}
+
+<span class="cm">// Wire everything together</span>
+<span class="kw">var</span> orderService = <span class="kw">new</span> <span class="tp">OrderService</span>();
+<span class="kw">var</span> emailService = <span class="kw">new</span> <span class="tp">EmailService</span>();
+<span class="kw">var</span> smsService   = <span class="kw">new</span> <span class="tp">SmsService</span>();
+
+orderService.OnOrderPlaced += emailService.SendConfirmationEmail;
+orderService.OnOrderPlaced += smsService.SendSms;
+
+orderService.<span class="fn">PlaceOrder</span>(<span class="str">"ORD-001"</span>);
+<span class="cm">// Order placed: ORD-001</span>
+<span class="cm">// Email sent for: ORD-001</span>
+<span class="cm">// SMS sent for: ORD-001</span></pre></div>
+
+  <div class="tip tip-g"><span class="ic">✅</span><span>OrderService has <strong>no idea</strong> that EmailService or SmsService exist. It just fires the event. This is loose coupling.</span></div>
+</section>
+
+<!-- 5. DELEGATE vs EVENT -->
+<section id="vs" class="sum">
+  <h2>Delegate vs Event</h2>
+  <div class="card" style="--pat:var(--c1)"><div class="tw"><table><thead><tr><th></th><th>Delegate</th><th>Event</th></tr></thead><tbody>
+    <tr><td><strong>What it is</strong></td><td>Method reference</td><td>Wrapper around delegate</td></tr>
+    <tr><td><strong>Fire from outside?</strong></td><td style="color:var(--bad)">✅ Yes — dangerous</td><td style="color:var(--ok)">❌ No — only owner can</td></tr>
+    <tr><td><strong>Assign from outside?</strong></td><td style="color:var(--bad)">✅ Yes — wipes all</td><td style="color:var(--ok)">❌ Compile error</td></tr>
+    <tr><td><strong>Subscribe/Unsubscribe</strong></td><td>✅ += and -=</td><td>✅ only += and -=</td></tr>
+    <tr><td><strong>Use case</strong></td><td>Pass methods as params</td><td>Notify subscribers</td></tr>
+    <tr><td><strong>Pattern</strong></td><td>Callback</td><td>Publisher-Subscriber</td></tr>
+  </tbody></table></div></div>
+
+  <div class="tip tip-p"><span class="ic">📌</span><span><strong>The 3 Levels:</strong> Raw Delegate → most control, most danger, old style. Action/Func → cleaner, built-in, daily use. Event → safest, publisher-subscriber, services and UI.</span></div>
+</section>
+
+<!-- INTERVIEW -->
+<section id="interview" class="sum">
+  <h2>Interview Questions</h2>
+  <div class="qa-b"><div class="qa-q" onclick="toggleQA(this)"><span class="ar">▶</span>What is a delegate in C#?</div><div class="qa-a">A delegate is a <strong>type-safe reference to a method</strong> that allows methods to be passed as parameters, stored in variables, and called later. <code>Action</code> and <code>Func</code> are built-in delegate types provided by .NET as shortcuts. Multicast delegates can hold references to multiple methods and call them all in sequence with a single invocation.</div></div>
+  <div class="qa-b"><div class="qa-q" onclick="toggleQA(this)"><span class="ar">▶</span>What is the difference between a delegate and an event?</div><div class="qa-a">An event is a <strong>wrapper around a delegate</strong> that implements the publisher-subscriber pattern. While a raw delegate allows anyone to fire it or clear all subscriptions from outside the class, the <code>event</code> keyword restricts outside code to only subscribing or unsubscribing. Only the class that owns the event can fire it. This creates loose coupling where publishers and subscribers don't need to know about each other.</div></div>
+  <div class="qa-b"><div class="qa-q" onclick="toggleQA(this)"><span class="ar">▶</span>What is the publisher-subscriber pattern?</div><div class="qa-a">The publisher-subscriber pattern allows a class to <strong>notify other classes when something happens</strong> without knowing anything about them. The publisher defines an event and fires it when something occurs. Subscribers register their methods with the event using +=. When the event fires, all registered methods are called automatically. This promotes loose coupling between classes.</div></div>
+</section>
+
+<button class="bt" id="backTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+<footer><p>Delegates &amp; Events — .NET Interview Study Guide 🚀</p></footer>
+<script>
+function toggleQA(el){el.classList.toggle('open');el.nextElementSibling.classList.toggle('open')}
+function copyCode(btn){const pre=btn.closest('.cb').querySelector('pre');navigator.clipboard.writeText(pre.textContent).then(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',1500)})}
+window.addEventListener('scroll',()=>{document.getElementById('backTop').classList.toggle('show',window.scrollY>400)})
+</script>
+</body>
+</html>

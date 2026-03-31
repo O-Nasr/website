@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>.NET String vs StringBuilder — Interactive Study Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a10;--surface:#131320;--surface2:#1b1b30;--border:#2a2a4a;--text:#e2e4f0;--text-dim:#7a7e9a;--accent:#f43f5e;--accent2:#fb7185;--green:#34d399;--red:#f87171;--orange:#fb923c;--yellow:#fbbf24;--blue:#60a5fa;--purple:#a78bfa;--code-bg:#0d0d16;--glow:rgba(244,63,94,.12)}
+*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;min-height:100vh}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 20% 5%,rgba(244,63,94,.05)0%,transparent 55%),radial-gradient(ellipse at 80% 95%,rgba(251,113,133,.03)0%,transparent 55%);pointer-events:none;z-index:0}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.container{max-width:900px;margin:0 auto;padding:2rem 1.5rem 4rem;position:relative;z-index:1}
+.hero{text-align:center;padding:3rem 0 2.5rem}
+.hero-badge{display:inline-block;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-weight:700;font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;padding:.35rem 1rem;border-radius:99px;margin-bottom:1.2rem}
+.hero h1{font-size:2.5rem;font-weight:800;background:linear-gradient(135deg,#fff 30%,var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1.15;margin-bottom:.5rem}
+.hero p{color:var(--text-dim);font-size:1.05rem}
+.nav{display:flex;flex-wrap:wrap;gap:.5rem;justify-content:center;margin-bottom:2.5rem;position:sticky;top:0;z-index:10;background:rgba(10,10,16,.88);backdrop-filter:blur(12px);padding:.75rem 0;border-bottom:1px solid var(--border)}
+.nav a{color:var(--text-dim);text-decoration:none;font-size:.76rem;font-weight:600;padding:.4rem .8rem;border-radius:8px;transition:all .2s;border:1px solid transparent}
+.nav a:hover,.nav a.active{color:var(--accent);background:rgba(244,63,94,.08);border-color:rgba(244,63,94,.2)}
+.section{margin-bottom:3rem;animation:fadeUp .5s ease both}
+.section-header{display:flex;align-items:center;gap:.75rem;margin-bottom:1.2rem;padding-bottom:.8rem;border-bottom:1px solid var(--border)}
+.section-num{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.85rem;color:#fff;flex-shrink:0}
+.section-header h2{font-size:1.35rem;font-weight:700}
+.callout{background:linear-gradient(135deg,rgba(244,63,94,.07),rgba(251,113,133,.04));border-left:3px solid var(--accent);border-radius:0 10px 10px 0;padding:1rem 1.2rem;margin:1rem 0;font-size:.92rem}
+.callout.green{border-left-color:var(--green);background:linear-gradient(135deg,rgba(52,211,153,.07),rgba(52,211,153,.03))}
+.callout.warn{border-left-color:var(--orange);background:linear-gradient(135deg,rgba(251,146,60,.07),rgba(251,146,60,.03))}
+pre{background:var(--code-bg);border:1px solid var(--border);border-radius:10px;padding:1.2rem;overflow-x:auto;margin:.8rem 0;font-family:'JetBrains Mono',monospace;font-size:.78rem;line-height:1.65;position:relative}
+pre .label{position:absolute;top:.5rem;right:.6rem;font-size:.6rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em;font-family:'Outfit',sans-serif;font-weight:600;background:var(--surface);padding:.15rem .5rem;border-radius:4px}
+.kw{color:var(--accent)}.tp{color:var(--blue)}.cm{color:#3a3a5e;font-style:italic}.st{color:var(--green)}.fn{color:var(--yellow)}.nu{color:var(--orange)}.er{color:var(--red)}
+.table-wrap{overflow-x:auto;margin:.8rem 0;border-radius:10px;border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:.83rem}
+th{background:var(--surface2);color:var(--accent);font-weight:600;text-align:left;padding:.7rem 1rem;white-space:nowrap}
+td{padding:.6rem 1rem;border-top:1px solid var(--border)}
+tr:hover td{background:rgba(244,63,94,.03)}
+.accordion{margin:.8rem 0}
+.accordion-btn{width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:600;padding:.9rem 1.2rem;border-radius:10px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;transition:all .2s}
+.accordion-btn:hover{border-color:var(--accent);background:var(--surface2)}
+.accordion-btn .arrow{transition:transform .3s;font-size:.8rem;color:var(--accent)}
+.accordion-btn.open .arrow{transform:rotate(180deg)}
+.accordion-body{max-height:0;overflow:hidden;transition:max-height .4s ease;background:var(--surface);border:1px solid var(--border);border-top:none;border-radius:0 0 10px 10px;padding:0 1.2rem}
+.accordion-body.open{max-height:3000px;padding:1.2rem}
+
+/* Memory sim */
+.mem-sim{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.5rem;margin:1rem 0}
+.mem-controls{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.8rem}
+.mem-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);font-family:'Outfit',sans-serif;font-size:.76rem;font-weight:600;padding:.5rem 1rem;border-radius:8px;cursor:pointer;transition:all .2s}
+.mem-btn:hover{color:var(--text);border-color:var(--accent)}
+.mem-btn.active{background:rgba(244,63,94,.12);border-color:var(--accent);color:var(--accent)}
+.mem-heap{display:flex;flex-wrap:wrap;gap:.3rem;margin:.6rem 0;min-height:60px;align-items:flex-start}
+.mem-block{padding:.3rem .6rem;border-radius:5px;font-family:'JetBrains Mono',monospace;font-size:.68rem;font-weight:600;transition:all .3s;animation:popIn .25s ease}
+.mem-block.alive{background:rgba(52,211,153,.15);border:1px solid var(--green);color:var(--green)}
+.mem-block.dead{background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.3);color:var(--red);opacity:.5;text-decoration:line-through}
+.mem-block.buf{background:rgba(96,165,250,.15);border:1px solid var(--blue);color:var(--blue)}
+.mem-stats{display:flex;gap:1.2rem;flex-wrap:wrap;margin-top:.6rem}
+.mem-stat{font-size:.8rem;font-weight:600}
+.mem-stat span{font-size:1.2rem;font-weight:800;margin-right:.2rem}
+.mem-stat.bad span{color:var(--red)}
+.mem-stat.good span{color:var(--green)}
+@keyframes popIn{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
+
+/* Quiz */
+.quiz-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.5rem;margin-bottom:1rem}
+.quiz-card h3{font-size:.95rem;margin-bottom:1rem;color:var(--accent)}
+.quiz-option{display:block;width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'Outfit',sans-serif;font-size:.83rem;padding:.7rem 1rem;border-radius:8px;cursor:pointer;margin-bottom:.4rem;text-align:left;transition:all .2s}
+.quiz-option:hover{border-color:var(--accent);transform:translateX(4px)}
+.quiz-option.correct{background:rgba(52,211,153,.15);border-color:var(--green);color:var(--green)}
+.quiz-option.wrong{background:rgba(248,113,113,.1);border-color:var(--red);color:var(--red)}
+.quiz-option:disabled{cursor:default;transform:none}
+.quiz-explanation{margin-top:.7rem;padding:.8rem;border-radius:8px;background:rgba(244,63,94,.06);font-size:.83rem;display:none;line-height:1.6}
+.quiz-explanation.show{display:block}
+.quiz-score{text-align:center;padding:1.5rem;background:var(--surface);border:1px solid var(--accent);border-radius:14px;margin-top:1rem}
+.quiz-score .big{font-size:2.2rem;font-weight:800;color:var(--accent)}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:640px){.hero h1{font-size:1.7rem}.container{padding:1rem}}
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="hero">
+  <div class="hero-badge">.NET Interview Study Guide</div>
+  <h1>String vs StringBuilder</h1>
+  <p>Immutable allocations vs mutable buffers</p>
+</div>
+
+<nav class="nav">
+  <a href="#s1">Immutability</a>
+  <a href="#s2">StringBuilder</a>
+  <a href="#s3">Memory Sim</a>
+  <a href="#s4">Methods</a>
+  <a href="#s5">Interning</a>
+  <a href="#s6">Quiz</a>
+</nav>
+
+<!-- S1 -->
+<div class="section" id="s1">
+  <div class="section-header"><div class="section-num">1</div><h2>Why String is Immutable</h2></div>
+  <p style="margin-bottom:.8rem">Every time you modify or concatenate a string, a <strong>brand new object</strong> is created in memory. The old one becomes garbage.</p>
+<pre><span class="label">C#</span><span class="tp">string</span> result = <span class="st">""</span>;
+result = result + <span class="st">"A"</span>; <span class="cm">// NEW string "A" at loc #2 — loc #1 abandoned</span>
+result = result + <span class="st">"B"</span>; <span class="cm">// NEW string "AB" at loc #3 — loc #2 abandoned</span>
+result = result + <span class="st">"C"</span>; <span class="cm">// NEW string "ABC" at loc #4 — loc #3 abandoned</span></pre>
+  <div class="callout" style="border-left-color:var(--red)">In a loop of 10,000 iterations: <strong>10,000 new allocations</strong> + 10,000 abandoned strings for GC. Massive memory pressure + slow performance.</div>
+</div>
+
+<!-- S2 -->
+<div class="section" id="s2">
+  <div class="section-header"><div class="section-num">2</div><h2>StringBuilder — The Solution</h2></div>
+  <p style="margin-bottom:.8rem">StringBuilder maintains a <strong>single mutable buffer</strong> and appends directly — no new allocations on every change.</p>
+<pre><span class="label">C#</span><span class="tp">StringBuilder</span> sb = <span class="kw">new</span> <span class="tp">StringBuilder</span>();
+
+<span class="kw">for</span> (<span class="tp">int</span> i = <span class="nu">0</span>; i < <span class="nu">10000</span>; i++)
+    sb.<span class="fn">Append</span>(i.<span class="fn">ToString</span>()); <span class="cm">// modifies SAME buffer — no new allocation</span>
+
+<span class="tp">string</span> result = sb.<span class="fn">ToString</span>(); <span class="cm">// ONE string created at the end</span></pre>
+
+  <div class="table-wrap">
+    <table>
+      <tr><th></th><th>string</th><th>StringBuilder</th></tr>
+      <tr><td><strong>Allocations (10k ops)</strong></td><td style="color:var(--red)">10,000</td><td style="color:var(--green)">1</td></tr>
+      <tr><td><strong>GC pressure</strong></td><td style="color:var(--red)">Very High</td><td style="color:var(--green)">Very Low</td></tr>
+      <tr><td><strong>Speed</strong></td><td style="color:var(--red)">Slow</td><td style="color:var(--green)">Fast (up to 100x)</td></tr>
+      <tr><td><strong>Thread safe?</strong></td><td style="color:var(--green)">✅ Yes — immutable</td><td style="color:var(--red)">❌ No</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- S3: Memory Simulator -->
+<div class="section" id="s3">
+  <div class="section-header"><div class="section-num">3</div><h2>Memory Allocation Simulator</h2></div>
+  <p style="margin-bottom:.8rem;font-size:.9rem">Watch what happens in memory with each approach:</p>
+  <div class="mem-sim">
+    <div class="mem-controls">
+      <button class="mem-btn" onclick="runMem('string')">String Concatenation (10 ops)</button>
+      <button class="mem-btn" onclick="runMem('sb')">StringBuilder (10 ops)</button>
+      <button class="mem-btn" onclick="resetMem()">Reset</button>
+    </div>
+    <p style="font-size:.75rem;font-weight:600;color:var(--text-dim);margin-bottom:.3rem">Heap Memory:</p>
+    <div class="mem-heap" id="mem-heap"></div>
+    <div class="mem-stats">
+      <div class="mem-stat" id="stat-alloc"><span>0</span> allocations</div>
+      <div class="mem-stat" id="stat-garbage"><span>0</span> garbage objects</div>
+      <div class="mem-stat" id="stat-alive"><span>0</span> alive</div>
+    </div>
+  </div>
+</div>
+
+<!-- S4: Methods -->
+<div class="section" id="s4">
+  <div class="section-header"><div class="section-num">4</div><h2>Common StringBuilder Methods</h2></div>
+<pre><span class="label">C#</span><span class="tp">StringBuilder</span> sb = <span class="kw">new</span> <span class="tp">StringBuilder</span>();
+
+sb.<span class="fn">Append</span>(<span class="st">"Hello"</span>);           <span class="cm">// add text at the end</span>
+sb.<span class="fn">AppendLine</span>(<span class="st">"Hello"</span>);       <span class="cm">// add text + new line</span>
+sb.<span class="fn">Insert</span>(<span class="nu">0</span>, <span class="st">"Start: "</span>);      <span class="cm">// insert at position</span>
+sb.<span class="fn">Replace</span>(<span class="st">"Hello"</span>, <span class="st">"Hi"</span>);    <span class="cm">// find and replace</span>
+sb.<span class="fn">Remove</span>(<span class="nu">0</span>, <span class="nu">5</span>);              <span class="cm">// remove characters</span>
+sb.<span class="fn">Clear</span>();                   <span class="cm">// clear everything</span>
+
+<span class="tp">string</span> result = sb.<span class="fn">ToString</span>(); <span class="cm">// convert when done</span></pre>
+
+  <div class="callout warn">⚠️ <strong>Rule of thumb:</strong> If you are concatenating strings more than 3-4 times — especially inside a loop — always use StringBuilder.</div>
+
+  <div class="table-wrap" style="margin-top:1rem">
+    <table>
+      <tr><th>Situation</th><th>Use</th></tr>
+      <tr><td>Simple assignment / few concats (2-3)</td><td>string — fine</td></tr>
+      <tr><td>Concatenation inside a loop</td><td style="color:var(--green)">StringBuilder</td></tr>
+      <tr><td>Building large strings dynamically</td><td style="color:var(--green)">StringBuilder</td></tr>
+      <tr><td>String is fixed, never changes</td><td>string</td></tr>
+      <tr><td>More than 3-4 concatenations</td><td style="color:var(--green)">StringBuilder</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- S5: Interning -->
+<div class="section" id="s5">
+  <div class="section-header"><div class="section-num">5</div><h2>String Interning — Bonus Point</h2></div>
+  <p style="margin-bottom:.8rem">.NET has a <strong>String Intern Pool</strong>. Identical string literals share the same memory location.</p>
+<pre><span class="label">C#</span><span class="tp">string</span> a = <span class="st">"Hello"</span>;
+<span class="tp">string</span> b = <span class="st">"Hello"</span>;
+Console.<span class="fn">WriteLine</span>(<span class="tp">object</span>.<span class="fn">ReferenceEquals</span>(a, b)); <span class="cm">// true — same location!</span>
+
+<span class="cm">// Dynamically built strings are NOT interned</span>
+<span class="tp">string</span> c = <span class="kw">new</span> <span class="tp">string</span>(<span class="kw">new</span> <span class="tp">char</span>[]{<span class="st">'H'</span>,<span class="st">'e'</span>,<span class="st">'l'</span>,<span class="st">'l'</span>,<span class="st">'o'</span>});
+Console.<span class="fn">WriteLine</span>(<span class="tp">object</span>.<span class="fn">ReferenceEquals</span>(a, c)); <span class="cm">// false — different</span></pre>
+</div>
+
+<!-- S6: Quiz -->
+<div class="section" id="s6">
+  <div class="section-header"><div class="section-num">6</div><h2>Test Yourself</h2></div>
+  <div class="quiz-card" id="q1">
+    <h3>Q1: Why is string concatenation in a loop bad?</h3>
+    <button class="quiz-option" onclick="answer(this,'q1',false)">Strings are mutable so they keep growing</button>
+    <button class="quiz-option" onclick="answer(this,'q1',true)">Each concatenation creates a new object — thousands of abandoned strings for GC</button>
+    <button class="quiz-option" onclick="answer(this,'q1',false)">The loop variable conflicts with the string</button>
+    <div class="quiz-explanation" id="q1-exp">Strings are immutable — every <code>+</code> creates a brand new object and abandons the old one. In a 10k loop, that's 10,000 allocations and 10,000 objects for GC to collect.</div>
+  </div>
+  <div class="quiz-card" id="q2">
+    <h3>Q2: How many string objects does StringBuilder create for 10,000 appends?</h3>
+    <button class="quiz-option" onclick="answer(this,'q2',true)">1 — at the end when ToString() is called</button>
+    <button class="quiz-option" onclick="answer(this,'q2',false)">10,000 — same as string</button>
+    <button class="quiz-option" onclick="answer(this,'q2',false)">0 — StringBuilder never creates strings</button>
+    <div class="quiz-explanation" id="q2-exp">StringBuilder works with a mutable internal buffer. All 10,000 appends modify that same buffer. Only one string is created at the end when you call <code>.ToString()</code>.</div>
+  </div>
+  <div class="quiz-card" id="q3">
+    <h3>Q3: Is <code>string</code> thread-safe? Why?</h3>
+    <button class="quiz-option" onclick="answer(this,'q3',true)">Yes — because it's immutable, it can't be modified by any thread</button>
+    <button class="quiz-option" onclick="answer(this,'q3',false)">No — strings can be modified concurrently</button>
+    <button class="quiz-option" onclick="answer(this,'q3',false)">Only with a lock statement</button>
+    <div class="quiz-explanation" id="q3-exp">Immutability makes strings inherently thread-safe — since no thread can modify a string object, there's no race condition possible. StringBuilder is NOT thread-safe because its buffer is mutable.</div>
+  </div>
+  <div class="quiz-card" id="q4">
+    <h3>Q4: Do two string literals <code>"Hello"</code> share the same memory?</h3>
+    <button class="quiz-option" onclick="answer(this,'q4',true)">Yes — .NET interns identical string literals</button>
+    <button class="quiz-option" onclick="answer(this,'q4',false)">No — each is a separate allocation</button>
+    <div class="quiz-explanation" id="q4-exp">.NET's String Intern Pool ensures identical string literals point to the same memory location. However, dynamically built strings (e.g., <code>new string(...)</code>) are NOT interned automatically.</div>
+  </div>
+  <div class="quiz-score" id="score-box" style="display:none"><div class="big" id="score-text"></div><p style="color:var(--text-dim);margin-top:.3rem">String vs StringBuilder Quiz</p></div>
+</div>
+
+<!-- Interview Answers -->
+<div class="section" id="s7">
+  <div class="section-header"><div class="section-num">★</div><h2>Interview Answer Bank</h2></div>
+  <div class="accordion"><button class="accordion-btn" onclick="toggleAcc(this)"><span>Q: Why is string concatenation in a loop bad?</span><span class="arrow">▼</span></button><div class="accordion-body"><div class="callout green">Strings are immutable — every concatenation creates a brand new string and the old one becomes garbage. In a loop of thousands of iterations this causes massive memory pressure and performance degradation as thousands of objects are created and abandoned.</div></div></div>
+  <div class="accordion"><button class="accordion-btn" onclick="toggleAcc(this)"><span>Q: What is StringBuilder and when to use it?</span><span class="arrow">▼</span></button><div class="accordion-body"><div class="callout green">StringBuilder maintains a single mutable buffer and appends directly without creating new objects. Use it whenever concatenating multiple times — especially in loops. Can be up to 100x faster because it creates one allocation instead of thousands.</div></div></div>
+  <div class="accordion"><button class="accordion-btn" onclick="toggleAcc(this)"><span>Q: What is string immutability?</span><span class="arrow">▼</span></button><div class="accordion-body"><div class="callout green">Once a string is created it cannot be changed. Any operation that appears to modify it actually creates a brand new object. This makes string thread-safe by design but also makes repeated modification expensive.</div></div></div>
+</div>
+</div>
+
+<script>
+function toggleAcc(btn){btn.classList.toggle('open');btn.nextElementSibling.classList.toggle('open')}
+
+// Memory simulator
+let memTimer=null;
+function resetMem(){
+  clearInterval(memTimer);
+  document.getElementById('mem-heap').innerHTML='';
+  document.getElementById('stat-alloc').innerHTML='<span>0</span> allocations';
+  document.getElementById('stat-garbage').innerHTML='<span>0</span> garbage';
+  document.getElementById('stat-alive').innerHTML='<span>0</span> alive';
+  document.querySelectorAll('.mem-btn').forEach(b=>b.classList.remove('active'));
+}
+function runMem(mode){
+  resetMem();event.target.classList.add('active');
+  const heap=document.getElementById('mem-heap');
+  let allocs=0,garbage=0,step=0;
+  const letters='ABCDEFGHIJ';
+  if(mode==='string'){
+    let built='';
+    memTimer=setInterval(()=>{
+      if(step>=10){clearInterval(memTimer);return}
+      // kill previous alive
+      heap.querySelectorAll('.alive').forEach(b=>{b.classList.remove('alive');b.classList.add('dead');garbage++});
+      built+=letters[step];
+      const blk=document.createElement('div');
+      blk.className='mem-block alive';blk.textContent='"'+built+'"';
+      heap.appendChild(blk);allocs++;step++;
+      document.getElementById('stat-alloc').innerHTML=`<span>${allocs}</span> allocations`;
+      document.getElementById('stat-alloc').className='mem-stat bad';
+      document.getElementById('stat-garbage').innerHTML=`<span>${garbage}</span> garbage`;
+      document.getElementById('stat-garbage').className='mem-stat bad';
+      document.getElementById('stat-alive').innerHTML=`<span>1</span> alive`;
+    },350);
+  } else {
+    // StringBuilder
+    const bufBlk=document.createElement('div');
+    bufBlk.className='mem-block buf';bufBlk.id='sb-buf';bufBlk.textContent='[buffer]';
+    heap.appendChild(bufBlk);allocs=1;
+    document.getElementById('stat-alloc').innerHTML='<span>1</span> allocation';
+    document.getElementById('stat-alloc').className='mem-stat good';
+    let built='';
+    memTimer=setInterval(()=>{
+      if(step>=10){
+        clearInterval(memTimer);
+        const final=document.createElement('div');
+        final.className='mem-block alive';final.textContent='"'+built+'"';
+        heap.appendChild(final);
+        document.getElementById('stat-alloc').innerHTML='<span>2</span> allocations';
+        return;
+      }
+      built+=letters[step];
+      document.getElementById('sb-buf').textContent='[buf: '+built+']';
+      step++;
+      document.getElementById('stat-garbage').innerHTML='<span>0</span> garbage';
+      document.getElementById('stat-garbage').className='mem-stat good';
+      document.getElementById('stat-alive').innerHTML='<span>1</span> alive';
+    },350);
+  }
+}
+
+// Quiz
+let answered=0,correct=0,total=4;
+function answer(btn,qId,isCorrect){const card=document.getElementById(qId);if(card.dataset.answered)return;card.dataset.answered='1';answered++;if(isCorrect){btn.classList.add('correct');correct++;}else btn.classList.add('wrong');card.querySelectorAll('.quiz-option').forEach(o=>o.disabled=true);document.getElementById(qId+'-exp').classList.add('show');if(answered===total){document.getElementById('score-box').style.display='block';document.getElementById('score-text').textContent=correct+' / '+total;}}
+const sections=document.querySelectorAll('.section');const navLinks=document.querySelectorAll('.nav a');
+window.addEventListener('scroll',()=>{let c='';sections.forEach(s=>{if(window.scrollY>=s.offsetTop-120)c=s.id});navLinks.forEach(a=>{a.classList.remove('active');if(a.getAttribute('href')==='#'+c)a.classList.add('active')})});
+</script>
+</body>
+</html>

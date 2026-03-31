@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Consistent Hashing — Interactive Study Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=DM+Sans:ital,wght@0,400;0,500;0,700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#060810;--bg-card:#0d0f18;--bg-code:#090b12;--bg-el:#151828;--border:#191d30;--border-gl:#242840;--text:#c2c8d8;--text-dim:#5c6486;--text-br:#e4eaf4;--c1:#06b6d4;--c2:#8b5cf6;--c3:#f59e0b;--c4:#10b981;--c5:#3b82f6;--c6:#ef4444;--c7:#ec4899;--r:12px}
+*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.72;overflow-x:hidden}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border-gl);border-radius:3px}
+.hero{position:relative;min-height:46vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:80px 24px 50px;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 500px 350px at 30% 40%,rgba(6,182,212,.1),transparent),radial-gradient(ellipse 400px 300px at 70% 55%,rgba(139,92,246,.07),transparent)}
+.hero-badge{position:relative;display:inline-flex;align-items:center;gap:8px;padding:6px 18px;border:1px solid var(--c1);border-radius:100px;font-size:.8rem;color:var(--c1);letter-spacing:.08em;text-transform:uppercase;margin-bottom:20px}
+.hero h1{position:relative;font-family:'Playfair Display',serif;font-size:clamp(2.4rem,6vw,4rem);font-weight:900;line-height:1.15;color:var(--text-br);max-width:700px}
+.hero h1 span{background:linear-gradient(135deg,var(--c1),var(--c2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{position:relative;max-width:620px;margin-top:16px;color:var(--text-dim);font-size:1.05rem}
+.nav-pills{position:relative;display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:28px}
+.nav-pills a{display:inline-block;padding:6px 14px;border:1px solid var(--border-gl);border-radius:100px;color:var(--text-dim);text-decoration:none;font-size:.82rem;transition:all .25s}
+.nav-pills a:hover{border-color:var(--c1);color:var(--c1);background:rgba(6,182,212,.06)}
+.sec{max-width:1000px;margin:0 auto 70px;padding:0 24px;scroll-margin-top:32px}
+.sec-h{display:flex;align-items:center;gap:16px;margin-bottom:8px}
+.sec-n{display:flex;align-items:center;justify-content:center;width:46px;height:46px;border-radius:14px;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:1rem;flex-shrink:0;background:color-mix(in srgb,var(--pat) 16%,transparent);color:var(--pat);border:1px solid color-mix(in srgb,var(--pat) 28%,transparent)}
+.sec-h h2{font-family:'Playfair Display',serif;font-size:1.65rem;font-weight:700;color:var(--text-br)}
+.sec-sub{color:var(--text-dim);font-style:italic;margin-bottom:24px;padding-left:62px;font-size:.93rem}
+.s1{--pat:var(--c6)}.s2{--pat:var(--c1)}.s3{--pat:var(--c4)}.s4{--pat:var(--c2)}.s5{--pat:var(--c3)}
+.card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r);padding:22px;margin-bottom:18px}
+.card h3{font-size:.95rem;color:var(--text-br);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card h3::before{content:'';display:inline-block;width:3px;height:16px;border-radius:2px;background:var(--pat,var(--c1))}
+.dw{background:var(--bg-code);border:1px solid var(--border);border-radius:var(--r);padding:24px;margin-bottom:18px;overflow-x:auto}
+.dw svg{display:block;margin:0 auto;max-width:100%;height:auto}
+.tw{overflow-x:auto;margin-bottom:18px}table{width:100%;border-collapse:collapse;font-size:.84rem}
+thead th{background:var(--bg-el);color:var(--text-br);padding:11px 14px;text-align:left;font-weight:600;border-bottom:2px solid var(--border-gl);white-space:nowrap}
+tbody td{padding:9px 14px;border-bottom:1px solid var(--border);vertical-align:top}tbody tr:hover{background:rgba(6,182,212,.03)}
+.tip{display:flex;gap:12px;padding:14px 16px;border-radius:var(--r);margin-bottom:18px;font-size:.87rem}
+.tip-i{background:rgba(6,182,212,.06);border:1px solid rgba(6,182,212,.16)}.tip-i .ic{color:var(--c1)}
+.tip-w{background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.16)}.tip-w .ic{color:var(--c6)}
+.tip-g{background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.16)}.tip-g .ic{color:var(--c4)}
+.tip-p{background:rgba(139,92,246,.06);border:1px solid rgba(139,92,246,.16)}.tip-p .ic{color:var(--c2)}
+.tip .ic{font-size:1.2rem;flex-shrink:0}
+.ct{display:flex;align-items:center;justify-content:space-between;width:100%;padding:14px 18px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r);cursor:pointer;color:var(--text-br);font-size:.93rem;font-weight:600;margin-bottom:4px;transition:all .25s}
+.ct:hover{border-color:var(--pat,var(--c1))}.ct .ch{transition:transform .3s;color:var(--text-dim)}.ct.open .ch{transform:rotate(180deg)}
+.cb{max-height:0;overflow:hidden;transition:max-height .4s ease}.cb.open{max-height:8000px}.cb>.inner{padding:14px 0}
+.qa-b{margin-bottom:10px}
+.qa-q{display:flex;align-items:start;gap:10px;padding:13px 16px;background:var(--bg-el);border:1px solid var(--border);border-radius:var(--r);cursor:pointer;color:var(--text-br);font-size:.88rem;font-weight:500;transition:all .25s;user-select:none}
+.qa-q:hover{border-color:var(--c1)}.qa-q .ar{flex-shrink:0;transition:transform .3s;color:var(--c1);font-size:.8rem}.qa-q.open .ar{transform:rotate(90deg)}
+.qa-a{max-height:0;overflow:hidden;transition:max-height .35s ease,padding .35s;padding:0 16px;color:var(--text);font-size:.86rem;line-height:1.7;background:var(--bg-card);border:1px solid var(--border);border-top:none;border-radius:0 0 var(--r) var(--r)}
+.qa-a.open{max-height:600px;padding:14px 16px}
+.bt{position:fixed;bottom:24px;right:24px;width:44px;height:44px;border-radius:50%;background:var(--c1);color:#fff;border:none;cursor:pointer;font-size:1.2rem;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s,transform .3s;box-shadow:0 4px 16px rgba(6,182,212,.35);z-index:100;font-weight:700}
+.bt.show{opacity:1;pointer-events:auto}.bt:hover{transform:scale(1.1)}
+footer{text-align:center;padding:36px 24px;color:var(--text-dim);font-size:.8rem;border-top:1px solid var(--border);margin-top:40px}
+.sum{max-width:1000px;margin:0 auto 60px;padding:0 24px}.sum h2{font-family:'Playfair Display',serif;font-size:1.65rem;color:var(--text-br);margin-bottom:20px;text-align:center}
+@media(max-width:768px){.sec-sub{padding-left:0}}
+</style>
+</head>
+<body>
+
+<section class="hero">
+  <div class="hero-badge">Distributed Systems</div>
+  <h1><span>Consistent</span> Hashing</h1>
+  <p>A distributed hashing technique that maps keys to servers on a hash ring — minimizing data movement when nodes are added or removed.</p>
+  <div class="nav-pills">
+    <a href="#problem">The Problem</a><a href="#ring">Hash Ring</a><a href="#addremove">Add/Remove Nodes</a><a href="#virtual">Virtual Nodes</a><a href="#compare">Comparison</a>
+  </div>
+</section>
+
+<!-- ═══════ 1. THE PROBLEM WITH MODULO HASHING ═══════ -->
+<section id="problem" class="sec s1">
+  <div class="sec-h"><div class="sec-n">1</div><h2>The Problem with Modulo Hashing</h2></div>
+  <div class="sec-sub">hash(key) % N works until N changes — then almost all keys get remapped.</div>
+
+  <div class="dw">
+    <svg viewBox="0 0 780 340" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+      <defs><marker id="am" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#5c6486"/></marker></defs>
+      <!-- Before: N=3 -->
+      <text x="180" y="22" text-anchor="middle" fill="#3b82f6" font-weight="700" font-size="14">Before: N = 3 servers</text>
+      <rect x="30" y="35" width="300" height="130" rx="10" fill="rgba(59,130,246,.04)" stroke="#3b82f6" stroke-width="1"/>
+      <!-- Keys -->
+      <text x="50" y="60" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">hash("key1") % 3 = <tspan fill="#3b82f6" font-weight="700">0</tspan> → Server A</text>
+      <text x="50" y="80" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">hash("key2") % 3 = <tspan fill="#10b981" font-weight="700">1</tspan> → Server B</text>
+      <text x="50" y="100" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">hash("key3") % 3 = <tspan fill="#f59e0b" font-weight="700">2</tspan> → Server C</text>
+      <text x="50" y="120" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">hash("key4") % 3 = <tspan fill="#3b82f6" font-weight="700">0</tspan> → Server A</text>
+      <text x="50" y="140" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">hash("key5") % 3 = <tspan fill="#10b981" font-weight="700">1</tspan> → Server B</text>
+      <text x="50" y="158" fill="#3b82f6" font-size="10">✓ All good — stable mapping</text>
+      <!-- After: N=4 -->
+      <text x="590" y="22" text-anchor="middle" fill="#ef4444" font-weight="700" font-size="14">After: N = 4 servers (added one!)</text>
+      <rect x="430" y="35" width="330" height="130" rx="10" fill="rgba(239,68,68,.04)" stroke="#ef4444" stroke-width="1"/>
+      <text x="450" y="60" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">hash("key1") % 4 = <tspan fill="#ef4444" font-weight="700">3</tspan> → Server D  <tspan fill="#ef4444">MOVED!</tspan></text>
+      <text x="450" y="80" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">hash("key2") % 4 = <tspan fill="#ef4444" font-weight="700">2</tspan> → Server C  <tspan fill="#ef4444">MOVED!</tspan></text>
+      <text x="450" y="100" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">hash("key3") % 4 = <tspan fill="#10b981" font-weight="700">1</tspan> → Server B  <tspan fill="#10b981">same</tspan></text>
+      <text x="450" y="120" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">hash("key4") % 4 = <tspan fill="#ef4444" font-weight="700">0</tspan> → Server A  <tspan fill="#ef4444">MOVED!</tspan></text>
+      <text x="450" y="140" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">hash("key5") % 4 = <tspan fill="#ef4444" font-weight="700">3</tspan> → Server D  <tspan fill="#ef4444">MOVED!</tspan></text>
+      <text x="450" y="158" fill="#ef4444" font-size="10" font-weight="600">✗ 4 out of 5 keys remapped! (80%)</text>
+      <!-- Arrow between -->
+      <path d="M330,100 L430,100" fill="none" stroke="#ef4444" stroke-width="2" marker-end="url(#am)"/>
+      <text x="380" y="92" text-anchor="middle" fill="#ef4444" font-size="10" font-weight="700">+1 server</text>
+      <!-- Impact box -->
+      <rect x="120" y="190" width="540" height="55" rx="10" fill="rgba(239,68,68,.08)" stroke="#ef4444" stroke-width="1.5"/>
+      <text x="390" y="215" text-anchor="middle" fill="#ef4444" font-weight="700" font-size="13">💥 The Modulo Problem</text>
+      <text x="390" y="235" text-anchor="middle" fill="#c2c8d8" font-size="11">Adding or removing just 1 server causes ~80% of all keys to remap → massive cache misses</text>
+      <!-- Solution hint -->
+      <rect x="120" y="270" width="540" height="50" rx="10" fill="rgba(6,182,212,.06)" stroke="#06b6d4" stroke-width="1.2"/>
+      <text x="390" y="293" text-anchor="middle" fill="#06b6d4" font-weight="700" font-size="13">✅ Consistent Hashing Solution</text>
+      <text x="390" y="311" text-anchor="middle" fill="#c2c8d8" font-size="11">Map keys and nodes onto a ring → adding/removing a node moves only ~K/N keys</text>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════ 2. THE HASH RING ═══════ -->
+<section id="ring" class="sec s2">
+  <div class="sec-h"><div class="sec-n">2</div><h2>The Hash Ring</h2></div>
+  <div class="sec-sub">Keys and servers are placed on a circular ring. Each key maps to the next server clockwise.</div>
+
+  <div class="dw">
+    <svg viewBox="0 0 780 440" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+      <defs>
+        <marker id="acw" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#06b6d4"/></marker>
+      </defs>
+      <!-- Ring -->
+      <circle cx="390" cy="210" r="160" fill="none" stroke="#242840" stroke-width="3"/>
+      <!-- Hash space labels -->
+      <text x="390" y="30" text-anchor="middle" fill="#5c6486" font-size="10">0</text>
+      <text x="570" y="215" text-anchor="middle" fill="#5c6486" font-size="10">2³²/4</text>
+      <text x="390" y="395" text-anchor="middle" fill="#5c6486" font-size="10">2³²/2</text>
+      <text x="210" y="215" text-anchor="middle" fill="#5c6486" font-size="10">3×2³²/4</text>
+      <!-- Clockwise arrow arc -->
+      <path d="M420,52 A160,160 0 0 1 548,140" fill="none" stroke="rgba(6,182,212,.3)" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#acw)"/>
+      <text x="505" y="82" fill="#06b6d4" font-size="10" font-weight="600">clockwise →</text>
+      <!-- Server nodes (large circles) -->
+      <circle cx="390" cy="50" r="22" fill="rgba(59,130,246,.2)" stroke="#3b82f6" stroke-width="2"/>
+      <text x="390" y="55" text-anchor="middle" fill="#3b82f6" font-weight="700" font-size="12">A</text>
+      <circle cx="543" cy="282" r="22" fill="rgba(16,185,129,.2)" stroke="#10b981" stroke-width="2"/>
+      <text x="543" y="287" text-anchor="middle" fill="#10b981" font-weight="700" font-size="12">B</text>
+      <circle cx="237" cy="282" r="22" fill="rgba(245,158,11,.2)" stroke="#f59e0b" stroke-width="2"/>
+      <text x="237" y="287" text-anchor="middle" fill="#f59e0b" font-weight="700" font-size="12">C</text>
+      <!-- Keys (small diamonds) -->
+      <rect x="457" y="78" width="14" height="14" rx="3" fill="#ec4899" stroke="#ec4899" stroke-width="1" transform="rotate(45 464 85)"/>
+      <text x="485" y="93" fill="#ec4899" font-size="10" font-weight="600">key1</text>
+      <rect x="527" y="158" width="14" height="14" rx="3" fill="#ec4899" stroke="#ec4899" stroke-width="1" transform="rotate(45 534 165)"/>
+      <text x="555" y="172" fill="#ec4899" font-size="10" font-weight="600">key2</text>
+      <rect x="458" y="338" width="14" height="14" rx="3" fill="#ec4899" stroke="#ec4899" stroke-width="1" transform="rotate(45 465 345)"/>
+      <text x="485" y="352" fill="#ec4899" font-size="10" font-weight="600">key3</text>
+      <rect x="283" y="108" width="14" height="14" rx="3" fill="#ec4899" stroke="#ec4899" stroke-width="1" transform="rotate(45 290 115)"/>
+      <text x="265" y="108" fill="#ec4899" font-size="10" font-weight="600">key4</text>
+      <!-- Key → Server arrows (clockwise to next server) -->
+      <path d="M475,88 C500,70 430,55 412,52" fill="none" stroke="#ec4899" stroke-width="1" stroke-dasharray="3 3"/>
+      <path d="M545,172 C550,230 550,270 543,260" fill="none" stroke="#ec4899" stroke-width="1" stroke-dasharray="3 3"/>
+      <path d="M470,348 C380,380 270,330 248,296" fill="none" stroke="#ec4899" stroke-width="1" stroke-dasharray="3 3"/>
+      <path d="M283,118 C310,130 370,60 390,72" fill="none" stroke="#ec4899" stroke-width="1" stroke-dasharray="3 3"/>
+      <!-- Legend -->
+      <rect x="600" y="30" width="170" height="120" rx="10" fill="rgba(6,182,212,.04)" stroke="rgba(6,182,212,.15)" stroke-width="1"/>
+      <text x="685" y="52" text-anchor="middle" fill="#c2c8d8" font-size="10" font-weight="600">Legend</text>
+      <circle cx="620" cy="72" r="8" fill="rgba(59,130,246,.3)" stroke="#3b82f6" stroke-width="1.5"/>
+      <text x="640" y="76" fill="#8890a8" font-size="10">Server node</text>
+      <rect x="614" y="90" width="10" height="10" rx="2" fill="#ec4899" transform="rotate(45 619 95)"/>
+      <text x="640" y="100" fill="#8890a8" font-size="10">Key</text>
+      <text x="620" y="122" fill="#06b6d4" font-size="9">Key → next server CW</text>
+      <!-- Mapping results -->
+      <text x="685" y="175" text-anchor="middle" fill="#c2c8d8" font-size="11" font-weight="600">Mapping:</text>
+      <text x="685" y="195" text-anchor="middle" fill="#ec4899" font-size="10">key1 → <tspan fill="#3b82f6">Server A</tspan></text>
+      <text x="685" y="212" text-anchor="middle" fill="#ec4899" font-size="10">key2 → <tspan fill="#10b981">Server B</tspan></text>
+      <text x="685" y="229" text-anchor="middle" fill="#ec4899" font-size="10">key3 → <tspan fill="#f59e0b">Server C</tspan></text>
+      <text x="685" y="246" text-anchor="middle" fill="#ec4899" font-size="10">key4 → <tspan fill="#3b82f6">Server A</tspan></text>
+      <!-- Title -->
+      <text x="390" y="430" text-anchor="middle" fill="#06b6d4" font-size="12" font-weight="600">Each key walks clockwise until it hits its assigned server</text>
+    </svg>
+  </div>
+
+  <div class="tip tip-i"><span class="ic">🧠</span><span><strong>How it works:</strong> Keys and servers are hashed onto a circular ring (0 to 2³²). Each key walks clockwise until it reaches the next server — that server owns the key.</span></div>
+</section>
+
+<!-- ═══════ 3. ADD / REMOVE NODES ═══════ -->
+<section id="addremove" class="sec s3">
+  <div class="sec-h"><div class="sec-n">3</div><h2>Adding &amp; Removing Nodes</h2></div>
+  <div class="sec-sub">Only the keys between the new/removed node and its neighbor move — everything else stays.</div>
+
+  <div class="dw">
+    <svg viewBox="0 0 780 280" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+      <!-- ADD NODE scenario -->
+      <text x="195" y="20" text-anchor="middle" fill="#10b981" font-weight="700" font-size="14">Adding Node D</text>
+      <!-- Ring (simplified arc) -->
+      <circle cx="195" cy="150" r="100" fill="none" stroke="#242840" stroke-width="2.5"/>
+      <!-- Existing nodes -->
+      <circle cx="195" cy="50" r="16" fill="rgba(59,130,246,.2)" stroke="#3b82f6" stroke-width="1.5"/>
+      <text x="195" y="54" text-anchor="middle" fill="#3b82f6" font-weight="700" font-size="10">A</text>
+      <circle cx="295" cy="150" r="16" fill="rgba(16,185,129,.2)" stroke="#10b981" stroke-width="1.5"/>
+      <text x="295" y="154" text-anchor="middle" fill="#10b981" font-weight="700" font-size="10">B</text>
+      <circle cx="195" cy="250" r="16" fill="rgba(245,158,11,.2)" stroke="#f59e0b" stroke-width="1.5"/>
+      <text x="195" y="254" text-anchor="middle" fill="#f59e0b" font-weight="700" font-size="10">C</text>
+      <!-- New node D -->
+      <circle cx="105" cy="105" r="16" fill="rgba(236,72,153,.25)" stroke="#ec4899" stroke-width="2.5" stroke-dasharray="4 3"/>
+      <text x="105" y="109" text-anchor="middle" fill="#ec4899" font-weight="700" font-size="10">D</text>
+      <text x="80" y="88" fill="#ec4899" font-size="9" font-weight="600">NEW!</text>
+      <!-- Only affected zone -->
+      <path d="M180,52 A100,100 0 0 0 107,120" fill="none" stroke="#ec4899" stroke-width="6" stroke-opacity=".2"/>
+      <text x="125" y="75" fill="#ec4899" font-size="9">only these</text>
+      <text x="125" y="87" fill="#ec4899" font-size="9">keys move</text>
+      <!-- Summary -->
+      <rect x="40" y="270" width="310" height="0" rx="0" fill="none"/>
+
+      <!-- REMOVE NODE scenario -->
+      <text x="585" y="20" text-anchor="middle" fill="#ef4444" font-weight="700" font-size="14">Removing Node B</text>
+      <circle cx="585" cy="150" r="100" fill="none" stroke="#242840" stroke-width="2.5"/>
+      <!-- Nodes -->
+      <circle cx="585" cy="50" r="16" fill="rgba(59,130,246,.2)" stroke="#3b82f6" stroke-width="1.5"/>
+      <text x="585" y="54" text-anchor="middle" fill="#3b82f6" font-weight="700" font-size="10">A</text>
+      <circle cx="685" cy="150" r="16" fill="rgba(239,68,68,.15)" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="4 3"/>
+      <text x="685" y="154" text-anchor="middle" fill="#ef4444" font-weight="700" font-size="10" text-decoration="line-through">B</text>
+      <circle cx="585" cy="250" r="16" fill="rgba(245,158,11,.2)" stroke="#f59e0b" stroke-width="1.5"/>
+      <text x="585" y="254" text-anchor="middle" fill="#f59e0b" font-weight="700" font-size="10">C</text>
+      <text x="715" y="145" fill="#ef4444" font-size="9" font-weight="600">REMOVED</text>
+      <!-- Affected zone -->
+      <path d="M600,52 A100,100 0 0 1 683,135" fill="none" stroke="#ef4444" stroke-width="6" stroke-opacity=".2"/>
+      <text x="668" y="90" fill="#ef4444" font-size="9">B's keys →</text>
+      <text x="668" y="102" fill="#ef4444" font-size="9">go to C</text>
+      <!-- Arrow showing key migration -->
+      <path d="M680,165 C690,200 640,240 600,248" fill="none" stroke="#f59e0b" stroke-width="1.2" stroke-dasharray="4 3"/>
+    </svg>
+  </div>
+
+  <div class="tip tip-g"><span class="ic">✅</span><span><strong>Key insight:</strong> Adding or removing a node only moves ~K/N keys (where K = total keys, N = total nodes). With modulo hashing, ~80% of keys would move. This is why consistent hashing enables <strong>efficient, stable scaling</strong>.</span></div>
+</section>
+
+<!-- ═══════ 4. VIRTUAL NODES ═══════ -->
+<section id="virtual" class="sec s4">
+  <div class="sec-h"><div class="sec-n">4</div><h2>Virtual Nodes</h2></div>
+  <div class="sec-sub">With only 3 physical nodes, keys may distribute unevenly. Virtual nodes solve this.</div>
+
+  <div class="dw">
+    <svg viewBox="0 0 780 280" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+      <!-- Without virtual nodes -->
+      <text x="195" y="20" text-anchor="middle" fill="#ef4444" font-weight="700" font-size="13">❌ Without Virtual Nodes</text>
+      <circle cx="195" cy="145" r="95" fill="none" stroke="#242840" stroke-width="2.5"/>
+      <circle cx="195" cy="50" r="14" fill="rgba(59,130,246,.2)" stroke="#3b82f6" stroke-width="1.5"/>
+      <text x="195" y="54" text-anchor="middle" fill="#3b82f6" font-weight="600" font-size="9">A</text>
+      <circle cx="282" cy="195" r="14" fill="rgba(16,185,129,.2)" stroke="#10b981" stroke-width="1.5"/>
+      <text x="282" y="199" text-anchor="middle" fill="#10b981" font-weight="600" font-size="9">B</text>
+      <circle cx="130" cy="220" r="14" fill="rgba(245,158,11,.2)" stroke="#f59e0b" stroke-width="1.5"/>
+      <text x="130" y="224" text-anchor="middle" fill="#f59e0b" font-weight="600" font-size="9">C</text>
+      <text x="195" y="270" text-anchor="middle" fill="#ef4444" font-size="10">Uneven: A owns most keys</text>
+      <!-- With virtual nodes -->
+      <text x="585" y="20" text-anchor="middle" fill="#10b981" font-weight="700" font-size="13">✅ With Virtual Nodes</text>
+      <circle cx="585" cy="145" r="95" fill="none" stroke="#242840" stroke-width="2.5"/>
+      <!-- A's virtual nodes -->
+      <circle cx="585" cy="50" r="11" fill="rgba(59,130,246,.2)" stroke="#3b82f6" stroke-width="1.2"/>
+      <text x="585" y="54" text-anchor="middle" fill="#3b82f6" font-size="8">A0</text>
+      <circle cx="530" cy="225" r="11" fill="rgba(59,130,246,.2)" stroke="#3b82f6" stroke-width="1.2"/>
+      <text x="530" y="229" text-anchor="middle" fill="#3b82f6" font-size="8">A1</text>
+      <!-- B's virtual nodes -->
+      <circle cx="665" cy="95" r="11" fill="rgba(16,185,129,.2)" stroke="#10b981" stroke-width="1.2"/>
+      <text x="665" y="99" text-anchor="middle" fill="#10b981" font-size="8">B0</text>
+      <circle cx="510" cy="130" r="11" fill="rgba(16,185,129,.2)" stroke="#10b981" stroke-width="1.2"/>
+      <text x="510" y="134" text-anchor="middle" fill="#10b981" font-size="8">B1</text>
+      <!-- C's virtual nodes -->
+      <circle cx="675" cy="185" r="11" fill="rgba(245,158,11,.2)" stroke="#f59e0b" stroke-width="1.2"/>
+      <text x="675" y="189" text-anchor="middle" fill="#f59e0b" font-size="8">C0</text>
+      <circle cx="585" cy="240" r="11" fill="rgba(245,158,11,.2)" stroke="#f59e0b" stroke-width="1.2"/>
+      <text x="585" y="244" text-anchor="middle" fill="#f59e0b" font-size="8">C1</text>
+      <text x="585" y="270" text-anchor="middle" fill="#10b981" font-size="10">Even: each server owns ~33% of keys</text>
+      <!-- Explanation -->
+      <rect x="400" y="40" width="60" height="24" rx="6" fill="rgba(59,130,246,.1)" stroke="#3b82f6" stroke-width="1"/>
+      <text x="430" y="56" text-anchor="middle" fill="#3b82f6" font-size="8">= Server A</text>
+      <rect x="400" y="70" width="60" height="24" rx="6" fill="rgba(16,185,129,.1)" stroke="#10b981" stroke-width="1"/>
+      <text x="430" y="86" text-anchor="middle" fill="#10b981" font-size="8">= Server B</text>
+      <rect x="400" y="100" width="60" height="24" rx="6" fill="rgba(245,158,11,.1)" stroke="#f59e0b" stroke-width="1"/>
+      <text x="430" y="116" text-anchor="middle" fill="#f59e0b" font-size="8">= Server C</text>
+    </svg>
+  </div>
+
+  <div class="tip tip-p"><span class="ic">🧠</span><span><strong>Virtual nodes:</strong> Each physical server gets multiple points on the ring (e.g. A0, A1, A2...). More virtual nodes = more even key distribution. A server with more capacity can get more virtual nodes.</span></div>
+</section>
+
+<!-- ═══════ 5. COMPARISON TABLE ═══════ -->
+<section id="compare" class="sec s5">
+  <div class="sec-h"><div class="sec-n">5</div><h2>Modulo vs Consistent Hashing</h2></div>
+
+  <div class="card"><h3>Full Comparison</h3><div class="tw"><table>
+    <thead><tr><th>Feature</th><th>Modulo Hashing</th><th>Consistent Hashing</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Mapping</strong></td><td><code>hash(key) % N</code></td><td>Hash ring with virtual nodes</td></tr>
+      <tr><td><strong>Scaling Impact</strong></td><td style="color:var(--c6)">Almost all keys remapped (~80%)</td><td style="color:var(--c4)">Only ~K/N keys move</td></tr>
+      <tr><td><strong>Add/Remove Server</strong></td><td style="color:var(--c6)">Massive data movement</td><td style="color:var(--c4)">Minimal, localized movement</td></tr>
+      <tr><td><strong>Load Balancing</strong></td><td>Even if N is fixed</td><td>Even with virtual nodes</td></tr>
+      <tr><td><strong>Use Case</strong></td><td>Simple, fixed cluster size</td><td>Dynamic clusters (caching, DBs)</td></tr>
+      <tr><td><strong>Fault Tolerance</strong></td><td style="color:var(--c6)">Poor — node failure = full remap</td><td style="color:var(--c4)">Good — only neighbors affected</td></tr>
+      <tr><td><strong>Complexity</strong></td><td>Trivial</td><td>Moderate (ring + virtual nodes)</td></tr>
+    </tbody>
+  </table></div></div>
+</section>
+
+<!-- ═══════ REAL-WORLD USE CASES ═══════ -->
+<section class="sum">
+  <h2>Real-World Use Cases</h2>
+  <div class="card" style="--pat:var(--c1)"><div class="tw"><table>
+    <thead><tr><th>System</th><th>How Consistent Hashing Is Used</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Memcached / Redis</strong></td><td>Distribute cache keys across cluster nodes</td></tr>
+      <tr><td><strong>Cassandra / DynamoDB</strong></td><td>Partition data across nodes in the ring</td></tr>
+      <tr><td><strong>Load Balancers</strong></td><td>Route requests to servers with minimal disruption on scale</td></tr>
+      <tr><td><strong>CDNs</strong></td><td>Route requests to nearest edge server</td></tr>
+      <tr><td><strong>Kafka</strong></td><td>Partition assignment to consumers</td></tr>
+    </tbody>
+  </table></div></div>
+</section>
+
+<!-- ═══════ INTERVIEW Q&A ═══════ -->
+<section class="sum">
+  <h2>Interview Questions</h2>
+  <div style="max-width:1000px;margin:0 auto">
+    <div class="qa-b"><div class="qa-q" onclick="toggleQA(this)"><span class="ar">▶</span>Why can't we just use hash(key) % N in distributed systems?</div><div class="qa-a">Because when N changes (add/remove a server), almost all keys get remapped to different servers. This causes massive cache misses and data migration — making scaling extremely expensive.</div></div>
+    <div class="qa-b"><div class="qa-q" onclick="toggleQA(this)"><span class="ar">▶</span>How does consistent hashing minimize data movement?</div><div class="qa-a">Keys and servers are placed on a ring. Each key belongs to the next server clockwise. When a server is added/removed, only the keys between that server and its neighbor are affected — everything else stays. On average, only K/N keys move (where K = total keys, N = total servers).</div></div>
+    <div class="qa-b"><div class="qa-q" onclick="toggleQA(this)"><span class="ar">▶</span>What problem do virtual nodes solve?</div><div class="qa-a">With few physical nodes, keys may cluster unevenly — one server could own most of the ring. Virtual nodes spread each server across multiple points on the ring, ensuring even distribution. More virtual nodes = more even load. Servers with more capacity can get more virtual nodes.</div></div>
+    <div class="qa-b"><div class="qa-q" onclick="toggleQA(this)"><span class="ar">▶</span>Name systems that use consistent hashing.</div><div class="qa-a">Distributed caches (Memcached, Redis clusters), distributed databases (Cassandra, DynamoDB), load balancers, CDNs for edge server routing, and Kafka for partition assignment.</div></div>
+  </div>
+</section>
+
+<button class="bt" id="backTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+<footer><p>Consistent Hashing — Distributed Systems Study Guide</p></footer>
+
+<script>
+function toggleQA(el){el.classList.toggle('open');el.nextElementSibling.classList.toggle('open')}
+function toggleCollapsible(btn){btn.classList.toggle('open');btn.nextElementSibling.classList.toggle('open')}
+window.addEventListener('scroll',()=>{document.getElementById('backTop').classList.toggle('show',window.scrollY>400)})
+</script>
+</body>
+</html>

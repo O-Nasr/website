@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>.NET Generics — Interactive Study Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0e17;
+  --surface: #111827;
+  --surface2: #1a2234;
+  --border: #2a3548;
+  --text: #e2e8f0;
+  --text-dim: #8899ae;
+  --accent: #38bdf8;
+  --accent2: #818cf8;
+  --accent3: #a78bfa;
+  --green: #34d399;
+  --red: #f87171;
+  --orange: #fb923c;
+  --yellow: #fbbf24;
+  --pink: #f472b6;
+  --code-bg: #0d1321;
+  --glow: rgba(56, 189, 248, 0.15);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Outfit', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.7;
+  min-height: 100vh;
+}
+body::before {
+  content:'';
+  position:fixed; top:0; left:0; right:0; bottom:0;
+  background: radial-gradient(ellipse at 20% 0%, rgba(56,189,248,0.06) 0%, transparent 60%),
+              radial-gradient(ellipse at 80% 100%, rgba(129,140,248,0.05) 0%, transparent 60%);
+  pointer-events:none; z-index:0;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+/* Layout */
+.container { max-width: 900px; margin: 0 auto; padding: 2rem 1.5rem 4rem; position: relative; z-index:1; }
+
+/* Header */
+.hero { text-align: center; padding: 3rem 0 2.5rem; }
+.hero-badge {
+  display: inline-block;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: var(--bg);
+  font-weight: 700; font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase;
+  padding: 0.35rem 1rem; border-radius: 99px; margin-bottom: 1.2rem;
+}
+.hero h1 {
+  font-size: 2.8rem; font-weight: 800;
+  background: linear-gradient(135deg, #fff 30%, var(--accent));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  line-height: 1.15; margin-bottom: 0.5rem;
+}
+.hero p { color: var(--text-dim); font-size: 1.05rem; }
+
+/* Nav pills */
+.nav {
+  display:flex; flex-wrap:wrap; gap:0.5rem; justify-content:center;
+  margin-bottom: 2.5rem; position:sticky; top:0; z-index:10;
+  background: rgba(10,14,23,0.85); backdrop-filter: blur(12px);
+  padding: 0.75rem 0; border-bottom: 1px solid var(--border);
+}
+.nav a {
+  color: var(--text-dim); text-decoration:none; font-size:0.78rem; font-weight:600;
+  padding: 0.4rem 0.9rem; border-radius:8px; transition: all 0.2s;
+  border: 1px solid transparent; letter-spacing: 0.02em;
+}
+.nav a:hover, .nav a.active {
+  color: var(--accent); background: rgba(56,189,248,0.08); border-color: rgba(56,189,248,0.2);
+}
+
+/* Section */
+.section { margin-bottom: 3rem; animation: fadeUp 0.5s ease both; }
+.section-header {
+  display:flex; align-items:center; gap:0.75rem; margin-bottom:1.2rem;
+  padding-bottom:0.8rem; border-bottom:1px solid var(--border);
+}
+.section-num {
+  width:36px; height:36px; border-radius:10px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  display:flex; align-items:center; justify-content:center;
+  font-weight:800; font-size:0.85rem; color:var(--bg); flex-shrink:0;
+}
+.section-header h2 { font-size:1.4rem; font-weight:700; }
+
+/* Cards */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  transition: border-color 0.3s;
+}
+.card:hover { border-color: rgba(56,189,248,0.25); }
+
+.callout {
+  background: linear-gradient(135deg, rgba(56,189,248,0.07), rgba(129,140,248,0.05));
+  border-left: 3px solid var(--accent);
+  border-radius: 0 10px 10px 0;
+  padding: 1rem 1.2rem;
+  margin: 1rem 0;
+  font-size: 0.92rem;
+}
+.callout.warn {
+  border-left-color: var(--orange);
+  background: linear-gradient(135deg, rgba(251,146,60,0.07), rgba(251,191,36,0.04));
+}
+.callout.green {
+  border-left-color: var(--green);
+  background: linear-gradient(135deg, rgba(52,211,153,0.07), rgba(52,211,153,0.03));
+}
+
+/* Code blocks */
+pre {
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1.2rem;
+  overflow-x: auto;
+  margin: 0.8rem 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+  line-height: 1.65;
+  position: relative;
+}
+pre .label {
+  position:absolute; top:0.5rem; right:0.6rem;
+  font-size:0.6rem; color:var(--text-dim); text-transform:uppercase;
+  letter-spacing:0.1em; font-family:'Outfit',sans-serif; font-weight:600;
+  background: var(--surface); padding:0.15rem 0.5rem; border-radius:4px;
+}
+.kw { color: var(--accent2); }
+.tp { color: var(--accent); }
+.cm { color: #4a6280; font-style:italic; }
+.st { color: var(--green); }
+.fn { color: var(--yellow); }
+.nu { color: var(--orange); }
+.er { color: var(--red); }
+
+/* Table */
+.table-wrap { overflow-x:auto; margin:0.8rem 0; border-radius:10px; border:1px solid var(--border); }
+table { width:100%; border-collapse:collapse; font-size:0.85rem; }
+th {
+  background: var(--surface2);
+  color: var(--accent);
+  font-weight:600; text-align:left;
+  padding:0.7rem 1rem; white-space:nowrap;
+}
+td { padding:0.6rem 1rem; border-top:1px solid var(--border); }
+tr:hover td { background: rgba(56,189,248,0.03); }
+
+/* Accordion */
+.accordion { margin:0.8rem 0; }
+.accordion-btn {
+  width:100%; background:var(--surface); border:1px solid var(--border);
+  color:var(--text); font-family:'Outfit',sans-serif; font-size:0.9rem; font-weight:600;
+  padding:0.9rem 1.2rem; border-radius:10px; cursor:pointer;
+  display:flex; justify-content:space-between; align-items:center;
+  transition: all 0.2s;
+}
+.accordion-btn:hover { border-color: var(--accent); background: var(--surface2); }
+.accordion-btn .arrow { transition: transform 0.3s; font-size:0.8rem; color:var(--accent); }
+.accordion-btn.open .arrow { transform: rotate(180deg); }
+.accordion-body {
+  max-height:0; overflow:hidden; transition: max-height 0.4s ease;
+  background: var(--surface); border:1px solid var(--border); border-top:none;
+  border-radius: 0 0 10px 10px; padding: 0 1.2rem;
+}
+.accordion-body.open { max-height:2000px; padding:1.2rem; }
+
+/* Tabs */
+.tabs { display:flex; gap:0.4rem; margin-bottom:0; flex-wrap:wrap; }
+.tab-btn {
+  background:var(--surface); border:1px solid var(--border);
+  color:var(--text-dim); font-family:'Outfit',sans-serif; font-size:0.78rem; font-weight:600;
+  padding:0.5rem 1rem; border-radius:8px 8px 0 0; cursor:pointer; transition:all 0.2s;
+}
+.tab-btn:hover { color:var(--text); }
+.tab-btn.active { color:var(--accent); background:var(--surface2); border-bottom-color:var(--surface2); }
+.tab-panel {
+  display:none; background:var(--surface2); border:1px solid var(--border);
+  border-radius:0 10px 10px 10px; padding:1.2rem;
+}
+.tab-panel.active { display:block; }
+
+/* Quiz */
+.quiz-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+}
+.quiz-card h3 { font-size: 1rem; margin-bottom: 1rem; color: var(--accent); }
+.quiz-option {
+  display:block; width:100%;
+  background: var(--surface2); border:1px solid var(--border);
+  color:var(--text); font-family:'Outfit',sans-serif; font-size:0.85rem;
+  padding:0.7rem 1rem; border-radius:8px; cursor:pointer;
+  margin-bottom:0.4rem; text-align:left; transition: all 0.2s;
+}
+.quiz-option:hover { border-color:var(--accent); transform:translateX(4px); }
+.quiz-option.correct { background:rgba(52,211,153,0.15); border-color:var(--green); color:var(--green); }
+.quiz-option.wrong { background:rgba(248,113,113,0.1); border-color:var(--red); color:var(--red); }
+.quiz-option:disabled { cursor:default; transform:none; }
+.quiz-explanation {
+  margin-top:0.7rem; padding:0.8rem; border-radius:8px;
+  background: rgba(56,189,248,0.06); font-size:0.85rem;
+  display:none; line-height:1.6;
+}
+.quiz-explanation.show { display:block; }
+.quiz-score {
+  text-align:center; padding:1.5rem; background: var(--surface);
+  border:1px solid var(--accent); border-radius:14px; margin-top:1rem;
+}
+.quiz-score .big { font-size:2.2rem; font-weight:800; color:var(--accent); }
+
+/* Diagram */
+.diagram-box {
+  background: var(--surface); border:1px solid var(--border); border-radius:14px;
+  padding:1.5rem; margin:1rem 0; text-align:center;
+}
+.flow { display:flex; align-items:center; justify-content:center; gap:0.5rem; flex-wrap:wrap; margin:1rem 0; }
+.flow-node {
+  background: var(--surface2); border:1px solid var(--border);
+  padding:0.6rem 1.2rem; border-radius:10px; font-weight:600; font-size:0.82rem;
+  transition: all 0.3s;
+}
+.flow-node:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 4px 12px var(--glow); }
+.flow-node.highlight { border-color:var(--accent); background:rgba(56,189,248,0.1); color:var(--accent); }
+.flow-arrow { color:var(--text-dim); font-size:1.2rem; }
+
+/* Interactive Variance Demo */
+.variance-demo { margin:1rem 0; }
+.var-row { display:flex; align-items:center; gap:1rem; margin:0.6rem 0; flex-wrap:wrap; }
+.var-label { font-weight:600; font-size:0.82rem; min-width:120px; }
+.var-badge {
+  display:inline-block; padding:0.3rem 0.8rem; border-radius:6px;
+  font-size:0.75rem; font-weight:700; letter-spacing:0.05em;
+}
+.var-badge.ok { background:rgba(52,211,153,0.15); color:var(--green); }
+.var-badge.no { background:rgba(248,113,113,0.1); color:var(--red); }
+.var-toggle-group { display:flex; gap:0.3rem; }
+.var-toggle {
+  background:var(--surface2); border:1px solid var(--border);
+  color:var(--text-dim); font-family:'Outfit',sans-serif; font-size:0.78rem; font-weight:600;
+  padding:0.45rem 1rem; border-radius:8px; cursor:pointer; transition:all 0.2s;
+}
+.var-toggle:hover { color:var(--text); }
+.var-toggle.active { background:rgba(56,189,248,0.12); border-color:var(--accent); color:var(--accent); }
+.var-result {
+  margin-top:1rem; padding:1rem; border-radius:10px;
+  border:1px solid var(--border); background:var(--code-bg);
+  font-family:'JetBrains Mono',monospace; font-size:0.82rem;
+  min-height:60px; transition: all 0.3s;
+}
+
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(16px); }
+  to { opacity:1; transform:translateY(0); }
+}
+@media(max-width:640px) {
+  .hero h1 { font-size:1.8rem; }
+  .container { padding:1rem; }
+  .flow { flex-direction:column; }
+  .flow-arrow { transform:rotate(90deg); }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge">.NET Interview Study Guide</div>
+  <h1>Generics</h1>
+  <p>Type-safe, reusable code — one class to rule them all</p>
+</div>
+
+<!-- NAV -->
+<nav class="nav" id="nav">
+  <a href="#s1">What Are Generics</a>
+  <a href="#s2">Methods</a>
+  <a href="#s3">Constraints</a>
+  <a href="#s4">Repository</a>
+  <a href="#s5">Variance</a>
+  <a href="#s6">default(T)</a>
+  <a href="#s7">Quiz</a>
+</nav>
+
+<!-- S1: What Are Generics -->
+<div class="section" id="s1">
+  <div class="section-header"><div class="section-num">1</div><h2>What Are Generics?</h2></div>
+  <p style="margin-bottom:1rem;">Generics let you write <strong>type-safe reusable code</strong> without duplicating the same logic for each type. The type parameter <code style="color:var(--accent);">T</code> is a placeholder replaced with the actual type at compile time.</p>
+
+  <div class="callout warn">⚠️ <strong>T</strong> is just a convention. You can name it anything: <code>TItem</code>, <code>TEntity</code>, <code>TKey</code>, <code>TValue</code>. Descriptive names are preferred for clarity.</div>
+
+  <div class="diagram-box">
+    <p style="font-weight:600; margin-bottom:0.8rem; color:var(--accent);">The Problem → The Solution</p>
+    <div class="flow">
+      <div class="flow-node">NumberBox (int)</div>
+      <div class="flow-node">StringBox (string)</div>
+      <div class="flow-node">OrderBox (Order)</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node highlight">Box&lt;T&gt;</div>
+    </div>
+    <p style="font-size:0.8rem; color:var(--text-dim); margin-top:0.5rem;">Three duplicated classes collapse into one generic class</p>
+  </div>
+
+  <!-- Tabs: Before / After -->
+  <div class="tabs">
+    <button class="tab-btn active" onclick="openTab(event,'tab1a')">❌ Without Generics</button>
+    <button class="tab-btn" onclick="openTab(event,'tab1b')">✅ With Generics</button>
+  </div>
+  <div class="tab-panel active" id="tab1a">
+<pre><span class="label">C#</span><span class="cm">// Must repeat for every type 😱</span>
+<span class="kw">public class</span> <span class="tp">NumberBox</span>
+{
+    <span class="kw">private</span> <span class="tp">int</span> _value;
+    <span class="kw">public void</span> <span class="fn">Set</span>(<span class="tp">int</span> value) { _value = value; }
+    <span class="kw">public</span> <span class="tp">int</span> <span class="fn">Get</span>() { <span class="kw">return</span> _value; }
+}
+
+<span class="kw">public class</span> <span class="tp">StringBox</span>
+{
+    <span class="kw">private</span> <span class="tp">string</span> _value;
+    <span class="kw">public void</span> <span class="fn">Set</span>(<span class="tp">string</span> value) { _value = value; }
+    <span class="kw">public</span> <span class="tp">string</span> <span class="fn">Get</span>() { <span class="kw">return</span> _value; }
+}</pre>
+  </div>
+  <div class="tab-panel" id="tab1b">
+<pre><span class="label">C#</span><span class="cm">// One class handles ALL types</span>
+<span class="kw">public class</span> <span class="tp">Box</span>&lt;<span class="tp">T</span>&gt;
+{
+    <span class="kw">private</span> <span class="tp">T</span> _value;
+    <span class="kw">public void</span> <span class="fn">Set</span>(<span class="tp">T</span> value) { _value = value; }
+    <span class="kw">public</span> <span class="tp">T</span> <span class="fn">Get</span>() { <span class="kw">return</span> _value; }
+}
+
+<span class="cm">// Usage — T replaced at compile time</span>
+<span class="tp">Box</span>&lt;<span class="tp">int</span>&gt;    intBox    = <span class="kw">new</span> <span class="tp">Box</span>&lt;<span class="tp">int</span>&gt;();
+<span class="tp">Box</span>&lt;<span class="tp">string</span>&gt; stringBox = <span class="kw">new</span> <span class="tp">Box</span>&lt;<span class="tp">string</span>&gt;();
+<span class="tp">Box</span>&lt;<span class="tp">Order</span>&gt;  orderBox  = <span class="kw">new</span> <span class="tp">Box</span>&lt;<span class="tp">Order</span>&gt;();
+
+intBox.<span class="fn">Set</span>(<span class="nu">42</span>);
+Console.<span class="fn">WriteLine</span>(intBox.<span class="fn">Get</span>()); <span class="cm">// 42</span></pre>
+  </div>
+</div>
+
+<!-- S2: Generic Methods -->
+<div class="section" id="s2">
+  <div class="section-header"><div class="section-num">2</div><h2>Generic Methods</h2></div>
+  <p style="margin-bottom:1rem;">Individual methods can be generic without making the whole class generic. The compiler can often <strong>infer T</strong> from the argument automatically.</p>
+
+<pre><span class="label">C#</span><span class="kw">public class</span> <span class="tp">Utilities</span>
+{
+    <span class="cm">// Generic method — works with any type</span>
+    <span class="kw">public</span> <span class="tp">T</span> <span class="fn">GetFirst</span>&lt;<span class="tp">T</span>&gt;(<span class="tp">List</span>&lt;<span class="tp">T</span>&gt; items)
+    {
+        <span class="kw">if</span> (items == <span class="kw">null</span> || items.Count == <span class="nu">0</span>)
+            <span class="kw">throw new</span> <span class="tp">ArgumentException</span>(<span class="st">"List is empty"</span>);
+        <span class="kw">return</span> items[<span class="nu">0</span>];
+    }
+}
+
+<span class="kw">var</span> utils = <span class="kw">new</span> <span class="tp">Utilities</span>();
+<span class="tp">int</span> first = utils.<span class="fn">GetFirst</span>(<span class="kw">new</span> <span class="tp">List</span>&lt;<span class="tp">int</span>&gt; { <span class="nu">1</span>, <span class="nu">2</span>, <span class="nu">3</span> });        <span class="cm">// infers T = int</span>
+<span class="tp">string</span> name = utils.<span class="fn">GetFirst</span>(<span class="kw">new</span> <span class="tp">List</span>&lt;<span class="tp">string</span>&gt; { <span class="st">"Ali"</span>, <span class="st">"Omar"</span> }); <span class="cm">// infers T = string</span></pre>
+</div>
+
+<!-- S3: Constraints -->
+<div class="section" id="s3">
+  <div class="section-header"><div class="section-num">3</div><h2>Generic Constraints</h2></div>
+  <p style="margin-bottom:1rem;">Without constraints, T is <strong>completely unknown</strong> — you can't call any methods on it. Constraints restrict what types T can be.</p>
+
+  <div class="accordion">
+    <button class="accordion-btn" onclick="toggleAcc(this)">
+      <span><code style="color:var(--accent)">where T : class</code> — Reference Types Only</span>
+      <span class="arrow">▼</span>
+    </button>
+    <div class="accordion-body">
+<pre><span class="label">C#</span><span class="kw">public class</span> <span class="tp">Repository</span>&lt;<span class="tp">T</span>&gt; <span class="kw">where</span> <span class="tp">T</span> : <span class="kw">class</span>
+{
+    <span class="kw">public void</span> <span class="fn">Add</span>(<span class="tp">T</span> item)
+    {
+        <span class="kw">if</span> (item == <span class="kw">null</span>)  <span class="cm">// ✅ can check null — T is reference type</span>
+            <span class="kw">throw new</span> <span class="tp">ArgumentNullException</span>();
+    }
+}
+
+<span class="kw">var</span> repo = <span class="kw">new</span> <span class="tp">Repository</span>&lt;<span class="tp">Order</span>&gt;();  <span class="cm">// ✅ Order is a class</span>
+<span class="kw">var</span> repo = <span class="kw">new</span> <span class="tp">Repository</span>&lt;<span class="tp">int</span>&gt;();    <span class="er">// ❌ compile error — int is value type</span></pre>
+    </div>
+  </div>
+
+  <div class="accordion">
+    <button class="accordion-btn" onclick="toggleAcc(this)">
+      <span><code style="color:var(--accent)">where T : struct</code> — Value Types Only</span>
+      <span class="arrow">▼</span>
+    </button>
+    <div class="accordion-body">
+<pre><span class="label">C#</span><span class="kw">public class</span> <span class="tp">ValueWrapper</span>&lt;<span class="tp">T</span>&gt; <span class="kw">where</span> <span class="tp">T</span> : <span class="kw">struct</span>
+{
+    <span class="kw">private</span> <span class="tp">T</span> _value;
+    <span class="kw">public</span> <span class="tp">T</span> Value => _value;
+}
+
+<span class="kw">var</span> w = <span class="kw">new</span> <span class="tp">ValueWrapper</span>&lt;<span class="tp">int</span>&gt;(<span class="nu">42</span>);     <span class="cm">// ✅ int is value type</span>
+<span class="kw">var</span> w = <span class="kw">new</span> <span class="tp">ValueWrapper</span>&lt;<span class="tp">string</span>&gt;(<span class="st">""</span>);  <span class="er">// ❌ string is reference type</span></pre>
+    </div>
+  </div>
+
+  <div class="accordion">
+    <button class="accordion-btn" onclick="toggleAcc(this)">
+      <span><code style="color:var(--accent)">where T : new()</code> — Must Have Parameterless Constructor</span>
+      <span class="arrow">▼</span>
+    </button>
+    <div class="accordion-body">
+<pre><span class="label">C#</span><span class="kw">public class</span> <span class="tp">Factory</span>&lt;<span class="tp">T</span>&gt; <span class="kw">where</span> <span class="tp">T</span> : <span class="kw">new</span>()
+{
+    <span class="kw">public</span> <span class="tp">T</span> <span class="fn">Create</span>() => <span class="kw">new</span> <span class="tp">T</span>(); <span class="cm">// ✅ guaranteed constructor exists</span>
+}
+
+<span class="kw">var</span> f = <span class="kw">new</span> <span class="tp">Factory</span>&lt;<span class="tp">Order</span>&gt;();    <span class="cm">// ✅ has parameterless ctor</span>
+<span class="kw">var</span> f = <span class="kw">new</span> <span class="tp">Factory</span>&lt;<span class="tp">Invoice</span>&gt;();  <span class="er">// ❌ only has Invoice(int id)</span></pre>
+    </div>
+  </div>
+
+  <div class="accordion">
+    <button class="accordion-btn" onclick="toggleAcc(this)">
+      <span><code style="color:var(--accent)">where T : BaseClass</code> — Must Inherit From Class</span>
+      <span class="arrow">▼</span>
+    </button>
+    <div class="accordion-body">
+<pre><span class="label">C#</span><span class="kw">public class</span> <span class="tp">AnimalShelter</span>&lt;<span class="tp">T</span>&gt; <span class="kw">where</span> <span class="tp">T</span> : <span class="tp">Animal</span>
+{
+    <span class="kw">public void</span> <span class="fn">Add</span>(<span class="tp">T</span> animal)
+    {
+        animal.<span class="fn">Feed</span>();  <span class="cm">// ✅ T is guaranteed to be Animal</span>
+    }
+}
+
+<span class="kw">var</span> s = <span class="kw">new</span> <span class="tp">AnimalShelter</span>&lt;<span class="tp">Dog</span>&gt;(); <span class="cm">// ✅ Dog inherits Animal</span>
+<span class="kw">var</span> s = <span class="kw">new</span> <span class="tp">AnimalShelter</span>&lt;<span class="tp">Car</span>&gt;(); <span class="er">// ❌ Car doesn't inherit Animal</span></pre>
+    </div>
+  </div>
+
+  <div class="accordion">
+    <button class="accordion-btn" onclick="toggleAcc(this)">
+      <span><code style="color:var(--accent)">where T : IInterface</code> — Must Implement Interface</span>
+      <span class="arrow">▼</span>
+    </button>
+    <div class="accordion-body">
+<pre><span class="label">C#</span><span class="kw">public class</span> <span class="tp">Sorter</span>&lt;<span class="tp">T</span>&gt; <span class="kw">where</span> <span class="tp">T</span> : <span class="tp">IComparable</span>&lt;<span class="tp">T</span>&gt;
+{
+    <span class="kw">public</span> <span class="tp">T</span> <span class="fn">FindMax</span>(<span class="tp">List</span>&lt;<span class="tp">T</span>&gt; items)
+    {
+        <span class="tp">T</span> max = items[<span class="nu">0</span>];
+        <span class="kw">foreach</span> (<span class="tp">T</span> item <span class="kw">in</span> items)
+            <span class="kw">if</span> (item.<span class="fn">CompareTo</span>(max) > <span class="nu">0</span>) max = item;
+        <span class="kw">return</span> max;
+    }
+}</pre>
+    </div>
+  </div>
+
+  <div class="accordion">
+    <button class="accordion-btn" onclick="toggleAcc(this)">
+      <span><code style="color:var(--accent)">Multiple Constraints Together</code></span>
+      <span class="arrow">▼</span>
+    </button>
+    <div class="accordion-body">
+<pre><span class="label">C#</span><span class="kw">public class</span> <span class="tp">Repository</span>&lt;<span class="tp">T</span>&gt;
+    <span class="kw">where</span> <span class="tp">T</span> : <span class="kw">class</span>,    <span class="cm">// must be reference type</span>
+              <span class="tp">IEntity</span>,  <span class="cm">// must implement IEntity</span>
+              <span class="kw">new</span>()    <span class="cm">// must have parameterless constructor</span>
+{
+    <span class="kw">public</span> <span class="tp">T</span> <span class="fn">CreateAndSave</span>()
+    {
+        <span class="tp">T</span> entity = <span class="kw">new</span> <span class="tp">T</span>();          <span class="cm">// ✅ new()</span>
+        entity.Id = <span class="tp">Guid</span>.<span class="fn">NewGuid</span>(); <span class="cm">// ✅ IEntity</span>
+        <span class="fn">Save</span>(entity);
+        <span class="kw">return</span> entity;
+    }
+}</pre>
+    </div>
+  </div>
+
+  <div style="margin-top:1.2rem;">
+    <div class="table-wrap">
+      <table>
+        <tr><th>Constraint</th><th>Meaning</th><th>Example</th></tr>
+        <tr><td><code>where T : class</code></td><td>T must be reference type</td><td><code>Repository&lt;Order&gt;</code></td></tr>
+        <tr><td><code>where T : struct</code></td><td>T must be value type</td><td><code>ValueWrapper&lt;int&gt;</code></td></tr>
+        <tr><td><code>where T : new()</code></td><td>Must have parameterless ctor</td><td><code>Factory&lt;Order&gt;</code></td></tr>
+        <tr><td><code>where T : Base</code></td><td>Must inherit from Base</td><td><code>AnimalShelter&lt;Dog&gt;</code></td></tr>
+        <tr><td><code>where T : IFace</code></td><td>Must implement interface</td><td><code>Sorter&lt;int&gt;</code></td></tr>
+        <tr><td>Multiple</td><td>Combine with commas</td><td><code>where T : class, IEntity, new()</code></td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- S4: Repository Pattern -->
+<div class="section" id="s4">
+  <div class="section-header"><div class="section-num">4</div><h2>Generic Repository Pattern</h2></div>
+  <p style="margin-bottom:1rem;">The most common real-world use of generics in backend development — write CRUD once, reuse for every entity.</p>
+
+  <div class="diagram-box">
+    <p style="font-weight:600; margin-bottom:0.8rem; color:var(--accent);">Inheritance Chain</p>
+    <div class="flow">
+      <div class="flow-node highlight">IRepository&lt;T&gt;</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node highlight">Repository&lt;T&gt;</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node">OrderRepository</div>
+    </div>
+    <div class="flow" style="margin-top:0;">
+      <div class="flow-arrow" style="visibility:hidden">→</div>
+      <div class="flow-arrow" style="visibility:hidden">→</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-node">CustomerRepository</div>
+    </div>
+  </div>
+
+<pre><span class="label">C#</span><span class="cm">// Generic repository interface</span>
+<span class="kw">public interface</span> <span class="tp">IRepository</span>&lt;<span class="tp">T</span>&gt; <span class="kw">where</span> <span class="tp">T</span> : <span class="kw">class</span>
+{
+    <span class="tp">T</span> <span class="fn">GetById</span>(<span class="tp">int</span> id);
+    <span class="tp">IEnumerable</span>&lt;<span class="tp">T</span>&gt; <span class="fn">GetAll</span>();
+    <span class="kw">void</span> <span class="fn">Add</span>(<span class="tp">T</span> entity);
+    <span class="kw">void</span> <span class="fn">Update</span>(<span class="tp">T</span> entity);
+    <span class="kw">void</span> <span class="fn">Delete</span>(<span class="tp">int</span> id);
+}
+
+<span class="cm">// Base implementation — write once</span>
+<span class="kw">public class</span> <span class="tp">Repository</span>&lt;<span class="tp">T</span>&gt; : <span class="tp">IRepository</span>&lt;<span class="tp">T</span>&gt; <span class="kw">where</span> <span class="tp">T</span> : <span class="kw">class</span>
+{
+    <span class="kw">protected readonly</span> <span class="tp">DbSet</span>&lt;<span class="tp">T</span>&gt; _dbSet;
+    <span class="kw">public</span> <span class="tp">T</span> <span class="fn">GetById</span>(<span class="tp">int</span> id) => _dbSet.<span class="fn">Find</span>(id);
+    <span class="kw">public</span> <span class="tp">IEnumerable</span>&lt;<span class="tp">T</span>&gt; <span class="fn">GetAll</span>() => _dbSet.<span class="fn">ToList</span>();
+    <span class="kw">public void</span> <span class="fn">Add</span>(<span class="tp">T</span> entity) { _dbSet.<span class="fn">Add</span>(entity); }
+    <span class="cm">// ... Update, Delete</span>
+}
+
+<span class="cm">// Specific repos — just inherit, add entity-specific methods</span>
+<span class="kw">public class</span> <span class="tp">OrderRepository</span> : <span class="tp">Repository</span>&lt;<span class="tp">Order</span>&gt;
+{
+    <span class="kw">public</span> <span class="tp">IEnumerable</span>&lt;<span class="tp">Order</span>&gt; <span class="fn">GetPendingOrders</span>()
+        => _dbSet.<span class="fn">Where</span>(o => o.Status == <span class="st">"Pending"</span>).<span class="fn">ToList</span>();
+}</pre>
+</div>
+
+<!-- S5: Covariance / Contravariance -->
+<div class="section" id="s5">
+  <div class="section-header"><div class="section-num">5</div><h2>Covariance & Contravariance</h2></div>
+
+  <div class="callout">
+    <strong>Why are generics invariant by default?</strong> Even though <code>Dog</code> inherits <code>Animal</code>, <code>List&lt;Dog&gt;</code> can't be assigned to <code>List&lt;Animal&gt;</code> — because you could then <code>.Add(new Cat())</code> to what's really a Dog list!
+  </div>
+
+  <!-- Interactive Variance Demo -->
+  <div class="card" id="variance-interactive">
+    <h3 style="font-size:1rem; color:var(--accent); margin-bottom:0.8rem;">Interactive Variance Explorer</h3>
+    <p style="font-size:0.85rem; margin-bottom:1rem; color:var(--text-dim);">Select a variance type to see what's allowed:</p>
+    <div class="var-toggle-group">
+      <button class="var-toggle active" onclick="showVariance('cov')">Covariance (<code>out</code>)</button>
+      <button class="var-toggle" onclick="showVariance('con')">Contravariance (<code>in</code>)</button>
+      <button class="var-toggle" onclick="showVariance('inv')">Invariance</button>
+    </div>
+    <div class="var-result" id="var-result">
+      <div id="var-cov" style="display:block">
+<span class="cm">// Covariance: out keyword — T only comes OUT (return values)</span>
+<span class="kw">interface</span> <span class="tp">IEnumerable</span>&lt;<span class="kw">out</span> <span class="tp">T</span>&gt; { <span class="tp">T</span> <span class="fn">GetEnumerator</span>(); }
+
+<span class="tp">IEnumerable</span>&lt;<span class="tp">Animal</span>&gt; animals = <span class="kw">new</span> <span class="tp">List</span>&lt;<span class="tp">Dog</span>&gt;();  <span class="cm">// ✅ Dog → Animal OK</span>
+<span class="cm">// Safe because you can only READ items out</span>
+<span class="cm">// Dog IS an Animal — returning Dog as Animal is fine</span>
+      </div>
+      <div id="var-con" style="display:none">
+<span class="cm">// Contravariance: in keyword — T only goes IN (parameters)</span>
+<span class="kw">interface</span> <span class="tp">IProcessor</span>&lt;<span class="kw">in</span> <span class="tp">T</span>&gt; { <span class="kw">void</span> <span class="fn">Process</span>(<span class="tp">T</span> item); }
+
+<span class="tp">IProcessor</span>&lt;<span class="tp">Dog</span>&gt; proc = <span class="kw">new</span> <span class="tp">AnimalProcessor</span>();  <span class="cm">// ✅ Animal → Dog OK</span>
+<span class="cm">// Safe because an AnimalProcessor can handle ANY Animal</span>
+<span class="cm">// Dog IS an Animal — so it can definitely process a Dog</span>
+      </div>
+      <div id="var-inv" style="display:none">
+<span class="cm">// Invariance: no keyword — T goes both in AND out</span>
+<span class="kw">class</span> <span class="tp">List</span>&lt;<span class="tp">T</span>&gt; { <span class="kw">void</span> <span class="fn">Add</span>(<span class="tp">T</span> item); <span class="tp">T</span> <span class="fn">Get</span>(); }
+
+<span class="tp">List</span>&lt;<span class="tp">Animal</span>&gt; animals = <span class="kw">new</span> <span class="tp">List</span>&lt;<span class="tp">Dog</span>&gt;();  <span class="er">// ❌ COMPILE ERROR</span>
+<span class="cm">// Dangerous: could .Add(new Cat()) into a Dog list!</span>
+<span class="cm">// Must use EXACT type match</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <tr><th></th><th>Covariance</th><th>Contravariance</th><th>Invariance</th></tr>
+      <tr><td><strong>Keyword</strong></td><td><code>out</code></td><td><code>in</code></td><td>neither</td></tr>
+      <tr><td><strong>T direction</strong></td><td>Only returned</td><td>Only parameter</td><td>Both</td></tr>
+      <tr><td><strong>Type rule</strong></td><td>More derived OK</td><td>Less derived OK</td><td>Exact type only</td></tr>
+      <tr><td><strong>Pattern</strong></td><td>Producer</td><td>Consumer</td><td>Both</td></tr>
+      <tr><td><strong>Example</strong></td><td><code>IEnumerable&lt;out T&gt;</code></td><td><code>IComparer&lt;in T&gt;</code></td><td><code>List&lt;T&gt;</code></td></tr>
+    </table>
+  </div>
+
+  <div class="callout green" style="margin-top:1rem;">
+    <strong>Mental Model:</strong> <code>out</code> = Producer (T comes OUT) → use MORE derived. <code>in</code> = Consumer (T goes IN) → use LESS derived.
+  </div>
+</div>
+
+<!-- S6: default(T) -->
+<div class="section" id="s6">
+  <div class="section-header"><div class="section-num">6</div><h2>default(T) Keyword</h2></div>
+  <p style="margin-bottom:0.8rem;">Returns the default value for any type — very useful in generic code:</p>
+<pre><span class="label">C#</span><span class="cm">// default values by type:</span>
+<span class="kw">default</span>(<span class="tp">int</span>)      <span class="cm">// 0</span>
+<span class="kw">default</span>(<span class="tp">bool</span>)     <span class="cm">// false</span>
+<span class="kw">default</span>(<span class="tp">double</span>)   <span class="cm">// 0.0</span>
+<span class="kw">default</span>(<span class="tp">string</span>)   <span class="cm">// null</span>
+<span class="kw">default</span>(<span class="tp">Order</span>)    <span class="cm">// null</span></pre>
+</div>
+
+<!-- S7: Quiz -->
+<div class="section" id="s7">
+  <div class="section-header"><div class="section-num">7</div><h2>Test Yourself</h2></div>
+
+  <div class="quiz-card" id="q1">
+    <h3>Q1: What is the main advantage of generics over using <code>object</code>?</h3>
+    <button class="quiz-option" onclick="answer(this,'q1',false)">They make code shorter</button>
+    <button class="quiz-option" onclick="answer(this,'q1',true)">Type safety at compile time + no boxing</button>
+    <button class="quiz-option" onclick="answer(this,'q1',false)">They run faster at runtime</button>
+    <button class="quiz-option" onclick="answer(this,'q1',false)">They allow multiple inheritance</button>
+    <div class="quiz-explanation" id="q1-exp">Using <code>object</code> requires boxing/unboxing for value types (performance cost) and loses type safety — errors only surface at runtime. Generics check the type at compile time and avoid boxing entirely.</div>
+  </div>
+
+  <div class="quiz-card" id="q2">
+    <h3>Q2: What does <code>where T : new()</code> allow you to do?</h3>
+    <button class="quiz-option" onclick="answer(this,'q2',false)">Check if T is null</button>
+    <button class="quiz-option" onclick="answer(this,'q2',false)">Call methods on T</button>
+    <button class="quiz-option" onclick="answer(this,'q2',true)">Create instances with <code>new T()</code></button>
+    <button class="quiz-option" onclick="answer(this,'q2',false)">Compare two T values</button>
+    <div class="quiz-explanation" id="q2-exp">The <code>new()</code> constraint guarantees T has a parameterless constructor, so <code>new T()</code> is valid. Without it, the compiler doesn't know if T can be instantiated.</div>
+  </div>
+
+  <div class="quiz-card" id="q3">
+    <h3>Q3: Why can't <code>List&lt;Dog&gt;</code> be assigned to <code>List&lt;Animal&gt;</code>?</h3>
+    <button class="quiz-option" onclick="answer(this,'q3',false)">Dog doesn't inherit Animal</button>
+    <button class="quiz-option" onclick="answer(this,'q3',true)">You could add a Cat to what's really a Dog list</button>
+    <button class="quiz-option" onclick="answer(this,'q3',false)">Generics don't support inheritance</button>
+    <button class="quiz-option" onclick="answer(this,'q3',false)">It's a C# limitation with no good reason</button>
+    <div class="quiz-explanation" id="q3-exp">List&lt;T&gt; is invariant because it both produces AND consumes T. If this were allowed, you could <code>.Add(new Cat())</code> — the compiler accepts Cat as Animal, but the underlying list is Dogs only. Type safety breaks.</div>
+  </div>
+
+  <div class="quiz-card" id="q4">
+    <h3>Q4: Which keyword enables covariance?</h3>
+    <button class="quiz-option" onclick="answer(this,'q4',false)"><code>in</code></button>
+    <button class="quiz-option" onclick="answer(this,'q4',true)"><code>out</code></button>
+    <button class="quiz-option" onclick="answer(this,'q4',false)"><code>var</code></button>
+    <button class="quiz-option" onclick="answer(this,'q4',false)"><code>ref</code></button>
+    <div class="quiz-explanation" id="q4-exp"><code>out</code> = covariance = T only comes OUT as return values = safe to use more derived types. <code>in</code> = contravariance = T only goes IN as parameters.</div>
+  </div>
+
+  <div class="quiz-score" id="score-box" style="display:none;">
+    <div class="big" id="score-text"></div>
+    <p style="color:var(--text-dim); margin-top:0.3rem;">Generics Quiz Score</p>
+  </div>
+</div>
+
+<!-- Interview Answers -->
+<div class="section" id="s8">
+  <div class="section-header"><div class="section-num">★</div><h2>Interview Answer Bank</h2></div>
+
+  <div class="accordion">
+    <button class="accordion-btn" onclick="toggleAcc(this)">
+      <span>Q: Difference between generics and using object type?</span><span class="arrow">▼</span>
+    </button>
+    <div class="accordion-body">
+      <div class="callout green">Using <code>object</code> requires boxing/unboxing for value types which hurts performance and loses type safety at compile time. Generics are type-safe at compile time — the type is checked when you write the code, not at runtime. They also avoid boxing completely because the actual type is used directly.</div>
+    </div>
+  </div>
+
+  <div class="accordion">
+    <button class="accordion-btn" onclick="toggleAcc(this)">
+      <span>Q: What are generic constraints and why use them?</span><span class="arrow">▼</span>
+    </button>
+    <div class="accordion-body">
+      <div class="callout green">Generic constraints restrict what types T can be. Without constraints T is completely unknown — you cannot call any methods on it. Constraints guarantee what capabilities T has. For example <code>where T : IComparable&lt;T&gt;</code> lets you call <code>CompareTo()</code>, and <code>where T : new()</code> lets you create instances.</div>
+    </div>
+  </div>
+
+  <div class="accordion">
+    <button class="accordion-btn" onclick="toggleAcc(this)">
+      <span>Q: Covariance vs contravariance?</span><span class="arrow">▼</span>
+    </button>
+    <div class="accordion-body">
+      <div class="callout green">Covariance uses <code>out</code> — a more derived type where base is expected. Safe because T only flows out as a return. <code>IEnumerable&lt;T&gt;</code> is covariant so <code>List&lt;Dog&gt;</code> → <code>IEnumerable&lt;Animal&gt;</code>. Contravariance uses <code>in</code> — a less derived type where derived is expected. Safe because T only flows in as a parameter.</div>
+    </div>
+  </div>
+
+  <div class="accordion">
+    <button class="accordion-btn" onclick="toggleAcc(this)">
+      <span>Q: Where do you use generics in real projects?</span><span class="arrow">▼</span>
+    </button>
+    <div class="accordion-body">
+      <div class="callout green">The most common real-world use is the <strong>generic repository pattern</strong> — a single base repository handles all CRUD for any entity type. Eliminates code duplication. Specific repos just inherit and add entity-specific methods.</div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /container -->
+
+<script>
+// Tabs
+function openTab(e, id) {
+  const parent = e.target.closest('.section');
+  parent.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  parent.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  e.target.classList.add('active');
+  document.getElementById(id).classList.add('active');
+}
+
+// Accordion
+function toggleAcc(btn) {
+  const body = btn.nextElementSibling;
+  btn.classList.toggle('open');
+  body.classList.toggle('open');
+}
+
+// Variance demo
+function showVariance(type) {
+  document.querySelectorAll('.var-toggle').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('var-cov').style.display = type === 'cov' ? 'block' : 'none';
+  document.getElementById('var-con').style.display = type === 'con' ? 'block' : 'none';
+  document.getElementById('var-inv').style.display = type === 'inv' ? 'block' : 'none';
+}
+
+// Quiz
+let answered = 0, correct = 0, total = 4;
+function answer(btn, qId, isCorrect) {
+  const card = document.getElementById(qId);
+  if (card.dataset.answered) return;
+  card.dataset.answered = '1';
+  answered++;
+  if (isCorrect) { btn.classList.add('correct'); correct++; }
+  else {
+    btn.classList.add('wrong');
+    card.querySelectorAll('.quiz-option').forEach(o => { if(o!==btn) o.disabled=true; });
+    // highlight correct
+    const opts = card.querySelectorAll('.quiz-option');
+    opts.forEach((o,i) => { o.disabled=true; });
+    // find correct
+    opts.forEach(o => {
+      if (!o.classList.contains('wrong')) {
+        const text = o.textContent;
+        // re-check
+      }
+    });
+  }
+  card.querySelectorAll('.quiz-option').forEach(o => o.disabled = true);
+  document.getElementById(qId + '-exp').classList.add('show');
+  if (answered === total) {
+    document.getElementById('score-box').style.display = 'block';
+    document.getElementById('score-text').textContent = correct + ' / ' + total;
+  }
+}
+
+// Nav highlight on scroll
+const sections = document.querySelectorAll('.section');
+const navLinks = document.querySelectorAll('.nav a');
+window.addEventListener('scroll', () => {
+  let current = '';
+  sections.forEach(s => { if (window.scrollY >= s.offsetTop - 120) current = s.id; });
+  navLinks.forEach(a => {
+    a.classList.remove('active');
+    if (a.getAttribute('href') === '#' + current) a.classList.add('active');
+  });
+});
+</script>
+</body>
+</html>

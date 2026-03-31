@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Extension Methods — .NET Interview Study Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=DM+Sans:ital,wght@0,400;0,500;0,700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#060810;--bg-card:#0d0f18;--bg-code:#090b12;--bg-el:#151828;--border:#191d30;--border-gl:#242840;--text:#c2c8d8;--text-dim:#5c6486;--text-br:#e4eaf4;--c1:#06b6d4;--c2:#10b981;--c3:#f59e0b;--c4:#a855f7;--c5:#3b82f6;--c6:#ef4444;--ok:#4ade80;--bad:#f87171;--kw:#c678dd;--str:#98c379;--tp:#61afef;--cm:#5c6370;--fn:#e5c07b;--r:12px}
+*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.72;overflow-x:hidden}::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border-gl);border-radius:3px}
+.hero{position:relative;min-height:40vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:80px 24px 44px;overflow:hidden}.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 500px 350px at 30% 40%,rgba(6,182,212,.1),transparent),radial-gradient(ellipse 400px 300px at 70% 55%,rgba(168,85,247,.07),transparent)}.hero-badge{position:relative;display:inline-flex;padding:6px 18px;border:1px solid var(--c1);border-radius:100px;font-size:.8rem;color:var(--c1);letter-spacing:.08em;text-transform:uppercase;margin-bottom:18px}.hero h1{position:relative;font-family:'Playfair Display',serif;font-size:clamp(2rem,5vw,3.2rem);font-weight:900;line-height:1.15;color:var(--text-br)}.hero h1 span{background:linear-gradient(135deg,var(--c1),var(--c4));-webkit-background-clip:text;-webkit-text-fill-color:transparent}.hero p{position:relative;max-width:620px;margin-top:14px;color:var(--text-dim);font-size:.95rem}
+.np{position:relative;display:flex;flex-wrap:wrap;justify-content:center;gap:7px;margin-top:22px}.np a{padding:5px 12px;border:1px solid var(--border-gl);border-radius:100px;color:var(--text-dim);text-decoration:none;font-size:.78rem;transition:all .25s}.np a:hover{border-color:var(--c1);color:var(--c1)}
+.sec{max-width:1000px;margin:0 auto 50px;padding:0 24px;scroll-margin-top:28px}.sh{display:flex;align-items:center;gap:12px;margin-bottom:6px}.sn{display:flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:10px;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:.9rem;flex-shrink:0;background:color-mix(in srgb,var(--pat) 16%,transparent);color:var(--pat);border:1px solid color-mix(in srgb,var(--pat) 28%,transparent)}.sh h2{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;color:var(--text-br)}.ss{color:var(--text-dim);font-style:italic;margin-bottom:16px;padding-left:52px;font-size:.87rem}
+.s1{--pat:var(--c1)}.s2{--pat:var(--c5)}.s3{--pat:var(--c4)}.s4{--pat:var(--c2)}.s5{--pat:var(--c3)}.s6{--pat:var(--c6)}
+.card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:12px}.card h3{font-size:.88rem;color:var(--text-br);margin-bottom:8px;display:flex;align-items:center;gap:7px}.card h3::before{content:'';display:inline-block;width:3px;height:13px;border-radius:2px;background:var(--pat,var(--c1))}
+.cb{position:relative;background:var(--bg-code);border:1px solid var(--border);border-radius:var(--r);margin-bottom:10px;overflow:hidden}.cb-h{display:flex;align-items:center;justify-content:space-between;padding:7px 12px;background:var(--bg-el);border-bottom:1px solid var(--border);font-size:.72rem;color:var(--text-dim);font-family:'JetBrains Mono',monospace}.cb-h .dots{display:flex;gap:4px}.cb-h .dots span{width:8px;height:8px;border-radius:50%}.cb-h .dots span:nth-child(1){background:#ff5f57}.cb-h .dots span:nth-child(2){background:#febc2e}.cb-h .dots span:nth-child(3){background:#28c840}
+.cpb{background:none;border:1px solid var(--border-gl);color:var(--text-dim);padding:2px 7px;border-radius:4px;cursor:pointer;font-size:.66rem;font-family:'JetBrains Mono',monospace;transition:all .2s}.cpb:hover{border-color:var(--ok);color:var(--ok)}
+.cb pre{padding:10px 12px;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:.73rem;line-height:1.55;color:var(--text)}.kw{color:var(--kw)}.tp{color:var(--tp)}.str{color:var(--str)}.cm{color:var(--cm);font-style:italic}.fn{color:var(--fn)}.num{color:#d19a66}
+.tw{overflow-x:auto;margin-bottom:12px}table{width:100%;border-collapse:collapse;font-size:.78rem}thead th{background:var(--bg-el);color:var(--text-br);padding:8px 10px;text-align:left;font-weight:600;border-bottom:2px solid var(--border-gl);white-space:nowrap}tbody td{padding:6px 10px;border-bottom:1px solid var(--border);vertical-align:top}tbody tr:hover{background:rgba(6,182,212,.03)}
+.tip{display:flex;gap:9px;padding:10px 12px;border-radius:var(--r);margin-bottom:10px;font-size:.8rem}.tip-c{background:rgba(6,182,212,.06);border:1px solid rgba(6,182,212,.16)}.tip-c .ic{color:var(--c1)}.tip-r{background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.16)}.tip-r .ic{color:var(--c6)}.tip .ic{font-size:1rem;flex-shrink:0}
+.qa-b{margin-bottom:7px}.qa-q{display:flex;align-items:start;gap:8px;padding:10px 12px;background:var(--bg-el);border:1px solid var(--border);border-radius:var(--r);cursor:pointer;color:var(--text-br);font-size:.82rem;font-weight:500;transition:all .25s;user-select:none}.qa-q:hover{border-color:var(--c1)}.qa-q .ar{flex-shrink:0;transition:transform .3s;color:var(--c1);font-size:.75rem}.qa-q.open .ar{transform:rotate(90deg)}.qa-a{max-height:0;overflow:hidden;transition:max-height .35s ease,padding .35s;padding:0 12px;color:var(--text);font-size:.8rem;line-height:1.65;background:var(--bg-card);border:1px solid var(--border);border-top:none;border-radius:0 0 var(--r) var(--r)}.qa-a.open{max-height:500px;padding:10px 12px}
+.bt{position:fixed;bottom:24px;right:24px;width:40px;height:40px;border-radius:50%;background:var(--c1);color:#fff;border:none;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s;box-shadow:0 4px 16px rgba(6,182,212,.35);z-index:100;font-weight:700}.bt.show{opacity:1;pointer-events:auto}
+footer{text-align:center;padding:28px 24px;color:var(--text-dim);font-size:.75rem;border-top:1px solid var(--border);margin-top:28px}.sum{max-width:1000px;margin:0 auto 40px;padding:0 24px}.sum h2{font-family:'Playfair Display',serif;font-size:1.3rem;color:var(--text-br);margin-bottom:14px;text-align:center}
+@media(max-width:768px){.ss{padding-left:0}}
+</style>
+</head>
+<body>
+<section class="hero">
+  <div class="hero-badge">.NET Interview Guide</div>
+  <h1><span>Extension</span> Methods</h1>
+  <p>Add methods to existing types without modifying them — the foundation of LINQ and fluent APIs in .NET.</p>
+  <div class="np"><a href="#what">What</a><a href="#params">With Params</a><a href="#any">Any Type</a><a href="#generic">Generics</a><a href="#interface">Interfaces</a><a href="#linq">LINQ</a><a href="#rules">Rules</a><a href="#real">Real World</a></div>
+</section>
+
+<section id="what" class="sec s1">
+  <div class="sh"><div class="sn">1</div><h2>What Are Extension Methods?</h2></div>
+  <div class="ss">Static method in a static class. First parameter uses "this" keyword. Three rules.</div>
+  <div class="cb"><div class="cb-h"><div class="dots"><span></span><span></span><span></span></div><span>Extension method — three rules</span><button class="cpb" onclick="copyCode(this)">Copy</button></div><pre><span class="cm">// Rule 1: Static class — required</span>
+<span class="kw">public static class</span> <span class="tp">StringExtensions</span>
+{
+    <span class="cm">// Rule 2: Static method — required</span>
+    <span class="cm">// Rule 3: "this string" = extends string type</span>
+    <span class="kw">public static string</span> <span class="fn">Capitalize</span>(<span class="kw">this string</span> input)
+    {
+        <span class="kw">if</span> (<span class="kw">string</span>.<span class="fn">IsNullOrEmpty</span>(input)) <span class="kw">return</span> input;
+        <span class="kw">return</span> <span class="kw">char</span>.<span class="fn">ToUpper</span>(input[<span class="num">0</span>]) + input.<span class="fn">Substring</span>(<span class="num">1</span>).<span class="fn">ToLower</span>();
+    }
+}
+
+<span class="cm">// Usage — looks like a built-in string method!</span>
+<span class="kw">string</span> name = <span class="str">"omar"</span>;
+<span class="tp">Console</span>.<span class="fn">WriteLine</span>(name.<span class="fn">Capitalize</span>()); <span class="cm">// Omar</span></pre></div>
+</section>
+
+<section id="params" class="sec s2">
+  <div class="sh"><div class="sn">2</div><h2>With Parameters</h2></div>
+  <div class="cb"><div class="cb-h"><div class="dots"><span></span><span></span><span></span></div><span>Additional parameters after "this"</span><button class="cpb" onclick="copyCode(this)">Copy</button></div><pre><span class="kw">public static string</span> <span class="fn">Repeat</span>(<span class="kw">this string</span> input, <span class="kw">int</span> count)
+    => <span class="kw">string</span>.<span class="fn">Concat</span>(<span class="tp">Enumerable</span>.<span class="fn">Repeat</span>(input, count));
+
+<span class="kw">public static bool</span> <span class="fn">ContainsAny</span>(<span class="kw">this string</span> input, <span class="kw">params string</span>[] values)
+    => values.<span class="fn">Any</span>(v => input.<span class="fn">Contains</span>(v));
+
+<span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">"Ha"</span>.<span class="fn">Repeat</span>(<span class="num">3</span>));                     <span class="cm">// HaHaHa</span>
+<span class="kw">bool</span> r = <span class="str">"Hello World"</span>.<span class="fn">ContainsAny</span>(<span class="str">"Hello"</span>, <span class="str">"Bye"</span>); <span class="cm">// true</span></pre></div>
+</section>
+
+<section id="any" class="sec s3">
+  <div class="sh"><div class="sn">3</div><h2>Extending Any Type</h2></div>
+  <div class="cb"><div class="cb-h"><div class="dots"><span></span><span></span><span></span></div><span>int, DateTime, bool, object</span><button class="cpb" onclick="copyCode(this)">Copy</button></div><pre><span class="kw">public static bool</span> <span class="fn">IsBetween</span>(<span class="kw">this int</span> val, <span class="kw">int</span> min, <span class="kw">int</span> max)
+    => val >= min && val <= max;
+
+<span class="kw">public static bool</span> <span class="fn">IsWeekend</span>(<span class="kw">this</span> <span class="tp">DateTime</span> date)
+    => date.DayOfWeek == <span class="tp">DayOfWeek</span>.Saturday || date.DayOfWeek == <span class="tp">DayOfWeek</span>.Sunday;
+
+<span class="kw">public static string</span> <span class="fn">ToYesNo</span>(<span class="kw">this bool</span> val) => val ? <span class="str">"Yes"</span> : <span class="str">"No"</span>;
+
+<span class="cm">// Reads like natural language</span>
+<span class="kw">int</span> age = <span class="num">25</span>;
+<span class="kw">bool</span> valid = age.<span class="fn">IsBetween</span>(<span class="num">18</span>, <span class="num">65</span>);     <span class="cm">// true</span>
+<span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="kw">true</span>.<span class="fn">ToYesNo</span>());      <span class="cm">// Yes</span></pre></div>
+</section>
+
+<section id="generic" class="sec s4">
+  <div class="sh"><div class="sn">4</div><h2>Extending Generic Types</h2></div>
+  <div class="cb"><div class="cb-h"><div class="dots"><span></span><span></span><span></span></div><span>IEnumerable&lt;T&gt; extensions</span><button class="cpb" onclick="copyCode(this)">Copy</button></div><pre><span class="kw">public static bool</span> <span class="fn">IsNullOrEmpty</span>&lt;<span class="tp">T</span>&gt;(<span class="kw">this</span> <span class="tp">IEnumerable</span>&lt;<span class="tp">T</span>&gt; source)
+    => source == <span class="kw">null</span> || !source.<span class="fn">Any</span>();
+
+<span class="kw">public static void</span> <span class="fn">AddIfNotExists</span>&lt;<span class="tp">T</span>&gt;(<span class="kw">this</span> <span class="tp">List</span>&lt;<span class="tp">T</span>&gt; list, <span class="tp">T</span> item)
+{
+    <span class="kw">if</span> (!list.<span class="fn">Contains</span>(item)) list.<span class="fn">Add</span>(item);
+}
+
+<span class="tp">List</span>&lt;<span class="kw">int</span>&gt; numbers = <span class="kw">null</span>;
+<span class="kw">bool</span> empty = numbers.<span class="fn">IsNullOrEmpty</span>(); <span class="cm">// true — no NullReferenceException! ✅</span></pre></div>
+</section>
+
+<section id="interface" class="sec s5">
+  <div class="sh"><div class="sn">5</div><h2>Extending Interfaces — Most Powerful</h2></div>
+  <div class="ss">Extend an interface → ALL implementations get the method for free.</div>
+  <div class="cb"><div class="cb-h"><div class="dots"><span></span><span></span><span></span></div><span>Extend interface — all implementations get it free</span><button class="cpb" onclick="copyCode(this)">Copy</button></div><pre><span class="kw">public interface</span> <span class="tp">INotificationService</span>
+{
+    <span class="kw">void</span> <span class="fn">Send</span>(<span class="kw">string</span> message);
+}
+
+<span class="kw">public static class</span> <span class="tp">NotificationExtensions</span>
+{
+    <span class="kw">public static void</span> <span class="fn">SendWithTimestamp</span>(
+        <span class="kw">this</span> <span class="tp">INotificationService</span> svc, <span class="kw">string</span> msg)
+    {
+        svc.<span class="fn">Send</span>(<span class="str">$"[{DateTime.Now:HH:mm:ss}] {msg}"</span>);
+    }
+
+    <span class="kw">public static void</span> <span class="fn">SendUrgent</span>(
+        <span class="kw">this</span> <span class="tp">INotificationService</span> svc, <span class="kw">string</span> msg)
+    {
+        svc.<span class="fn">Send</span>(<span class="str">$"🚨 URGENT: {msg}"</span>);
+    }
+}
+<span class="cm">// EmailNotification, SmsNotification, and ANY future</span>
+<span class="cm">// implementation gets both methods for free! ✅</span></pre></div>
+  <div class="tip tip-c"><span class="ic">💡</span><span><strong>This is exactly how LINQ works.</strong> Where(), Select(), OrderBy() are all extension methods on IEnumerable&lt;T&gt;. Any class implementing IEnumerable&lt;T&gt; gets all LINQ methods automatically.</span></div>
+</section>
+
+<section id="linq" class="sec s1">
+  <div class="sh"><div class="sn">6</div><h2>How LINQ is Built</h2></div>
+  <div class="cb"><div class="cb-h"><div class="dots"><span></span><span></span><span></span></div><span>LINQ = extension methods on IEnumerable&lt;T&gt;</span></div><pre><span class="cm">// LINQ methods are ALL extension methods on IEnumerable&lt;T&gt;</span>
+<span class="kw">var</span> result = numbers
+    .<span class="fn">Where</span>(n => n > <span class="num">3</span>)    <span class="cm">// extension method</span>
+    .<span class="fn">Select</span>(n => n * <span class="num">2</span>)   <span class="cm">// extension method</span>
+    .<span class="fn">OrderBy</span>(n => n)      <span class="cm">// extension method</span>
+    .<span class="fn">ToList</span>();            <span class="cm">// extension method</span>
+<span class="cm">// Chaining works because each returns IEnumerable&lt;T&gt;</span></pre></div>
+</section>
+
+<section id="rules" class="sec s6">
+  <div class="sh"><div class="sn">7</div><h2>Rules &amp; Gotchas</h2></div>
+  <div class="card"><h3>Summary</h3><div class="tw"><table><thead><tr><th>Rule</th><th>Details</th></tr></thead><tbody>
+    <tr><td><strong>Instance method wins</strong></td><td>If class has same method — extension is silently ignored</td></tr>
+    <tr><td><strong>Null safe possible</strong></td><td>Extension can be called on null — handle internally</td></tr>
+    <tr><td><strong>Namespace required</strong></td><td>Must import <code>using</code> to use extension methods</td></tr>
+    <tr><td><strong>Cannot access private</strong></td><td>Only public members are accessible</td></tr>
+    <tr><td><strong>Static class + method</strong></td><td>Both class and method must be static</td></tr>
+    <tr><td><strong>First param = this</strong></td><td><code>this string input</code> extends string type</td></tr>
+  </tbody></table></div></div>
+</section>
+
+<section id="real" class="sec s4">
+  <div class="sh"><div class="sn">8</div><h2>Real World Patterns</h2></div>
+  <div class="cb"><div class="cb-h"><div class="dots"><span></span><span></span><span></span></div><span>Fluent Validation + WhereIf</span><button class="cpb" onclick="copyCode(this)">Copy</button></div><pre><span class="cm">// Fluent Validation</span>
+<span class="kw">public static string</span> <span class="fn">RequiredField</span>(<span class="kw">this string</span> val, <span class="kw">string</span> name)
+{
+    <span class="kw">if</span> (<span class="kw">string</span>.<span class="fn">IsNullOrWhiteSpace</span>(val))
+        <span class="kw">throw new</span> <span class="tp">ArgumentException</span>(<span class="str">$"{name} is required"</span>);
+    <span class="kw">return</span> val;
+}
+
+customerName.<span class="fn">RequiredField</span>(<span class="str">"Customer Name"</span>); <span class="cm">// clean!</span>
+
+<span class="cm">// Conditional Query — WhereIf</span>
+<span class="kw">public static</span> <span class="tp">IQueryable</span>&lt;<span class="tp">T</span>&gt; <span class="fn">WhereIf</span>&lt;<span class="tp">T</span>&gt;(
+    <span class="kw">this</span> <span class="tp">IQueryable</span>&lt;<span class="tp">T</span>&gt; query, <span class="kw">bool</span> condition,
+    <span class="tp">Expression</span>&lt;<span class="tp">Func</span>&lt;<span class="tp">T</span>, <span class="kw">bool</span>&gt;&gt; predicate)
+    => condition ? query.<span class="fn">Where</span>(predicate) : query;
+
+<span class="cm">// Usage — conditionally apply filters → all SQL</span>
+<span class="kw">return</span> dbContext.Employees
+    .<span class="fn">WhereIf</span>(!<span class="kw">string</span>.<span class="fn">IsNullOrEmpty</span>(name), e => e.Name.<span class="fn">Contains</span>(name))
+    .<span class="fn">WhereIf</span>(minSalary.<span class="fn">HasValue</span>, e => e.Salary >= minSalary.Value);</pre></div>
+</section>
+
+<section class="sum">
+  <h2>Interview Questions</h2>
+  <div class="qa-b"><div class="qa-q" onclick="toggleQA(this)"><span class="ar">▶</span>What are extension methods and how do you create them?</div><div class="qa-a">Extension methods allow adding new methods to existing types without modifying them. Defined as <strong>static methods in a static class</strong> where the first parameter uses the <code>this</code> keyword. They appear to callers as built-in methods but live in a separate class.</div></div>
+  <div class="qa-b"><div class="qa-q" onclick="toggleQA(this)"><span class="ar">▶</span>What is a real-world example?</div><div class="qa-a"><strong>LINQ</strong> is the most prominent example — Where, Select, OrderBy are all extension methods on IEnumerable&lt;T&gt;. Any class implementing IEnumerable&lt;T&gt; gets all LINQ functionality automatically. ASP.NET Core's AddScoped, UseMiddleware, MapControllers are also extension methods.</div></div>
+  <div class="qa-b"><div class="qa-q" onclick="toggleQA(this)"><span class="ar">▶</span>What are the limitations?</div><div class="qa-a">Cannot access private members. Instance methods always win over extensions with the same name. Namespace must be imported. Cannot override existing methods — silently ignored if class already has one.</div></div>
+  <div class="qa-b"><div class="qa-q" onclick="toggleQA(this)"><span class="ar">▶</span>Why is extending interfaces powerful?</div><div class="qa-a">Every class implementing the interface gets the new methods without code changes. Follows Open/Closed principle. This is exactly how LINQ works — IEnumerable&lt;T&gt; is extended with dozens of methods that work for List, Array, Dictionary, and any future collection type automatically.</div></div>
+</section>
+
+<button class="bt" id="backTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+<footer><p>Extension Methods — .NET Interview Study Guide 🚀</p></footer>
+<script>
+function toggleQA(el){el.classList.toggle('open');el.nextElementSibling.classList.toggle('open')}
+function copyCode(btn){const pre=btn.closest('.cb').querySelector('pre');navigator.clipboard.writeText(pre.textContent).then(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',1500)})}
+window.addEventListener('scroll',()=>{document.getElementById('backTop').classList.toggle('show',window.scrollY>400)})
+</script>
+</body>
+</html>

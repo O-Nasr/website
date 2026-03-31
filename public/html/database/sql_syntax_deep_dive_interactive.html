@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SQL Syntax Deep Dive — Interactive Study Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#080a0c;--surface:#101820;--surface2:#182230;--border:#253040;--text:#e0e8f0;--text-dim:#6a8098;--accent:#38bdf8;--accent2:#0284c7;--green:#4ade80;--red:#f87171;--orange:#fb923c;--yellow:#fbbf24;--purple:#a78bfa;--teal:#2dd4bf;--pink:#f472b6;--code-bg:#0c1218;--glow:rgba(56,189,248,.12)}
+*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;min-height:100vh}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 20% 5%,rgba(56,189,248,.04)0%,transparent 55%),radial-gradient(ellipse at 80% 95%,rgba(2,132,199,.03)0%,transparent 55%);pointer-events:none;z-index:0}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.container{max-width:920px;margin:0 auto;padding:2rem 1.5rem 4rem;position:relative;z-index:1}
+.hero{text-align:center;padding:3rem 0 2.5rem}.hero-badge{display:inline-block;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-weight:700;font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;padding:.35rem 1rem;border-radius:99px;margin-bottom:1.2rem}
+.hero h1{font-size:2.2rem;font-weight:800;background:linear-gradient(135deg,#fff 30%,var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1.15;margin-bottom:.5rem}.hero p{color:var(--text-dim);font-size:1rem}
+.nav{display:flex;flex-wrap:wrap;gap:.4rem;justify-content:center;margin-bottom:2.5rem;position:sticky;top:0;z-index:10;background:rgba(8,10,12,.88);backdrop-filter:blur(12px);padding:.7rem 0;border-bottom:1px solid var(--border)}
+.nav a{color:var(--text-dim);text-decoration:none;font-size:.72rem;font-weight:600;padding:.35rem .7rem;border-radius:8px;transition:all .2s;border:1px solid transparent}.nav a:hover,.nav a.active{color:var(--accent);background:rgba(56,189,248,.08);border-color:rgba(56,189,248,.2)}
+.section{margin-bottom:2.5rem;animation:fadeUp .5s ease both}.section-header{display:flex;align-items:center;gap:.75rem;margin-bottom:1rem;padding-bottom:.7rem;border-bottom:1px solid var(--border)}
+.section-num{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.8rem;color:#fff;flex-shrink:0}.section-header h2{font-size:1.25rem;font-weight:700}
+.callout{background:linear-gradient(135deg,rgba(56,189,248,.07),rgba(2,132,199,.04));border-left:3px solid var(--accent);border-radius:0 10px 10px 0;padding:.9rem 1.1rem;margin:.8rem 0;font-size:.88rem}
+.callout.green{border-left-color:var(--green);background:linear-gradient(135deg,rgba(74,222,128,.07),rgba(74,222,128,.03))}.callout.warn{border-left-color:var(--orange);background:linear-gradient(135deg,rgba(251,146,60,.07),rgba(251,146,60,.03))}.callout.red{border-left-color:var(--red);background:linear-gradient(135deg,rgba(248,113,113,.07),rgba(248,113,113,.03))}
+pre{background:var(--code-bg);border:1px solid var(--border);border-radius:10px;padding:1rem;overflow-x:auto;margin:.7rem 0;font-family:'JetBrains Mono',monospace;font-size:.76rem;line-height:1.6;position:relative}
+pre .label{position:absolute;top:.4rem;right:.5rem;font-size:.58rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em;font-family:'Outfit',sans-serif;font-weight:600;background:var(--surface);padding:.12rem .4rem;border-radius:4px}
+.kw{color:var(--accent)}.tp{color:var(--purple)}.cm{color:#3a5068;font-style:italic}.st{color:var(--green)}.fn{color:var(--yellow)}.nu{color:var(--orange)}.er{color:var(--red)}
+.table-wrap{overflow-x:auto;margin:.7rem 0;border-radius:10px;border:1px solid var(--border)}table{width:100%;border-collapse:collapse;font-size:.8rem}th{background:var(--surface2);color:var(--accent);font-weight:600;text-align:left;padding:.6rem .8rem;white-space:nowrap}td{padding:.5rem .8rem;border-top:1px solid var(--border)}tr:hover td{background:rgba(56,189,248,.03)}
+.accordion{margin:.7rem 0}.accordion-btn{width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:'Outfit',sans-serif;font-size:.85rem;font-weight:600;padding:.8rem 1rem;border-radius:10px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;transition:all .2s}.accordion-btn:hover{border-color:var(--accent);background:var(--surface2)}.accordion-btn .arrow{transition:transform .3s;font-size:.75rem;color:var(--accent)}.accordion-btn.open .arrow{transform:rotate(180deg)}.accordion-body{max-height:0;overflow:hidden;transition:max-height .4s ease;background:var(--surface);border:1px solid var(--border);border-top:none;border-radius:0 0 10px 10px;padding:0 1rem}.accordion-body.open{max-height:5000px;padding:1rem}
+
+/* Execution order pipeline */
+.exec-pipeline{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.3rem;margin:1rem 0}
+.ep-steps{display:flex;gap:0;flex-wrap:wrap;margin:.8rem 0}
+.ep-step{flex:1;min-width:80px;text-align:center;padding:.6rem .3rem;border:1px solid var(--border);background:var(--surface2);font-size:.72rem;font-weight:700;transition:all .4s;cursor:pointer;position:relative}
+.ep-step:first-child{border-radius:10px 0 0 10px}.ep-step:last-child{border-radius:0 10px 10px 0}
+.ep-step .num{display:block;font-size:1.1rem;font-weight:800;color:var(--text-dim);margin-bottom:.1rem}
+.ep-step:hover,.ep-step.active{background:rgba(56,189,248,.1);border-color:var(--accent);color:var(--accent)}
+.ep-step.active .num{color:var(--accent)}
+.ep-detail{background:var(--code-bg);border:1px solid var(--border);border-radius:10px;padding:.8rem;margin-top:.6rem;font-size:.82rem;min-height:50px;transition:all .3s}
+
+/* GROUP BY before/after */
+.gb-demo{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.3rem;margin:1rem 0}
+.gb-tabs{display:flex;gap:.3rem;margin-bottom:.6rem}
+.gb-tab{background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);font-family:'Outfit',sans-serif;font-size:.74rem;font-weight:600;padding:.45rem .9rem;border-radius:8px;cursor:pointer;transition:all .2s}
+.gb-tab:hover{color:var(--text);border-color:var(--accent)}.gb-tab.active{background:rgba(56,189,248,.12);border-color:var(--accent);color:var(--accent)}
+.gb-panel{display:none}.gb-panel.active{display:block}
+.mini-table{width:100%;border-collapse:collapse;font-size:.74rem;font-family:'JetBrains Mono',monospace}.mini-table th{background:var(--surface2);padding:.35rem .5rem;font-size:.68rem;color:var(--accent)}.mini-table td{padding:.3rem .5rem;border-top:1px solid var(--border)}
+.mini-table .hl{background:rgba(56,189,248,.08)}
+
+/* Quiz */
+.quiz-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.3rem;margin-bottom:.8rem}.quiz-card h3{font-size:.9rem;margin-bottom:.8rem;color:var(--accent)}
+.quiz-option{display:block;width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'Outfit',sans-serif;font-size:.8rem;padding:.6rem .9rem;border-radius:8px;cursor:pointer;margin-bottom:.35rem;text-align:left;transition:all .2s}.quiz-option:hover{border-color:var(--accent);transform:translateX(4px)}.quiz-option.correct{background:rgba(74,222,128,.15);border-color:var(--green);color:var(--green)}.quiz-option.wrong{background:rgba(248,113,113,.1);border-color:var(--red);color:var(--red)}.quiz-option:disabled{cursor:default;transform:none}
+.quiz-explanation{margin-top:.6rem;padding:.7rem;border-radius:8px;background:rgba(56,189,248,.06);font-size:.8rem;display:none;line-height:1.6}.quiz-explanation.show{display:block}
+.quiz-score{text-align:center;padding:1.3rem;background:var(--surface);border:1px solid var(--accent);border-radius:14px;margin-top:.8rem}.quiz-score .big{font-size:2rem;font-weight:800;color:var(--accent)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:640px){.hero h1{font-size:1.5rem}.container{padding:1rem}.ep-steps{flex-direction:column}.ep-step{border-radius:0!important}.ep-step:first-child{border-radius:10px 10px 0 0!important}.ep-step:last-child{border-radius:0 0 10px 10px!important}}
+</style>
+</head>
+<body>
+<div class="container">
+<div class="hero"><div class="hero-badge">SQL Interview Study Guide</div><h1>SQL Syntax Deep Dive</h1><p>Execution order, WHERE vs HAVING, GROUP BY, NULL traps & more</p></div>
+<nav class="nav"><a href="#s1">Execution Order</a><a href="#s2">SELECT & WHERE</a><a href="#s3">GROUP BY</a><a href="#s4">HAVING</a><a href="#s5">ORDER BY</a><a href="#s6">Full Query</a><a href="#s7">Quiz</a></nav>
+
+<!-- S1: Execution Order -->
+<div class="section" id="s1"><div class="section-header"><div class="section-num">1</div><h2>Query Execution Order</h2></div>
+<p style="margin-bottom:.6rem">SQL does <strong>NOT</strong> execute in the order you write it. Click each step to see what it does:</p>
+<div class="exec-pipeline">
+<div class="ep-steps">
+<div class="ep-step" onclick="showStep(0)"><span class="num">1</span>FROM</div>
+<div class="ep-step" onclick="showStep(1)"><span class="num">2</span>WHERE</div>
+<div class="ep-step" onclick="showStep(2)"><span class="num">3</span>GROUP BY</div>
+<div class="ep-step" onclick="showStep(3)"><span class="num">4</span>HAVING</div>
+<div class="ep-step" onclick="showStep(4)"><span class="num">5</span>SELECT</div>
+<div class="ep-step" onclick="showStep(5)"><span class="num">6</span>ORDER BY</div>
+</div>
+<div class="ep-detail" id="ep-detail">Click a step above to see details</div>
+</div>
+<div class="callout">Every confusion about WHERE vs HAVING, aliases, and aggregate functions comes back to this order. <strong>Memorize it.</strong></div></div>
+
+<!-- S2: SELECT & WHERE -->
+<div class="section" id="s2"><div class="section-header"><div class="section-num">2</div><h2>SELECT, WHERE & LIKE</h2></div>
+<pre><span class="label">SQL</span><span class="kw">SELECT</span> order_id, total * <span class="nu">1.14</span> <span class="kw">AS</span> total_with_tax <span class="kw">FROM</span> orders;
+
+<span class="cm">-- DISTINCT applies to entire row, not one column</span>
+<span class="kw">SELECT DISTINCT</span> city, country <span class="kw">FROM</span> users; <span class="cm">-- unique pairs</span></pre>
+
+<pre><span class="label">SQL</span><span class="cm">-- LIKE patterns</span>
+<span class="kw">WHERE</span> name <span class="kw">LIKE</span> <span class="st">'Omar%'</span>    <span class="cm">-- starts with Omar ✅ index-friendly</span>
+<span class="kw">WHERE</span> name <span class="kw">LIKE</span> <span class="st">'%Omar%'</span>   <span class="cm">-- contains Omar ❌ full table scan</span>
+<span class="kw">WHERE</span> name <span class="kw">LIKE</span> <span class="st">'Oma_'</span>     <span class="cm">-- exactly 4 chars starting with Oma</span></pre>
+
+<div class="callout red">⚠️ <strong>NULL Trap:</strong> <code>WHERE email = NULL</code> → returns NO rows ever! NULL means unknown — use <code>IS NULL</code>. <code>NULL = NULL</code> evaluates to NULL, not TRUE.</div>
+
+<div class="table-wrap"><table><tr><th>Operator</th><th>Example</th><th>Meaning</th></tr>
+<tr><td><code>=</code></td><td><code>WHERE status = 'active'</code></td><td>Exact match</td></tr>
+<tr><td><code>BETWEEN</code></td><td><code>WHERE total BETWEEN 100 AND 500</code></td><td>Inclusive range</td></tr>
+<tr><td><code>IN</code></td><td><code>WHERE status IN ('active','pending')</code></td><td>Match any in list</td></tr>
+<tr><td><code>IS NULL</code></td><td><code>WHERE deleted_at IS NULL</code></td><td>Check for NULL</td></tr>
+<tr><td><code>LIKE</code></td><td><code>WHERE name LIKE 'Omar%'</code></td><td>Pattern matching</td></tr></table></div></div>
+
+<!-- S3: GROUP BY -->
+<div class="section" id="s3"><div class="section-header"><div class="section-num">3</div><h2>GROUP BY</h2></div>
+<p style="margin-bottom:.6rem">Collapses multiple rows into groups. Click to see before and after:</p>
+
+<div class="gb-demo">
+<div class="gb-tabs">
+<button class="gb-tab active" onclick="showGB('before')">Before GROUP BY (raw rows)</button>
+<button class="gb-tab" onclick="showGB('after')">After GROUP BY (collapsed)</button>
+</div>
+<div class="gb-panel active" id="gb-before">
+<table class="mini-table"><tr><th>order_id</th><th>customer_id</th><th>total</th></tr>
+<tr class="hl"><td>1</td><td>42</td><td>500</td></tr>
+<tr class="hl"><td>2</td><td>42</td><td>200</td></tr>
+<tr><td>3</td><td>99</td><td>300</td></tr>
+<tr><td>4</td><td>99</td><td>150</td></tr></table>
+<p style="font-size:.75rem;color:var(--text-dim);margin-top:.4rem">4 individual rows — customer 42 has rows 1 & 2, customer 99 has rows 3 & 4</p>
+</div>
+<div class="gb-panel" id="gb-after">
+<table class="mini-table"><tr><th>customer_id</th><th>COUNT(*)</th><th>SUM(total)</th></tr>
+<tr class="hl"><td>42</td><td>2</td><td>700</td></tr>
+<tr><td>99</td><td>2</td><td>450</td></tr></table>
+<p style="font-size:.75rem;color:var(--text-dim);margin-top:.4rem">2 groups — rows collapsed, aggregates computed per group</p>
+</div>
+</div>
+
+<div class="callout warn">⚠️ <strong>GROUP BY Rule:</strong> Every column in SELECT must be in GROUP BY or wrapped in an aggregate function (COUNT, SUM, AVG, etc.).</div>
+
+<div class="table-wrap"><table><tr><th>Function</th><th>Returns</th><th>NULL behavior</th></tr>
+<tr><td><code>COUNT(*)</code></td><td>Total rows in group</td><td style="color:var(--green)">Includes NULLs</td></tr>
+<tr><td><code>COUNT(col)</code></td><td>Non-NULL rows</td><td style="color:var(--red)">Excludes NULLs</td></tr>
+<tr><td><code>SUM()</code></td><td>Sum of values</td><td>Ignores NULLs</td></tr>
+<tr><td><code>AVG()</code></td><td>Average</td><td>Ignores NULLs</td></tr>
+<tr><td><code>MIN() / MAX()</code></td><td>Smallest / Largest</td><td>Ignores NULLs</td></tr></table></div>
+
+<div class="callout">10 rows, 3 have NULL email: <code>COUNT(*) = 10</code>, <code>COUNT(email) = 7</code></div></div>
+
+<!-- S4: HAVING -->
+<div class="section" id="s4"><div class="section-header"><div class="section-num">4</div><h2>HAVING — WHERE vs HAVING</h2></div>
+
+<div class="table-wrap"><table><tr><th></th><th>WHERE</th><th>HAVING</th></tr>
+<tr><td><strong>Step</strong></td><td>Step 2 — before GROUP BY</td><td>Step 4 — after GROUP BY</td></tr>
+<tr><td><strong>Filters</strong></td><td>Individual rows</td><td>Groups</td></tr>
+<tr><td><strong>Aggregates</strong></td><td style="color:var(--red)">❌ NOT allowed — groups don't exist yet</td><td style="color:var(--green)">✅ Allowed — groups already exist</td></tr>
+<tr><td><strong>Use for</strong></td><td>status, date, raw values</td><td>COUNT > 5, SUM > 1000</td></tr></table></div>
+
+<pre><span class="label">SQL</span><span class="kw">SELECT</span> customer_id, <span class="fn">COUNT</span>(*) <span class="kw">AS</span> total_orders
+<span class="kw">FROM</span> orders
+<span class="kw">WHERE</span> status = <span class="st">'completed'</span>       <span class="cm">-- Step 2: keep only completed rows</span>
+<span class="kw">GROUP BY</span> customer_id           <span class="cm">-- Step 3: group by customer</span>
+<span class="kw">HAVING</span> <span class="fn">COUNT</span>(*) > <span class="nu">3</span>            <span class="cm">-- Step 4: keep groups with > 3</span>
+<span class="kw">ORDER BY</span> total_orders <span class="kw">DESC</span>;    <span class="cm">-- Step 6: sort highest first</span></pre>
+
+<div class="callout warn">⚠️ <strong>Alias Trap:</strong> <code>HAVING total_orders > 3</code> — fails in SQL Server! SELECT (Step 5) hasn't run yet at HAVING (Step 4). Safe rule: always use full expression <code>HAVING COUNT(*) > 3</code>.</div>
+
+<div class="table-wrap"><table><tr><th>Database</th><th>Alias in HAVING?</th><th>Reason</th></tr>
+<tr><td>SQL Server</td><td style="color:var(--red)">❌ Error</td><td>Strictly follows standard</td></tr>
+<tr><td>PostgreSQL</td><td style="color:var(--green)">✅ Allowed</td><td>Convenience feature</td></tr></table></div></div>
+
+<!-- S5: ORDER BY -->
+<div class="section" id="s5"><div class="section-header"><div class="section-num">5</div><h2>ORDER BY, TOP & LIMIT</h2></div>
+<p style="margin-bottom:.5rem">ORDER BY runs at Step 6 — last. CAN use aliases because SELECT already ran.</p>
+<pre><span class="label">SQL</span><span class="cm">-- SQL Server pagination</span>
+<span class="kw">SELECT TOP</span> <span class="nu">10</span> * <span class="kw">FROM</span> orders <span class="kw">ORDER BY</span> total <span class="kw">DESC</span>;
+
+<span class="cm">-- PostgreSQL pagination</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> orders <span class="kw">ORDER BY</span> total <span class="kw">DESC LIMIT</span> <span class="nu">10</span> <span class="kw">OFFSET</span> <span class="nu">20</span>; <span class="cm">-- page 3</span>
+
+<span class="cm">-- SQL Server equivalent</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> orders <span class="kw">ORDER BY</span> total <span class="kw">DESC</span>
+<span class="kw">OFFSET</span> <span class="nu">20</span> <span class="kw">ROWS FETCH NEXT</span> <span class="nu">10</span> <span class="kw">ROWS ONLY</span>;</pre></div>
+
+<!-- S6: Full Query -->
+<div class="section" id="s6"><div class="section-header"><div class="section-num">6</div><h2>Complete Query — All Clauses</h2></div>
+<pre><span class="label">SQL</span><span class="kw">SELECT</span>                              <span class="cm">-- Step 5</span>
+    customer_id,
+    <span class="fn">COUNT</span>(*)     <span class="kw">AS</span> order_count,
+    <span class="fn">SUM</span>(total)   <span class="kw">AS</span> total_spent,
+    <span class="fn">AVG</span>(total)   <span class="kw">AS</span> avg_order_value,
+    <span class="fn">MAX</span>(total)   <span class="kw">AS</span> largest_order
+<span class="kw">FROM</span> orders                         <span class="cm">-- Step 1</span>
+<span class="kw">WHERE</span>                               <span class="cm">-- Step 2</span>
+    status = <span class="st">'completed'</span>
+    <span class="kw">AND</span> created_at >= <span class="st">'2024-01-01'</span>
+<span class="kw">GROUP BY</span> customer_id                <span class="cm">-- Step 3</span>
+<span class="kw">HAVING</span>                              <span class="cm">-- Step 4</span>
+    <span class="fn">COUNT</span>(*) > <span class="nu">3</span>
+    <span class="kw">AND</span> <span class="fn">SUM</span>(total) > <span class="nu">1000</span>
+<span class="kw">ORDER BY</span> total_spent <span class="kw">DESC</span>           <span class="cm">-- Step 6</span>
+<span class="kw">LIMIT</span> <span class="nu">10</span>;</pre>
+<div class="callout green"><strong>In plain English:</strong> From orders, take only completed orders from 2024. Group by customer. Keep customers with more than 3 orders AND total spending above 1000. Show their stats sorted by highest spender first. Return top 10.</div></div>
+
+<!-- S7: Quiz -->
+<div class="section" id="s7"><div class="section-header"><div class="section-num">7</div><h2>Test Yourself</h2></div>
+
+<div class="quiz-card" id="q1"><h3>Q1: Why can't you use COUNT(*) in a WHERE clause?</h3>
+<button class="quiz-option" onclick="answer(this,'q1',true)">WHERE runs at Step 2 before GROUP BY — groups don't exist yet, so COUNT has nothing to count</button>
+<button class="quiz-option" onclick="answer(this,'q1',false)">COUNT is only allowed in SELECT</button>
+<button class="quiz-option" onclick="answer(this,'q1',false)">It's a syntax limitation of SQL</button>
+<div class="quiz-explanation" id="q1-exp">WHERE (Step 2) runs before GROUP BY (Step 3). At Step 2, rows haven't been grouped yet — COUNT has nothing to aggregate. HAVING (Step 4) runs after groups exist, so aggregates work there.</div></div>
+
+<div class="quiz-card" id="q2"><h3>Q2: <code>WHERE email = NULL</code> — how many rows does this return?</h3>
+<button class="quiz-option" onclick="answer(this,'q2',true)">Zero — NULL = NULL evaluates to NULL (not TRUE). Use IS NULL.</button>
+<button class="quiz-option" onclick="answer(this,'q2',false)">All rows where email is NULL</button>
+<div class="quiz-explanation" id="q2-exp">NULL means "unknown." Comparing anything with = NULL returns NULL, not TRUE. In a WHERE clause, NULL is treated as false — so zero rows match. Always use <code>IS NULL</code>.</div></div>
+
+<div class="quiz-card" id="q3"><h3>Q3: 10 rows, 3 have NULL email. What is COUNT(*) vs COUNT(email)?</h3>
+<button class="quiz-option" onclick="answer(this,'q3',false)">Both return 10</button>
+<button class="quiz-option" onclick="answer(this,'q3',true)">COUNT(*) = 10 (all rows), COUNT(email) = 7 (non-NULL only)</button>
+<button class="quiz-option" onclick="answer(this,'q3',false)">COUNT(*) = 7, COUNT(email) = 10</button>
+<div class="quiz-explanation" id="q3-exp"><code>COUNT(*)</code> counts all rows regardless of NULLs. <code>COUNT(column)</code> only counts rows where that column is NOT NULL. This is a classic interview trap.</div></div>
+
+<div class="quiz-card" id="q4"><h3>Q4: Can you use a SELECT alias in ORDER BY?</h3>
+<button class="quiz-option" onclick="answer(this,'q4',true)">Yes — SELECT (Step 5) runs before ORDER BY (Step 6), so the alias exists</button>
+<button class="quiz-option" onclick="answer(this,'q4',false)">No — aliases can't be used outside SELECT</button>
+<div class="quiz-explanation" id="q4-exp">ORDER BY (Step 6) runs after SELECT (Step 5), so aliases are already defined and safe to use. This is the opposite of HAVING (Step 4), which runs before SELECT — making aliases unreliable there.</div></div>
+
+<div class="quiz-card" id="q5"><h3>Q5: Walk through the SQL execution order.</h3>
+<button class="quiz-option" onclick="answer(this,'q5',false)">SELECT → FROM → WHERE → GROUP BY → HAVING → ORDER BY</button>
+<button class="quiz-option" onclick="answer(this,'q5',true)">FROM → WHERE → GROUP BY → HAVING → SELECT → ORDER BY</button>
+<button class="quiz-option" onclick="answer(this,'q5',false)">FROM → SELECT → WHERE → GROUP BY → HAVING → ORDER BY</button>
+<div class="quiz-explanation" id="q5-exp">FROM (1) → WHERE (2) → GROUP BY (3) → HAVING (4) → SELECT (5) → ORDER BY (6). This order explains everything: why COUNT fails in WHERE, why aliases fail in HAVING (SQL Server), and why aliases work in ORDER BY.</div></div>
+
+<div class="quiz-score" id="score-box" style="display:none"><div class="big" id="score-text"></div><p style="color:var(--text-dim);margin-top:.3rem">SQL Syntax Quiz</p></div></div>
+
+<!-- Interview Answers -->
+<div class="section" id="s8"><div class="section-header"><div class="section-num">★</div><h2>Interview Answer Bank</h2></div>
+<div class="accordion"><button class="accordion-btn" onclick="toggleAcc(this)"><span>Q: WHERE vs HAVING?</span><span class="arrow">▼</span></button><div class="accordion-body"><div class="callout green">WHERE filters individual rows before grouping (Step 2). HAVING filters groups after grouping (Step 4). Aggregates like COUNT() can't be in WHERE because groups don't exist yet — but work in HAVING because groups already exist.</div></div></div>
+<div class="accordion"><button class="accordion-btn" onclick="toggleAcc(this)"><span>Q: COUNT(*) vs COUNT(column)?</span><span class="arrow">▼</span></button><div class="accordion-body"><div class="callout green">COUNT(*) counts all rows including NULLs. COUNT(email) counts only non-NULL values. 10 rows, 3 NULL emails: COUNT(*) = 10, COUNT(email) = 7.</div></div></div>
+<div class="accordion"><button class="accordion-btn" onclick="toggleAcc(this)"><span>Q: Can you use alias in HAVING?</span><span class="arrow">▼</span></button><div class="accordion-body"><div class="callout green">Technically no — SELECT (Step 5) runs after HAVING (Step 4). SQL Server throws an error. PostgreSQL allows it as a convenience. Safe approach: always use the full expression like <code>HAVING COUNT(*) > 3</code>.</div></div></div>
+<div class="accordion"><button class="accordion-btn" onclick="toggleAcc(this)"><span>Q: NULL = NULL — what happens?</span><span class="arrow">▼</span></button><div class="accordion-body"><div class="callout green">NULL means unknown — not a value. <code>= NULL</code> returns NULL, not TRUE. In WHERE, NULL is treated as false → zero rows returned. Always use <code>IS NULL</code> / <code>IS NOT NULL</code>.</div></div></div>
+<div class="accordion"><button class="accordion-btn" onclick="toggleAcc(this)"><span>Q: SQL execution order?</span><span class="arrow">▼</span></button><div class="accordion-body"><div class="callout green">FROM (1) → WHERE (2) → GROUP BY (3) → HAVING (4) → SELECT (5) → ORDER BY (6). This explains why aggregates fail in WHERE, aliases fail in HAVING (SQL Server), and aliases work in ORDER BY.</div></div></div></div>
+
+</div>
+<script>
+function toggleAcc(btn){btn.classList.toggle('open');btn.nextElementSibling.classList.toggle('open')}
+
+// Execution order pipeline
+const stepDetails=[
+  {title:'Step 1 — FROM',desc:'Get the full table — all rows and all columns. This is the starting dataset everything else filters down from.'},
+  {title:'Step 2 — WHERE',desc:'Filter individual rows BEFORE any grouping. Aggregate functions (COUNT, SUM) are NOT allowed here because groups don\'t exist yet.'},
+  {title:'Step 3 — GROUP BY',desc:'Collapse rows into groups based on column values. After this step, you no longer have individual rows — you have groups. Each group becomes one row in the result.'},
+  {title:'Step 4 — HAVING',desc:'Filter groups AFTER GROUP BY. Aggregate functions work here because groups already exist. SELECT aliases DON\'T exist yet (SQL Server).'},
+  {title:'Step 5 — SELECT',desc:'Choose which columns and expressions to return. Aliases are created here. This is why aliases can\'t be used in WHERE or HAVING (they run earlier).'},
+  {title:'Step 6 — ORDER BY',desc:'Sort the final result set. Runs LAST — so SELECT aliases are safe to use here. Always pair with LIMIT/TOP for pagination.'}
+];
+function showStep(i){
+  document.querySelectorAll('.ep-step').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.ep-step')[i].classList.add('active');
+  document.getElementById('ep-detail').innerHTML=`<strong style="color:var(--accent)">${stepDetails[i].title}</strong><br><span style="color:var(--text-dim)">${stepDetails[i].desc}</span>`;
+}
+
+// GROUP BY demo
+function showGB(id){
+  document.querySelectorAll('.gb-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.gb-panel').forEach(p=>p.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('gb-'+id).classList.add('active');
+}
+
+// Quiz
+let answered=0,correct=0,total=5;
+function answer(btn,qId,isCorrect){const card=document.getElementById(qId);if(card.dataset.answered)return;card.dataset.answered='1';answered++;if(isCorrect){btn.classList.add('correct');correct++;}else btn.classList.add('wrong');card.querySelectorAll('.quiz-option').forEach(o=>o.disabled=true);document.getElementById(qId+'-exp').classList.add('show');if(answered===total){document.getElementById('score-box').style.display='block';document.getElementById('score-text').textContent=correct+' / '+total;}}
+const sections=document.querySelectorAll('.section');const navLinks=document.querySelectorAll('.nav a');
+window.addEventListener('scroll',()=>{let c='';sections.forEach(s=>{if(window.scrollY>=s.offsetTop-120)c=s.id});navLinks.forEach(a=>{a.classList.remove('active');if(a.getAttribute('href')==='#'+c)a.classList.add('active')})});
+</script>
+</body>
+</html>

@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cloudflare Edge Rate Limiting — Interactive Study Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a06;--surface:#16160e;--surface2:#20201a;--border:#38382a;--text:#e8e8d8;--text-dim:#9a9a78;--accent:#f59e0b;--accent2:#d97706;--green:#4ade80;--red:#f87171;--orange:#fb923c;--yellow:#fbbf24;--blue:#60a5fa;--purple:#c084fc;--teal:#2dd4bf;--code-bg:#12120a;--glow:rgba(245,158,11,.12)}
+*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;min-height:100vh}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 20% 5%,rgba(245,158,11,.04)0%,transparent 55%),radial-gradient(ellipse at 80% 95%,rgba(217,119,6,.03)0%,transparent 55%);pointer-events:none;z-index:0}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.container{max-width:920px;margin:0 auto;padding:2rem 1.5rem 4rem;position:relative;z-index:1}
+.hero{text-align:center;padding:3rem 0 2.5rem}.hero-badge{display:inline-block;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-weight:700;font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;padding:.35rem 1rem;border-radius:99px;margin-bottom:1.2rem}
+.hero h1{font-size:2rem;font-weight:800;background:linear-gradient(135deg,#fff 30%,var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1.15;margin-bottom:.5rem}.hero p{color:var(--text-dim);font-size:1rem}
+.nav{display:flex;flex-wrap:wrap;gap:.4rem;justify-content:center;margin-bottom:2.5rem;position:sticky;top:0;z-index:10;background:rgba(10,10,6,.88);backdrop-filter:blur(12px);padding:.7rem 0;border-bottom:1px solid var(--border)}
+.nav a{color:var(--text-dim);text-decoration:none;font-size:.74rem;font-weight:600;padding:.35rem .75rem;border-radius:8px;transition:all .2s;border:1px solid transparent}.nav a:hover,.nav a.active{color:var(--accent);background:rgba(245,158,11,.08);border-color:rgba(245,158,11,.2)}
+.section{margin-bottom:2.5rem;animation:fadeUp .5s ease both}.section-header{display:flex;align-items:center;gap:.75rem;margin-bottom:1rem;padding-bottom:.7rem;border-bottom:1px solid var(--border)}
+.section-num{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.8rem;color:#fff;flex-shrink:0}.section-header h2{font-size:1.25rem;font-weight:700}
+.callout{background:linear-gradient(135deg,rgba(245,158,11,.07),rgba(217,119,6,.04));border-left:3px solid var(--accent);border-radius:0 10px 10px 0;padding:.9rem 1.1rem;margin:.8rem 0;font-size:.88rem}
+.callout.green{border-left-color:var(--green);background:linear-gradient(135deg,rgba(74,222,128,.07),rgba(74,222,128,.03))}.callout.blue{border-left-color:var(--blue);background:linear-gradient(135deg,rgba(56,189,248,.07),rgba(56,189,248,.03))}.callout.red{border-left-color:var(--red);background:linear-gradient(135deg,rgba(248,113,113,.07),rgba(248,113,113,.03))}
+.table-wrap{overflow-x:auto;margin:.7rem 0;border-radius:10px;border:1px solid var(--border)}table{width:100%;border-collapse:collapse;font-size:.82rem}th{background:var(--surface2);color:var(--accent);font-weight:600;text-align:left;padding:.6rem .8rem;white-space:nowrap}td{padding:.5rem .8rem;border-top:1px solid var(--border)}tr:hover td{background:rgba(245,158,11,.03)}
+.accordion{margin:.7rem 0}.accordion-btn{width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:'Outfit',sans-serif;font-size:.85rem;font-weight:600;padding:.8rem 1rem;border-radius:10px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;transition:all .2s}.accordion-btn:hover{border-color:var(--accent);background:var(--surface2)}.accordion-btn .arrow{transition:transform .3s;font-size:.75rem;color:var(--accent)}.accordion-btn.open .arrow{transform:rotate(180deg)}.accordion-body{max-height:0;overflow:hidden;transition:max-height .4s ease;background:var(--surface);border:1px solid var(--border);border-top:none;border-radius:0 0 10px 10px;padding:0 1rem}.accordion-body.open{max-height:5000px;padding:1rem}
+
+/* Edge flow diagram */
+.edge-flow{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.3rem;margin:1rem 0;text-align:center}
+.ef-row{display:flex;align-items:center;justify-content:center;gap:.5rem;margin:.5rem 0;flex-wrap:wrap}
+.ef-node{padding:.5rem 1rem;border-radius:10px;font-size:.78rem;font-weight:600;border:1px solid var(--border);background:var(--surface2);transition:all .4s;min-width:100px;text-align:center}
+.ef-node.user{border-color:var(--blue);color:var(--blue);background:rgba(96,165,250,.08)}
+.ef-node.edge{border-color:var(--accent);color:var(--accent);background:rgba(245,158,11,.08)}
+.ef-node.origin{border-color:var(--purple);color:var(--purple);background:rgba(192,132,252,.08)}
+.ef-node.active{animation:pulse 1s ease infinite;box-shadow:0 0 12px var(--glow)}
+.ef-arrow{color:var(--text-dim);font-size:1rem}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(245,158,11,.2)}50%{box-shadow:0 0 0 6px rgba(245,158,11,0)}}
+
+/* Request flow sim */
+.req-sim{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.3rem;margin:1rem 0}
+.req-controls{display:flex;gap:.3rem;flex-wrap:wrap;margin-bottom:.8rem}
+.req-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);font-family:'Outfit',sans-serif;font-size:.74rem;font-weight:600;padding:.45rem .9rem;border-radius:8px;cursor:pointer;transition:all .2s}
+.req-btn:hover{color:var(--text);border-color:var(--accent)}.req-btn.active{background:rgba(245,158,11,.12);border-color:var(--accent);color:var(--accent)}
+.req-log{background:var(--code-bg);border:1px solid var(--border);border-radius:10px;padding:.8rem;font-family:'JetBrains Mono',monospace;font-size:.7rem;line-height:1.8;max-height:240px;overflow-y:auto}
+.req-log .ok{color:var(--green)}.req-log .bad{color:var(--red)}.req-log .warn{color:var(--orange)}.req-log .dim{color:var(--text-dim)}.req-log .hl{color:var(--accent)}.req-log .blue{color:var(--blue)}
+
+/* Quiz */
+.quiz-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.3rem;margin-bottom:.8rem}.quiz-card h3{font-size:.9rem;margin-bottom:.8rem;color:var(--accent)}
+.quiz-option{display:block;width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'Outfit',sans-serif;font-size:.8rem;padding:.6rem .9rem;border-radius:8px;cursor:pointer;margin-bottom:.35rem;text-align:left;transition:all .2s}.quiz-option:hover{border-color:var(--accent);transform:translateX(4px)}.quiz-option.correct{background:rgba(74,222,128,.15);border-color:var(--green);color:var(--green)}.quiz-option.wrong{background:rgba(248,113,113,.1);border-color:var(--red);color:var(--red)}.quiz-option:disabled{cursor:default;transform:none}
+.quiz-explanation{margin-top:.6rem;padding:.7rem;border-radius:8px;background:rgba(245,158,11,.06);font-size:.8rem;display:none;line-height:1.6}.quiz-explanation.show{display:block}
+.quiz-score{text-align:center;padding:1.3rem;background:var(--surface);border:1px solid var(--accent);border-radius:14px;margin-top:.8rem}.quiz-score .big{font-size:2rem;font-weight:800;color:var(--accent)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:640px){.hero h1{font-size:1.4rem}.container{padding:1rem}.ef-row{flex-direction:column}.ef-arrow{transform:rotate(90deg)}}
+</style>
+</head>
+<body>
+<div class="container">
+<div class="hero"><div class="hero-badge">System Design Study Guide</div><h1>Cloudflare Edge Rate Limiting</h1><p>Scalable distributed counting at the network edge</p></div>
+<nav class="nav"><a href="#s1">Problem</a><a href="#s2">Edge Concept</a><a href="#s3">Solutions</a><a href="#s4">Request Flow Sim</a><a href="#s5">Quiz</a></nav>
+
+<!-- S1 -->
+<div class="section" id="s1"><div class="section-header"><div class="section-num">1</div><h2>Core Problem</h2></div>
+<p style="margin-bottom:.6rem">Cloudflare needed a rate limiter that could scale to <strong>millions of domains</strong>, handle <strong>billions of requests/day</strong>, operate at the <strong>edge</strong> of their global network, and be fast and resilient under DDoS attacks.</p>
+<div class="callout red"><strong>Key Challenges:</strong> Traffic is distributed across many servers and data centers (PoPs). Centralized counting is too slow due to network latency. Central services are harder to keep online during attacks.</div>
+<div class="callout green"><strong>Results:</strong> Billions of requests/day handled. Mitigated attacks with 400K req/sec to a single domain. Achieved 0.003% error rate across 400 million requests.</div></div>
+
+<!-- S2: Edge Concept -->
+<div class="section" id="s2"><div class="section-header"><div class="section-num">2</div><h2>What is "The Edge of the Network"?</h2></div>
+<p style="margin-bottom:.6rem">Geographically distributed servers <strong>closest to end users</strong> — part of a CDN or edge computing infrastructure. Instead of sending every request to a central data center, handle it as close to the user as possible.</p>
+
+<div class="edge-flow">
+<p style="font-weight:600;color:var(--accent);margin-bottom:.6rem;font-size:.85rem">Request Flow: Italy → Edge → Origin (if needed)</p>
+<div class="ef-row">
+<div class="ef-node user" id="ef-user">🇮🇹 User in Italy</div>
+<div class="ef-arrow">→</div>
+<div class="ef-node edge" id="ef-edge">🌍 Edge Server (Europe)</div>
+<div class="ef-arrow" id="ef-arrow2">→</div>
+<div class="ef-node origin" id="ef-origin">🏢 Origin (US)</div>
+</div>
+<p style="font-size:.75rem;color:var(--text-dim);margin-top:.5rem">Edge server handles rate limiting, caching, TLS, security — only contacts origin if needed</p>
+</div>
+
+<div class="table-wrap"><table>
+<tr><th>Benefit</th><th>Explanation</th></tr>
+<tr><td style="color:var(--green)">⚡ Low latency</td><td>Requests processed closer to users</td></tr>
+<tr><td style="color:var(--green)">🌍 Scalability</td><td>Load distributed across global edge nodes</td></tr>
+<tr><td style="color:var(--green)">🛡️ Faster protection</td><td>Rate limiting and security rules enforced immediately</td></tr>
+<tr><td style="color:var(--green)">📉 Reduced central load</td><td>Less traffic to core data centers</td></tr></table></div>
+
+<div class="callout">The edge server does NOT just rate-limit. It can also <strong>serve cached content</strong>, terminate TLS connections, run edge logic (Cloudflare Workers), and apply firewall rules. It only contacts the origin if content isn't cached or needs fresh data.</div></div>
+
+<!-- S3: Design Solutions -->
+<div class="section" id="s3"><div class="section-header"><div class="section-num">3</div><h2>Design Solutions</h2></div>
+<div class="accordion"><button class="accordion-btn" onclick="toggleAcc(this)"><span>1. Local Counting in PoPs</span><span class="arrow">▼</span></button><div class="accordion-body"><p style="font-size:.88rem">Each Point of Presence (PoP) maintains its own counters. Reduces latency and improves fault tolerance — no single point of failure.</p></div></div>
+<div class="accordion"><button class="accordion-btn" onclick="toggleAcc(this)"><span>2. Memcached-Based Sharded Counters</span><span class="arrow">▼</span></button><div class="accordion-body"><p style="font-size:.88rem">Twemproxy clusters shard counters across servers. Consistent hashing ensures minimal disruption when resizing. Only two numbers per counter needed — minimal memory footprint.</p></div></div>
+<div class="accordion"><button class="accordion-btn" onclick="toggleAcc(this)"><span>3. Rate Limiting Algorithms</span><span class="arrow">▼</span></button><div class="accordion-body">
+<div class="table-wrap"><table>
+<tr><th>Algorithm</th><th>How It Works</th><th>Trade-off</th></tr>
+<tr><td><strong>Fixed Window</strong></td><td>Count requests in fixed time windows</td><td>Simple but allows spikes at boundaries</td></tr>
+<tr><td><strong>Sliding Window</strong></td><td>Weighted average of previous + current window</td><td>Smooth, accurate, low overhead</td></tr>
+<tr><td><strong>Leaky Bucket</strong></td><td>Processes requests at constant rate</td><td>Accurate but harder with Memcached</td></tr></table></div></div></div>
+<div class="accordion"><button class="accordion-btn" onclick="toggleAcc(this)"><span>4. Asynchronous Mitigation</span><span class="arrow">▼</span></button><div class="accordion-body"><p style="font-size:.88rem">Counting done asynchronously to avoid slowing legitimate requests. Once threshold exceeded, mitigation triggered and <strong>cached locally</strong>. Servers don't re-check the counter for every request — just enforce the cached mitigation.</p></div></div></div>
+
+<!-- S4: Request Flow Simulator -->
+<div class="section" id="s4"><div class="section-header"><div class="section-num">4</div><h2>Request Flow Simulator</h2></div>
+<div class="req-sim">
+<div class="req-controls">
+<button class="req-btn" onclick="runReq('cached')">Cached Content (Fast Path)</button>
+<button class="req-btn" onclick="runReq('origin')">Origin Fetch (Slow Path)</button>
+<button class="req-btn" onclick="runReq('ratelimit')">Rate Limited (Attack!)</button>
+</div>
+<div class="req-log" id="req-log"><span class="dim">Click a scenario...</span></div>
+</div></div>
+
+<!-- S5: Quiz -->
+<div class="section" id="s5"><div class="section-header"><div class="section-num">5</div><h2>Test Yourself</h2></div>
+<div class="quiz-card" id="q1"><h3>Q1: Why does Cloudflare count at the edge instead of centrally?</h3>
+<button class="quiz-option" onclick="answer(this,'q1',true)">Centralized counting is too slow due to network latency and harder to keep online during attacks</button>
+<button class="quiz-option" onclick="answer(this,'q1',false)">Central servers are more expensive</button>
+<div class="quiz-explanation" id="q1-exp">Centralized counting adds network round-trip latency to every request and creates a single point of failure. During DDoS attacks, a central service is harder to keep online. Edge counting is local, fast, and fault-tolerant.</div></div>
+
+<div class="quiz-card" id="q2"><h3>Q2: Does the edge server only do rate limiting?</h3>
+<button class="quiz-option" onclick="answer(this,'q2',false)">Yes — it just checks rates and forwards to origin</button>
+<button class="quiz-option" onclick="answer(this,'q2',true)">No — it also serves cached content, terminates TLS, runs edge logic, and applies firewall rules</button>
+<div class="quiz-explanation" id="q2-exp">Edge servers are multi-purpose: caching, TLS termination, rate limiting, bot detection, firewall rules, and even running custom code (Workers). They only contact the origin when necessary.</div></div>
+
+<div class="quiz-card" id="q3"><h3>Q3: Why does the sliding window algorithm work better than fixed window for rate limiting?</h3>
+<button class="quiz-option" onclick="answer(this,'q3',true)">It smooths traffic using weighted averages of previous + current window, preventing boundary spikes</button>
+<button class="quiz-option" onclick="answer(this,'q3',false)">It uses more memory for better accuracy</button>
+<div class="quiz-explanation" id="q3-exp">Fixed windows allow burst spikes at boundaries (e.g., 100 requests at end of window 1 + 100 at start of window 2 = 200 in a short period). Sliding window approximation weights the previous window's count to smooth this, with only two counters needed — minimal overhead.</div></div>
+
+<div class="quiz-score" id="score-box" style="display:none"><div class="big" id="score-text"></div><p style="color:var(--text-dim);margin-top:.3rem">Edge Rate Limiting Quiz</p></div></div>
+</div>
+
+<script>
+function toggleAcc(btn){btn.classList.toggle('open');btn.nextElementSibling.classList.toggle('open')}
+
+let reqTimer=null;
+function runReq(mode){
+  clearInterval(reqTimer);const log=document.getElementById('req-log');log.innerHTML='';
+  document.querySelectorAll('.req-btn').forEach(b=>b.classList.remove('active'));event.target.classList.add('active');
+  const lines=[];
+  if(mode==='cached'){
+    lines.push({c:'blue',t:'🇮🇹 User in Italy sends GET /images/logo.png'});
+    lines.push({c:'dim',t:''});
+    lines.push({c:'hl',t:'→ Request hits Cloudflare Edge Server (Frankfurt)'});
+    lines.push({c:'ok',t:'→ Rate limit check: 5/100 requests this window ✅ allowed'});
+    lines.push({c:'ok',t:'→ Cache lookup: HIT! Content cached locally'});
+    lines.push({c:'ok',t:'→ Response served from edge — 15ms latency ✅'});
+    lines.push({c:'dim',t:''});
+    lines.push({c:'ok',t:'✅ Origin server never contacted — edge handled everything'});
+  } else if(mode==='origin'){
+    lines.push({c:'blue',t:'🇮🇹 User in Italy sends GET /api/user/profile'});
+    lines.push({c:'dim',t:''});
+    lines.push({c:'hl',t:'→ Request hits Cloudflare Edge Server (Frankfurt)'});
+    lines.push({c:'ok',t:'→ Rate limit check: 12/100 requests this window ✅ allowed'});
+    lines.push({c:'warn',t:'→ Cache lookup: MISS — dynamic content, not cached'});
+    lines.push({c:'hl',t:'→ Edge proxies request to Origin (US East)'});
+    lines.push({c:'dim',t:'→ ...120ms network round trip...'});
+    lines.push({c:'ok',t:'→ Origin responds → Edge caches for 60s → sends to user'});
+    lines.push({c:'warn',t:'→ Total latency: ~150ms (still faster than user → US directly)'});
+  } else {
+    lines.push({c:'bad',t:'🤖 Attacker sends 400,000 req/sec to example.com'});
+    lines.push({c:'dim',t:''});
+    lines.push({c:'hl',t:'→ Requests distributed across multiple PoPs'});
+    lines.push({c:'hl',t:'→ Frankfurt PoP: local counter = 85,000 req/min'});
+    lines.push({c:'warn',t:'→ Threshold exceeded! Sliding window confirms: OVER LIMIT'});
+    lines.push({c:'bad',t:'→ Mitigation triggered — cached locally at edge'});
+    lines.push({c:'bad',t:'→ All subsequent requests from attacker: 429 Too Many Requests'});
+    lines.push({c:'ok',t:'→ Counter NOT checked per-request anymore — mitigation is cached'});
+    lines.push({c:'dim',t:''});
+    lines.push({c:'ok',t:'✅ Legitimate traffic unaffected — async mitigation kept things fast'});
+    lines.push({c:'ok',t:'✅ Origin never saw the attack traffic'});
+  }
+  let i=0;reqTimer=setInterval(()=>{if(i>=lines.length){clearInterval(reqTimer);return}const l=lines[i];log.innerHTML+=`<span class="${l.c}">${l.t}</span>\n`;log.scrollTop=log.scrollHeight;i++},300);
+}
+
+let answered=0,correct=0,total=3;
+function answer(btn,qId,isCorrect){const card=document.getElementById(qId);if(card.dataset.answered)return;card.dataset.answered='1';answered++;if(isCorrect){btn.classList.add('correct');correct++;}else btn.classList.add('wrong');card.querySelectorAll('.quiz-option').forEach(o=>o.disabled=true);document.getElementById(qId+'-exp').classList.add('show');if(answered===total){document.getElementById('score-box').style.display='block';document.getElementById('score-text').textContent=correct+' / '+total;}}
+const sections=document.querySelectorAll('.section');const navLinks=document.querySelectorAll('.nav a');
+window.addEventListener('scroll',()=>{let c='';sections.forEach(s=>{if(window.scrollY>=s.offsetTop-120)c=s.id});navLinks.forEach(a=>{a.classList.remove('active');if(a.getAttribute('href')==='#'+c)a.classList.add('active')})});
+</script>
+</body>
+</html>

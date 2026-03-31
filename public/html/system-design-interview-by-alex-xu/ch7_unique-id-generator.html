@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ch7: Design a Unique ID Generator — System Design Study Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=DM+Sans:ital,wght@0,400;0,500;0,700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#060810;--bg-card:#0d0f18;--bg-code:#090b12;--bg-el:#151828;--border:#191d30;--border-gl:#242840;--text:#c2c8d8;--text-dim:#5c6486;--text-br:#e4eaf4;--c1:#8b5cf6;--c2:#06b6d4;--c3:#f59e0b;--c4:#10b981;--c5:#3b82f6;--c6:#ef4444;--c7:#ec4899;--r:12px}
+*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.72;overflow-x:hidden}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border-gl);border-radius:3px}
+.hero{position:relative;min-height:46vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:80px 24px 50px;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 500px 350px at 30% 40%,rgba(139,92,246,.1),transparent),radial-gradient(ellipse 450px 300px at 70% 55%,rgba(6,182,212,.07),transparent)}
+.hero-badge{position:relative;display:inline-flex;align-items:center;gap:8px;padding:6px 18px;border:1px solid var(--c1);border-radius:100px;font-size:.8rem;color:var(--c1);letter-spacing:.08em;text-transform:uppercase;margin-bottom:20px}
+.hero h1{position:relative;font-family:'Playfair Display',serif;font-size:clamp(2.2rem,5.5vw,3.6rem);font-weight:900;line-height:1.15;color:var(--text-br);max-width:700px}
+.hero h1 span{background:linear-gradient(135deg,var(--c1),var(--c2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{position:relative;max-width:600px;margin-top:16px;color:var(--text-dim);font-size:1rem}
+.nav-pills{position:relative;display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:28px;max-width:700px}
+.nav-pills a{display:inline-block;padding:6px 14px;border:1px solid var(--border-gl);border-radius:100px;color:var(--text-dim);text-decoration:none;font-size:.82rem;transition:all .25s}
+.nav-pills a:hover{border-color:var(--c1);color:var(--c1);background:rgba(139,92,246,.06)}
+.sec{max-width:1000px;margin:0 auto 70px;padding:0 24px;scroll-margin-top:32px}
+.sec-h{display:flex;align-items:center;gap:16px;margin-bottom:8px}
+.sec-n{display:flex;align-items:center;justify-content:center;width:46px;height:46px;border-radius:14px;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:1rem;flex-shrink:0;background:color-mix(in srgb,var(--pat) 16%,transparent);color:var(--pat);border:1px solid color-mix(in srgb,var(--pat) 28%,transparent)}
+.sec-h h2{font-family:'Playfair Display',serif;font-size:1.65rem;font-weight:700;color:var(--text-br)}
+.sec-sub{color:var(--text-dim);font-style:italic;margin-bottom:24px;padding-left:62px;font-size:.93rem}
+.s1{--pat:var(--c6)}.s2{--pat:var(--c5)}.s3{--pat:var(--c3)}.s4{--pat:var(--c1)}
+.card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r);padding:22px;margin-bottom:18px}
+.card h3{font-size:.95rem;color:var(--text-br);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card h3::before{content:'';display:inline-block;width:3px;height:16px;border-radius:2px;background:var(--pat,var(--c1))}
+.dw{background:var(--bg-code);border:1px solid var(--border);border-radius:var(--r);padding:24px;margin-bottom:18px;overflow-x:auto}
+.dw svg{display:block;margin:0 auto;max-width:100%;height:auto}
+.tw{overflow-x:auto;margin-bottom:18px}table{width:100%;border-collapse:collapse;font-size:.84rem}
+thead th{background:var(--bg-el);color:var(--text-br);padding:11px 14px;text-align:left;font-weight:600;border-bottom:2px solid var(--border-gl);white-space:nowrap}
+tbody td{padding:9px 14px;border-bottom:1px solid var(--border);vertical-align:top}tbody tr:hover{background:rgba(139,92,246,.03)}
+.tip{display:flex;gap:12px;padding:14px 16px;border-radius:var(--r);margin-bottom:18px;font-size:.87rem}
+.tip-i{background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.16)}.tip-i .ic{color:var(--c6)}
+.tip-n{background:rgba(6,182,212,.06);border:1px solid rgba(6,182,212,.16)}.tip-n .ic{color:var(--c2)}
+.tip-w{background:rgba(139,92,246,.06);border:1px solid rgba(139,92,246,.16)}.tip-w .ic{color:var(--c1)}
+.tip-g{background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.16)}.tip-g .ic{color:var(--c4)}
+.tip .ic{font-size:1.2rem;flex-shrink:0}
+.ct{display:flex;align-items:center;justify-content:space-between;width:100%;padding:14px 18px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r);cursor:pointer;color:var(--text-br);font-size:.93rem;font-weight:600;margin-bottom:4px;transition:all .25s}
+.ct:hover{border-color:var(--pat,var(--c1))}.ct .ch{transition:transform .3s;color:var(--text-dim)}.ct.open .ch{transform:rotate(180deg)}
+.cb{max-height:0;overflow:hidden;transition:max-height .4s ease}.cb.open{max-height:8000px}.cb>.inner{padding:14px 0}
+.tmpl{background:var(--bg-code);border:1px solid var(--c1);border-radius:var(--r);padding:20px;margin-bottom:18px;font-size:.88rem;line-height:1.8;color:var(--text);font-style:italic;border-left:4px solid var(--c1)}
+.bt{position:fixed;bottom:24px;right:24px;width:44px;height:44px;border-radius:50%;background:var(--c1);color:#fff;border:none;cursor:pointer;font-size:1.2rem;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s,transform .3s;box-shadow:0 4px 16px rgba(139,92,246,.35);z-index:100;font-weight:700}
+.bt.show{opacity:1;pointer-events:auto}.bt:hover{transform:scale(1.1)}
+footer{text-align:center;padding:36px 24px;color:var(--text-dim);font-size:.8rem;border-top:1px solid var(--border);margin-top:40px}
+.sum{max-width:1000px;margin:0 auto 60px;padding:0 24px}.sum h2{font-family:'Playfair Display',serif;font-size:1.65rem;color:var(--text-br);margin-bottom:20px;text-align:center}
+@media(max-width:768px){.sec-sub{padding-left:0}}
+</style>
+</head>
+<body>
+
+<section class="hero">
+  <div class="hero-badge">System Design — Alex Xu</div>
+  <h1>Design a <span>Unique ID Generator</span></h1>
+  <p>Chapter 7 — Why auto-increment fails, four approaches, and the Snowflake ID deep dive</p>
+  <div class="nav-pills">
+    <a href="#problem">The Problem</a><a href="#requirements">Requirements</a><a href="#approaches">4 Approaches</a><a href="#snowflake">⭐ Snowflake ID</a><a href="#ref">Quick Ref</a>
+  </div>
+</section>
+
+<!-- ═══════ 1. WHY AUTO-INCREMENT FAILS ═══════ -->
+<section id="problem" class="sec s1">
+  <div class="sec-h"><div class="sec-n">1</div><h2>Why Auto-Increment Fails</h2></div>
+  <div class="sec-sub">In a single database, auto-increment works. In distributed systems, it causes immediate collisions.</div>
+
+  <div class="dw">
+    <svg viewBox="0 0 780 220" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+      <defs><marker id="a1" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#ef4444"/></marker></defs>
+      <!-- Servers -->
+      <rect x="40" y="30" width="160" height="55" rx="10" fill="rgba(59,130,246,.08)" stroke="#3b82f6" stroke-width="1.2"/>
+      <text x="120" y="54" text-anchor="middle" fill="#3b82f6" font-weight="600" font-size="12">Server 1</text>
+      <text x="120" y="72" text-anchor="middle" fill="#8890a8" font-size="11" font-family="JetBrains Mono,monospace">counter → ID: 1</text>
+      <rect x="40" y="100" width="160" height="55" rx="10" fill="rgba(168,85,247,.08)" stroke="#a855f7" stroke-width="1.2"/>
+      <text x="120" y="124" text-anchor="middle" fill="#a855f7" font-weight="600" font-size="12">Server 2</text>
+      <text x="120" y="142" text-anchor="middle" fill="#8890a8" font-size="11" font-family="JetBrains Mono,monospace">counter → ID: 1</text>
+      <rect x="40" y="170" width="160" height="55" rx="10" fill="rgba(6,182,212,.08)" stroke="#06b6d4" stroke-width="1.2"/>
+      <text x="120" y="194" text-anchor="middle" fill="#06b6d4" font-weight="600" font-size="12">Server 3</text>
+      <text x="120" y="212" text-anchor="middle" fill="#8890a8" font-size="11" font-family="JetBrains Mono,monospace">counter → ID: 1</text>
+      <!-- Collision zone -->
+      <path d="M200,57 L320,127" fill="none" stroke="#ef4444" stroke-width="1.5" marker-end="url(#a1)"/>
+      <path d="M200,127 L320,127" fill="none" stroke="#ef4444" stroke-width="1.5" marker-end="url(#a1)"/>
+      <path d="M200,197 L320,127" fill="none" stroke="#ef4444" stroke-width="1.5" marker-end="url(#a1)"/>
+      <rect x="320" y="100" width="160" height="55" rx="10" fill="rgba(239,68,68,.12)" stroke="#ef4444" stroke-width="2"/>
+      <text x="400" y="122" text-anchor="middle" fill="#ef4444" font-weight="900" font-size="16">💥 COLLISION</text>
+      <text x="400" y="142" text-anchor="middle" fill="#ef4444" font-size="11">All three IDs = 1</text>
+      <!-- Explanation -->
+      <rect x="520" y="60" width="240" height="110" rx="10" fill="rgba(239,68,68,.05)" stroke="rgba(239,68,68,.15)" stroke-width="1"/>
+      <text x="640" y="85" text-anchor="middle" fill="#ef4444" font-weight="600" font-size="11">The Core Problem</text>
+      <text x="640" y="108" text-anchor="middle" fill="#8890a8" font-size="10">Auto-increment uses a</text>
+      <text x="640" y="124" text-anchor="middle" fill="#8890a8" font-size="10">single counter. In distributed</text>
+      <text x="640" y="140" text-anchor="middle" fill="#8890a8" font-size="10">systems there is no single</text>
+      <text x="640" y="156" text-anchor="middle" fill="#ef4444" font-size="10" font-weight="600">counter — each node increments</text>
+      <text x="640" y="168" text-anchor="middle" fill="#ef4444" font-size="10" font-weight="600">independently.</text>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════ 2. REQUIREMENTS ═══════ -->
+<section id="requirements" class="sec s2">
+  <div class="sec-h"><div class="sec-n">2</div><h2>Requirements for a Good Distributed ID</h2></div>
+  <div class="card"><h3>Five Requirements</h3><div class="tw"><table>
+    <thead><tr><th>Requirement</th><th>Why It Matters</th></tr></thead>
+    <tbody>
+      <tr><td><strong style="color:var(--c4)">Unique</strong></td><td>No two IDs are ever the same. Ever.</td></tr>
+      <tr><td><strong style="color:var(--c5)">Sortable by time</strong></td><td>Newer IDs must be larger than older ones — enables efficient range queries</td></tr>
+      <tr><td><strong style="color:var(--c2)">Numeric only (64-bit)</strong></td><td>Faster to index and store than strings</td></tr>
+      <tr><td><strong style="color:var(--c3)">High performance</strong></td><td>Must generate 10,000+ IDs per second</td></tr>
+      <tr><td><strong style="color:var(--c1)">High availability</strong></td><td>ID generation can never be a single point of failure</td></tr>
+    </tbody>
+  </table></div></div>
+</section>
+
+<!-- ═══════ 3. FOUR APPROACHES ═══════ -->
+<section id="approaches" class="sec s3">
+  <div class="sec-h"><div class="sec-n">3</div><h2>Four Approaches</h2></div>
+
+  <!-- Multi-Master -->
+  <div class="card"><h3>Approach 1 — Multi-Master Replication</h3>
+    <p style="margin-bottom:12px">Each server gets a different starting point and step size equal to the number of servers.</p>
+    <div class="dw">
+      <svg viewBox="0 0 700 130" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+        <rect x="30" y="20" width="180" height="40" rx="8" fill="rgba(59,130,246,.08)" stroke="#3b82f6" stroke-width="1"/>
+        <text x="120" y="44" text-anchor="middle" fill="#3b82f6" font-size="11" font-weight="600">Server 1</text>
+        <text x="240" y="44" fill="#8890a8" font-size="11" font-family="JetBrains Mono,monospace">→ 1, 4, 7, 10...  (step=3)</text>
+        <rect x="30" y="68" width="180" height="40" rx="8" fill="rgba(168,85,247,.08)" stroke="#a855f7" stroke-width="1"/>
+        <text x="120" y="92" text-anchor="middle" fill="#a855f7" font-size="11" font-weight="600">Server 2</text>
+        <text x="240" y="92" fill="#8890a8" font-size="11" font-family="JetBrains Mono,monospace">→ 2, 5, 8, 11...  (step=3)</text>
+        <rect x="30" y="116" width="180" height="40" rx="8" fill="rgba(6,182,212,.08)" stroke="#06b6d4" stroke-width="1"/>
+        <text x="120" y="140" text-anchor="middle" fill="#06b6d4" font-size="11" font-weight="600">Server 3</text>
+        <text x="240" y="140" fill="#8890a8" font-size="11" font-family="JetBrains Mono,monospace">→ 3, 6, 9, 12...  (step=3)</text>
+      </svg>
+    </div>
+    <div class="tw"><table><thead><tr><th>Pros</th><th>Cons</th></tr></thead><tbody>
+      <tr><td>No collisions with fixed server count</td><td>Adding/removing servers breaks everything</td></tr>
+      <tr><td>Simple concept</td><td>IDs are not time-sortable</td></tr>
+      <tr><td></td><td>Operational nightmare at scale</td></tr>
+    </tbody></table></div>
+    <div class="tip tip-i"><span class="ic">⚠️</span><span><strong>Critical Flaw:</strong> If you add a 4th server with step=3, it starts at 4 — immediately colliding with Server 1 (1, 4, 7...). You must stop and reconfigure all servers.</span></div>
+  </div>
+
+  <!-- UUID -->
+  <div class="card"><h3>Approach 2 — UUID</h3>
+    <p style="margin-bottom:12px">A 128-bit randomly generated identifier. Example: <code style="color:var(--c3)">550e8400-e29b-41d4-a716-446655440000</code></p>
+    <div class="tw"><table><thead><tr><th>Pros</th><th>Cons</th></tr></thead><tbody>
+      <tr><td>No collisions — probability astronomically low</td><td>Not numeric — it's a string (more storage, slower indexing)</td></tr>
+      <tr><td>No coordination between servers</td><td>Not sortable by time — random order</td></tr>
+      <tr><td>Easy to scale — generate locally</td><td>Fails 2 of our 5 requirements</td></tr>
+    </tbody></table></div>
+  </div>
+
+  <!-- Ticket Server -->
+  <div class="card"><h3>Approach 3 — Ticket Server</h3>
+    <p style="margin-bottom:12px">One dedicated server whose only job is generating IDs. All other servers request IDs from it.</p>
+    <div class="dw">
+      <svg viewBox="0 0 700 130" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+        <defs><marker id="at" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#f59e0b"/></marker><marker id="atb" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#5c6486"/></marker></defs>
+        <rect x="30" y="15" width="130" height="35" rx="8" fill="rgba(59,130,246,.08)" stroke="#3b82f6" stroke-width="1"/>
+        <text x="95" y="37" text-anchor="middle" fill="#3b82f6" font-size="10">Server 1</text>
+        <rect x="30" y="60" width="130" height="35" rx="8" fill="rgba(168,85,247,.08)" stroke="#a855f7" stroke-width="1"/>
+        <text x="95" y="82" text-anchor="middle" fill="#a855f7" font-size="10">Server 2</text>
+        <rect x="30" y="105" width="130" height="35" rx="8" fill="rgba(6,182,212,.08)" stroke="#06b6d4" stroke-width="1"/>
+        <text x="95" y="127" text-anchor="middle" fill="#06b6d4" font-size="10">Server 3</text>
+        <!-- Ticket Server -->
+        <rect x="320" y="40" width="180" height="60" rx="12" fill="rgba(245,158,11,.1)" stroke="#f59e0b" stroke-width="2"/>
+        <text x="410" y="66" text-anchor="middle" fill="#f59e0b" font-weight="700" font-size="13">Ticket Server</text>
+        <text x="410" y="84" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">counter: 1, 2, 3...</text>
+        <!-- Arrows -->
+        <path d="M160,32 L320,60" fill="none" stroke="#5c6486" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#atb)"/>
+        <path d="M160,77 L320,70" fill="none" stroke="#5c6486" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#atb)"/>
+        <path d="M160,122 L320,80" fill="none" stroke="#5c6486" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#atb)"/>
+        <text x="240" y="50" fill="#5c6486" font-size="8">"give me an ID"</text>
+        <!-- SPOF warning -->
+        <rect x="540" y="40" width="140" height="60" rx="10" fill="rgba(239,68,68,.08)" stroke="#ef4444" stroke-width="1.2"/>
+        <text x="610" y="62" text-anchor="middle" fill="#ef4444" font-weight="700" font-size="12">⚠️ SPOF</text>
+        <text x="610" y="78" text-anchor="middle" fill="#ef4444" font-size="9">If it dies,</text>
+        <text x="610" y="92" text-anchor="middle" fill="#ef4444" font-size="9">everything stops</text>
+      </svg>
+    </div>
+    <div class="tw"><table><thead><tr><th>Pros</th><th>Cons</th></tr></thead><tbody>
+      <tr><td>Guaranteed unique and numeric</td><td>Single Point of Failure (SPOF)</td></tr>
+      <tr><td>Simple to implement</td><td>Network bottleneck — every ID crosses the network</td></tr>
+      <tr><td></td><td>Higher latency — cannot generate IDs locally</td></tr>
+    </tbody></table></div>
+  </div>
+
+  <!-- Comparison -->
+  <div class="card"><h3>Comparison of First Three Approaches</h3><div class="tw"><table>
+    <thead><tr><th>Approach</th><th>Unique</th><th>Time-Sortable</th><th>Scalable</th><th>Main Problem</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Multi-Master</strong></td><td style="color:var(--c4)">✅ Yes</td><td style="color:var(--c6)">❌ No</td><td style="color:var(--c6)">❌ No</td><td>Breaks when adding servers</td></tr>
+      <tr><td><strong>UUID</strong></td><td style="color:var(--c4)">✅ Yes</td><td style="color:var(--c6)">❌ No</td><td style="color:var(--c4)">✅ Yes</td><td>String format, not sortable</td></tr>
+      <tr><td><strong>Ticket Server</strong></td><td style="color:var(--c4)">✅ Yes</td><td style="color:var(--c4)">✅ Yes</td><td style="color:var(--c6)">❌ No</td><td>Single point of failure</td></tr>
+    </tbody>
+  </table></div>
+    <div class="tip tip-i"><span class="ic">💡</span><span>None of them satisfy all requirements. This is why <strong>Snowflake ID</strong> was invented.</span></div>
+  </div>
+</section>
+
+<!-- ═══════ 4. SNOWFLAKE ID ═══════ -->
+<section id="snowflake" class="sec s4">
+  <div class="sec-h"><div class="sec-n">⭐</div><h2>Snowflake ID (Twitter)</h2></div>
+  <div class="sec-sub">Invented by Twitter to generate millions of unique IDs per second with zero coordination between servers.</div>
+
+  <div class="tip tip-g"><span class="ic">🧠</span><span><strong>Core Idea:</strong> Instead of generating a random number — encode meaning directly into the bits of the ID itself. Each part of the 64-bit number carries specific information.</span></div>
+
+  <!-- THE 64-BIT STRUCTURE — Main Diagram -->
+  <div class="dw">
+    <svg viewBox="0 0 780 300" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+      <!-- Title -->
+      <text x="390" y="22" text-anchor="middle" fill="var(--text-br)" font-weight="700" font-size="15" font-family="Playfair Display,serif">The 64-Bit Snowflake Structure</text>
+      <!-- Bit ruler -->
+      <rect x="40" y="40" width="700" height="50" rx="8" fill="rgba(139,92,246,.04)" stroke="rgba(139,92,246,.2)" stroke-width="1"/>
+      <!-- Sign bit -->
+      <rect x="40" y="40" width="30" height="50" rx="8 0 0 8" fill="rgba(100,116,139,.12)" stroke="#64748b" stroke-width="1.5"/>
+      <text x="55" y="70" text-anchor="middle" fill="#64748b" font-weight="700" font-size="12">0</text>
+      <!-- Timestamp -->
+      <rect x="70" y="40" width="330" height="50" fill="rgba(59,130,246,.12)" stroke="#3b82f6" stroke-width="1.5"/>
+      <text x="235" y="62" text-anchor="middle" fill="#3b82f6" font-weight="700" font-size="13">Timestamp</text>
+      <text x="235" y="80" text-anchor="middle" fill="#3b82f6" font-size="10">41 bits</text>
+      <!-- Machine ID -->
+      <rect x="400" y="40" width="160" height="50" fill="rgba(16,185,129,.12)" stroke="#10b981" stroke-width="1.5"/>
+      <text x="480" y="62" text-anchor="middle" fill="#10b981" font-weight="700" font-size="13">Machine ID</text>
+      <text x="480" y="80" text-anchor="middle" fill="#10b981" font-size="10">10 bits</text>
+      <!-- Sequence -->
+      <rect x="560" y="40" width="180" height="50" rx="0 8 8 0" fill="rgba(245,158,11,.12)" stroke="#f59e0b" stroke-width="1.5"/>
+      <text x="650" y="62" text-anchor="middle" fill="#f59e0b" font-weight="700" font-size="13">Sequence</text>
+      <text x="650" y="80" text-anchor="middle" fill="#f59e0b" font-size="10">12 bits</text>
+      <!-- Bit labels -->
+      <text x="55" y="106" text-anchor="middle" fill="#64748b" font-size="9" font-family="JetBrains Mono,monospace">bit 63</text>
+      <text x="235" y="106" text-anchor="middle" fill="#3b82f6" font-size="9" font-family="JetBrains Mono,monospace">bits 22–62</text>
+      <text x="480" y="106" text-anchor="middle" fill="#10b981" font-size="9" font-family="JetBrains Mono,monospace">bits 12–21</text>
+      <text x="650" y="106" text-anchor="middle" fill="#f59e0b" font-size="9" font-family="JetBrains Mono,monospace">bits 0–11</text>
+      <!-- Detail cards -->
+      <rect x="40" y="125" width="120" height="70" rx="8" fill="rgba(100,116,139,.06)" stroke="#64748b" stroke-width="1"/>
+      <text x="100" y="145" text-anchor="middle" fill="#64748b" font-weight="600" font-size="10">Sign Bit</text>
+      <text x="100" y="162" text-anchor="middle" fill="#8890a8" font-size="9">Always 0</text>
+      <text x="100" y="178" text-anchor="middle" fill="#8890a8" font-size="9">Keeps ID positive</text>
+      <text x="100" y="190" text-anchor="middle" fill="#64748b" font-size="8">No data stored</text>
+
+      <rect x="175" y="125" width="250" height="70" rx="8" fill="rgba(59,130,246,.06)" stroke="#3b82f6" stroke-width="1"/>
+      <text x="300" y="145" text-anchor="middle" fill="#3b82f6" font-weight="600" font-size="10">Timestamp (41 bits)</text>
+      <text x="300" y="162" text-anchor="middle" fill="#8890a8" font-size="9">ms since custom epoch</text>
+      <text x="300" y="178" text-anchor="middle" fill="#3b82f6" font-size="9" font-weight="600">~69 years of unique timestamps</text>
+      <text x="300" y="190" text-anchor="middle" fill="#8890a8" font-size="8">Most significant → time-sortable!</text>
+
+      <rect x="440" y="125" width="140" height="70" rx="8" fill="rgba(16,185,129,.06)" stroke="#10b981" stroke-width="1"/>
+      <text x="510" y="145" text-anchor="middle" fill="#10b981" font-weight="600" font-size="10">Machine ID (10 bits)</text>
+      <text x="510" y="162" text-anchor="middle" fill="#8890a8" font-size="9">Unique per server</text>
+      <text x="510" y="178" text-anchor="middle" fill="#10b981" font-size="9" font-weight="600">up to 1,024 machines</text>
+
+      <rect x="595" y="125" width="145" height="70" rx="8" fill="rgba(245,158,11,.06)" stroke="#f59e0b" stroke-width="1"/>
+      <text x="668" y="145" text-anchor="middle" fill="#f59e0b" font-weight="600" font-size="10">Sequence (12 bits)</text>
+      <text x="668" y="162" text-anchor="middle" fill="#8890a8" font-size="9">Resets every ms</text>
+      <text x="668" y="178" text-anchor="middle" fill="#f59e0b" font-size="9" font-weight="600">4,096 IDs/ms/machine</text>
+
+      <!-- No-collision example -->
+      <rect x="60" y="215" width="660" height="70" rx="10" fill="rgba(139,92,246,.05)" stroke="rgba(139,92,246,.15)" stroke-width="1"/>
+      <text x="390" y="238" text-anchor="middle" fill="#8b5cf6" font-weight="600" font-size="11">Two Servers, Same Millisecond — No Collision:</text>
+      <text x="390" y="258" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">Server 1 (machine=1) → ts=1000, machine=<tspan fill="#10b981">1</tspan>, seq=0 → Unique ID A</text>
+      <text x="390" y="274" text-anchor="middle" fill="#8890a8" font-size="10" font-family="JetBrains Mono,monospace">Server 2 (machine=2) → ts=1000, machine=<tspan fill="#10b981">2</tspan>, seq=0 → Unique ID B</text>
+    </svg>
+  </div>
+
+  <div class="card"><h3>The 64-Bit Structure</h3><div class="tw"><table>
+    <thead><tr><th>Bits</th><th>Part</th><th>Size</th><th>Details</th></tr></thead>
+    <tbody>
+      <tr><td>Bit 63</td><td><strong>Sign Bit</strong></td><td>1 bit</td><td>Always 0. Keeps ID positive. Never used for data.</td></tr>
+      <tr><td>Bits 22–62</td><td><strong style="color:var(--c5)">Timestamp</strong></td><td>41 bits</td><td>Milliseconds since custom epoch. Provides ~69 years.</td></tr>
+      <tr><td>Bits 12–21</td><td><strong style="color:var(--c4)">Machine ID</strong></td><td>10 bits</td><td>Unique ID per server. Up to 1,024 machines.</td></tr>
+      <tr><td>Bits 0–11</td><td><strong style="color:var(--c3)">Sequence Number</strong></td><td>12 bits</td><td>Resets every ms. 4,096 IDs per ms per machine.</td></tr>
+    </tbody>
+  </table></div></div>
+
+  <button class="ct" onclick="toggleCollapsible(this)">Why the Sign Bit is Always 0 <span class="ch">▼</span></button>
+  <div class="cb"><div class="inner">
+    <div class="card"><p>In binary, the first bit determines if a number is positive (0) or negative (1). If the sign bit were 1, the entire ID becomes a negative number, causing database indexing issues, sorting problems (negatives appear smaller), and unexpected behavior in frameworks. Twitter reserved this bit as always 0, guaranteeing all IDs are positive integers. It adds no data — it's purely a safety measure.</p></div>
+  </div></div>
+
+  <div class="card"><h3>Why Snowflake Is Genius</h3><div class="tw"><table>
+    <thead><tr><th>Requirement</th><th>How Snowflake Satisfies It</th></tr></thead>
+    <tbody>
+      <tr><td><strong style="color:var(--c4)">Unique</strong></td><td>Timestamp + Machine ID + Sequence = impossible to collide</td></tr>
+      <tr><td><strong style="color:var(--c5)">Time-sortable</strong></td><td>Timestamp is the most significant part — newer = larger</td></tr>
+      <tr><td><strong style="color:var(--c2)">Numeric (64-bit)</strong></td><td>Exactly 64 bits, always a positive integer</td></tr>
+      <tr><td><strong style="color:var(--c3)">High performance</strong></td><td>4,096 IDs/ms/machine = 4M+/sec across 1024 machines</td></tr>
+      <tr><td><strong style="color:var(--c1)">High availability</strong></td><td>Each machine generates independently — no SPOF, no network calls</td></tr>
+    </tbody>
+  </table></div></div>
+
+  <div class="card"><h3>What Happens When Sequence Hits 4,096?</h3><div class="tw"><table>
+    <thead><tr><th>Option</th><th>Works?</th><th>Tradeoff</th></tr></thead>
+    <tbody>
+      <tr><td>Use sign bit for negative IDs</td><td style="color:var(--c6)">❌ No</td><td>Breaks sortability and database compatibility</td></tr>
+      <tr><td>Increase sequence bits (steal from Machine ID)</td><td style="color:var(--c4)">✅ Yes</td><td>Fewer supported machines — valid engineering tradeoff</td></tr>
+      <tr><td>Wait for next millisecond (default)</td><td style="color:var(--c4)">✅ Yes</td><td>Tiny invisible delay — no complexity added</td></tr>
+    </tbody>
+  </table></div></div>
+
+  <div class="tip tip-w"><span class="ic">🎯</span><span><strong>Interview Tip:</strong> Mention all three options, then recommend waiting for next millisecond as the default. Add: "If higher throughput is needed, we can re-allocate bits between Machine ID and Sequence Number based on our scale."</span></div>
+</section>
+
+<!-- ═══════ INTERVIEW TEMPLATE ═══════ -->
+<section class="sum">
+  <h2>Interview Answer Template</h2>
+  <div class="tmpl">"For distributed ID generation, I would use the <strong>Snowflake approach</strong>. We encode a <strong>41-bit timestamp</strong>, <strong>10-bit machine ID</strong>, and <strong>12-bit sequence number</strong> into a 64-bit integer. This generates up to <strong>4,096 IDs per millisecond per machine</strong> with zero coordination — no SPOF, no network calls. IDs are <strong>time-sortable</strong> because timestamp is the most significant component. If we exceed 4,096 IDs in one millisecond, we <strong>wait for the next millisecond</strong>."</div>
+</section>
+
+<!-- ═══════ QUICK REFERENCE ═══════ -->
+<section id="ref" class="sum">
+  <h2>Quick Reference</h2>
+  <div class="card" style="--pat:var(--c1)"><div class="tw"><table>
+    <thead><tr><th>Concept</th><th>One-Line Summary</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Auto-increment problem</strong></td><td>Multiple servers increment independently — collisions guaranteed</td></tr>
+      <tr><td><strong>Multi-Master</strong></td><td>Different step sizes. Breaks when server count changes.</td></tr>
+      <tr><td><strong>UUID</strong></td><td>128-bit random string. Not numeric, not sortable.</td></tr>
+      <tr><td><strong>Ticket Server</strong></td><td>Centralized ID server. Simple but SPOF.</td></tr>
+      <tr><td><strong>Snowflake ID</strong></td><td>64-bit: timestamp + machine ID + sequence. No coordination needed.</td></tr>
+      <tr><td><strong>Sign Bit</strong></td><td>Always 0. Safety measure to keep IDs positive.</td></tr>
+      <tr><td><strong>Sequence overflow</strong></td><td>Wait for next millisecond. Or steal bits from Machine ID.</td></tr>
+      <tr><td><strong>Time-sortability</strong></td><td>Timestamp as most significant bits = newer ID is always larger</td></tr>
+    </tbody>
+  </table></div></div>
+</section>
+
+<button class="bt" id="backTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+<footer><p>Chapter 7: Design a Unique ID Generator — System Design Interview (Alex Xu)</p></footer>
+
+<script>
+function toggleCollapsible(btn){btn.classList.toggle('open');btn.nextElementSibling.classList.toggle('open')}
+window.addEventListener('scroll',()=>{document.getElementById('backTop').classList.toggle('show',window.scrollY>400)})
+</script>
+</body>
+</html>

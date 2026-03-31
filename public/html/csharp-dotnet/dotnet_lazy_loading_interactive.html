@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>.NET Lazy Loading — Interactive Study Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0c0a14;--surface:#17132a;--surface2:#211c3a;--border:#2f2952;--text:#e2e8f0;--text-dim:#8a80ab;--accent:#c084fc;--accent2:#f472b6;--green:#34d399;--red:#f87171;--orange:#fb923c;--yellow:#fbbf24;--blue:#60a5fa;--code-bg:#0e0b18;--glow:rgba(192,132,252,.12)}
+*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;min-height:100vh}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 20% 0%,rgba(192,132,252,.06)0%,transparent 60%),radial-gradient(ellipse at 80% 100%,rgba(244,114,182,.04)0%,transparent 60%);pointer-events:none;z-index:0}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.container{max-width:900px;margin:0 auto;padding:2rem 1.5rem 4rem;position:relative;z-index:1}
+.hero{text-align:center;padding:3rem 0 2.5rem}
+.hero-badge{display:inline-block;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-weight:700;font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;padding:.35rem 1rem;border-radius:99px;margin-bottom:1.2rem}
+.hero h1{font-size:2.6rem;font-weight:800;background:linear-gradient(135deg,#fff 30%,var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1.15;margin-bottom:.5rem}
+.hero p{color:var(--text-dim);font-size:1.05rem}
+.nav{display:flex;flex-wrap:wrap;gap:.5rem;justify-content:center;margin-bottom:2.5rem;position:sticky;top:0;z-index:10;background:rgba(12,10,20,.88);backdrop-filter:blur(12px);padding:.75rem 0;border-bottom:1px solid var(--border)}
+.nav a{color:var(--text-dim);text-decoration:none;font-size:.78rem;font-weight:600;padding:.4rem .9rem;border-radius:8px;transition:all .2s;border:1px solid transparent;letter-spacing:.02em}
+.nav a:hover,.nav a.active{color:var(--accent);background:rgba(192,132,252,.08);border-color:rgba(192,132,252,.2)}
+.section{margin-bottom:3rem;animation:fadeUp .5s ease both}
+.section-header{display:flex;align-items:center;gap:.75rem;margin-bottom:1.2rem;padding-bottom:.8rem;border-bottom:1px solid var(--border)}
+.section-num{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.85rem;color:#fff;flex-shrink:0}
+.section-header h2{font-size:1.4rem;font-weight:700}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.5rem;margin-bottom:1rem;transition:border-color .3s}
+.card:hover{border-color:rgba(192,132,252,.25)}
+.callout{background:linear-gradient(135deg,rgba(192,132,252,.07),rgba(244,114,182,.04));border-left:3px solid var(--accent);border-radius:0 10px 10px 0;padding:1rem 1.2rem;margin:1rem 0;font-size:.92rem}
+.callout.warn{border-left-color:var(--orange);background:linear-gradient(135deg,rgba(251,146,60,.07),rgba(251,191,36,.04))}
+.callout.green{border-left-color:var(--green);background:linear-gradient(135deg,rgba(52,211,153,.07),rgba(52,211,153,.03))}
+.callout.red{border-left-color:var(--red);background:linear-gradient(135deg,rgba(248,113,113,.07),rgba(248,113,113,.03))}
+pre{background:var(--code-bg);border:1px solid var(--border);border-radius:10px;padding:1.2rem;overflow-x:auto;margin:.8rem 0;font-family:'JetBrains Mono',monospace;font-size:.8rem;line-height:1.65;position:relative}
+pre .label{position:absolute;top:.5rem;right:.6rem;font-size:.6rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em;font-family:'Outfit',sans-serif;font-weight:600;background:var(--surface);padding:.15rem .5rem;border-radius:4px}
+.kw{color:var(--accent)}.tp{color:var(--blue)}.cm{color:#4a3d6e;font-style:italic}.st{color:var(--green)}.fn{color:var(--yellow)}.nu{color:var(--orange)}.er{color:var(--red)}
+.table-wrap{overflow-x:auto;margin:.8rem 0;border-radius:10px;border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{background:var(--surface2);color:var(--accent);font-weight:600;text-align:left;padding:.7rem 1rem;white-space:nowrap}
+td{padding:.6rem 1rem;border-top:1px solid var(--border)}
+tr:hover td{background:rgba(192,132,252,.03)}
+.accordion{margin:.8rem 0}
+.accordion-btn{width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:'Outfit',sans-serif;font-size:.9rem;font-weight:600;padding:.9rem 1.2rem;border-radius:10px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;transition:all .2s}
+.accordion-btn:hover{border-color:var(--accent);background:var(--surface2)}
+.accordion-btn .arrow{transition:transform .3s;font-size:.8rem;color:var(--accent)}
+.accordion-btn.open .arrow{transform:rotate(180deg)}
+.accordion-body{max-height:0;overflow:hidden;transition:max-height .4s ease;background:var(--surface);border:1px solid var(--border);border-top:none;border-radius:0 0 10px 10px;padding:0 1.2rem}
+.accordion-body.open{max-height:3000px;padding:1.2rem}
+.tabs{display:flex;gap:.4rem;margin-bottom:0;flex-wrap:wrap}
+.tab-btn{background:var(--surface);border:1px solid var(--border);color:var(--text-dim);font-family:'Outfit',sans-serif;font-size:.78rem;font-weight:600;padding:.5rem 1rem;border-radius:8px 8px 0 0;cursor:pointer;transition:all .2s}
+.tab-btn:hover{color:var(--text)}.tab-btn.active{color:var(--accent);background:var(--surface2);border-bottom-color:var(--surface2)}
+.tab-panel{display:none;background:var(--surface2);border:1px solid var(--border);border-radius:0 10px 10px 10px;padding:1.2rem}
+.tab-panel.active{display:block}
+
+/* N+1 simulator */
+.sim{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.5rem;margin:1rem 0}
+.sim-controls{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1rem}
+.sim-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);font-family:'Outfit',sans-serif;font-size:.78rem;font-weight:600;padding:.5rem 1rem;border-radius:8px;cursor:pointer;transition:all .2s}
+.sim-btn:hover{color:var(--text);border-color:var(--accent)}
+.sim-btn.active{background:rgba(192,132,252,.12);border-color:var(--accent);color:var(--accent)}
+.sim-log{background:var(--code-bg);border:1px solid var(--border);border-radius:10px;padding:1rem;font-family:'JetBrains Mono',monospace;font-size:.75rem;line-height:1.8;max-height:280px;overflow-y:auto;min-height:80px}
+.sim-log .q{color:var(--orange)}.sim-log .ok{color:var(--green)}.sim-log .bad{color:var(--red)}.sim-log .info{color:var(--text-dim)}
+.sim-counter{display:flex;gap:1.5rem;margin-top:.8rem;flex-wrap:wrap}
+.sim-stat{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:.6rem 1rem;font-size:.82rem;font-weight:600}
+.sim-stat span{color:var(--accent);font-size:1.3rem;font-weight:800;margin-right:.3rem}
+
+/* Timeline */
+.timeline{position:relative;margin:1.5rem 0;padding-left:24px}
+.timeline::before{content:'';position:absolute;left:8px;top:0;bottom:0;width:2px;background:var(--border)}
+.tl-item{position:relative;margin-bottom:1.2rem;padding-left:1.5rem}
+.tl-item::before{content:'';position:absolute;left:-20px;top:6px;width:12px;height:12px;border-radius:50%;border:2px solid var(--accent);background:var(--bg)}
+.tl-item.active::before{background:var(--accent)}
+.tl-item h4{font-size:.9rem;font-weight:700;margin-bottom:.2rem}
+.tl-item p{font-size:.82rem;color:var(--text-dim)}
+
+/* Quiz */
+.quiz-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.5rem;margin-bottom:1rem}
+.quiz-card h3{font-size:1rem;margin-bottom:1rem;color:var(--accent)}
+.quiz-option{display:block;width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'Outfit',sans-serif;font-size:.85rem;padding:.7rem 1rem;border-radius:8px;cursor:pointer;margin-bottom:.4rem;text-align:left;transition:all .2s}
+.quiz-option:hover{border-color:var(--accent);transform:translateX(4px)}
+.quiz-option.correct{background:rgba(52,211,153,.15);border-color:var(--green);color:var(--green)}
+.quiz-option.wrong{background:rgba(248,113,113,.1);border-color:var(--red);color:var(--red)}
+.quiz-option:disabled{cursor:default;transform:none}
+.quiz-explanation{margin-top:.7rem;padding:.8rem;border-radius:8px;background:rgba(192,132,252,.06);font-size:.85rem;display:none;line-height:1.6}
+.quiz-explanation.show{display:block}
+.quiz-score{text-align:center;padding:1.5rem;background:var(--surface);border:1px solid var(--accent);border-radius:14px;margin-top:1rem}
+.quiz-score .big{font-size:2.2rem;font-weight:800;color:var(--accent)}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:640px){.hero h1{font-size:1.8rem}.container{padding:1rem}}
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="hero">
+  <div class="hero-badge">.NET Interview Study Guide</div>
+  <h1>Lazy Loading</h1>
+  <p>Don't load data until you actually need it</p>
+</div>
+
+<nav class="nav">
+  <a href="#s1">What Is It</a>
+  <a href="#s2">Advantages</a>
+  <a href="#s3">Disadvantages</a>
+  <a href="#s4">N+1 Simulator</a>
+  <a href="#s5">Implementation</a>
+  <a href="#s6">Lazy&lt;T&gt;</a>
+  <a href="#s7">When to Use</a>
+  <a href="#s8">Quiz</a>
+</nav>
+
+<!-- S1 -->
+<div class="section" id="s1">
+  <div class="section-header"><div class="section-num">1</div><h2>What is Lazy Loading?</h2></div>
+  <p style="margin-bottom:.8rem;">Lazy Loading is a design pattern where you <strong>delay loading of an object until the exact moment you need it</strong>. Instead of loading everything upfront, child data loads on demand.</p>
+
+  <div class="callout">
+    <strong>Restaurant analogy:</strong> You don't cook every dish when a customer walks in. You wait until they actually order. That's lazy loading — prepare only what's asked for.
+  </div>
+
+<pre><span class="label">C#</span><span class="tp">Customer</span> o = <span class="kw">new</span> <span class="tp">Customer</span>();        <span class="cm">// Orders NOT loaded yet</span>
+Console.<span class="fn">WriteLine</span>(o.CustomerName);  <span class="cm">// Orders still NOT loaded</span>
+
+<span class="kw">foreach</span> (<span class="tp">Order</span> o1 <span class="kw">in</span> o.Orders)      <span class="cm">// Orders load HERE — on demand</span>
+{
+    Console.<span class="fn">WriteLine</span>(o1.OrderNumber);
+}</pre>
+
+  <div class="timeline">
+    <div class="tl-item active"><h4>Object Created</h4><p>Customer loaded — Orders are <strong>NOT</strong> loaded</p></div>
+    <div class="tl-item"><h4>Access Name</h4><p>CustomerName returned — Orders still NOT loaded</p></div>
+    <div class="tl-item active"><h4>Access Orders</h4><p>NOW the database query fires and Orders load</p></div>
+    <div class="tl-item"><h4>Access Orders Again</h4><p>Returns cached result — no second query</p></div>
+  </div>
+</div>
+
+<!-- S2 -->
+<div class="section" id="s2">
+  <div class="section-header"><div class="section-num">2</div><h2>Advantages</h2></div>
+
+  <div class="accordion">
+    <button class="accordion-btn" onclick="toggleAcc(this)"><span>✅ Faster Application Startup</span><span class="arrow">▼</span></button>
+    <div class="accordion-body">
+      <p style="font-size:.9rem;margin-bottom:.6rem">Only essential data loads at launch. Heavy or optional data waits until needed.</p>
+<pre><span class="label">C#</span><span class="kw">public</span> <span class="fn">Customer</span>()
+{
+    _CustomerName = <span class="st">"Ali"</span>;  <span class="cm">// loads immediately — lightweight</span>
+    _Orders = <span class="kw">new</span> <span class="tp">Lazy</span>&lt;<span class="tp">List</span>&lt;<span class="tp">Order</span>&gt;&gt;(() => <span class="fn">LoadOrders</span>()); <span class="cm">// NOT fired yet</span>
+}</pre>
+      <p style="font-size:.82rem;color:var(--text-dim)">E-commerce app: loads customer profile on login. 500 order records only load when they click "My Orders".</p>
+    </div>
+  </div>
+
+  <div class="accordion">
+    <button class="accordion-btn" onclick="toggleAcc(this)"><span>✅ Less Memory Usage</span><span class="arrow">▼</span></button>
+    <div class="accordion-body"><p style="font-size:.9rem">Objects that are never accessed are never loaded into memory. User opens an article, reads it, and leaves — only that one article was ever in memory, not all articles and all comments.</p></div>
+  </div>
+
+  <div class="accordion">
+    <button class="accordion-btn" onclick="toggleAcc(this)"><span>✅ Unnecessary DB Queries Avoided</span><span class="arrow">▼</span></button>
+    <div class="accordion-body">
+<pre><span class="label">C#</span><span class="cm">// Without Lazy — DB query fires EVERY time</span>
+_Orders = <span class="fn">LoadOrders</span>(); <span class="cm">// always hits DB even if never used</span>
+
+<span class="cm">// With Lazy — query only fires when accessed</span>
+_Orders = <span class="kw">new</span> <span class="tp">Lazy</span>&lt;<span class="tp">List</span>&lt;<span class="tp">Order</span>&gt;&gt;(() => <span class="fn">LoadOrders</span>());</pre>
+      <p style="font-size:.82rem;color:var(--text-dim);margin-top:.5rem">100 Customer objects but only 10 accessed Orders = 90 saved DB calls.</p>
+    </div>
+  </div>
+
+  <div class="accordion">
+    <button class="accordion-btn" onclick="toggleAcc(this)"><span>✅ Better Scalability</span><span class="arrow">▼</span></button>
+    <div class="accordion-body"><p style="font-size:.9rem">Less memory + fewer queries = more concurrent users on the same resources.</p></div>
+  </div>
+</div>
+
+<!-- S3 -->
+<div class="section" id="s3">
+  <div class="section-header"><div class="section-num">3</div><h2>Disadvantages</h2></div>
+
+  <div class="accordion">
+    <button class="accordion-btn" onclick="toggleAcc(this)"><span>❌ Code Becomes More Complex</span><span class="arrow">▼</span></button>
+    <div class="accordion-body">
+<pre><span class="label">C#</span><span class="cm">// Without Lazy — simple</span>
+<span class="kw">public</span> <span class="tp">List</span>&lt;<span class="tp">Order</span>&gt; Orders { <span class="kw">get</span>; <span class="kw">set</span>; }
+
+<span class="cm">// With Lazy — extra null check everywhere</span>
+<span class="kw">public</span> <span class="tp">List</span>&lt;<span class="tp">Order</span>&gt; Orders
+{
+    <span class="kw">get</span>
+    {
+        <span class="kw">if</span> (_Orders == <span class="kw">null</span>)
+            _Orders = <span class="fn">LoadOrders</span>();
+        <span class="kw">return</span> _Orders;
+    }
+}</pre>
+    </div>
+  </div>
+
+  <div class="accordion">
+    <button class="accordion-btn" onclick="toggleAcc(this)"><span>❌ First Access Overhead</span><span class="arrow">▼</span></button>
+    <div class="accordion-body"><p style="font-size:.9rem">First time a lazy property is accessed there's an extra check: "Is this loaded? No? Load it now." Tiny delay — negligible in most cases, matters in performance-critical paths.</p></div>
+  </div>
+
+  <div class="accordion">
+    <button class="accordion-btn" onclick="toggleAcc(this)"><span>❌ N+1 Problem — Most Dangerous!</span><span class="arrow">▼</span></button>
+    <div class="accordion-body">
+<pre><span class="label">C#</span><span class="kw">var</span> customers = db.Customers.<span class="fn">ToList</span>(); <span class="cm">// 1 query — loads 100 customers</span>
+
+<span class="kw">foreach</span> (<span class="kw">var</span> customer <span class="kw">in</span> customers)
+{
+    <span class="cm">// Each access fires a SEPARATE DB query!</span>
+    Console.<span class="fn">WriteLine</span>(customer.Orders.Count);
+}
+
+<span class="cm">// Result: 1 + 100 = 101 total queries 😱</span></pre>
+      <div class="callout red" style="margin-top:.6rem">⚠️ The N+1 problem is one of the most common performance killers in .NET apps. Always watch for lazy loading inside loops.</div>
+    </div>
+  </div>
+
+  <div class="accordion">
+    <button class="accordion-btn" onclick="toggleAcc(this)"><span>❌ Harder to Debug</span><span class="arrow">▼</span></button>
+    <div class="accordion-body"><p style="font-size:.9rem">Data loads at unpredictable times. A NullReferenceException or connection error may appear deep inside a loop, far from where the object was created.</p></div>
+  </div>
+
+  <!-- Summary table -->
+  <div class="table-wrap" style="margin-top:1rem">
+    <table>
+      <tr><th></th><th>Point</th><th>Details</th></tr>
+      <tr><td style="color:var(--green)">✅</td><td>Faster startup</td><td>Only essential data at launch</td></tr>
+      <tr><td style="color:var(--green)">✅</td><td>Less memory</td><td>Unused data never loaded</td></tr>
+      <tr><td style="color:var(--green)">✅</td><td>Fewer DB queries</td><td>Queries only when needed</td></tr>
+      <tr><td style="color:var(--green)">✅</td><td>Better scalability</td><td>More users, same resources</td></tr>
+      <tr><td style="color:var(--red)">❌</td><td>Complex code</td><td>Extra null checks everywhere</td></tr>
+      <tr><td style="color:var(--red)">❌</td><td>First access overhead</td><td>Small delay on first load</td></tr>
+      <tr><td style="color:var(--red)">❌</td><td>N+1 problem</td><td>Loops trigger hidden DB floods</td></tr>
+      <tr><td style="color:var(--red)">❌</td><td>Harder to debug</td><td>Errors far from origin</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- S4: N+1 Simulator -->
+<div class="section" id="s4">
+  <div class="section-header"><div class="section-num">4</div><h2>N+1 Problem — Live Simulator</h2></div>
+  <p style="margin-bottom:1rem;font-size:.92rem">Watch the difference between lazy loading in a loop vs eager loading:</p>
+  <div class="sim">
+    <div class="sim-controls">
+      <button class="sim-btn" onclick="runSim('lazy')">Run with Lazy Loading</button>
+      <button class="sim-btn" onclick="runSim('eager')">Run with Eager Loading</button>
+      <button class="sim-btn" onclick="resetSim()">Reset</button>
+    </div>
+    <div class="sim-log" id="sim-log"><span class="info">Click a button to simulate...</span></div>
+    <div class="sim-counter">
+      <div class="sim-stat"><span id="sim-queries">0</span> DB Queries</div>
+      <div class="sim-stat"><span id="sim-rows">0</span> Rows Transferred</div>
+    </div>
+  </div>
+</div>
+
+<!-- S5: Implementation -->
+<div class="section" id="s5">
+  <div class="section-header"><div class="section-num">5</div><h2>Manual Implementation</h2></div>
+  <p style="margin-bottom:.8rem">Two changes: remove loading from constructor, add null check in getter.</p>
+  <div class="tabs">
+    <button class="tab-btn active" onclick="openTab(event,'tab-eager')">❌ Before (Eager)</button>
+    <button class="tab-btn" onclick="openTab(event,'tab-lazy')">✅ After (Lazy)</button>
+  </div>
+  <div class="tab-panel active" id="tab-eager">
+<pre><span class="label">C#</span><span class="kw">public class</span> <span class="tp">Customer</span>
+{
+    <span class="kw">private</span> <span class="tp">List</span>&lt;<span class="tp">Order</span>&gt; _Orders = <span class="kw">null</span>;
+
+    <span class="kw">public</span> <span class="fn">Customer</span>()
+    {
+        _CustomerName = <span class="st">"Ali"</span>;
+        _Orders = <span class="fn">LoadOrders</span>(); <span class="er">// ❌ Always loads — even if never needed</span>
+    }
+}</pre>
+  </div>
+  <div class="tab-panel" id="tab-lazy">
+<pre><span class="label">C#</span><span class="kw">public class</span> <span class="tp">Customer</span>
+{
+    <span class="kw">private</span> <span class="tp">List</span>&lt;<span class="tp">Order</span>&gt; _Orders = <span class="kw">null</span>;
+
+    <span class="kw">public</span> <span class="fn">Customer</span>()
+    {
+        _CustomerName = <span class="st">"Ali"</span>;
+        <span class="cm">// ✅ Nothing loaded here</span>
+    }
+
+    <span class="kw">public</span> <span class="tp">List</span>&lt;<span class="tp">Order</span>&gt; Orders
+    {
+        <span class="kw">get</span>
+        {
+            <span class="kw">if</span> (_Orders == <span class="kw">null</span>)        <span class="cm">// First access?</span>
+                _Orders = <span class="fn">LoadOrders</span>(); <span class="cm">// Load and cache</span>
+            <span class="kw">return</span> _Orders;            <span class="cm">// Cached every time after</span>
+        }
+    }
+}</pre>
+  </div>
+</div>
+
+<!-- S6: Lazy<T> -->
+<div class="section" id="s6">
+  <div class="section-header"><div class="section-num">6</div><h2>Lazy&lt;T&gt; — Built-in Solution</h2></div>
+  <p style="margin-bottom:.8rem">.NET provides <code style="color:var(--accent)">Lazy&lt;T&gt;</code> which handles the null-check automatically and adds <strong>thread safety for free</strong>.</p>
+
+<pre><span class="label">C#</span><span class="kw">public class</span> <span class="tp">Customer</span>
+{
+    <span class="kw">private</span> <span class="tp">Lazy</span>&lt;<span class="tp">List</span>&lt;<span class="tp">Order</span>&gt;&gt; _Orders = <span class="kw">null</span>;
+    <span class="kw">private</span> <span class="tp">string</span> _CustomerName;
+
+    <span class="kw">public</span> <span class="tp">string</span> CustomerName => _CustomerName;
+
+    <span class="kw">public</span> <span class="tp">List</span>&lt;<span class="tp">Order</span>&gt; Orders => _Orders.Value; <span class="cm">// clean — no null check</span>
+
+    <span class="kw">public</span> <span class="fn">Customer</span>()
+    {
+        _CustomerName = <span class="st">"Ali"</span>;
+        _Orders = <span class="kw">new</span> <span class="tp">Lazy</span>&lt;<span class="tp">List</span>&lt;<span class="tp">Order</span>&gt;&gt;(() => <span class="fn">LoadOrders</span>()); <span class="cm">// attached, not fired</span>
+    }
+}</pre>
+
+  <div class="table-wrap" style="margin-top:1rem">
+    <table>
+      <tr><th></th><th>Manual Pattern</th><th>Lazy&lt;T&gt;</th></tr>
+      <tr><td><strong>Null check</strong></td><td>You write it</td><td>Automatic</td></tr>
+      <tr><td><strong>Code</strong></td><td>More boilerplate</td><td>Much cleaner</td></tr>
+      <tr><td><strong>Thread safe?</strong></td><td style="color:var(--red)">❌ Not by default</td><td style="color:var(--green)">✅ Yes by default</td></tr>
+      <tr><td><strong>First access</strong></td><td>Triggers load</td><td>Triggers via .Value</td></tr>
+      <tr><td><strong>Subsequent</strong></td><td>Returns cached</td><td>Returns cached via .Value</td></tr>
+    </table>
+  </div>
+
+  <div class="callout warn">⚠️ <strong>Lazy&lt;T&gt; is thread safe by default.</strong> If two threads access the property simultaneously, it will NOT load twice. The manual null-check pattern does NOT protect you from this.</div>
+</div>
+
+<!-- S7: When to Use -->
+<div class="section" id="s7">
+  <div class="section-header"><div class="section-num">7</div><h2>Eager vs Lazy — When to Use</h2></div>
+  <div class="table-wrap">
+    <table>
+      <tr><th>Situation</th><th>Use</th></tr>
+      <tr><td>You know you will always need the data</td><td style="color:var(--blue)">Eager Loading</td></tr>
+      <tr><td>Data is small and cheap to load</td><td style="color:var(--blue)">Eager Loading</td></tr>
+      <tr><td>You might not always need the data</td><td style="color:var(--accent)">Lazy Loading</td></tr>
+      <tr><td>Data is expensive (big DB query)</td><td style="color:var(--accent)">Lazy Loading</td></tr>
+      <tr><td>Displaying a list with details (avoid N+1)</td><td style="color:var(--blue)">Eager Loading</td></tr>
+      <tr><td>Loading parent with optional children</td><td style="color:var(--accent)">Lazy Loading</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- S8: Quiz -->
+<div class="section" id="s8">
+  <div class="section-header"><div class="section-num">8</div><h2>Test Yourself</h2></div>
+
+  <div class="quiz-card" id="q1">
+    <h3>Q1: What is the N+1 problem?</h3>
+    <button class="quiz-option" onclick="answer(this,'q1',false)">Loading N objects takes N+1 seconds</button>
+    <button class="quiz-option" onclick="answer(this,'q1',true)">Loading N objects in a loop triggers N extra DB queries (1 + N total)</button>
+    <button class="quiz-option" onclick="answer(this,'q1',false)">Objects can only reference N+1 children</button>
+    <div class="quiz-explanation" id="q1-exp">The N+1 problem: 1 query loads the list, then each of the N items triggers its own lazy-load query = N+1 total. Fix: use eager loading (<code>.Include()</code> in EF) when you know you'll need child data.</div>
+  </div>
+
+  <div class="quiz-card" id="q2">
+    <h3>Q2: What advantage does Lazy&lt;T&gt; have over manual null-check?</h3>
+    <button class="quiz-option" onclick="answer(this,'q2',false)">It's faster at runtime</button>
+    <button class="quiz-option" onclick="answer(this,'q2',false)">It uses less memory</button>
+    <button class="quiz-option" onclick="answer(this,'q2',true)">Thread safety by default + cleaner code</button>
+    <button class="quiz-option" onclick="answer(this,'q2',false)">It prevents the N+1 problem</button>
+    <div class="quiz-explanation" id="q2-exp">Lazy&lt;T&gt; handles the null check automatically AND is thread safe — if two threads hit <code>.Value</code> simultaneously, the factory only runs once. Manual null-check can cause double-loading in multithreaded code.</div>
+  </div>
+
+  <div class="quiz-card" id="q3">
+    <h3>Q3: When should you prefer Eager Loading over Lazy Loading?</h3>
+    <button class="quiz-option" onclick="answer(this,'q3',false)">When data is expensive to load</button>
+    <button class="quiz-option" onclick="answer(this,'q3',false)">When you might not need the data</button>
+    <button class="quiz-option" onclick="answer(this,'q3',true)">When displaying a list where every item needs its child data</button>
+    <button class="quiz-option" onclick="answer(this,'q3',false)">Always — lazy loading is an anti-pattern</button>
+    <div class="quiz-explanation" id="q3-exp">When you know you'll iterate through items AND need their children (e.g. displaying a table of customers with order counts), eager loading avoids the N+1 problem by fetching everything in one query.</div>
+  </div>
+
+  <div class="quiz-card" id="q4">
+    <h3>Q4: What does Lazy Loading delay?</h3>
+    <button class="quiz-option" onclick="answer(this,'q4',false)">The creation of the parent object</button>
+    <button class="quiz-option" onclick="answer(this,'q4',true)">The loading of child/related data until first access</button>
+    <button class="quiz-option" onclick="answer(this,'q4',false)">The garbage collection of unused objects</button>
+    <button class="quiz-option" onclick="answer(this,'q4',false)">The compilation of the application</button>
+    <div class="quiz-explanation" id="q4-exp">Lazy loading delays loading of child/related data. The parent object is created normally — but its related objects (like Orders on a Customer) aren't loaded until someone actually accesses that property.</div>
+  </div>
+
+  <div class="quiz-score" id="score-box" style="display:none">
+    <div class="big" id="score-text"></div>
+    <p style="color:var(--text-dim);margin-top:.3rem">Lazy Loading Quiz</p>
+  </div>
+</div>
+
+<!-- Interview Answers -->
+<div class="section" id="s9">
+  <div class="section-header"><div class="section-num">★</div><h2>Interview Answer Bank</h2></div>
+  <div class="accordion"><button class="accordion-btn" onclick="toggleAcc(this)"><span>Q: What is Lazy Loading?</span><span class="arrow">▼</span></button><div class="accordion-body"><div class="callout green">Lazy Loading is a pattern where data is not loaded until actually needed. Instead of loading everything when an object is created, child data loads on demand when first accessed. Improves startup performance and reduces unnecessary database queries.</div></div></div>
+  <div class="accordion"><button class="accordion-btn" onclick="toggleAcc(this)"><span>Q: Advantages of Lazy Loading?</span><span class="arrow">▼</span></button><div class="accordion-body"><div class="callout green">Improves startup performance by only loading essential data, reduces memory by never loading unused data, avoids unnecessary DB queries, and leads to better scalability — more concurrent users with the same resources.</div></div></div>
+  <div class="accordion"><button class="accordion-btn" onclick="toggleAcc(this)"><span>Q: Disadvantages of Lazy Loading?</span><span class="arrow">▼</span></button><div class="accordion-body"><div class="callout green">Adds code complexity through null checks. Can cause the N+1 problem — looping through a lazily loaded collection triggers a separate DB query per item. Makes debugging harder because errors appear far from where the object was created.</div></div></div>
+  <div class="accordion"><button class="accordion-btn" onclick="toggleAcc(this)"><span>Q: Lazy&lt;T&gt; vs manual lazy loading?</span><span class="arrow">▼</span></button><div class="accordion-body"><div class="callout green">Both load data on demand. Manual uses a null check in the getter. Lazy&lt;T&gt; is the built-in .NET solution — eliminates null check boilerplate and adds thread safety by default, ensuring data is only loaded once even with concurrent access.</div></div></div>
+  <div class="accordion"><button class="accordion-btn" onclick="toggleAcc(this)"><span>Q: What is the N+1 problem?</span><span class="arrow">▼</span></button><div class="accordion-body"><div class="callout green">N+1 occurs when loading a list of N objects then looping through them accessing a lazily loaded property — triggers N additional DB queries. Solution: use eager loading (.Include() in EF) when you know you'll need child data for every item.</div></div></div>
+</div>
+
+</div>
+
+<script>
+function toggleAcc(btn){btn.classList.toggle('open');btn.nextElementSibling.classList.toggle('open')}
+function openTab(e,id){const s=e.target.closest('.section');s.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));s.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));e.target.classList.add('active');document.getElementById(id).classList.add('active')}
+
+// N+1 Simulator
+const customers=['Ali','Omar','Ahmed','Sara','Hana','Zain','Noor','Dina','Fadi','Mona'];
+let simTimer=null;
+function resetSim(){
+  clearInterval(simTimer);
+  document.getElementById('sim-log').innerHTML='<span class="info">Click a button to simulate...</span>';
+  document.getElementById('sim-queries').textContent='0';
+  document.getElementById('sim-rows').textContent='0';
+  document.querySelectorAll('.sim-btn').forEach(b=>b.classList.remove('active'));
+}
+function runSim(mode){
+  resetSim();
+  event.target.classList.add('active');
+  const log=document.getElementById('sim-log');
+  const qEl=document.getElementById('sim-queries');
+  const rEl=document.getElementById('sim-rows');
+  log.innerHTML='';
+  let queries=0,rows=0,step=0;
+  const steps=[];
+  if(mode==='lazy'){
+    steps.push({t:'q',m:'SELECT * FROM Customers',d:'→ loads 10 customers'});
+    queries++;rows+=10;
+    customers.forEach(c=>{
+      steps.push({t:'bad',m:`SELECT * FROM Orders WHERE CustomerId = '${c}'`,d:`→ lazy load for ${c}`});
+    });
+  } else {
+    steps.push({t:'q',m:'SELECT * FROM Customers',d:'→ loads 10 customers'});
+    steps.push({t:'ok',m:'INNER JOIN Orders ON Customers.Id = Orders.CustomerId',d:'→ orders included in same query!'});
+  }
+  let i=0;
+  simTimer=setInterval(()=>{
+    if(i>=steps.length){clearInterval(simTimer);
+      if(mode==='lazy'){
+        log.innerHTML+=`\n<span class="bad">⚠ TOTAL: ${customers.length+1} queries fired (N+1 problem!)</span>`;
+        qEl.textContent=customers.length+1; rEl.textContent=10+customers.length*5;
+      } else {
+        log.innerHTML+=`\n<span class="ok">✅ TOTAL: 1 query — all data loaded efficiently</span>`;
+        qEl.textContent='1'; rEl.textContent='60';
+      }
+      return;
+    }
+    const s=steps[i];
+    log.innerHTML+=`<span class="${s.t}">${s.m}</span> <span class="info">${s.d}</span>\n`;
+    log.scrollTop=log.scrollHeight;
+    if(mode==='lazy'){
+      if(i===0){qEl.textContent='1';rEl.textContent='10';}
+      else{qEl.textContent=i+1;rEl.textContent=10+i*5;}
+    }
+    i++;
+  },mode==='lazy'?300:600);
+}
+
+// Quiz
+let answered=0,correct=0,total=4;
+function answer(btn,qId,isCorrect){const card=document.getElementById(qId);if(card.dataset.answered)return;card.dataset.answered='1';answered++;if(isCorrect){btn.classList.add('correct');correct++;}else btn.classList.add('wrong');card.querySelectorAll('.quiz-option').forEach(o=>o.disabled=true);document.getElementById(qId+'-exp').classList.add('show');if(answered===total){document.getElementById('score-box').style.display='block';document.getElementById('score-text').textContent=correct+' / '+total;}}
+
+// Nav
+const sections=document.querySelectorAll('.section');const navLinks=document.querySelectorAll('.nav a');
+window.addEventListener('scroll',()=>{let c='';sections.forEach(s=>{if(window.scrollY>=s.offsetTop-120)c=s.id});navLinks.forEach(a=>{a.classList.remove('active');if(a.getAttribute('href')==='#'+c)a.classList.add('active')})});
+</script>
+</body>
+</html>

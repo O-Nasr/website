@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>.NET Interface vs Abstract Class — Interactive Study Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0d14;
+  --surface: #12182a;
+  --surface2: #1a2240;
+  --border: #263052;
+  --text: #e2e8f0;
+  --text-dim: #7a8dab;
+  --accent: #06b6d4;
+  --accent2: #8b5cf6;
+  --green: #10b981;
+  --red: #ef4444;
+  --orange: #f59e0b;
+  --pink: #ec4899;
+  --code-bg: #090d18;
+  --glow: rgba(6,182,212,0.12);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;min-height:100vh}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 25% 10%,rgba(6,182,212,0.05)0%,transparent 55%),radial-gradient(ellipse at 75% 90%,rgba(139,92,246,0.04)0%,transparent 55%);pointer-events:none;z-index:0}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+
+.container{max-width:900px;margin:0 auto;padding:2rem 1.5rem 4rem;position:relative;z-index:1}
+
+.hero{text-align:center;padding:3rem 0 2.5rem}
+.hero-badge{display:inline-block;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-weight:700;font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;padding:.35rem 1rem;border-radius:99px;margin-bottom:1.2rem}
+.hero h1{font-size:2.4rem;font-weight:800;background:linear-gradient(135deg,#fff 30%,var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1.15;margin-bottom:.5rem}
+.hero p{color:var(--text-dim);font-size:1.05rem}
+
+.nav{display:flex;flex-wrap:wrap;gap:.5rem;justify-content:center;margin-bottom:2.5rem;position:sticky;top:0;z-index:10;background:rgba(10,13,20,.85);backdrop-filter:blur(12px);padding:.75rem 0;border-bottom:1px solid var(--border)}
+.nav a{color:var(--text-dim);text-decoration:none;font-size:.78rem;font-weight:600;padding:.4rem .9rem;border-radius:8px;transition:all .2s;border:1px solid transparent;letter-spacing:.02em}
+.nav a:hover,.nav a.active{color:var(--accent);background:rgba(6,182,212,.08);border-color:rgba(6,182,212,.2)}
+
+.section{margin-bottom:3rem;animation:fadeUp .5s ease both}
+.section-header{display:flex;align-items:center;gap:.75rem;margin-bottom:1.2rem;padding-bottom:.8rem;border-bottom:1px solid var(--border)}
+.section-num{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.85rem;color:#fff;flex-shrink:0}
+.section-header h2{font-size:1.4rem;font-weight:700}
+
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.5rem;margin-bottom:1rem;transition:border-color .3s}
+.card:hover{border-color:rgba(6,182,212,.25)}
+.callout{background:linear-gradient(135deg,rgba(6,182,212,.07),rgba(139,92,246,.04));border-left:3px solid var(--accent);border-radius:0 10px 10px 0;padding:1rem 1.2rem;margin:1rem 0;font-size:.92rem}
+.callout.warn{border-left-color:var(--orange);background:linear-gradient(135deg,rgba(245,158,11,.07),rgba(245,158,11,.03))}
+.callout.green{border-left-color:var(--green);background:linear-gradient(135deg,rgba(16,185,129,.07),rgba(16,185,129,.03))}
+.callout.purple{border-left-color:var(--accent2);background:linear-gradient(135deg,rgba(139,92,246,.07),rgba(139,92,246,.03))}
+
+pre{background:var(--code-bg);border:1px solid var(--border);border-radius:10px;padding:1.2rem;overflow-x:auto;margin:.8rem 0;font-family:'JetBrains Mono',monospace;font-size:.8rem;line-height:1.65;position:relative}
+pre .label{position:absolute;top:.5rem;right:.6rem;font-size:.6rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em;font-family:'Outfit',sans-serif;font-weight:600;background:var(--surface);padding:.15rem .5rem;border-radius:4px}
+.kw{color:var(--accent2)}.tp{color:var(--accent)}.cm{color:#3a5470;font-style:italic}.st{color:var(--green)}.fn{color:var(--orange)}.er{color:var(--red)}
+
+.table-wrap{overflow-x:auto;margin:.8rem 0;border-radius:10px;border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{background:var(--surface2);color:var(--accent);font-weight:600;text-align:left;padding:.7rem 1rem;white-space:nowrap}
+td{padding:.6rem 1rem;border-top:1px solid var(--border)}
+tr:hover td{background:rgba(6,182,212,.03)}
+
+.accordion{margin:.8rem 0}
+.accordion-btn{width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:'Outfit',sans-serif;font-size:.9rem;font-weight:600;padding:.9rem 1.2rem;border-radius:10px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;transition:all .2s}
+.accordion-btn:hover{border-color:var(--accent);background:var(--surface2)}
+.accordion-btn .arrow{transition:transform .3s;font-size:.8rem;color:var(--accent)}
+.accordion-btn.open .arrow{transform:rotate(180deg)}
+.accordion-body{max-height:0;overflow:hidden;transition:max-height .4s ease;background:var(--surface);border:1px solid var(--border);border-top:none;border-radius:0 0 10px 10px;padding:0 1.2rem}
+.accordion-body.open{max-height:2000px;padding:1.2rem}
+
+/* VS split */
+.vs-split{display:grid;grid-template-columns:1fr auto 1fr;gap:1rem;align-items:start;margin:1rem 0}
+.vs-col{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.2rem}
+.vs-col h3{font-size:.95rem;margin-bottom:.8rem;display:flex;align-items:center;gap:.5rem}
+.vs-badge{display:inline-block;padding:.2rem .6rem;border-radius:6px;font-size:.7rem;font-weight:700;letter-spacing:.05em}
+.vs-badge.abstract{background:rgba(6,182,212,.15);color:var(--accent)}
+.vs-badge.interface{background:rgba(139,92,246,.15);color:var(--accent2)}
+.vs-divider{display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.5rem;color:var(--text-dim)}
+
+/* Tabs */
+.tabs{display:flex;gap:.4rem;margin-bottom:0;flex-wrap:wrap}
+.tab-btn{background:var(--surface);border:1px solid var(--border);color:var(--text-dim);font-family:'Outfit',sans-serif;font-size:.78rem;font-weight:600;padding:.5rem 1rem;border-radius:8px 8px 0 0;cursor:pointer;transition:all .2s}
+.tab-btn:hover{color:var(--text)}
+.tab-btn.active{color:var(--accent);background:var(--surface2);border-bottom-color:var(--surface2)}
+.tab-panel{display:none;background:var(--surface2);border:1px solid var(--border);border-radius:0 10px 10px 10px;padding:1.2rem}
+.tab-panel.active{display:block}
+
+/* Interactive decision tree */
+.decision-tree{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.5rem;margin:1rem 0}
+.dt-question{font-weight:700;font-size:1rem;margin-bottom:1rem;color:var(--accent)}
+.dt-options{display:flex;gap:.6rem;flex-wrap:wrap;margin-bottom:.8rem}
+.dt-opt{background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'Outfit',sans-serif;font-size:.85rem;font-weight:600;padding:.7rem 1.2rem;border-radius:10px;cursor:pointer;transition:all .2s;flex:1;min-width:180px;text-align:center}
+.dt-opt:hover{border-color:var(--accent);transform:translateY(-2px)}
+.dt-opt.selected{border-color:var(--accent);background:rgba(6,182,212,.1);color:var(--accent)}
+.dt-result{margin-top:.8rem;padding:1rem;border-radius:10px;border:1px solid var(--border);background:var(--code-bg);font-size:.88rem;display:none;line-height:1.6}
+.dt-result.show{display:block}
+.dt-restart{background:none;border:1px solid var(--border);color:var(--text-dim);font-family:'Outfit',sans-serif;font-size:.78rem;padding:.4rem .8rem;border-radius:6px;cursor:pointer;margin-top:.5rem;transition:all .2s}
+.dt-restart:hover{color:var(--accent);border-color:var(--accent)}
+
+/* Quiz */
+.quiz-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.5rem;margin-bottom:1rem}
+.quiz-card h3{font-size:1rem;margin-bottom:1rem;color:var(--accent)}
+.quiz-option{display:block;width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'Outfit',sans-serif;font-size:.85rem;padding:.7rem 1rem;border-radius:8px;cursor:pointer;margin-bottom:.4rem;text-align:left;transition:all .2s}
+.quiz-option:hover{border-color:var(--accent);transform:translateX(4px)}
+.quiz-option.correct{background:rgba(16,185,129,.15);border-color:var(--green);color:var(--green)}
+.quiz-option.wrong{background:rgba(239,68,68,.1);border-color:var(--red);color:var(--red)}
+.quiz-option:disabled{cursor:default;transform:none}
+.quiz-explanation{margin-top:.7rem;padding:.8rem;border-radius:8px;background:rgba(6,182,212,.06);font-size:.85rem;display:none;line-height:1.6}
+.quiz-explanation.show{display:block}
+.quiz-score{text-align:center;padding:1.5rem;background:var(--surface);border:1px solid var(--accent);border-radius:14px;margin-top:1rem}
+.quiz-score .big{font-size:2.2rem;font-weight:800;color:var(--accent)}
+
+/* Inheritance diagram */
+.inherit-diagram{display:flex;flex-direction:column;align-items:center;gap:.3rem;margin:1rem 0}
+.inherit-node{background:var(--surface2);border:1px solid var(--border);padding:.5rem 1.5rem;border-radius:10px;font-weight:600;font-size:.85rem;transition:all .3s}
+.inherit-node.base{border-color:var(--accent);background:rgba(6,182,212,.1);color:var(--accent)}
+.inherit-node.iface{border-color:var(--accent2);background:rgba(139,92,246,.1);color:var(--accent2)}
+.inherit-arrow{color:var(--text-dim);font-size:.8rem}
+.inherit-row{display:flex;gap:1rem;flex-wrap:wrap;justify-content:center}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:720px){
+  .hero h1{font-size:1.6rem}
+  .container{padding:1rem}
+  .vs-split{grid-template-columns:1fr;gap:.5rem}
+  .vs-divider{transform:rotate(90deg);padding:.5rem}
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="hero">
+  <div class="hero-badge">.NET Interview Study Guide</div>
+  <h1>Interface vs Abstract Class</h1>
+  <p>Contract for unrelated vs partial blueprint for related</p>
+</div>
+
+<nav class="nav">
+  <a href="#s1">Abstract Class</a>
+  <a href="#s2">Interface</a>
+  <a href="#s3">Multiple Inheritance</a>
+  <a href="#s4">Differences</a>
+  <a href="#s5">Decision Guide</a>
+  <a href="#s6">Quiz</a>
+</nav>
+
+<!-- S1: Abstract Class -->
+<div class="section" id="s1">
+  <div class="section-header"><div class="section-num">1</div><h2>Abstract Class — Partial Blueprint</h2></div>
+  <p style="margin-bottom:.8rem;">Provides a <strong>partial implementation</strong> that related classes inherit from. Can have both implemented methods (shared code) and abstract methods (forced override).</p>
+
+  <div class="inherit-diagram">
+    <div class="inherit-node base">abstract Shape</div>
+    <div class="inherit-arrow">↓ inherits</div>
+    <div class="inherit-row">
+      <div class="inherit-node">Circle</div>
+      <div class="inherit-node">Rectangle</div>
+      <div class="inherit-node">Triangle</div>
+    </div>
+  </div>
+
+<pre><span class="label">C#</span><span class="kw">abstract class</span> <span class="tp">Shape</span>
+{
+    <span class="kw">public</span> <span class="tp">string</span> Color { <span class="kw">get</span>; <span class="kw">set</span>; }   <span class="cm">// shared property — all shapes have color</span>
+
+    <span class="kw">public void</span> <span class="fn">DisplayColor</span>()           <span class="cm">// implemented — shared by all shapes</span>
+    {
+        Console.<span class="fn">WriteLine</span>(<span class="st">"Color: "</span> + Color);
+    }
+
+    <span class="kw">public abstract</span> <span class="tp">double</span> <span class="fn">GetArea</span>();    <span class="cm">// abstract — no body, child MUST override</span>
+}
+
+<span class="kw">class</span> <span class="tp">Circle</span> : <span class="tp">Shape</span>
+{
+    <span class="kw">public</span> <span class="tp">double</span> Radius { <span class="kw">get</span>; <span class="kw">set</span>; }
+    <span class="kw">public override</span> <span class="tp">double</span> <span class="fn">GetArea</span>() => Math.PI * Radius * Radius;
+}
+
+<span class="kw">class</span> <span class="tp">Rectangle</span> : <span class="tp">Shape</span>
+{
+    <span class="kw">public</span> <span class="tp">double</span> Width { <span class="kw">get</span>; <span class="kw">set</span>; }
+    <span class="kw">public</span> <span class="tp">double</span> Height { <span class="kw">get</span>; <span class="kw">set</span>; }
+    <span class="kw">public override</span> <span class="tp">double</span> <span class="fn">GetArea</span>() => Width * Height;
+}</pre>
+
+  <div class="callout warn">⚠️ <strong>Abstract methods</strong> have NO body — child MUST override. <strong>Regular methods</strong> in abstract class HAVE a body — child CAN override but doesn't have to.</div>
+</div>
+
+<!-- S2: Interface -->
+<div class="section" id="s2">
+  <div class="section-header"><div class="section-num">2</div><h2>Interface — Full Blueprint (Contract)</h2></div>
+  <p style="margin-bottom:.8rem;">A <strong>pure contract</strong> that defines <em>what</em> a class must do without specifying <em>how</em>. Any unrelated class can implement it.</p>
+
+  <div class="inherit-diagram">
+    <div class="inherit-node iface">INotificationService</div>
+    <div class="inherit-arrow">↓ implements</div>
+    <div class="inherit-row">
+      <div class="inherit-node">EmailNotification</div>
+      <div class="inherit-node">SmsNotification</div>
+      <div class="inherit-node">PushNotification</div>
+    </div>
+  </div>
+
+<pre><span class="label">C#</span><span class="kw">interface</span> <span class="tp">INotificationService</span>
+{
+    <span class="kw">void</span> <span class="fn">Send</span>(<span class="tp">string</span> message);   <span class="cm">// contract — no implementation</span>
+    <span class="tp">bool</span> <span class="fn">IsAvailable</span>();          <span class="cm">// contract — no implementation</span>
+}
+
+<span class="kw">class</span> <span class="tp">EmailNotification</span> : <span class="tp">INotificationService</span>
+{
+    <span class="kw">public void</span> <span class="fn">Send</span>(<span class="tp">string</span> message)
+        => Console.<span class="fn">WriteLine</span>(<span class="st">"Email: "</span> + message);
+    <span class="kw">public</span> <span class="tp">bool</span> <span class="fn">IsAvailable</span>() => <span class="kw">true</span>;
+}
+
+<span class="kw">class</span> <span class="tp">SmsNotification</span> : <span class="tp">INotificationService</span>
+{
+    <span class="kw">public void</span> <span class="fn">Send</span>(<span class="tp">string</span> message)
+        => Console.<span class="fn">WriteLine</span>(<span class="st">"SMS: "</span> + message);
+    <span class="kw">public</span> <span class="tp">bool</span> <span class="fn">IsAvailable</span>() => <span class="fn">CheckSmsGateway</span>();
+}</pre>
+
+  <div class="callout purple">⚠️ Since <strong>C# 8.0</strong>, interfaces CAN have default implementations. However in interviews, interfaces are still primarily described as contracts. Mention C# 8.0 as a <strong>bonus point</strong>.</div>
+</div>
+
+<!-- S3: Multiple Inheritance -->
+<div class="section" id="s3">
+  <div class="section-header"><div class="section-num">3</div><h2>The Biggest Difference — Multiple Inheritance</h2></div>
+
+  <div class="vs-split">
+    <div class="vs-col">
+      <h3><span class="vs-badge abstract">ABSTRACT</span> One Only</h3>
+<pre style="margin:0"><span class="cm">// ❌ COMPILE ERROR!</span>
+<span class="kw">class</span> <span class="tp">Dog</span> : <span class="tp">Animal</span>, <span class="tp">Pet</span>
+{
+  <span class="er">// C# does NOT allow this</span>
+}</pre>
+    </div>
+    <div class="vs-divider">vs</div>
+    <div class="vs-col">
+      <h3><span class="vs-badge interface">INTERFACE</span> Many</h3>
+<pre style="margin:0"><span class="cm">// ✅ Perfectly fine!</span>
+<span class="kw">class</span> <span class="tp">Duck</span> : <span class="tp">IFlyable</span>,
+           <span class="tp">ISwimmable</span>,
+           <span class="tp">IRunnable</span>
+{
+  <span class="cm">// implements all three</span>
+}</pre>
+    </div>
+  </div>
+</div>
+
+<!-- S4: Key Differences -->
+<div class="section" id="s4">
+  <div class="section-header"><div class="section-num">4</div><h2>Key Differences</h2></div>
+  <div class="table-wrap">
+    <table>
+      <tr><th></th><th>Abstract Class</th><th>Interface</th></tr>
+      <tr><td><strong>Implementation</strong></td><td>Can have implemented methods</td><td>No implementation (before C# 8)</td></tr>
+      <tr><td><strong>Multiple inheritance</strong></td><td style="color:var(--red)">❌ Only one</td><td style="color:var(--green)">✅ Many interfaces</td></tr>
+      <tr><td><strong>Constructor</strong></td><td style="color:var(--green)">✅ Yes</td><td style="color:var(--red)">❌ No</td></tr>
+      <tr><td><strong>Access modifiers</strong></td><td style="color:var(--green)">✅ Any (public, private...)</td><td style="color:var(--red)">❌ Always public</td></tr>
+      <tr><td><strong>Fields / variables</strong></td><td style="color:var(--green)">✅ Yes</td><td style="color:var(--red)">❌ No</td></tr>
+      <tr><td><strong>When to use</strong></td><td>Shared code between related classes</td><td>Contract for unrelated classes</td></tr>
+    </table>
+  </div>
+
+  <!-- When to use -->
+  <div style="margin-top:1.5rem;">
+    <div class="tabs">
+      <button class="tab-btn active" onclick="openTab(event,'tab-abs')">Use Abstract Class When</button>
+      <button class="tab-btn" onclick="openTab(event,'tab-iface')">Use Interface When</button>
+    </div>
+    <div class="tab-panel active" id="tab-abs">
+      <p style="font-size:.9rem;line-height:1.8;">
+        • Classes share <strong>common code or state</strong><br>
+        • You want to provide a <strong>base implementation</strong><br>
+        • Classes are closely related (<strong>same family</strong>)<br>
+        • Example: <code>Shape → Circle, Rectangle, Triangle</code>
+      </p>
+    </div>
+    <div class="tab-panel" id="tab-iface">
+      <p style="font-size:.9rem;line-height:1.8;">
+        • Classes are <strong>completely unrelated</strong> but share behavior<br>
+        • You need <strong>multiple inheritance</strong><br>
+        • You want to define a <strong>contract</strong> for any class to follow<br>
+        • Example: <code>IDisposable → SqlConnection, FileStream</code>
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- S5: Interactive Decision Guide -->
+<div class="section" id="s5">
+  <div class="section-header"><div class="section-num">5</div><h2>Interactive Decision Guide</h2></div>
+  <p style="margin-bottom:1rem;font-size:.92rem;">Answer the questions to find out which one to use for your scenario:</p>
+
+  <div class="decision-tree" id="dt">
+    <div id="dt-step1">
+      <div class="dt-question">Do the classes share common code or state?</div>
+      <div class="dt-options">
+        <button class="dt-opt" onclick="dtAnswer(1,'yes')">Yes — they share logic</button>
+        <button class="dt-opt" onclick="dtAnswer(1,'no')">No — completely unrelated</button>
+      </div>
+    </div>
+    <div id="dt-step2" style="display:none">
+      <div class="dt-question">Do you need multiple inheritance?</div>
+      <div class="dt-options">
+        <button class="dt-opt" onclick="dtAnswer(2,'yes')">Yes — class needs multiple contracts</button>
+        <button class="dt-opt" onclick="dtAnswer(2,'no')">No — one parent is enough</button>
+      </div>
+    </div>
+    <div class="dt-result" id="dt-result-abstract">
+      <div style="font-weight:700;color:var(--accent);margin-bottom:.5rem;">→ Use Abstract Class</div>
+      <p>Your classes are related and share common code/state. Abstract class lets you provide base implementations and shared fields. Examples: <code>Shape → Circle, Rectangle</code> · <code>Vehicle → Car, Truck</code> · <code>Repository&lt;T&gt; base</code></p>
+      <button class="dt-restart" onclick="dtReset()">Try again</button>
+    </div>
+    <div class="dt-result" id="dt-result-interface">
+      <div style="font-weight:700;color:var(--accent2);margin-bottom:.5rem;">→ Use Interface</div>
+      <p>Your classes are unrelated but need to follow the same contract. Interface provides pure abstraction that any class can implement. Examples: <code>IDisposable</code> · <code>INotificationService</code> · <code>IComparable</code></p>
+      <button class="dt-restart" onclick="dtReset()">Try again</button>
+    </div>
+    <div class="dt-result" id="dt-result-both">
+      <div style="font-weight:700;color:var(--orange);margin-bottom:.5rem;">→ Consider Both!</div>
+      <p>If classes share code AND need multiple inheritance, use an <strong>abstract base class</strong> for the shared code plus <strong>interfaces</strong> for additional contracts. This is a common pattern in real-world code.</p>
+      <button class="dt-restart" onclick="dtReset()">Try again</button>
+    </div>
+  </div>
+
+  <div class="table-wrap" style="margin-top:1rem;">
+    <table>
+      <tr><th>Scenario</th><th>Use</th></tr>
+      <tr><td>Shape → Circle, Rectangle, Triangle</td><td><span style="color:var(--accent)">Abstract Class</span> — shared Color, Draw()</td></tr>
+      <tr><td>INotificationService → Email, SMS, Push</td><td><span style="color:var(--accent2)">Interface</span> — contract only</td></tr>
+      <tr><td>IDisposable → any class needing cleanup</td><td><span style="color:var(--accent2)">Interface</span> — unrelated classes</td></tr>
+      <tr><td>Vehicle → Car, Truck, Motorcycle</td><td><span style="color:var(--accent)">Abstract Class</span> — shared FuelType, Start()</td></tr>
+      <tr><td>IComparable → string, int, DateTime</td><td><span style="color:var(--accent2)">Interface</span> — completely different types</td></tr>
+      <tr><td>Repository&lt;T&gt; base class</td><td><span style="color:var(--accent)">Abstract Class</span> — shared CRUD impl</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- S6: Quiz -->
+<div class="section" id="s6">
+  <div class="section-header"><div class="section-num">6</div><h2>Test Yourself</h2></div>
+
+  <div class="quiz-card" id="q1">
+    <h3>Q1: How many abstract classes can a C# class inherit from?</h3>
+    <button class="quiz-option" onclick="answer(this,'q1',true)">Only one</button>
+    <button class="quiz-option" onclick="answer(this,'q1',false)">As many as needed</button>
+    <button class="quiz-option" onclick="answer(this,'q1',false)">Two maximum</button>
+    <button class="quiz-option" onclick="answer(this,'q1',false)">None — only interfaces</button>
+    <div class="quiz-explanation" id="q1-exp">C# only allows <strong>single class inheritance</strong>. A class can inherit from exactly one abstract class but can implement multiple interfaces.</div>
+  </div>
+
+  <div class="quiz-card" id="q2">
+    <h3>Q2: SqlConnection and FileStream both implement IDisposable. Why is IDisposable an interface, not an abstract class?</h3>
+    <button class="quiz-option" onclick="answer(this,'q2',false)">Because abstract classes are slower</button>
+    <button class="quiz-option" onclick="answer(this,'q2',true)">Because they are completely unrelated classes that share a behavior</button>
+    <button class="quiz-option" onclick="answer(this,'q2',false)">Because interfaces have better error handling</button>
+    <button class="quiz-option" onclick="answer(this,'q2',false)">It was an arbitrary choice by Microsoft</button>
+    <div class="quiz-explanation" id="q2-exp">SqlConnection and FileStream share <strong>no common code or state</strong>. They're completely unrelated classes that both need cleanup behavior. An interface is perfect for this — it defines a contract without forcing inheritance from a common base.</div>
+  </div>
+
+  <div class="quiz-card" id="q3">
+    <h3>Q3: Can interfaces have default implementations in C#?</h3>
+    <button class="quiz-option" onclick="answer(this,'q3',false)">No, never</button>
+    <button class="quiz-option" onclick="answer(this,'q3',true)">Yes, since C# 8.0</button>
+    <button class="quiz-option" onclick="answer(this,'q3',false)">Yes, since C# 1.0</button>
+    <button class="quiz-option" onclick="answer(this,'q3',false)">Only for static methods</button>
+    <div class="quiz-explanation" id="q3-exp">Since C# 8.0, interfaces can have default implementations. This was mainly added for <strong>versioning</strong> — adding new methods without breaking existing implementations. But interfaces are still primarily used as pure contracts.</div>
+  </div>
+
+  <div class="quiz-card" id="q4">
+    <h3>Q4: Can an abstract class have fields and constructors?</h3>
+    <button class="quiz-option" onclick="answer(this,'q4',true)">Yes — fields, constructors, and access modifiers</button>
+    <button class="quiz-option" onclick="answer(this,'q4',false)">Fields yes, constructors no</button>
+    <button class="quiz-option" onclick="answer(this,'q4',false)">Neither fields nor constructors</button>
+    <button class="quiz-option" onclick="answer(this,'q4',false)">Only static fields</button>
+    <div class="quiz-explanation" id="q4-exp">Abstract classes can have <strong>everything</strong> a normal class has: fields, constructors, access modifiers, implemented methods, and properties. The only addition is the ability to declare abstract members that children must override.</div>
+  </div>
+
+  <div class="quiz-score" id="score-box" style="display:none;">
+    <div class="big" id="score-text"></div>
+    <p style="color:var(--text-dim);margin-top:.3rem">Interface vs Abstract Class Quiz</p>
+  </div>
+</div>
+
+<!-- Interview Answers -->
+<div class="section" id="s8">
+  <div class="section-header"><div class="section-num">★</div><h2>Interview Answer Bank</h2></div>
+
+  <div class="accordion">
+    <button class="accordion-btn" onclick="toggleAcc(this)"><span>Q: Difference between interface and abstract class?</span><span class="arrow">▼</span></button>
+    <div class="accordion-body">
+      <div class="callout green">An abstract class provides a partial implementation that related classes inherit from — it can have implemented methods, constructors, fields, and access modifiers. An interface is a pure contract that defines what a class must do without how, and any unrelated class can implement it. The key practical difference: a class can only inherit from one abstract class but can implement multiple interfaces.</div>
+    </div>
+  </div>
+  <div class="accordion">
+    <button class="accordion-btn" onclick="toggleAcc(this)"><span>Q: When would you choose interface over abstract class?</span><span class="arrow">▼</span></button>
+    <div class="accordion-body">
+      <div class="callout green">Use interface when completely unrelated classes need to follow the same contract, or when you need multiple inheritance. Use abstract class when related classes share common code and state. Example: IDisposable is an interface because SqlConnection and FileStream share no common code — they just both need cleanup behavior.</div>
+    </div>
+  </div>
+  <div class="accordion">
+    <button class="accordion-btn" onclick="toggleAcc(this)"><span>Q: Can an interface have implementation in C#?</span><span class="arrow">▼</span></button>
+    <div class="accordion-body">
+      <div class="callout green">Since C# 8.0, interfaces can have default implementations. However interfaces are still primarily used as pure contracts. Default interface implementations are mainly for versioning — adding new methods without breaking existing implementations.</div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script>
+// Tabs
+function openTab(e,id){const p=e.target.closest('.section');p.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));p.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));e.target.classList.add('active');document.getElementById(id).classList.add('active')}
+
+// Accordion
+function toggleAcc(btn){const b=btn.nextElementSibling;btn.classList.toggle('open');b.classList.toggle('open')}
+
+// Decision tree
+let dtState={step1:null};
+function dtAnswer(step,val){
+  if(step===1){
+    dtState.step1=val;
+    document.getElementById('dt-step1').querySelectorAll('.dt-opt').forEach(o=>o.classList.remove('selected'));
+    event.target.classList.add('selected');
+    if(val==='no'){
+      document.getElementById('dt-step2').style.display='none';
+      hideAllResults();
+      document.getElementById('dt-result-interface').classList.add('show');
+    } else {
+      document.getElementById('dt-step2').style.display='block';
+      hideAllResults();
+    }
+  }
+  if(step===2){
+    document.getElementById('dt-step2').querySelectorAll('.dt-opt').forEach(o=>o.classList.remove('selected'));
+    event.target.classList.add('selected');
+    hideAllResults();
+    if(val==='yes'){
+      document.getElementById('dt-result-both').classList.add('show');
+    } else {
+      document.getElementById('dt-result-abstract').classList.add('show');
+    }
+  }
+}
+function hideAllResults(){
+  document.querySelectorAll('.dt-result').forEach(r=>r.classList.remove('show'));
+}
+function dtReset(){
+  dtState={step1:null};
+  document.getElementById('dt-step2').style.display='none';
+  document.querySelectorAll('.dt-opt').forEach(o=>o.classList.remove('selected'));
+  hideAllResults();
+}
+
+// Quiz
+let answered=0,correct=0,total=4;
+function answer(btn,qId,isCorrect){
+  const card=document.getElementById(qId);
+  if(card.dataset.answered)return;
+  card.dataset.answered='1';answered++;
+  if(isCorrect){btn.classList.add('correct');correct++;}
+  else btn.classList.add('wrong');
+  card.querySelectorAll('.quiz-option').forEach(o=>o.disabled=true);
+  document.getElementById(qId+'-exp').classList.add('show');
+  if(answered===total){document.getElementById('score-box').style.display='block';document.getElementById('score-text').textContent=correct+' / '+total;}
+}
+
+// Nav highlight
+const sections=document.querySelectorAll('.section');
+const navLinks=document.querySelectorAll('.nav a');
+window.addEventListener('scroll',()=>{let c='';sections.forEach(s=>{if(window.scrollY>=s.offsetTop-120)c=s.id;});navLinks.forEach(a=>{a.classList.remove('active');if(a.getAttribute('href')==='#'+c)a.classList.add('active');});});
+</script>
+</body>
+</html>

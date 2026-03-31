@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>async/await &amp; Task — .NET Interview Study Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=DM+Sans:ital,wght@0,400;0,500;0,700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#060810;--bg-card:#0d0f18;--bg-code:#090b12;--bg-el:#151828;--border:#191d30;--border-gl:#242840;--text:#c2c8d8;--text-dim:#5c6486;--text-br:#e4eaf4;--c1:#8b5cf6;--c2:#06b6d4;--c3:#10b981;--c4:#f59e0b;--c5:#3b82f6;--c6:#ef4444;--c7:#ec4899;--ok:#4ade80;--bad:#f87171;--kw:#c678dd;--str:#98c379;--tp:#61afef;--num:#d19a66;--cm:#5c6370;--fn:#e5c07b;--r:12px}
+*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.72;overflow-x:hidden}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border-gl);border-radius:3px}
+.hero{position:relative;min-height:44vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:80px 24px 50px;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 500px 350px at 30% 40%,rgba(139,92,246,.12),transparent),radial-gradient(ellipse 400px 300px at 70% 55%,rgba(6,182,212,.07),transparent)}
+.hero-badge{position:relative;display:inline-flex;align-items:center;gap:8px;padding:6px 18px;border:1px solid var(--c1);border-radius:100px;font-size:.8rem;color:var(--c1);letter-spacing:.08em;text-transform:uppercase;margin-bottom:20px}
+.hero h1{position:relative;font-family:'Playfair Display',serif;font-size:clamp(2.2rem,5.5vw,3.6rem);font-weight:900;line-height:1.15;color:var(--text-br);max-width:700px}
+.hero h1 span{background:linear-gradient(135deg,var(--c1),var(--c2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{position:relative;max-width:640px;margin-top:16px;color:var(--text-dim);font-size:1rem}
+.np{position:relative;display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:28px}
+.np a{display:inline-block;padding:6px 14px;border:1px solid var(--border-gl);border-radius:100px;color:var(--text-dim);text-decoration:none;font-size:.82rem;transition:all .25s}
+.np a:hover{border-color:var(--c1);color:var(--c1);background:rgba(139,92,246,.06)}
+.sec{max-width:1000px;margin:0 auto 60px;padding:0 24px;scroll-margin-top:32px}
+.sh{display:flex;align-items:center;gap:16px;margin-bottom:8px}
+.sn{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:14px;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:.95rem;flex-shrink:0;background:color-mix(in srgb,var(--pat) 16%,transparent);color:var(--pat);border:1px solid color-mix(in srgb,var(--pat) 28%,transparent)}
+.sh h2{font-family:'Playfair Display',serif;font-size:1.45rem;font-weight:700;color:var(--text-br)}
+.ss{color:var(--text-dim);font-style:italic;margin-bottom:20px;padding-left:60px;font-size:.9rem}
+.s1{--pat:var(--c6)}.s2{--pat:var(--c5)}.s3{--pat:var(--c1)}.s4{--pat:var(--c2)}.s5{--pat:var(--c6)}.s6{--pat:var(--c3)}.s7{--pat:var(--c4)}
+.card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:16px}
+.card h3{font-size:.92rem;color:var(--text-br);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.card h3::before{content:'';display:inline-block;width:3px;height:15px;border-radius:2px;background:var(--pat,var(--c1))}
+.dw{background:var(--bg-code);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:16px;overflow-x:auto}
+.dw svg{display:block;margin:0 auto;max-width:100%;height:auto}
+.cb{position:relative;background:var(--bg-code);border:1px solid var(--border);border-radius:var(--r);margin-bottom:14px;overflow:hidden}
+.cb-h{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;background:var(--bg-el);border-bottom:1px solid var(--border);font-size:.76rem;color:var(--text-dim);font-family:'JetBrains Mono',monospace}
+.cb-h .dots{display:flex;gap:5px}.cb-h .dots span{width:9px;height:9px;border-radius:50%}
+.cb-h .dots span:nth-child(1){background:#ff5f57}.cb-h .dots span:nth-child(2){background:#febc2e}.cb-h .dots span:nth-child(3){background:#28c840}
+.cb-h.bad{border-left:3px solid var(--bad)}.cb-h.good{border-left:3px solid var(--ok)}
+.cpb{background:none;border:1px solid var(--border-gl);color:var(--text-dim);padding:2px 8px;border-radius:5px;cursor:pointer;font-size:.7rem;font-family:'JetBrains Mono',monospace;transition:all .2s}
+.cpb:hover{border-color:var(--ok);color:var(--ok)}
+.cb pre{padding:14px 16px;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:.78rem;line-height:1.6;color:var(--text)}
+.kw{color:var(--kw)}.tp{color:var(--tp)}.str{color:var(--str)}.num{color:var(--num)}.cm{color:var(--cm);font-style:italic}.fn{color:var(--fn)}
+.tw{overflow-x:auto;margin-bottom:16px}table{width:100%;border-collapse:collapse;font-size:.82rem}
+thead th{background:var(--bg-el);color:var(--text-br);padding:10px 12px;text-align:left;font-weight:600;border-bottom:2px solid var(--border-gl);white-space:nowrap}
+tbody td{padding:8px 12px;border-bottom:1px solid var(--border);vertical-align:top}tbody tr:hover{background:rgba(139,92,246,.03)}
+.tip{display:flex;gap:10px;padding:12px 14px;border-radius:var(--r);margin-bottom:14px;font-size:.85rem}
+.tip-v{background:rgba(139,92,246,.06);border:1px solid rgba(139,92,246,.16)}.tip-v .ic{color:var(--c1)}
+.tip-r{background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.16)}.tip-r .ic{color:var(--c6)}
+.tip-g{background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.16)}.tip-g .ic{color:var(--c3)}
+.tip-b{background:rgba(59,130,246,.06);border:1px solid rgba(59,130,246,.16)}.tip-b .ic{color:var(--c5)}
+.tip .ic{font-size:1.1rem;flex-shrink:0}
+.cg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+@media(max-width:700px){.cg{grid-template-columns:1fr}}
+.cg .cb{margin-bottom:0}
+.qa-b{margin-bottom:10px}
+.qa-q{display:flex;align-items:start;gap:10px;padding:12px 14px;background:var(--bg-el);border:1px solid var(--border);border-radius:var(--r);cursor:pointer;color:var(--text-br);font-size:.86rem;font-weight:500;transition:all .25s;user-select:none}
+.qa-q:hover{border-color:var(--c1)}.qa-q .ar{flex-shrink:0;transition:transform .3s;color:var(--c1);font-size:.8rem}.qa-q.open .ar{transform:rotate(90deg)}
+.qa-a{max-height:0;overflow:hidden;transition:max-height .35s ease,padding .35s;padding:0 14px;color:var(--text);font-size:.84rem;line-height:1.7;background:var(--bg-card);border:1px solid var(--border);border-top:none;border-radius:0 0 var(--r) var(--r)}
+.qa-a.open{max-height:800px;padding:14px}
+.bt{position:fixed;bottom:24px;right:24px;width:44px;height:44px;border-radius:50%;background:var(--c1);color:#fff;border:none;cursor:pointer;font-size:1.2rem;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s,transform .3s;box-shadow:0 4px 16px rgba(139,92,246,.35);z-index:100;font-weight:700}
+.bt.show{opacity:1;pointer-events:auto}.bt:hover{transform:scale(1.1)}
+footer{text-align:center;padding:36px 24px;color:var(--text-dim);font-size:.8rem;border-top:1px solid var(--border);margin-top:40px}
+.sum{max-width:1000px;margin:0 auto 50px;padding:0 24px}.sum h2{font-family:'Playfair Display',serif;font-size:1.45rem;color:var(--text-br);margin-bottom:18px;text-align:center}
+@media(max-width:768px){.ss{padding-left:0}}
+</style>
+</head>
+<body>
+
+<section class="hero">
+  <div class="hero-badge">.NET Interview Guide</div>
+  <h1><span>async / await</span> &amp; Task</h1>
+  <p>Complete guide — why we need async, Thread vs Task, how await works, common mistakes, and interview answers.</p>
+  <div class="np">
+    <a href="#problem">The Problem</a><a href="#thread">Thread vs Task</a><a href="#how">How await Works</a><a href="#return">Return Types</a><a href="#mistakes">Common Mistakes</a><a href="#whenall">WhenAll/WhenAny</a><a href="#interview">Interview</a>
+  </div>
+</section>
+
+<!-- ═══════ 1. THE PROBLEM ═══════ -->
+<section id="problem" class="sec s1">
+  <div class="sh"><div class="sn">1</div><h2>The Problem — Why We Need Async</h2></div>
+  <div class="ss">Synchronous code blocks the thread while waiting. In web/UI apps this means the UI freezes or the server can't handle other requests.</div>
+
+  <div class="dw">
+    <svg viewBox="0 0 780 200" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+      <!-- Sync side -->
+      <text x="195" y="20" text-anchor="middle" fill="#ef4444" font-weight="700" font-size="13">❌ Synchronous — Thread Blocked</text>
+      <rect x="30" y="35" width="330" height="120" rx="10" fill="rgba(239,68,68,.04)" stroke="#ef4444" stroke-width="1"/>
+      <!-- Timeline bar -->
+      <rect x="50" y="55" width="290" height="30" rx="6" fill="rgba(239,68,68,.1)" stroke="#ef4444" stroke-width="1"/>
+      <text x="195" y="74" text-anchor="middle" fill="#ef4444" font-size="10" font-weight="600">Thread BLOCKED for 3 seconds</text>
+      <text x="195" y="88" text-anchor="middle" fill="#ef4444" font-size="9">doing absolutely nothing</text>
+      <text x="50" y="52" fill="#5c6486" font-size="8">0s</text><text x="330" y="52" fill="#5c6486" font-size="8">3s</text>
+      <!-- Blocked icon -->
+      <rect x="50" y="100" width="290" height="20" rx="4" fill="rgba(239,68,68,.06)"/>
+      <text x="195" y="114" text-anchor="middle" fill="#ef4444" font-size="8">🔒 UI frozen / server can't accept other requests</text>
+      <text x="195" y="145" text-anchor="middle" fill="#ef4444" font-size="9" font-family="JetBrains Mono,monospace">Thread.Sleep(3000)</text>
+      <!-- Async side -->
+      <text x="585" y="20" text-anchor="middle" fill="#10b981" font-weight="700" font-size="13">✅ Asynchronous — Thread Released</text>
+      <rect x="420" y="35" width="340" height="120" rx="10" fill="rgba(16,185,129,.04)" stroke="#10b981" stroke-width="1"/>
+      <!-- Timeline: work → release → resume -->
+      <rect x="440" y="55" width="60" height="30" rx="6" fill="rgba(16,185,129,.15)" stroke="#10b981" stroke-width="1"/>
+      <text x="470" y="74" text-anchor="middle" fill="#10b981" font-size="8" font-weight="600">work</text>
+      <rect x="500" y="55" width="180" height="30" rx="0" fill="rgba(59,130,246,.08)" stroke="#3b82f6" stroke-width="1" stroke-dasharray="4 3"/>
+      <text x="590" y="74" text-anchor="middle" fill="#3b82f6" font-size="8">thread FREE — handles other requests</text>
+      <rect x="680" y="55" width="60" height="30" rx="6" fill="rgba(16,185,129,.15)" stroke="#10b981" stroke-width="1"/>
+      <text x="710" y="74" text-anchor="middle" fill="#10b981" font-size="8" font-weight="600">resume</text>
+      <text x="440" y="52" fill="#5c6486" font-size="8">0s</text><text x="740" y="52" fill="#5c6486" font-size="8">3s</text>
+      <rect x="440" y="100" width="300" height="20" rx="4" fill="rgba(16,185,129,.06)"/>
+      <text x="590" y="114" text-anchor="middle" fill="#10b981" font-size="8">✅ UI responsive / server handles 100s of requests</text>
+      <text x="590" y="145" text-anchor="middle" fill="#10b981" font-size="9" font-family="JetBrains Mono,monospace">await Task.Delay(3000)</text>
+      <!-- Summary -->
+      <rect x="150" y="170" width="480" height="24" rx="8" fill="rgba(139,92,246,.05)" stroke="rgba(139,92,246,.15)" stroke-width="1"/>
+      <text x="390" y="186" text-anchor="middle" fill="#8b5cf6" font-size="10">await releases the thread. Thread.Sleep blocks it. That's the entire difference.</text>
+    </svg>
+  </div>
+
+  <div class="cg">
+    <div class="cb"><div class="cb-h bad"><div class="dots"><span></span><span></span><span></span></div><span>❌ Synchronous — blocks thread</span></div><pre><span class="kw">public string</span> <span class="fn">GetDataSync</span>()
+{
+    <span class="tp">Thread</span>.<span class="fn">Sleep</span>(<span class="num">3000</span>); <span class="cm">// thread blocked — doing nothing</span>
+    <span class="kw">return</span> <span class="str">"Data"</span>;
+}</pre></div>
+    <div class="cb"><div class="cb-h good"><div class="dots"><span></span><span></span><span></span></div><span>✅ Asynchronous — releases thread</span><button class="cpb" onclick="copyCode(this)">Copy</button></div><pre><span class="kw">public async</span> <span class="tp">Task</span>&lt;<span class="kw">string</span>&gt; <span class="fn">GetDataAsync</span>()
+{
+    <span class="kw">await</span> <span class="tp">Task</span>.<span class="fn">Delay</span>(<span class="num">3000</span>); <span class="cm">// thread released — free</span>
+    <span class="kw">return</span> <span class="str">"Data"</span>;
+}</pre></div>
+  </div>
+</section>
+
+<!-- ═══════ 2. THREAD vs TASK ═══════ -->
+<section id="thread" class="sec s2">
+  <div class="sh"><div class="sn">2</div><h2>Thread vs Task</h2></div>
+
+  <div class="cg">
+    <div class="cb"><div class="cb-h bad"><div class="dots"><span></span><span></span><span></span></div><span>Thread — Old Way (~1MB each)</span></div><pre><span class="tp">Thread</span> thread = <span class="kw">new</span> <span class="tp">Thread</span>(() =>
+{
+    <span class="tp">Thread</span>.<span class="fn">Sleep</span>(<span class="num">3000</span>);
+    <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">"Done"</span>);
+});
+thread.<span class="fn">Start</span>();</pre></div>
+    <div class="cb"><div class="cb-h good"><div class="dots"><span></span><span></span><span></span></div><span>Task — Modern Way (Thread Pool)</span><button class="cpb" onclick="copyCode(this)">Copy</button></div><pre><span class="tp">Task</span>&lt;<span class="kw">string</span>&gt; task = <span class="tp">Task</span>.<span class="fn">Run</span>(() =>
+{
+    <span class="tp">Thread</span>.<span class="fn">Sleep</span>(<span class="num">2000</span>);
+    <span class="kw">return</span> <span class="str">"Data from DB"</span>;
+});
+
+<span class="kw">string</span> result = <span class="kw">await</span> task;
+<span class="tp">Console</span>.<span class="fn">WriteLine</span>(result);</pre></div>
+  </div>
+
+  <div class="card"><h3>Comparison</h3><div class="tw"><table>
+    <thead><tr><th></th><th>Thread</th><th>Task</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Memory</strong></td><td style="color:var(--bad)">~1MB each</td><td style="color:var(--ok)">Uses thread pool — cheap</td></tr>
+      <tr><td><strong>Management</strong></td><td>Manual</td><td>Automatic</td></tr>
+      <tr><td><strong>Return value</strong></td><td>Difficult</td><td>Task&lt;T&gt;</td></tr>
+      <tr><td><strong>Exception handling</strong></td><td>Complex</td><td>Built-in</td></tr>
+      <tr><td><strong>Recommended?</strong></td><td style="color:var(--bad)">❌ Rarely</td><td style="color:var(--ok)">✅ Always</td></tr>
+    </tbody>
+  </table></div></div>
+</section>
+
+<!-- ═══════ 3. HOW AWAIT WORKS ═══════ -->
+<section id="how" class="sec s3">
+  <div class="sh"><div class="sn">3</div><h2>async and await — How They Work</h2></div>
+  <div class="ss">async marks the method. await is the real magic — releases the thread while waiting.</div>
+
+  <div class="dw">
+    <svg viewBox="0 0 780 240" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+      <defs><marker id="aw1" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#8b5cf6"/></marker></defs>
+      <text x="390" y="20" text-anchor="middle" fill="var(--text-br)" font-weight="700" font-size="14" font-family="Playfair Display,serif">What Happens at await</text>
+      <!-- Step 1: method runs -->
+      <rect x="30" y="45" width="150" height="55" rx="10" fill="rgba(139,92,246,.1)" stroke="#8b5cf6" stroke-width="1.5"/>
+      <text x="105" y="66" text-anchor="middle" fill="#8b5cf6" font-weight="700" font-size="11">Step 1</text>
+      <text x="105" y="82" text-anchor="middle" fill="#8890a8" font-size="9">Method runs until</text>
+      <text x="105" y="94" text-anchor="middle" fill="#8b5cf6" font-size="9" font-family="JetBrains Mono,monospace">await</text>
+      <path d="M180,72 L220,72" fill="none" stroke="#8b5cf6" stroke-width="1.5" marker-end="url(#aw1)"/>
+      <!-- Step 2: thread released -->
+      <rect x="220" y="45" width="150" height="55" rx="10" fill="rgba(59,130,246,.1)" stroke="#3b82f6" stroke-width="1.5"/>
+      <text x="295" y="66" text-anchor="middle" fill="#3b82f6" font-weight="700" font-size="11">Step 2</text>
+      <text x="295" y="82" text-anchor="middle" fill="#8890a8" font-size="9">Thread released back</text>
+      <text x="295" y="94" text-anchor="middle" fill="#3b82f6" font-size="9">to thread pool</text>
+      <path d="M370,72 L410,72" fill="none" stroke="#8b5cf6" stroke-width="1.5" marker-end="url(#aw1)"/>
+      <!-- Step 3: async op runs -->
+      <rect x="410" y="45" width="150" height="55" rx="10" fill="rgba(245,158,11,.1)" stroke="#f59e0b" stroke-width="1.5"/>
+      <text x="485" y="66" text-anchor="middle" fill="#f59e0b" font-weight="700" font-size="11">Step 3</text>
+      <text x="485" y="82" text-anchor="middle" fill="#8890a8" font-size="9">Async operation</text>
+      <text x="485" y="94" text-anchor="middle" fill="#f59e0b" font-size="9">runs (DB/API/file)</text>
+      <path d="M560,72 L600,72" fill="none" stroke="#8b5cf6" stroke-width="1.5" marker-end="url(#aw1)"/>
+      <!-- Step 4: resumes -->
+      <rect x="600" y="45" width="150" height="55" rx="10" fill="rgba(16,185,129,.1)" stroke="#10b981" stroke-width="1.5"/>
+      <text x="675" y="66" text-anchor="middle" fill="#10b981" font-weight="700" font-size="11">Step 4</text>
+      <text x="675" y="82" text-anchor="middle" fill="#8890a8" font-size="9">Operation complete →</text>
+      <text x="675" y="94" text-anchor="middle" fill="#10b981" font-size="9" font-weight="600">method resumes</text>
+      <!-- Thread timeline -->
+      <rect x="30" y="130" width="720" height="40" rx="8" fill="rgba(139,92,246,.04)" stroke="rgba(139,92,246,.12)" stroke-width="1"/>
+      <text x="390" y="148" text-anchor="middle" fill="#8b5cf6" font-weight="600" font-size="10">Thread Timeline</text>
+      <rect x="40" y="155" width="130" height="8" rx="4" fill="#8b5cf6"/>
+      <text x="105" y="168" text-anchor="middle" fill="#8b5cf6" font-size="7">your code</text>
+      <rect x="170" y="155" width="350" height="8" rx="4" fill="rgba(59,130,246,.2)" stroke="#3b82f6" stroke-width=".5" stroke-dasharray="3 3"/>
+      <text x="345" y="168" text-anchor="middle" fill="#3b82f6" font-size="7">thread FREE — handling other requests</text>
+      <rect x="520" y="155" width="220" height="8" rx="4" fill="#10b981"/>
+      <text x="630" y="168" text-anchor="middle" fill="#10b981" font-size="7">resumes (may be different thread!)</text>
+      <!-- Key words -->
+      <rect x="100" y="195" width="260" height="32" rx="8" fill="rgba(139,92,246,.06)" stroke="#8b5cf6" stroke-width="1"/>
+      <text x="230" y="210" text-anchor="middle" fill="#8b5cf6" font-size="10"><tspan font-weight="700">async</tspan> = marks the method</text>
+      <text x="230" y="222" text-anchor="middle" fill="#8890a8" font-size="8">compiler creates state machine</text>
+      <rect x="400" y="195" width="280" height="32" rx="8" fill="rgba(16,185,129,.06)" stroke="#10b981" stroke-width="1"/>
+      <text x="540" y="210" text-anchor="middle" fill="#10b981" font-size="10"><tspan font-weight="700">await</tspan> = the real magic</text>
+      <text x="540" y="222" text-anchor="middle" fill="#8890a8" font-size="8">releases thread, pauses, resumes when done</text>
+    </svg>
+  </div>
+
+  <div class="cb"><div class="cb-h"><div class="dots"><span></span><span></span><span></span></div><span>How await works — step by step</span><button class="cpb" onclick="copyCode(this)">Copy</button></div><pre><span class="kw">public async</span> <span class="tp">Task</span>&lt;<span class="kw">string</span>&gt; <span class="fn">GetDataAsync</span>()
+{
+    <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">"1 - Before await, Thread: "</span>
+        + <span class="tp">Thread</span>.CurrentThread.ManagedThreadId);
+
+    <span class="kw">string</span> data = <span class="kw">await</span> <span class="fn">FetchFromDBAsync</span>(); <span class="cm">// ← thread released here</span>
+
+    <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">"3 - After await, Thread: "</span>
+        + <span class="tp">Thread</span>.CurrentThread.ManagedThreadId);
+    <span class="kw">return</span> data;
+}
+
+<span class="cm">// Step 1 → method runs until await</span>
+<span class="cm">// Step 2 → thread released back to thread pool</span>
+<span class="cm">// Step 3 → FetchFromDBAsync() runs</span>
+<span class="cm">// Step 4 → when complete, method resumes from where it left off</span></pre></div>
+</section>
+
+<!-- ═══════ 4. RETURN TYPES ═══════ -->
+<section id="return" class="sec s4">
+  <div class="sh"><div class="sn">4</div><h2>Return Types</h2></div>
+
+  <div class="cb"><div class="cb-h"><div class="dots"><span></span><span></span><span></span></div><span>Three return types</span><button class="cpb" onclick="copyCode(this)">Copy</button></div><pre><span class="cm">// Task — no return value</span>
+<span class="kw">public async</span> <span class="tp">Task</span> <span class="fn">SaveDataAsync</span>()
+{
+    <span class="kw">await</span> <span class="tp">File</span>.<span class="fn">WriteAllTextAsync</span>(<span class="str">"file.txt"</span>, <span class="str">"data"</span>);
+}
+
+<span class="cm">// Task&lt;T&gt; — returns a value</span>
+<span class="kw">public async</span> <span class="tp">Task</span>&lt;<span class="kw">string</span>&gt; <span class="fn">GetDataAsync</span>()
+{
+    <span class="kw">return await</span> <span class="tp">File</span>.<span class="fn">ReadAllTextAsync</span>(<span class="str">"file.txt"</span>);
+}
+
+<span class="cm">// void — ONLY for event handlers — avoid everywhere else</span>
+<span class="kw">public async void</span> <span class="fn">Button_Click</span>(<span class="kw">object</span> sender, <span class="tp">EventArgs</span> e)
+{
+    <span class="kw">await</span> <span class="fn">DoSomethingAsync</span>();
+}</pre></div>
+
+  <div class="tip tip-r"><span class="ic">⚠️</span><span><strong>Never use async void</strong> except for event handlers. Exceptions from async void cannot be caught by the caller and will crash the application silently.</span></div>
+</section>
+
+<!-- ═══════ 5. COMMON MISTAKES ═══════ -->
+<section id="mistakes" class="sec s5">
+  <div class="sh"><div class="sn">5</div><h2>Common Mistakes</h2></div>
+
+  <div class="card"><h3>Mistake 1 — Deadlock with .Result or .Wait()</h3><p style="margin-bottom:12px">In environments with SynchronizationContext (WinForms, WPF, classic ASP.NET) — calling <code>.Result</code> blocks the thread and causes a deadlock because the async method tries to resume on the same blocked thread.</p></div>
+
+  <div class="dw">
+    <svg viewBox="0 0 780 160" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+      <text x="390" y="18" text-anchor="middle" fill="#ef4444" font-weight="700" font-size="13">💀 Deadlock: .Result blocks the thread await needs to resume on</text>
+      <!-- Thread -->
+      <rect x="60" y="40" width="200" height="48" rx="10" fill="rgba(239,68,68,.1)" stroke="#ef4444" stroke-width="1.5"/>
+      <text x="160" y="60" text-anchor="middle" fill="#ef4444" font-weight="700" font-size="11">UI Thread</text>
+      <text x="160" y="78" text-anchor="middle" fill="#ef4444" font-size="9">blocked by .Result</text>
+      <!-- Async method -->
+      <rect x="460" y="40" width="220" height="48" rx="10" fill="rgba(239,68,68,.1)" stroke="#ef4444" stroke-width="1.5"/>
+      <text x="570" y="60" text-anchor="middle" fill="#ef4444" font-weight="700" font-size="11">Async Method</text>
+      <text x="570" y="78" text-anchor="middle" fill="#ef4444" font-size="9">needs UI thread to resume</text>
+      <!-- Deadlock arrows -->
+      <path d="M260,55 L460,55" fill="none" stroke="#ef4444" stroke-width="1.5" marker-end="url(#aw1)"/>
+      <text x="360" y="48" text-anchor="middle" fill="#ef4444" font-size="8">waiting for async to finish</text>
+      <path d="M460,75 L260,75" fill="none" stroke="#ef4444" stroke-width="1.5" marker-end="url(#aw1)"/>
+      <text x="360" y="88" text-anchor="middle" fill="#ef4444" font-size="8">waiting for thread to be free</text>
+      <!-- Deadlock symbol -->
+      <text x="360" y="68" text-anchor="middle" fill="#ef4444" font-weight="900" font-size="16">💀</text>
+      <!-- Fix -->
+      <rect x="160" y="110" width="460" height="38" rx="8" fill="rgba(16,185,129,.06)" stroke="#10b981" stroke-width="1.2"/>
+      <text x="390" y="128" text-anchor="middle" fill="#10b981" font-weight="600" font-size="10">Fix: await all the way. Console/ASP.NET Core have no SynchronizationContext → no deadlock.</text>
+      <text x="390" y="142" text-anchor="middle" fill="#8890a8" font-size="9">No SyncContext = can resume on any thread pool thread</text>
+    </svg>
+  </div>
+
+  <div class="cg">
+    <div class="cb"><div class="cb-h bad"><div class="dots"><span></span><span></span><span></span></div><span>❌ Deadlock</span></div><pre><span class="kw">public string</span> <span class="fn">GetData</span>()
+{
+    <span class="kw">return</span> <span class="fn">GetDataAsync</span>().Result;
+    <span class="cm">// blocks thread — deadlock! 💀</span>
+}</pre></div>
+    <div class="cb"><div class="cb-h good"><div class="dots"><span></span><span></span><span></span></div><span>✅ Fix — await all the way</span></div><pre><span class="kw">public async</span> <span class="tp">Task</span>&lt;<span class="kw">string</span>&gt; <span class="fn">GetData</span>()
+{
+    <span class="kw">return await</span> <span class="fn">GetDataAsync</span>();
+    <span class="cm">// no deadlock</span>
+}</pre></div>
+  </div>
+
+  <div class="card"><h3>Mistake 2 — Forgetting await</h3></div>
+  <div class="cg">
+    <div class="cb"><div class="cb-h bad"><div class="dots"><span></span><span></span><span></span></div><span>❌ Fire and forget</span></div><pre><span class="kw">public async</span> <span class="tp">Task</span> <span class="fn">SaveAsync</span>()
+{
+    <span class="fn">SaveToDBAsync</span>(); <span class="cm">// no await!</span>
+    <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">"Saved"</span>);
+    <span class="cm">// prints even if save failed</span>
+}</pre></div>
+    <div class="cb"><div class="cb-h good"><div class="dots"><span></span><span></span><span></span></div><span>✅ Correct</span></div><pre><span class="kw">public async</span> <span class="tp">Task</span> <span class="fn">SaveAsync</span>()
+{
+    <span class="kw">await</span> <span class="fn">SaveToDBAsync</span>();
+    <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">"Saved"</span>);
+    <span class="cm">// prints only after save</span>
+}</pre></div>
+  </div>
+
+  <div class="card"><h3>Mistake 3 — Sequential Instead of Parallel</h3></div>
+  <div class="cg">
+    <div class="cb"><div class="cb-h bad"><div class="dots"><span></span><span></span><span></span></div><span>❌ Sequential — slow</span></div><pre><span class="kw">foreach</span> (<span class="kw">int</span> id <span class="kw">in</span> ids)
+{
+    <span class="kw">await</span> <span class="fn">GetUserAsync</span>(id);
+    <span class="cm">// one by one — slow</span>
+}</pre></div>
+    <div class="cb"><div class="cb-h good"><div class="dots"><span></span><span></span><span></span></div><span>✅ Parallel — fast 🚀</span><button class="cpb" onclick="copyCode(this)">Copy</button></div><pre><span class="kw">var</span> tasks = ids
+    .<span class="fn">Select</span>(id => <span class="fn">GetUserAsync</span>(id))
+    .<span class="fn">ToList</span>();
+<span class="kw">await</span> <span class="tp">Task</span>.<span class="fn">WhenAll</span>(tasks);
+<span class="cm">// all parallel — fast 🚀</span></pre></div>
+  </div>
+</section>
+
+<!-- ═══════ 6. WHENALL / WHENANY ═══════ -->
+<section id="whenall" class="sec s6">
+  <div class="sh"><div class="sn">6</div><h2>Task.WhenAll vs Task.WhenAny</h2></div>
+
+  <div class="cb"><div class="cb-h"><div class="dots"><span></span><span></span><span></span></div><span>WhenAll vs WhenAny</span><button class="cpb" onclick="copyCode(this)">Copy</button></div><pre><span class="cm">// Task.WhenAll — wait for ALL to complete</span>
+<span class="tp">Task</span>&lt;<span class="kw">string</span>&gt; task1 = <span class="fn">GetFromDB</span>();
+<span class="tp">Task</span>&lt;<span class="kw">string</span>&gt; task2 = <span class="fn">GetFromAPI</span>();
+<span class="tp">Task</span>&lt;<span class="kw">string</span>&gt; task3 = <span class="fn">GetFromCache</span>();
+
+<span class="kw">string</span>[] results = <span class="kw">await</span> <span class="tp">Task</span>.<span class="fn">WhenAll</span>(task1, task2, task3);
+<span class="cm">// All three run in parallel — total time = slowest one</span>
+
+<span class="cm">// Task.WhenAny — continue when FIRST completes</span>
+<span class="tp">Task</span>&lt;<span class="kw">string</span>&gt; winner = <span class="kw">await</span> <span class="tp">Task</span>.<span class="fn">WhenAny</span>(task1, task2);
+<span class="kw">string</span> result = <span class="kw">await</span> winner; <span class="cm">// fastest server wins</span></pre></div>
+</section>
+
+<!-- ═══════ 7. CONFIGUREAWAIT ═══════ -->
+<section class="sec s7">
+  <div class="sh"><div class="sn">7</div><h2>ConfigureAwait</h2></div>
+
+  <div class="cb"><div class="cb-h"><div class="dots"><span></span><span></span><span></span></div><span>ConfigureAwait usage</span></div><pre><span class="cm">// Default — resumes on original thread (needed for UI updates)</span>
+<span class="kw">string</span> data = <span class="kw">await</span> <span class="fn">GetDataAsync</span>();
+
+<span class="cm">// ConfigureAwait(false) — resumes on any thread pool thread</span>
+<span class="cm">// Use in library/service code — slightly more performant</span>
+<span class="kw">string</span> data = <span class="kw">await</span> <span class="fn">GetDataAsync</span>().<span class="fn">ConfigureAwait</span>(<span class="kw">false</span>);</pre></div>
+
+  <div class="tip tip-b"><span class="ic">📌</span><span><strong>Rule:</strong> UI apps → don't use ConfigureAwait(false) when updating UI. Library code → always use ConfigureAwait(false).</span></div>
+</section>
+
+<!-- ═══════ SUMMARY TABLE ═══════ -->
+<section class="sum">
+  <h2>Summary Table</h2>
+  <div class="card" style="--pat:var(--c1)"><div class="tw"><table>
+    <thead><tr><th>Concept</th><th>Details</th></tr></thead>
+    <tbody>
+      <tr><td><strong style="color:var(--c1)">async</strong></td><td>Marks method — compiler creates state machine</td></tr>
+      <tr><td><strong style="color:var(--c3)">await</strong></td><td>Releases thread while waiting — resumes when done</td></tr>
+      <tr><td><strong>Task</strong></td><td>Async operation with no return value</td></tr>
+      <tr><td><strong>Task&lt;T&gt;</strong></td><td>Async operation that returns a value</td></tr>
+      <tr><td><strong style="color:var(--bad)">async void</strong></td><td>Only for event handlers — never use elsewhere</td></tr>
+      <tr><td><strong>Task.WhenAll</strong></td><td>Wait for all tasks — run in parallel</td></tr>
+      <tr><td><strong>Task.WhenAny</strong></td><td>Continue when first task completes</td></tr>
+      <tr><td><strong style="color:var(--bad)">.Result/.Wait()</strong></td><td>Blocks thread — causes deadlock — avoid</td></tr>
+      <tr><td><strong>ConfigureAwait(false)</strong></td><td>Resume on any thread — use in library code</td></tr>
+    </tbody>
+  </table></div></div>
+</section>
+
+<!-- ═══════ INTERVIEW Q&A ═══════ -->
+<section id="interview" class="sum">
+  <h2>Interview Questions</h2>
+  <div style="max-width:1000px;margin:0 auto">
+    <div class="qa-b"><div class="qa-q" onclick="toggleQA(this)"><span class="ar">▶</span>What is the difference between async/await and Thread?</div><div class="qa-a">A Thread creates an OS-level thread consuming ~1MB of memory and requires manual management. <strong>async/await</strong> uses the Thread Pool through the Task abstraction — threads are reused instead of created fresh each time. The key difference is that <code>await</code> <strong>releases the thread</strong> while waiting for an operation to complete, whereas <code>Thread.Sleep</code> <strong>blocks the thread entirely</strong>. This makes async/await far more efficient for I/O-bound operations.</div></div>
+    <div class="qa-b"><div class="qa-q" onclick="toggleQA(this)"><span class="ar">▶</span>Why does .Result cause a deadlock?</div><div class="qa-a">Deadlock occurs in environments with a <strong>SynchronizationContext</strong> like WinForms, WPF, or classic ASP.NET. When <code>await</code> captures the context it promises to resume on that specific thread. But if that thread is blocked by <code>.Result</code> waiting for the async method to finish, neither can proceed — the async method needs the thread to resume and the thread needs the async method to finish. Console apps and ASP.NET Core have no SynchronizationContext so they can resume on any thread pool thread — no deadlock.</div></div>
+    <div class="qa-b"><div class="qa-q" onclick="toggleQA(this)"><span class="ar">▶</span>What is the difference between Task.WhenAll and Task.WhenAny?</div><div class="qa-a"><strong>Task.WhenAll</strong> waits for all tasks to complete and is used for parallel execution where you need all results. The total time equals the slowest task instead of the sum of all tasks. <strong>Task.WhenAny</strong> completes as soon as the first task finishes — useful for redundancy scenarios like querying multiple servers and using whichever responds first.</div></div>
+  </div>
+</section>
+
+<button class="bt" id="backTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+<footer><p>async/await &amp; Task — .NET Interview Study Guide 🚀</p></footer>
+
+<script>
+function toggleQA(el){el.classList.toggle('open');el.nextElementSibling.classList.toggle('open')}
+function copyCode(btn){const pre=btn.closest('.cb').querySelector('pre');navigator.clipboard.writeText(pre.textContent).then(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',1500)})}
+window.addEventListener('scroll',()=>{document.getElementById('backTop').classList.toggle('show',window.scrollY>400)})
+</script>
+</body>
+</html>

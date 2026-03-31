@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Collections Deep Dive — .NET Interview Study Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=DM+Sans:ital,wght@0,400;0,500;0,700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#060810;--bg-card:#0d0f18;--bg-code:#090b12;--bg-el:#151828;--border:#191d30;--border-gl:#242840;--text:#c2c8d8;--text-dim:#5c6486;--text-br:#e4eaf4;--c1:#3b82f6;--c2:#10b981;--c3:#f59e0b;--c4:#a855f7;--c5:#06b6d4;--c6:#ef4444;--c7:#ec4899;--ok:#4ade80;--bad:#f87171;--kw:#c678dd;--str:#98c379;--tp:#61afef;--cm:#5c6370;--fn:#e5c07b;--r:12px}
+*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.72;overflow-x:hidden}::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border-gl);border-radius:3px}
+.hero{position:relative;min-height:40vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:80px 24px 44px;overflow:hidden}.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 500px 350px at 30% 40%,rgba(59,130,246,.1),transparent),radial-gradient(ellipse 400px 300px at 70% 55%,rgba(16,185,129,.07),transparent)}.hero-badge{position:relative;display:inline-flex;padding:6px 18px;border:1px solid var(--c1);border-radius:100px;font-size:.8rem;color:var(--c1);letter-spacing:.08em;text-transform:uppercase;margin-bottom:18px}.hero h1{position:relative;font-family:'Playfair Display',serif;font-size:clamp(2rem,5vw,3.4rem);font-weight:900;line-height:1.15;color:var(--text-br)}.hero h1 span{background:linear-gradient(135deg,var(--c1),var(--c2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}.hero p{position:relative;max-width:620px;margin-top:14px;color:var(--text-dim);font-size:.95rem}
+.np{position:relative;display:flex;flex-wrap:wrap;justify-content:center;gap:7px;margin-top:22px}.np a{padding:5px 12px;border:1px solid var(--border-gl);border-radius:100px;color:var(--text-dim);text-decoration:none;font-size:.78rem;transition:all .25s}.np a:hover{border-color:var(--c1);color:var(--c1)}
+.sec{max-width:1000px;margin:0 auto 50px;padding:0 24px;scroll-margin-top:28px}.sh{display:flex;align-items:center;gap:12px;margin-bottom:6px}.sn{display:flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:10px;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:.9rem;flex-shrink:0;background:color-mix(in srgb,var(--pat) 16%,transparent);color:var(--pat);border:1px solid color-mix(in srgb,var(--pat) 28%,transparent)}.sh h2{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;color:var(--text-br)}.ss{color:var(--text-dim);font-style:italic;margin-bottom:16px;padding-left:52px;font-size:.87rem}
+.s1{--pat:var(--c1)}.s2{--pat:var(--c3)}.s3{--pat:var(--c2)}.s4{--pat:var(--c5)}.s5{--pat:var(--c4)}.s6{--pat:var(--c7)}.s7{--pat:var(--c6)}
+.card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:12px}.card h3{font-size:.88rem;color:var(--text-br);margin-bottom:8px;display:flex;align-items:center;gap:7px}.card h3::before{content:'';display:inline-block;width:3px;height:13px;border-radius:2px;background:var(--pat,var(--c1))}
+.cb{position:relative;background:var(--bg-code);border:1px solid var(--border);border-radius:var(--r);margin-bottom:10px;overflow:hidden}.cb-h{display:flex;align-items:center;justify-content:space-between;padding:7px 12px;background:var(--bg-el);border-bottom:1px solid var(--border);font-size:.72rem;color:var(--text-dim);font-family:'JetBrains Mono',monospace}.cb-h .dots{display:flex;gap:4px}.cb-h .dots span{width:8px;height:8px;border-radius:50%}.cb-h .dots span:nth-child(1){background:#ff5f57}.cb-h .dots span:nth-child(2){background:#febc2e}.cb-h .dots span:nth-child(3){background:#28c840}
+.cpb{background:none;border:1px solid var(--border-gl);color:var(--text-dim);padding:2px 7px;border-radius:4px;cursor:pointer;font-size:.66rem;font-family:'JetBrains Mono',monospace;transition:all .2s}.cpb:hover{border-color:var(--ok);color:var(--ok)}
+.cb pre{padding:10px 12px;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:.73rem;line-height:1.55;color:var(--text)}.kw{color:var(--kw)}.tp{color:var(--tp)}.str{color:var(--str)}.cm{color:var(--cm);font-style:italic}.fn{color:var(--fn)}.num{color:#d19a66}
+.tw{overflow-x:auto;margin-bottom:12px}table{width:100%;border-collapse:collapse;font-size:.78rem}thead th{background:var(--bg-el);color:var(--text-br);padding:8px 10px;text-align:left;font-weight:600;border-bottom:2px solid var(--border-gl);white-space:nowrap}tbody td{padding:6px 10px;border-bottom:1px solid var(--border);vertical-align:top}tbody tr:hover{background:rgba(59,130,246,.03)}
+.tip{display:flex;gap:9px;padding:10px 12px;border-radius:var(--r);margin-bottom:10px;font-size:.8rem}.tip-b{background:rgba(59,130,246,.06);border:1px solid rgba(59,130,246,.16)}.tip-b .ic{color:var(--c1)}.tip-r{background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.16)}.tip-r .ic{color:var(--c6)}.tip .ic{font-size:1rem;flex-shrink:0}
+.qa-b{margin-bottom:7px}.qa-q{display:flex;align-items:start;gap:8px;padding:10px 12px;background:var(--bg-el);border:1px solid var(--border);border-radius:var(--r);cursor:pointer;color:var(--text-br);font-size:.82rem;font-weight:500;transition:all .25s;user-select:none}.qa-q:hover{border-color:var(--c1)}.qa-q .ar{flex-shrink:0;transition:transform .3s;color:var(--c1);font-size:.75rem}.qa-q.open .ar{transform:rotate(90deg)}.qa-a{max-height:0;overflow:hidden;transition:max-height .35s ease,padding .35s;padding:0 12px;color:var(--text);font-size:.8rem;line-height:1.65;background:var(--bg-card);border:1px solid var(--border);border-top:none;border-radius:0 0 var(--r) var(--r)}.qa-a.open{max-height:500px;padding:10px 12px}
+.bt{position:fixed;bottom:24px;right:24px;width:40px;height:40px;border-radius:50%;background:var(--c1);color:#fff;border:none;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s;box-shadow:0 4px 16px rgba(59,130,246,.35);z-index:100;font-weight:700}.bt.show{opacity:1;pointer-events:auto}
+footer{text-align:center;padding:28px 24px;color:var(--text-dim);font-size:.75rem;border-top:1px solid var(--border);margin-top:28px}.sum{max-width:1000px;margin:0 auto 40px;padding:0 24px}.sum h2{font-family:'Playfair Display',serif;font-size:1.3rem;color:var(--text-br);margin-bottom:14px;text-align:center}
+@media(max-width:768px){.ss{padding-left:0}}
+</style>
+</head>
+<body>
+<section class="hero">
+  <div class="hero-badge">.NET Interview Guide</div>
+  <h1><span>Collections</span> Deep Dive</h1>
+  <p>List, Dictionary, HashSet, Queue, Stack, LinkedList — performance characteristics, internal mechanics, and when to use each.</p>
+  <div class="np"><a href="#list">List</a><a href="#dict">Dictionary</a><a href="#hashset">HashSet</a><a href="#queue">Queue</a><a href="#stack">Stack</a><a href="#linked">LinkedList</a><a href="#thread">Thread-Safe</a><a href="#compare">Comparison</a></div>
+</section>
+
+<!-- 1. LIST -->
+<section id="list" class="sec s1">
+  <div class="sh"><div class="sn">1</div><h2>List&lt;T&gt; — Ordered Resizable Array</h2></div>
+  <div class="ss">Backed by an internal array. When full, doubles in capacity (amortized growth).</div>
+  <div class="cb"><div class="cb-h"><div class="dots"><span></span><span></span><span></span></div><span>List&lt;T&gt; — performance</span><button class="cpb" onclick="copyCode(this)">Copy</button></div><pre><span class="tp">List</span>&lt;<span class="kw">int</span>&gt; list = <span class="kw">new</span> <span class="tp">List</span>&lt;<span class="kw">int</span>&gt; { <span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>, <span class="num">5</span> };
+
+<span class="kw">int</span> item = list[<span class="num">2</span>];          <span class="cm">// O(1) — direct index access — fast ✅</span>
+<span class="kw">bool</span> ex  = list.<span class="fn">Contains</span>(<span class="num">4</span>); <span class="cm">// O(n) — scans every element — slow 😐</span>
+list.<span class="fn">Add</span>(<span class="num">6</span>);                <span class="cm">// O(1) amortized — fast ✅</span>
+list.<span class="fn">Insert</span>(<span class="num">2</span>, <span class="num">99</span>);         <span class="cm">// O(n) — shifts all after index — slow 😐</span>
+list.<span class="fn">Remove</span>(<span class="num">3</span>);              <span class="cm">// O(n) — shifts all after removed — slow 😐</span></pre></div>
+  <div class="tip tip-b"><span class="ic">📌</span><span>Use for: ordered collection, index access, duplicates OK. Avoid for: frequent Contains (→ HashSet) or middle insert/remove (→ LinkedList).</span></div>
+</section>
+
+<!-- 2. DICTIONARY -->
+<section id="dict" class="sec s2">
+  <div class="sh"><div class="sn">2</div><h2>Dictionary&lt;TKey, TValue&gt; — Hash Map</h2></div>
+  <div class="ss">Uses hashing for O(1) key lookups. GetHashCode() → bucket index → direct jump.</div>
+  <div class="cb"><div class="cb-h"><div class="dots"><span></span><span></span><span></span></div><span>Dictionary — hashing internals</span></div><pre><span class="cm">// Adding "Ali" → 25</span>
+<span class="cm">// Step 1: hash  → "Ali".GetHashCode() → 12345678</span>
+<span class="cm">// Step 2: bucket → 12345678 % bucketCount → bucket 3</span>
+<span class="cm">// Step 3: store ("Ali", 25) in bucket 3</span>
+<span class="cm">//</span>
+<span class="cm">// Reading dict["Ali"]</span>
+<span class="cm">// Step 1: hash → 12345678</span>
+<span class="cm">// Step 2: jump to bucket 3</span>
+<span class="cm">// Step 3: return 25</span>
+<span class="cm">// No scanning. No looping. Direct jump. O(1). ✅</span></pre></div>
+  <div class="cb"><div class="cb-h"><div class="dots"><span></span><span></span><span></span></div><span>Dictionary — performance + TryGetValue</span><button class="cpb" onclick="copyCode(this)">Copy</button></div><pre><span class="tp">Dictionary</span>&lt;<span class="kw">string</span>, <span class="kw">int</span>&gt; dict = <span class="kw">new</span>();
+dict[<span class="str">"Ali"</span>] = <span class="num">25</span>;                             <span class="cm">// O(1) add</span>
+<span class="kw">int</span> age = dict[<span class="str">"Ali"</span>];                          <span class="cm">// O(1) read ✅</span>
+<span class="kw">bool</span> ex = dict.<span class="fn">ContainsKey</span>(<span class="str">"Ali"</span>);              <span class="cm">// O(1) ✅</span>
+<span class="kw">bool</span> ev = dict.<span class="fn">ContainsValue</span>(<span class="num">25</span>);               <span class="cm">// O(n) — scans all 😐</span>
+
+<span class="cm">// ✅ Safe — no exception</span>
+<span class="kw">if</span> (dict.<span class="fn">TryGetValue</span>(<span class="str">"Ali"</span>, <span class="kw">out int</span> val))
+    <span class="tp">Console</span>.<span class="fn">WriteLine</span>(val);
+
+<span class="cm">// Modern iteration</span>
+<span class="kw">foreach</span> (<span class="kw">var</span> (key, value) <span class="kw">in</span> dict)
+    <span class="tp">Console</span>.<span class="fn">WriteLine</span>(<span class="str">$"{key}: {value}"</span>);</pre></div>
+</section>
+
+<!-- 3. HASHSET -->
+<section id="hashset" class="sec s3">
+  <div class="sh"><div class="sn">3</div><h2>HashSet&lt;T&gt; — Unique Values, Fast Lookup</h2></div>
+  <div class="ss">Dictionary with only keys. O(1) Contains. Duplicates silently ignored.</div>
+  <div class="cb"><div class="cb-h"><div class="dots"><span></span><span></span><span></span></div><span>HashSet + Set Operations</span><button class="cpb" onclick="copyCode(this)">Copy</button></div><pre><span class="tp">HashSet</span>&lt;<span class="kw">int</span>&gt; ids = <span class="kw">new</span>() { <span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span> };
+ids.<span class="fn">Add</span>(<span class="num">1</span>); <span class="cm">// silently ignored — already exists</span>
+ids.<span class="fn">Add</span>(<span class="num">4</span>); <span class="cm">// added ✅</span>
+<span class="cm">// Count = 4, not 5</span>
+
+<span class="cm">// List Contains: O(n) — scans 1M elements 😱</span>
+<span class="cm">// HashSet Contains: O(1) — instant hash lookup ✅</span>
+
+<span class="tp">HashSet</span>&lt;<span class="kw">int</span>&gt; a = <span class="kw">new</span>() { <span class="num">1</span>,<span class="num">2</span>,<span class="num">3</span>,<span class="num">4</span>,<span class="num">5</span> };
+<span class="tp">HashSet</span>&lt;<span class="kw">int</span>&gt; b = <span class="kw">new</span>() { <span class="num">3</span>,<span class="num">4</span>,<span class="num">5</span>,<span class="num">6</span>,<span class="num">7</span> };
+a.<span class="fn">UnionWith</span>(b);      <span class="cm">// 1,2,3,4,5,6,7</span>
+a.<span class="fn">IntersectWith</span>(b);  <span class="cm">// 3,4,5</span>
+a.<span class="fn">ExceptWith</span>(b);     <span class="cm">// 1,2</span></pre></div>
+</section>
+
+<!-- 4. QUEUE -->
+<section id="queue" class="sec s4">
+  <div class="sh"><div class="sn">4</div><h2>Queue&lt;T&gt; — First In First Out (FIFO)</h2></div>
+  <div class="cb"><div class="cb-h"><div class="dots"><span></span><span></span><span></span></div><span>Queue — FIFO</span><button class="cpb" onclick="copyCode(this)">Copy</button></div><pre><span class="tp">Queue</span>&lt;<span class="kw">string</span>&gt; q = <span class="kw">new</span>();
+q.<span class="fn">Enqueue</span>(<span class="str">"Doc1.pdf"</span>);   <span class="cm">// add to BACK</span>
+q.<span class="fn">Enqueue</span>(<span class="str">"Doc2.pdf"</span>);
+q.<span class="fn">Enqueue</span>(<span class="str">"Doc3.pdf"</span>);    <span class="cm">// [Doc1 ← front ... Doc3 ← back]</span>
+<span class="kw">string</span> next = q.<span class="fn">Dequeue</span>(); <span class="cm">// "Doc1.pdf" — removed from FRONT</span>
+<span class="kw">string</span> peek = q.<span class="fn">Peek</span>();    <span class="cm">// "Doc2.pdf" — see front, no remove</span></pre></div>
+  <div class="tip tip-b"><span class="ic">📌</span><span>Use for: print queues, message queues, task scheduling, BFS graph traversal.</span></div>
+</section>
+
+<!-- 5. STACK -->
+<section id="stack" class="sec s5">
+  <div class="sh"><div class="sn">5</div><h2>Stack&lt;T&gt; — Last In First Out (LIFO)</h2></div>
+  <div class="cb"><div class="cb-h"><div class="dots"><span></span><span></span><span></span></div><span>Stack — LIFO</span><button class="cpb" onclick="copyCode(this)">Copy</button></div><pre><span class="tp">Stack</span>&lt;<span class="kw">string</span>&gt; history = <span class="kw">new</span>();
+history.<span class="fn">Push</span>(<span class="str">"google.com"</span>);
+history.<span class="fn">Push</span>(<span class="str">"github.com"</span>);
+history.<span class="fn">Push</span>(<span class="str">"stackoverflow.com"</span>); <span class="cm">// ← TOP</span>
+<span class="kw">string</span> last = history.<span class="fn">Pop</span>();       <span class="cm">// "stackoverflow.com" — removed</span>
+<span class="kw">string</span> curr = history.<span class="fn">Peek</span>();      <span class="cm">// "github.com" — TOP now</span></pre></div>
+  <div class="tip tip-b"><span class="ic">📌</span><span>Use for: browser back button, undo/redo, call stack, DFS, expression parsing.</span></div>
+</section>
+
+<!-- 6. LINKEDLIST -->
+<section id="linked" class="sec s6">
+  <div class="sh"><div class="sn">6</div><h2>LinkedList&lt;T&gt; — Fast Middle Insert/Remove</h2></div>
+  <div class="cb"><div class="cb-h"><div class="dots"><span></span><span></span><span></span></div><span>LinkedList — node-based</span><button class="cpb" onclick="copyCode(this)">Copy</button></div><pre><span class="cm">// Structure: null ← [1] ↔ [2] ↔ [3] → null</span>
+<span class="tp">LinkedList</span>&lt;<span class="kw">int</span>&gt; linked = <span class="kw">new</span>();
+linked.<span class="fn">AddFirst</span>(<span class="num">1</span>); linked.<span class="fn">AddLast</span>(<span class="num">2</span>); linked.<span class="fn">AddLast</span>(<span class="num">3</span>);
+
+<span class="tp">LinkedListNode</span>&lt;<span class="kw">int</span>&gt; node = linked.<span class="fn">Find</span>(<span class="num">2</span>);
+linked.<span class="fn">AddAfter</span>(node, <span class="num">99</span>);  <span class="cm">// [1, 2, 99, 3] — O(1) insert!</span>
+linked.<span class="fn">Remove</span>(node);          <span class="cm">// [1, 99, 3] — O(1) remove!</span></pre></div>
+  <div class="card"><h3>List vs LinkedList</h3><div class="tw"><table><thead><tr><th></th><th>List&lt;T&gt;</th><th>LinkedList&lt;T&gt;</th></tr></thead><tbody>
+    <tr><td><strong>Index access</strong></td><td style="color:var(--ok)">O(1) — fast</td><td style="color:var(--bad)">O(n) — must traverse</td></tr>
+    <tr><td><strong>Middle insert</strong></td><td style="color:var(--bad)">O(n) — must shift</td><td style="color:var(--ok)">O(1) — change pointers</td></tr>
+    <tr><td><strong>Middle remove</strong></td><td style="color:var(--bad)">O(n) — must shift</td><td style="color:var(--ok)">O(1) — change pointers</td></tr>
+    <tr><td><strong>Memory</strong></td><td>Contiguous array</td><td>Node objects — more overhead</td></tr>
+  </tbody></table></div></div>
+</section>
+
+<!-- 7. THREAD-SAFE -->
+<section id="thread" class="sec s7">
+  <div class="sh"><div class="sn">7</div><h2>Thread-Safe Collections</h2></div>
+  <div class="tip tip-r"><span class="ic">⚠️</span><span>Standard collections are NOT thread-safe. Multiple threads = data corruption. Use <code>System.Collections.Concurrent</code>.</span></div>
+  <div class="cb"><div class="cb-h"><div class="dots"><span></span><span></span><span></span></div><span>Concurrent collections</span><button class="cpb" onclick="copyCode(this)">Copy</button></div><pre><span class="cm">// ✅ Thread-safe Dictionary</span>
+<span class="tp">ConcurrentDictionary</span>&lt;<span class="kw">string</span>, <span class="kw">int</span>&gt; dict = <span class="kw">new</span>();
+dict.<span class="fn">TryAdd</span>(<span class="str">"key"</span>, <span class="num">1</span>);
+dict.<span class="fn">TryGetValue</span>(<span class="str">"key"</span>, <span class="kw">out int</span> val);
+dict.<span class="fn">AddOrUpdate</span>(<span class="str">"key"</span>, <span class="num">1</span>, (k, v) => v + <span class="num">1</span>);
+
+<span class="cm">// Other thread-safe collections:</span>
+<span class="cm">// ConcurrentQueue&lt;T&gt;      — thread-safe FIFO</span>
+<span class="cm">// ConcurrentStack&lt;T&gt;      — thread-safe LIFO</span>
+<span class="cm">// ConcurrentBag&lt;T&gt;        — unordered</span>
+<span class="cm">// BlockingCollection&lt;T&gt;   — producer-consumer</span></pre></div>
+</section>
+
+<!-- 8. COMPARISON -->
+<section id="compare" class="sum">
+  <h2>Complete Comparison</h2>
+  <div class="card" style="--pat:var(--c1)"><div class="tw"><table><thead><tr><th>Collection</th><th>Order</th><th>Duplicates</th><th>Access</th><th>Best For</th></tr></thead><tbody>
+    <tr><td><strong style="color:var(--c1)">List&lt;T&gt;</strong></td><td>✅ Ordered</td><td>✅ Yes</td><td>O(1) index</td><td>General ordered collection</td></tr>
+    <tr><td><strong style="color:var(--c3)">Dictionary&lt;K,V&gt;</strong></td><td>❌ No</td><td>❌ Keys</td><td>O(1) key</td><td>Fast key-value lookup</td></tr>
+    <tr><td><strong style="color:var(--c2)">HashSet&lt;T&gt;</strong></td><td>❌ No</td><td>❌ No</td><td>O(1) Contains</td><td>Unique values, set ops</td></tr>
+    <tr><td><strong style="color:var(--c5)">Queue&lt;T&gt;</strong></td><td>✅ FIFO</td><td>✅ Yes</td><td>Front only</td><td>Task/message processing</td></tr>
+    <tr><td><strong style="color:var(--c4)">Stack&lt;T&gt;</strong></td><td>✅ LIFO</td><td>✅ Yes</td><td>Top only</td><td>Undo/redo, DFS</td></tr>
+    <tr><td><strong style="color:var(--c7)">LinkedList&lt;T&gt;</strong></td><td>✅ Ordered</td><td>✅ Yes</td><td>O(n) index</td><td>Frequent middle changes</td></tr>
+    <tr><td><strong style="color:var(--c6)">ConcurrentDict</strong></td><td>❌ No</td><td>❌ Keys</td><td>O(1) key</td><td>Thread-safe key-value</td></tr>
+  </tbody></table></div></div>
+</section>
+
+<!-- INTERVIEW -->
+<section class="sum">
+  <h2>Interview Questions</h2>
+  <div class="qa-b"><div class="qa-q" onclick="toggleQA(this)"><span class="ar">▶</span>What is the difference between List and Dictionary?</div><div class="qa-a">List&lt;T&gt; is an ordered collection backed by an array — O(1) index access but O(n) search by value. Dictionary&lt;K,V&gt; uses hashing for O(1) lookup by key. Use List when order matters, Dictionary when fast key-based lookup is the priority.</div></div>
+  <div class="qa-b"><div class="qa-q" onclick="toggleQA(this)"><span class="ar">▶</span>What is the difference between List and HashSet?</div><div class="qa-a">List allows duplicates, maintains order, Contains is O(n). HashSet stores only unique values using hashing — Contains is O(1). For large datasets where you only need existence checking, HashSet is dramatically more efficient.</div></div>
+  <div class="qa-b"><div class="qa-q" onclick="toggleQA(this)"><span class="ar">▶</span>When would you use Queue vs Stack?</div><div class="qa-a">Queue is FIFO — first in, first out. Use for task queues, message processing, BFS. Stack is LIFO — last in, first out. Use for undo/redo, browser history, call stack simulation, DFS.</div></div>
+  <div class="qa-b"><div class="qa-q" onclick="toggleQA(this)"><span class="ar">▶</span>How does Dictionary achieve O(1) lookup?</div><div class="qa-a">Dictionary uses hashing — calls GetHashCode() on the key, maps the hash to a bucket index, and jumps directly to the correct bucket without scanning. Hash collisions are handled with chaining and are rare in practice.</div></div>
+  <div class="qa-b"><div class="qa-q" onclick="toggleQA(this)"><span class="ar">▶</span>Why are standard collections not thread-safe?</div><div class="qa-a">Standard collections aren't synchronized — simultaneous reads and writes can corrupt internal state (array resizing, bucket reorganization). Use ConcurrentDictionary, ConcurrentQueue, etc. from System.Collections.Concurrent for safe concurrent access.</div></div>
+</section>
+
+<button class="bt" id="backTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+<footer><p>Collections Deep Dive — .NET Interview Study Guide 🚀</p></footer>
+<script>
+function toggleQA(el){el.classList.toggle('open');el.nextElementSibling.classList.toggle('open')}
+function copyCode(btn){const pre=btn.closest('.cb').querySelector('pre');navigator.clipboard.writeText(pre.textContent).then(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',1500)})}
+window.addEventListener('scroll',()=>{document.getElementById('backTop').classList.toggle('show',window.scrollY>400)})
+</script>
+</body>
+</html>

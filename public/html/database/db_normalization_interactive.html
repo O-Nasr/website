@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Database Normalization — Interactive Study Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0c08;--surface:#141a0e;--surface2:#1c2416;--border:#2e3a22;--text:#e4eadc;--text-dim:#8a9a72;--accent:#84cc16;--accent2:#65a30d;--green:#4ade80;--red:#f87171;--orange:#fb923c;--yellow:#fbbf24;--blue:#60a5fa;--purple:#c084fc;--code-bg:#0e120a;--glow:rgba(132,204,22,.12)}
+*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;min-height:100vh}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 20% 5%,rgba(132,204,22,.04)0%,transparent 55%),radial-gradient(ellipse at 80% 95%,rgba(101,163,13,.03)0%,transparent 55%);pointer-events:none;z-index:0}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.container{max-width:920px;margin:0 auto;padding:2rem 1.5rem 4rem;position:relative;z-index:1}
+.hero{text-align:center;padding:3rem 0 2.5rem}.hero-badge{display:inline-block;background:linear-gradient(135deg,var(--accent),var(--accent2));color:var(--bg);font-weight:700;font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;padding:.35rem 1rem;border-radius:99px;margin-bottom:1.2rem}
+.hero h1{font-size:2.3rem;font-weight:800;background:linear-gradient(135deg,#fff 30%,var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1.15;margin-bottom:.5rem}.hero p{color:var(--text-dim);font-size:1rem}
+.nav{display:flex;flex-wrap:wrap;gap:.4rem;justify-content:center;margin-bottom:2.5rem;position:sticky;top:0;z-index:10;background:rgba(10,12,8,.88);backdrop-filter:blur(12px);padding:.7rem 0;border-bottom:1px solid var(--border)}
+.nav a{color:var(--text-dim);text-decoration:none;font-size:.72rem;font-weight:600;padding:.35rem .7rem;border-radius:8px;transition:all .2s;border:1px solid transparent}.nav a:hover,.nav a.active{color:var(--accent);background:rgba(132,204,22,.08);border-color:rgba(132,204,22,.2)}
+.section{margin-bottom:2.5rem;animation:fadeUp .5s ease both}.section-header{display:flex;align-items:center;gap:.75rem;margin-bottom:1rem;padding-bottom:.7rem;border-bottom:1px solid var(--border)}
+.section-num{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.8rem;color:var(--bg);flex-shrink:0}.section-header h2{font-size:1.25rem;font-weight:700}
+.callout{background:linear-gradient(135deg,rgba(132,204,22,.07),rgba(101,163,13,.04));border-left:3px solid var(--accent);border-radius:0 10px 10px 0;padding:.9rem 1.1rem;margin:.8rem 0;font-size:.88rem}
+.callout.green{border-left-color:var(--green);background:linear-gradient(135deg,rgba(74,222,128,.07),rgba(74,222,128,.03))}.callout.red{border-left-color:var(--red);background:linear-gradient(135deg,rgba(248,113,113,.07),rgba(248,113,113,.03))}.callout.warn{border-left-color:var(--orange);background:linear-gradient(135deg,rgba(251,146,60,.07),rgba(251,146,60,.03))}
+.table-wrap{overflow-x:auto;margin:.7rem 0;border-radius:10px;border:1px solid var(--border)}table{width:100%;border-collapse:collapse;font-size:.8rem}th{background:var(--surface2);color:var(--accent);font-weight:600;text-align:left;padding:.6rem .8rem;white-space:nowrap}td{padding:.5rem .8rem;border-top:1px solid var(--border)}tr:hover td{background:rgba(132,204,22,.03)}
+.accordion{margin:.7rem 0}.accordion-btn{width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:'Outfit',sans-serif;font-size:.85rem;font-weight:600;padding:.8rem 1rem;border-radius:10px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;transition:all .2s}
+.accordion-btn:hover{border-color:var(--accent);background:var(--surface2)}.accordion-btn .arrow{transition:transform .3s;font-size:.75rem;color:var(--accent)}.accordion-btn.open .arrow{transform:rotate(180deg)}
+.accordion-body{max-height:0;overflow:hidden;transition:max-height .4s ease;background:var(--surface);border:1px solid var(--border);border-top:none;border-radius:0 0 10px 10px;padding:0 1rem}.accordion-body.open{max-height:5000px;padding:1rem}
+
+/* NF stepper */
+.nf-stepper{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.2rem;margin:.8rem 0}
+.nf-tabs{display:flex;gap:.3rem;flex-wrap:wrap;margin-bottom:.8rem}
+.nf-tab{background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);font-family:'Outfit',sans-serif;font-size:.74rem;font-weight:600;padding:.45rem .9rem;border-radius:8px;cursor:pointer;transition:all .2s}
+.nf-tab:hover{color:var(--text);border-color:var(--accent)}.nf-tab.active{background:rgba(132,204,22,.12);border-color:var(--accent);color:var(--accent)}
+.nf-content{display:none}.nf-content.active{display:block}
+.nf-before,.nf-after{border:1px solid var(--border);border-radius:8px;padding:.6rem;margin:.4rem 0}
+.nf-before{background:rgba(248,113,113,.04);border-color:rgba(248,113,113,.2)}
+.nf-after{background:rgba(74,222,128,.04);border-color:rgba(74,222,128,.2)}
+.nf-label{font-size:.7rem;font-weight:700;letter-spacing:.05em;margin-bottom:.3rem}
+.nf-label.bad{color:var(--red)}.nf-label.good{color:var(--green)}
+.mini-table{width:100%;border-collapse:collapse;font-size:.72rem;font-family:'JetBrains Mono',monospace}
+.mini-table th{background:var(--surface2);padding:.3rem .5rem;font-size:.68rem;color:var(--accent)}.mini-table td{padding:.25rem .5rem;border-top:1px solid var(--border)}
+.mini-table .hl{color:var(--red);font-weight:600}.mini-table .pk{color:var(--accent);font-weight:600}
+
+/* Quiz */
+.quiz-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.3rem;margin-bottom:.8rem}.quiz-card h3{font-size:.9rem;margin-bottom:.8rem;color:var(--accent)}
+.quiz-option{display:block;width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'Outfit',sans-serif;font-size:.8rem;padding:.6rem .9rem;border-radius:8px;cursor:pointer;margin-bottom:.35rem;text-align:left;transition:all .2s}
+.quiz-option:hover{border-color:var(--accent);transform:translateX(4px)}.quiz-option.correct{background:rgba(74,222,128,.15);border-color:var(--green);color:var(--green)}.quiz-option.wrong{background:rgba(248,113,113,.1);border-color:var(--red);color:var(--red)}.quiz-option:disabled{cursor:default;transform:none}
+.quiz-explanation{margin-top:.6rem;padding:.7rem;border-radius:8px;background:rgba(132,204,22,.06);font-size:.8rem;display:none;line-height:1.6}.quiz-explanation.show{display:block}
+.quiz-score{text-align:center;padding:1.3rem;background:var(--surface);border:1px solid var(--accent);border-radius:14px;margin-top:.8rem}.quiz-score .big{font-size:2rem;font-weight:800;color:var(--accent)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}@media(max-width:640px){.hero h1{font-size:1.5rem}.container{padding:1rem}}
+</style>
+</head>
+<body>
+<div class="container">
+<div class="hero"><div class="hero-badge">Database Interview Study Guide</div><h1>Normalization</h1><p>1NF → 2NF → 3NF → BCNF with before/after examples</p></div>
+<nav class="nav"><a href="#s1">What & Why</a><a href="#s2">Interactive NFs</a><a href="#s3">Summary</a><a href="#s4">Tradeoffs</a><a href="#s5">Quiz</a></nav>
+
+<!-- S1 -->
+<div class="section" id="s1"><div class="section-header"><div class="section-num">1</div><h2>What is Normalization?</h2></div>
+<p style="margin-bottom:.6rem">Structuring tables to <strong>eliminate redundancy</strong> and prevent anomalies. Each piece of data lives in exactly one place.</p>
+<div class="table-wrap"><table><tr><th>Anomaly</th><th>What Happens</th><th>Example</th></tr>
+<tr><td style="color:var(--red)"><strong>Update</strong></td><td>Same data in multiple rows — update one, miss others</td><td>Customer email in every order row</td></tr>
+<tr><td style="color:var(--red)"><strong>Deletion</strong></td><td>Deleting a row accidentally removes unrelated data</td><td>Deleting last order loses customer info</td></tr>
+<tr><td style="color:var(--red)"><strong>Insertion</strong></td><td>Can't store data without another unrelated record</td><td>Can't add product without an order</td></tr></table></div>
+<div class="callout"><strong>Functional Dependency:</strong> A → B means knowing A always determines B. Example: <code>customer_id → customer_email</code></div></div>
+
+<!-- S2: Interactive NF Stepper -->
+<div class="section" id="s2"><div class="section-header"><div class="section-num">2</div><h2>Normal Forms — Before & After</h2></div>
+<div class="nf-stepper">
+<div class="nf-tabs">
+<button class="nf-tab active" onclick="showNF('nf1')">1NF</button>
+<button class="nf-tab" onclick="showNF('nf2')">2NF</button>
+<button class="nf-tab" onclick="showNF('nf3')">3NF</button>
+<button class="nf-tab" onclick="showNF('bcnf')">BCNF</button>
+</div>
+
+<div class="nf-content active" id="nf1">
+<p style="font-size:.85rem;font-weight:600;margin-bottom:.5rem">1NF: Atomic values + unique rows. No multi-valued cells.</p>
+<div class="nf-before"><div class="nf-label bad">❌ BEFORE — violates 1NF</div>
+<table class="mini-table"><tr><th>order_id</th><th>customer</th><th>products</th></tr>
+<tr><td class="pk">1</td><td>Ahmed</td><td class="hl">Laptop, Mouse, Keyboard</td></tr>
+<tr><td class="pk">2</td><td>Sara</td><td>Monitor</td></tr></table></div>
+<div class="nf-after"><div class="nf-label good">✅ AFTER — 1NF</div>
+<table class="mini-table"><tr><th>order_id</th><th>customer</th><th>product</th></tr>
+<tr><td class="pk">1</td><td>Ahmed</td><td>Laptop</td></tr><tr><td class="pk">1</td><td>Ahmed</td><td>Mouse</td></tr>
+<tr><td class="pk">1</td><td>Ahmed</td><td>Keyboard</td></tr><tr><td class="pk">2</td><td>Sara</td><td>Monitor</td></tr></table></div>
+</div>
+
+<div class="nf-content" id="nf2">
+<p style="font-size:.85rem;font-weight:600;margin-bottom:.5rem">2NF: No partial dependencies. Non-key must depend on WHOLE composite key.</p>
+<div class="nf-before"><div class="nf-label bad">❌ BEFORE — partial dependency (product_name depends only on product_id)</div>
+<table class="mini-table"><tr><th>order_id (PK)</th><th>product_id (PK)</th><th>quantity</th><th class="hl">product_name</th><th class="hl">product_price</th></tr>
+<tr><td class="pk">1</td><td class="pk">101</td><td>2</td><td class="hl">Laptop</td><td class="hl">1000</td></tr>
+<tr><td class="pk">1</td><td class="pk">102</td><td>1</td><td class="hl">Mouse</td><td class="hl">50</td></tr>
+<tr><td class="pk">2</td><td class="pk">101</td><td>1</td><td class="hl">Laptop</td><td class="hl">1000</td></tr></table></div>
+<div class="nf-after"><div class="nf-label good">✅ AFTER — split into 2 tables</div>
+<div style="display:flex;gap:.5rem;flex-wrap:wrap">
+<div style="flex:1;min-width:180px"><p style="font-size:.68rem;font-weight:700;color:var(--accent);margin-bottom:.2rem">order_products</p>
+<table class="mini-table"><tr><th>order_id</th><th>product_id</th><th>quantity</th></tr>
+<tr><td class="pk">1</td><td class="pk">101</td><td>2</td></tr><tr><td class="pk">1</td><td class="pk">102</td><td>1</td></tr><tr><td class="pk">2</td><td class="pk">101</td><td>1</td></tr></table></div>
+<div style="flex:1;min-width:140px"><p style="font-size:.68rem;font-weight:700;color:var(--accent);margin-bottom:.2rem">products</p>
+<table class="mini-table"><tr><th>product_id</th><th>name</th><th>price</th></tr>
+<tr><td class="pk">101</td><td>Laptop</td><td>1000</td></tr><tr><td class="pk">102</td><td>Mouse</td><td>50</td></tr></table></div></div></div>
+</div>
+
+<div class="nf-content" id="nf3">
+<p style="font-size:.85rem;font-weight:600;margin-bottom:.5rem">3NF: No transitive dependencies. Non-key must not depend on another non-key.</p>
+<div class="nf-before"><div class="nf-label bad">❌ BEFORE — employee_id → department_id → department_name (transitive)</div>
+<table class="mini-table"><tr><th>employee_id (PK)</th><th>name</th><th>dept_id</th><th class="hl">dept_name</th></tr>
+<tr><td class="pk">1</td><td>Ahmed</td><td>10</td><td class="hl">Engineering</td></tr>
+<tr><td class="pk">2</td><td>Sara</td><td>20</td><td class="hl">Marketing</td></tr>
+<tr><td class="pk">3</td><td>Omar</td><td>10</td><td class="hl">Engineering</td></tr></table></div>
+<div class="nf-after"><div class="nf-label good">✅ AFTER — split</div>
+<div style="display:flex;gap:.5rem;flex-wrap:wrap">
+<div style="flex:1;min-width:180px"><p style="font-size:.68rem;font-weight:700;color:var(--accent);margin-bottom:.2rem">employees</p>
+<table class="mini-table"><tr><th>emp_id</th><th>name</th><th>dept_id (FK)</th></tr>
+<tr><td class="pk">1</td><td>Ahmed</td><td>10</td></tr><tr><td class="pk">2</td><td>Sara</td><td>20</td></tr><tr><td class="pk">3</td><td>Omar</td><td>10</td></tr></table></div>
+<div style="flex:1;min-width:140px"><p style="font-size:.68rem;font-weight:700;color:var(--accent);margin-bottom:.2rem">departments</p>
+<table class="mini-table"><tr><th>dept_id</th><th>dept_name</th></tr>
+<tr><td class="pk">10</td><td>Engineering</td></tr><tr><td class="pk">20</td><td>Marketing</td></tr></table></div></div></div>
+</div>
+
+<div class="nf-content" id="bcnf">
+<p style="font-size:.85rem;font-weight:600;margin-bottom:.5rem">BCNF: Every determinant must be a candidate key. Fixes overlapping candidate key edge cases.</p>
+<div class="nf-before"><div class="nf-label bad">❌ BEFORE — teacher → course but teacher is NOT a superkey</div>
+<table class="mini-table"><tr><th>student_id</th><th>course</th><th>teacher</th></tr>
+<tr><td class="pk">1</td><td>Math</td><td>Mr. Ali</td></tr><tr><td class="pk">1</td><td>Science</td><td>Ms. Nour</td></tr>
+<tr><td class="pk">2</td><td>Math</td><td>Mr. Ali</td></tr><tr><td class="pk">3</td><td>Math</td><td>Mr. Kareem</td></tr></table></div>
+<div class="nf-after"><div class="nf-label good">✅ AFTER — split</div>
+<div style="display:flex;gap:.5rem;flex-wrap:wrap">
+<div style="flex:1;min-width:150px"><p style="font-size:.68rem;font-weight:700;color:var(--accent);margin-bottom:.2rem">teacher_courses</p>
+<table class="mini-table"><tr><th>teacher (PK)</th><th>course</th></tr>
+<tr><td class="pk">Mr. Ali</td><td>Math</td></tr><tr><td class="pk">Ms. Nour</td><td>Science</td></tr><tr><td class="pk">Mr. Kareem</td><td>Math</td></tr></table></div>
+<div style="flex:1;min-width:140px"><p style="font-size:.68rem;font-weight:700;color:var(--accent);margin-bottom:.2rem">student_teachers</p>
+<table class="mini-table"><tr><th>student_id</th><th>teacher</th></tr>
+<tr><td class="pk">1</td><td>Mr. Ali</td></tr><tr><td class="pk">1</td><td>Ms. Nour</td></tr><tr><td class="pk">2</td><td>Mr. Ali</td></tr><tr><td class="pk">3</td><td>Mr. Kareem</td></tr></table></div></div></div>
+</div></div></div>
+
+<!-- S3 -->
+<div class="section" id="s3"><div class="section-header"><div class="section-num">3</div><h2>Summary</h2></div>
+<div class="table-wrap"><table><tr><th>Form</th><th>Builds On</th><th>Eliminates</th><th>Key Concept</th></tr>
+<tr><td style="color:var(--accent)"><strong>1NF</strong></td><td>—</td><td>Multi-valued cells</td><td>Atomic values + unique rows</td></tr>
+<tr><td style="color:var(--accent)"><strong>2NF</strong></td><td>1NF</td><td>Partial dependencies</td><td>Non-key depends on WHOLE composite key</td></tr>
+<tr><td style="color:var(--accent)"><strong>3NF</strong></td><td>2NF</td><td>Transitive dependencies</td><td>Non-key must not depend on another non-key</td></tr>
+<tr><td style="color:var(--accent)"><strong>BCNF</strong></td><td>3NF</td><td>Overlapping candidate keys</td><td>Every determinant must be a candidate key</td></tr></table></div></div>
+
+<!-- S4 -->
+<div class="section" id="s4"><div class="section-header"><div class="section-num">4</div><h2>Real-World Tradeoff</h2></div>
+<div class="table-wrap"><table><tr><th>Scenario</th><th>Recommendation</th><th>Reason</th></tr>
+<tr><td>OLTP (banking, e-commerce)</td><td style="color:var(--green)">Normalize to 3NF/BCNF</td><td>Data integrity is critical</td></tr>
+<tr><td>OLAP (analytics, reporting)</td><td style="color:var(--orange)">Denormalize</td><td>Read speed > write integrity</td></tr>
+<tr><td>High-read APIs</td><td style="color:var(--yellow)">Partial denormalization</td><td>Avoid expensive JOINs on hot paths</td></tr></table></div>
+<div class="callout green"><strong>Senior Insight:</strong> Normalization is for write integrity. Denormalization is for read performance. Knowing when to apply each is what separates senior engineers.</div></div>
+
+<!-- S5: Quiz -->
+<div class="section" id="s5"><div class="section-header"><div class="section-num">5</div><h2>Test Yourself</h2></div>
+<div class="quiz-card" id="q1"><h3>Q1: What is a partial dependency?</h3><button class="quiz-option" onclick="answer(this,'q1',true)">Non-key column depends on only PART of a composite primary key</button><button class="quiz-option" onclick="answer(this,'q1',false)">Non-key column depends on another non-key column</button><div class="quiz-explanation" id="q1-exp">Partial dependency = non-key depends on part of a composite PK (violates 2NF). The second option describes a <em>transitive</em> dependency (violates 3NF). This is the most commonly confused distinction.</div></div>
+<div class="quiz-card" id="q2"><h3>Q2: employee_id → dept_id → dept_name. Which NF is violated?</h3><button class="quiz-option" onclick="answer(this,'q2',false)">2NF</button><button class="quiz-option" onclick="answer(this,'q2',true)">3NF — transitive dependency (non-key depends on non-key)</button><div class="quiz-explanation" id="q2-exp">dept_name depends on dept_id, which is a non-key column. This chain A→B→C where B is not a key is a transitive dependency — violates 3NF.</div></div>
+<div class="quiz-card" id="q3"><h3>Q3: When would you intentionally denormalize?</h3><button class="quiz-option" onclick="answer(this,'q3',false)">Always — normalized databases are too slow</button><button class="quiz-option" onclick="answer(this,'q3',true)">When read performance matters more than write integrity (OLAP, high-traffic APIs)</button><div class="quiz-explanation" id="q3-exp">Denormalize for read-heavy scenarios: analytics/reporting (OLAP), high-traffic APIs where JOINs are expensive. Accept some redundancy for speed. This is a senior-level engineering judgment call.</div></div>
+<div class="quiz-score" id="score-box" style="display:none"><div class="big" id="score-text"></div><p style="color:var(--text-dim);margin-top:.3rem">Normalization Quiz</p></div></div>
+
+<!-- Interview Answers -->
+<div class="section" id="s6"><div class="section-header"><div class="section-num">★</div><h2>Interview Answer Bank</h2></div>
+<div class="accordion"><button class="accordion-btn" onclick="toggleAcc(this)"><span>Q: What is normalization?</span><span class="arrow">▼</span></button><div class="accordion-body"><div class="callout green">Organizing tables to eliminate redundancy and prevent update anomalies (same data in multiple rows), deletion anomalies (losing unrelated data), and insertion anomalies (can't store data without unrelated records). Each piece of data lives in exactly one place.</div></div></div>
+<div class="accordion"><button class="accordion-btn" onclick="toggleAcc(this)"><span>Q: 2NF vs 3NF?</span><span class="arrow">▼</span></button><div class="accordion-body"><div class="callout green">2NF eliminates <strong>partial dependencies</strong> — non-key depends on part of composite PK. 3NF eliminates <strong>transitive dependencies</strong> — non-key depends on another non-key. 2NF is about the key relationship; 3NF is about non-key-to-non-key relationships.</div></div></div>
+<div class="accordion"><button class="accordion-btn" onclick="toggleAcc(this)"><span>Q: When to denormalize?</span><span class="arrow">▼</span></button><div class="accordion-body"><div class="callout green">When read performance > write integrity. Analytics/OLAP systems, high-traffic APIs where JOINs are expensive. Store pre-joined or aggregated data. Accept redundancy for speed. The tradeoff understanding is what separates senior engineers.</div></div></div></div>
+</div>
+<script>
+function toggleAcc(btn){btn.classList.toggle('open');btn.nextElementSibling.classList.toggle('open')}
+function showNF(id){document.querySelectorAll('.nf-tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.nf-content').forEach(c=>c.classList.remove('active'));event.target.classList.add('active');document.getElementById(id).classList.add('active')}
+let answered=0,correct=0,total=3;
+function answer(btn,qId,isCorrect){const card=document.getElementById(qId);if(card.dataset.answered)return;card.dataset.answered='1';answered++;if(isCorrect){btn.classList.add('correct');correct++;}else btn.classList.add('wrong');card.querySelectorAll('.quiz-option').forEach(o=>o.disabled=true);document.getElementById(qId+'-exp').classList.add('show');if(answered===total){document.getElementById('score-box').style.display='block';document.getElementById('score-text').textContent=correct+' / '+total;}}
+const sections=document.querySelectorAll('.section');const navLinks=document.querySelectorAll('.nav a');
+window.addEventListener('scroll',()=>{let c='';sections.forEach(s=>{if(window.scrollY>=s.offsetTop-120)c=s.id});navLinks.forEach(a=>{a.classList.remove('active');if(a.getAttribute('href')==='#'+c)a.classList.add('active')})});
+</script>
+</body>
+</html>

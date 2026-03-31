@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SQL JOINs Deep Dive — Interactive Study Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0608;--surface:#1a1018;--surface2:#261828;--border:#3e2848;--text:#f0e4f4;--text-dim:#9878a8;--accent:#d946ef;--accent2:#a21caf;--green:#4ade80;--red:#f87171;--orange:#fb923c;--yellow:#fbbf24;--blue:#60a5fa;--purple:#c084fc;--teal:#2dd4bf;--code-bg:#140a10;--glow:rgba(217,70,239,.12)}
+*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;min-height:100vh}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 20% 5%,rgba(217,70,239,.04)0%,transparent 55%),radial-gradient(ellipse at 80% 95%,rgba(162,28,175,.03)0%,transparent 55%);pointer-events:none;z-index:0}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.container{max-width:920px;margin:0 auto;padding:2rem 1.5rem 4rem;position:relative;z-index:1}
+.hero{text-align:center;padding:3rem 0 2.5rem}.hero-badge{display:inline-block;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-weight:700;font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;padding:.35rem 1rem;border-radius:99px;margin-bottom:1.2rem}
+.hero h1{font-size:2.3rem;font-weight:800;background:linear-gradient(135deg,#fff 30%,var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1.15;margin-bottom:.5rem}.hero p{color:var(--text-dim);font-size:1rem}
+.nav{display:flex;flex-wrap:wrap;gap:.4rem;justify-content:center;margin-bottom:2.5rem;position:sticky;top:0;z-index:10;background:rgba(10,6,8,.88);backdrop-filter:blur(12px);padding:.7rem 0;border-bottom:1px solid var(--border)}
+.nav a{color:var(--text-dim);text-decoration:none;font-size:.72rem;font-weight:600;padding:.35rem .7rem;border-radius:8px;transition:all .2s;border:1px solid transparent}.nav a:hover,.nav a.active{color:var(--accent);background:rgba(217,70,239,.08);border-color:rgba(217,70,239,.2)}
+.section{margin-bottom:2.5rem;animation:fadeUp .5s ease both}.section-header{display:flex;align-items:center;gap:.75rem;margin-bottom:1rem;padding-bottom:.7rem;border-bottom:1px solid var(--border)}
+.section-num{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.8rem;color:#fff;flex-shrink:0}.section-header h2{font-size:1.25rem;font-weight:700}
+.callout{background:linear-gradient(135deg,rgba(217,70,239,.07),rgba(162,28,175,.04));border-left:3px solid var(--accent);border-radius:0 10px 10px 0;padding:.9rem 1.1rem;margin:.8rem 0;font-size:.88rem}
+.callout.green{border-left-color:var(--green);background:linear-gradient(135deg,rgba(74,222,128,.07),rgba(74,222,128,.03))}.callout.warn{border-left-color:var(--orange);background:linear-gradient(135deg,rgba(251,146,60,.07),rgba(251,146,60,.03))}.callout.red{border-left-color:var(--red);background:linear-gradient(135deg,rgba(248,113,113,.07),rgba(248,113,113,.03))}
+pre{background:var(--code-bg);border:1px solid var(--border);border-radius:10px;padding:1rem;overflow-x:auto;margin:.7rem 0;font-family:'JetBrains Mono',monospace;font-size:.76rem;line-height:1.6;position:relative}
+pre .label{position:absolute;top:.4rem;right:.5rem;font-size:.58rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em;font-family:'Outfit',sans-serif;font-weight:600;background:var(--surface);padding:.12rem .4rem;border-radius:4px}
+.kw{color:var(--accent)}.tp{color:var(--purple)}.cm{color:#5a3868;font-style:italic}.st{color:var(--green)}.fn{color:var(--yellow)}.nu{color:var(--orange)}.er{color:var(--red)}.nl{color:var(--text-dim);font-style:italic}
+.table-wrap{overflow-x:auto;margin:.7rem 0;border-radius:10px;border:1px solid var(--border)}table{width:100%;border-collapse:collapse;font-size:.8rem}th{background:var(--surface2);color:var(--accent);font-weight:600;text-align:left;padding:.6rem .8rem;white-space:nowrap}td{padding:.5rem .8rem;border-top:1px solid var(--border)}tr:hover td{background:rgba(217,70,239,.03)}
+.accordion{margin:.7rem 0}.accordion-btn{width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:'Outfit',sans-serif;font-size:.85rem;font-weight:600;padding:.8rem 1rem;border-radius:10px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;transition:all .2s}.accordion-btn:hover{border-color:var(--accent);background:var(--surface2)}.accordion-btn .arrow{transition:transform .3s;font-size:.75rem;color:var(--accent)}.accordion-btn.open .arrow{transform:rotate(180deg)}.accordion-body{max-height:0;overflow:hidden;transition:max-height .4s ease;background:var(--surface);border:1px solid var(--border);border-top:none;border-radius:0 0 10px 10px;padding:0 1rem}.accordion-body.open{max-height:6000px;padding:1rem}
+
+/* Join visualizer */
+.join-viz{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.3rem;margin:1rem 0}
+.jv-tabs{display:flex;gap:.3rem;flex-wrap:wrap;margin-bottom:.8rem}
+.jv-tab{background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);font-family:'Outfit',sans-serif;font-size:.72rem;font-weight:600;padding:.45rem .8rem;border-radius:8px;cursor:pointer;transition:all .2s}
+.jv-tab:hover{color:var(--text);border-color:var(--accent)}.jv-tab.active{background:rgba(217,70,239,.12);border-color:var(--accent);color:var(--accent)}
+.jv-content{display:none}.jv-content.active{display:block}
+.jv-tables{display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:.6rem}
+.jv-tbl{flex:1;min-width:180px}
+.jv-tbl h4{font-size:.75rem;font-weight:700;color:var(--accent);margin-bottom:.3rem}
+.mini-table{width:100%;border-collapse:collapse;font-size:.72rem;font-family:'JetBrains Mono',monospace}.mini-table th{background:var(--surface2);padding:.3rem .5rem;font-size:.66rem;color:var(--accent)}.mini-table td{padding:.25rem .5rem;border-top:1px solid var(--border)}
+.mini-table tr.match{background:rgba(74,222,128,.06)}.mini-table tr.left-only{background:rgba(96,165,250,.06)}.mini-table tr.right-only{background:rgba(251,146,60,.06)}.mini-table tr.excluded{opacity:.3;text-decoration:line-through}
+.jv-result{margin-top:.5rem}
+.jv-result h4{font-size:.75rem;font-weight:700;color:var(--green);margin-bottom:.3rem}
+.jv-legend{display:flex;gap:.8rem;flex-wrap:wrap;margin-top:.5rem;font-size:.68rem}
+.jv-legend-item{display:flex;align-items:center;gap:.3rem}
+.jv-dot{width:10px;height:10px;border-radius:3px}
+
+/* ON vs WHERE sim */
+.ow-sim{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.3rem;margin:1rem 0}
+.ow-tabs{display:flex;gap:.3rem;flex-wrap:wrap;margin-bottom:.8rem}
+.ow-tab{background:var(--surface2);border:1px solid var(--border);color:var(--text-dim);font-family:'Outfit',sans-serif;font-size:.72rem;font-weight:600;padding:.45rem .8rem;border-radius:8px;cursor:pointer;transition:all .2s}
+.ow-tab:hover{color:var(--text);border-color:var(--accent)}.ow-tab.active{background:rgba(217,70,239,.12);border-color:var(--accent);color:var(--accent)}
+.ow-log{background:var(--code-bg);border:1px solid var(--border);border-radius:10px;padding:.8rem;font-family:'JetBrains Mono',monospace;font-size:.7rem;line-height:1.8;max-height:240px;overflow-y:auto}
+.ow-log .ok{color:var(--green)}.ow-log .bad{color:var(--red)}.ow-log .warn{color:var(--orange)}.ow-log .dim{color:var(--text-dim)}.ow-log .hl{color:var(--accent)}.ow-log .nl{color:var(--blue);font-style:italic}
+
+/* Quiz */
+.quiz-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.3rem;margin-bottom:.8rem}.quiz-card h3{font-size:.9rem;margin-bottom:.8rem;color:var(--accent)}
+.quiz-option{display:block;width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'Outfit',sans-serif;font-size:.8rem;padding:.6rem .9rem;border-radius:8px;cursor:pointer;margin-bottom:.35rem;text-align:left;transition:all .2s}.quiz-option:hover{border-color:var(--accent);transform:translateX(4px)}.quiz-option.correct{background:rgba(74,222,128,.15);border-color:var(--green);color:var(--green)}.quiz-option.wrong{background:rgba(248,113,113,.1);border-color:var(--red);color:var(--red)}.quiz-option:disabled{cursor:default;transform:none}
+.quiz-explanation{margin-top:.6rem;padding:.7rem;border-radius:8px;background:rgba(217,70,239,.06);font-size:.8rem;display:none;line-height:1.6}.quiz-explanation.show{display:block}
+.quiz-score{text-align:center;padding:1.3rem;background:var(--surface);border:1px solid var(--accent);border-radius:14px;margin-top:.8rem}.quiz-score .big{font-size:2rem;font-weight:800;color:var(--accent)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:640px){.hero h1{font-size:1.5rem}.container{padding:1rem}.jv-tables{flex-direction:column}}
+</style>
+</head>
+<body>
+<div class="container">
+<div class="hero"><div class="hero-badge">SQL Interview Study Guide</div><h1>SQL JOINs Deep Dive</h1><p>INNER, LEFT, RIGHT, FULL, CROSS & SELF JOIN — with live result tables</p></div>
+<nav class="nav"><a href="#s1">Join Visualizer</a><a href="#s2">LEFT JOIN Trap</a><a href="#s3">CROSS & SELF</a><a href="#s4">ON vs WHERE</a><a href="#s5">Quiz</a></nav>
+
+<!-- S1: Interactive Join Visualizer -->
+<div class="section" id="s1"><div class="section-header"><div class="section-num">1</div><h2>JOIN Visualizer — See the Results</h2></div>
+<p style="margin-bottom:.6rem;font-size:.88rem">Same two tables, four different joins. Click each to see which rows survive:</p>
+
+<div class="join-viz">
+<div class="jv-tabs">
+<button class="jv-tab active" onclick="showJoin('inner')">INNER JOIN</button>
+<button class="jv-tab" onclick="showJoin('left')">LEFT JOIN</button>
+<button class="jv-tab" onclick="showJoin('right')">RIGHT JOIN</button>
+<button class="jv-tab" onclick="showJoin('full')">FULL JOIN</button>
+</div>
+
+<!-- Source tables -->
+<div class="jv-tables">
+<div class="jv-tbl"><h4>customers (LEFT)</h4>
+<table class="mini-table"><tr><th>id</th><th>name</th></tr>
+<tr id="c1"><td>1</td><td>Ahmed</td></tr>
+<tr id="c2"><td>2</td><td>Sara</td></tr>
+<tr id="c3"><td>3</td><td>Omar</td></tr></table></div>
+<div class="jv-tbl"><h4>orders (RIGHT)</h4>
+<table class="mini-table"><tr><th>id</th><th>cust_id</th><th>total</th></tr>
+<tr id="o1"><td>101</td><td>1</td><td>500</td></tr>
+<tr id="o2"><td>102</td><td>1</td><td>200</td></tr>
+<tr id="o3"><td>103</td><td>2</td><td>300</td></tr>
+<tr id="o4"><td>104</td><td>99</td><td>999</td></tr></table></div>
+</div>
+
+<!-- Results per join type -->
+<div class="jv-content active" id="jv-inner">
+<div class="jv-result"><h4>INNER JOIN Result — only matches</h4>
+<table class="mini-table"><tr><th>name</th><th>total</th></tr>
+<tr class="match"><td>Ahmed</td><td>500</td></tr><tr class="match"><td>Ahmed</td><td>200</td></tr><tr class="match"><td>Sara</td><td>300</td></tr></table>
+<p style="font-size:.72rem;color:var(--text-dim);margin-top:.3rem">Omar dropped (no orders). Order 104 dropped (no customer). Only matched rows survive.</p></div></div>
+
+<div class="jv-content" id="jv-left">
+<div class="jv-result"><h4>LEFT JOIN Result — all customers</h4>
+<table class="mini-table"><tr><th>name</th><th>total</th></tr>
+<tr class="match"><td>Ahmed</td><td>500</td></tr><tr class="match"><td>Ahmed</td><td>200</td></tr><tr class="match"><td>Sara</td><td>300</td></tr>
+<tr class="left-only"><td>Omar</td><td style="color:var(--blue);font-style:italic">NULL</td></tr></table>
+<p style="font-size:.72rem;color:var(--text-dim);margin-top:.3rem">Omar stays with NULL — all left rows preserved. Order 104 still excluded (no matching customer on left).</p></div></div>
+
+<div class="jv-content" id="jv-right">
+<div class="jv-result"><h4>RIGHT JOIN Result — all orders</h4>
+<table class="mini-table"><tr><th>name</th><th>total</th></tr>
+<tr class="match"><td>Ahmed</td><td>500</td></tr><tr class="match"><td>Ahmed</td><td>200</td></tr><tr class="match"><td>Sara</td><td>300</td></tr>
+<tr class="right-only"><td style="color:var(--orange);font-style:italic">NULL</td><td>999</td></tr></table>
+<p style="font-size:.72rem;color:var(--text-dim);margin-top:.3rem">Order 104 stays with NULL name — all right rows preserved. Omar excluded (no orders on right side).</p></div></div>
+
+<div class="jv-content" id="jv-full">
+<div class="jv-result"><h4>FULL JOIN Result — everything from both sides</h4>
+<table class="mini-table"><tr><th>name</th><th>total</th></tr>
+<tr class="match"><td>Ahmed</td><td>500</td></tr><tr class="match"><td>Ahmed</td><td>200</td></tr><tr class="match"><td>Sara</td><td>300</td></tr>
+<tr class="left-only"><td>Omar</td><td style="color:var(--blue);font-style:italic">NULL</td></tr>
+<tr class="right-only"><td style="color:var(--orange);font-style:italic">NULL</td><td>999</td></tr></table>
+<p style="font-size:.72rem;color:var(--text-dim);margin-top:.3rem">Both Omar AND order 104 appear. NULL on whichever side has no match.</p></div></div>
+
+<div class="jv-legend">
+<div class="jv-legend-item"><div class="jv-dot" style="background:rgba(74,222,128,.3)"></div>Matched in both</div>
+<div class="jv-legend-item"><div class="jv-dot" style="background:rgba(96,165,250,.3)"></div>Left only (NULL right)</div>
+<div class="jv-legend-item"><div class="jv-dot" style="background:rgba(251,146,60,.3)"></div>Right only (NULL left)</div>
+</div>
+</div>
+
+<!-- Comparison table -->
+<div class="table-wrap"><table><tr><th>Result Row</th><th>INNER</th><th>LEFT</th><th>RIGHT</th><th>FULL</th></tr>
+<tr><td>Ahmed │ 500</td><td style="color:var(--green)">✅</td><td style="color:var(--green)">✅</td><td style="color:var(--green)">✅</td><td style="color:var(--green)">✅</td></tr>
+<tr><td>Ahmed │ 200</td><td style="color:var(--green)">✅</td><td style="color:var(--green)">✅</td><td style="color:var(--green)">✅</td><td style="color:var(--green)">✅</td></tr>
+<tr><td>Sara │ 300</td><td style="color:var(--green)">✅</td><td style="color:var(--green)">✅</td><td style="color:var(--green)">✅</td><td style="color:var(--green)">✅</td></tr>
+<tr><td>Omar │ NULL</td><td style="color:var(--red)">❌</td><td style="color:var(--green)">✅</td><td style="color:var(--red)">❌</td><td style="color:var(--green)">✅</td></tr>
+<tr><td>NULL │ 999</td><td style="color:var(--red)">❌</td><td style="color:var(--red)">❌</td><td style="color:var(--green)">✅</td><td style="color:var(--green)">✅</td></tr></table></div>
+</div>
+
+<!-- S2: LEFT JOIN Trap -->
+<div class="section" id="s2"><div class="section-header"><div class="section-num">2</div><h2>The LEFT JOIN + WHERE Trap</h2></div>
+<p style="margin-bottom:.6rem;font-size:.88rem">Adding WHERE on the right table <strong>silently converts LEFT JOIN to INNER JOIN</strong>. Watch:</p>
+
+<div class="ow-sim">
+<div class="ow-tabs">
+<button class="ow-tab" onclick="runOW('wrong')">❌ WHERE on right table</button>
+<button class="ow-tab" onclick="runOW('fix1')">✅ Fix: OR IS NULL</button>
+<button class="ow-tab" onclick="runOW('fix2')">✅ Fix: Move to ON</button>
+</div>
+<div class="ow-log" id="ow-log"><span class="dim">Click a scenario to see the trap in action...</span></div>
+</div>
+
+<div class="table-wrap"><table><tr><th></th><th>ON condition</th><th>WHERE condition</th></tr>
+<tr><td><strong>When</strong></td><td>During the JOIN — while matching</td><td>After the JOIN — on final result</td></tr>
+<tr><td><strong>LEFT JOIN effect</strong></td><td style="color:var(--green)">Filters matches. Left rows still appear with NULL.</td><td style="color:var(--red)">Removes NULLs. Converts to INNER JOIN silently.</td></tr>
+<tr><td><strong>Use for</strong></td><td>Right table conditions in LEFT JOIN</td><td>Left table or post-join filters</td></tr></table></div></div>
+
+<!-- S3: CROSS & SELF -->
+<div class="section" id="s3"><div class="section-header"><div class="section-num">3</div><h2>CROSS JOIN & SELF JOIN</h2></div>
+
+<div class="accordion"><button class="accordion-btn" onclick="toggleAcc(this)"><span>CROSS JOIN — Cartesian Product (m × n rows)</span><span class="arrow">▼</span></button><div class="accordion-body">
+<p style="font-size:.88rem;margin-bottom:.5rem">Every row from left × every row from right. No ON needed. <strong>3 sizes × 4 colors = 12 product variants.</strong></p>
+<pre><span class="label">SQL</span><span class="kw">SELECT</span> sizes.name, colors.name
+<span class="kw">FROM</span> sizes <span class="kw">CROSS JOIN</span> colors;
+<span class="cm">-- S-Red, S-Blue, S-Black, S-White, M-Red, M-Blue...</span></pre>
+<div class="callout red">⚠️ <strong>Danger:</strong> 1000 × 1000 = 1,000,000 rows. A forgotten ON condition accidentally creates a CROSS JOIN — most common cause of queries that never finish.</div>
+</div></div>
+
+<div class="accordion"><button class="accordion-btn" onclick="toggleAcc(this)"><span>SELF JOIN — Table joined to itself (hierarchies)</span><span class="arrow">▼</span></button><div class="accordion-body">
+<p style="font-size:.88rem;margin-bottom:.5rem">Same table aliased twice. Used when a column references another row in the same table (e.g., manager_id → employee_id).</p>
+<pre><span class="label">SQL</span><span class="kw">SELECT</span>
+    emp.name        <span class="kw">AS</span> employee,
+    mgr.name        <span class="kw">AS</span> manager
+<span class="kw">FROM</span> employees <span class="kw">AS</span> emp
+<span class="kw">LEFT JOIN</span> employees <span class="kw">AS</span> mgr
+    <span class="kw">ON</span> emp.manager_id = mgr.employee_id;
+<span class="cm">-- Ahmed | NULL   ← CEO, no manager</span>
+<span class="cm">-- Sara  | Ahmed</span>
+<span class="cm">-- Omar  | Ahmed</span>
+<span class="cm">-- Mona  | Sara</span></pre>
+<div class="callout">Why <strong>LEFT JOIN</strong> not INNER? Ahmed has no manager (NULL). INNER JOIN would drop the CEO from results. LEFT JOIN keeps all employees.</div>
+</div></div></div>
+
+<!-- S4: ON vs WHERE Detailed -->
+<div class="section" id="s4"><div class="section-header"><div class="section-num">4</div><h2>ON vs WHERE — The Senior-Level Distinction</h2></div>
+<pre><span class="label">SQL</span><span class="cm">-- ❌ WRONG: Omar disappears (LEFT JOIN → INNER JOIN silently)</span>
+<span class="kw">SELECT</span> c.name, o.total
+<span class="kw">FROM</span> customers c
+<span class="kw">LEFT JOIN</span> orders o <span class="kw">ON</span> c.id = o.customer_id
+<span class="kw">WHERE</span> o.total > <span class="nu">100</span>;  <span class="er">-- NULL > 100 = NULL = false → Omar removed!</span>
+
+<span class="cm">-- ✅ CORRECT: Move filter to ON — preserves LEFT JOIN behavior</span>
+<span class="kw">SELECT</span> c.name, o.total
+<span class="kw">FROM</span> customers c
+<span class="kw">LEFT JOIN</span> orders o
+    <span class="kw">ON</span> c.id = o.customer_id
+    <span class="kw">AND</span> o.total > <span class="nu">100</span>;  <span class="cm">-- filters which orders match, not which customers</span></pre>
+<div class="callout green"><strong>Key Rule:</strong> WHERE on the right table filters the <em>final result</em> (removes NULLs). ON filters which rows get <em>matched</em> (keeps all left rows). Moving the filter to ON preserves LEFT JOIN behavior.</div></div>
+
+<!-- S5: Quiz -->
+<div class="section" id="s5"><div class="section-header"><div class="section-num">5</div><h2>Test Yourself</h2></div>
+
+<div class="quiz-card" id="q1"><h3>Q1: INNER JOIN vs LEFT JOIN — what happens to Omar (no orders)?</h3>
+<button class="quiz-option" onclick="answer(this,'q1',false)">INNER: Omar stays with NULL. LEFT: Omar excluded.</button>
+<button class="quiz-option" onclick="answer(this,'q1',true)">INNER: Omar excluded (no match). LEFT: Omar stays with NULL for order columns.</button>
+<div class="quiz-explanation" id="q1-exp">INNER JOIN only returns matched rows — Omar has no orders, so no match, so excluded. LEFT JOIN returns ALL left rows — Omar stays with NULL for all right-side (order) columns.</div></div>
+
+<div class="quiz-card" id="q2"><h3>Q2: You LEFT JOIN to get all customers, but customers with no orders are missing. Why?</h3>
+<button class="quiz-option" onclick="answer(this,'q2',true)">A WHERE filter on the right table removes NULLs — silently converting LEFT JOIN to INNER JOIN</button>
+<button class="quiz-option" onclick="answer(this,'q2',false)">LEFT JOIN doesn't work with NULL values</button>
+<div class="quiz-explanation" id="q2-exp">After LEFT JOIN, customers with no orders have NULL for order columns. <code>WHERE orders.total > 100</code> evaluates <code>NULL > 100 = NULL = false</code>, removing those rows. Fix: move the filter into the ON condition.</div></div>
+
+<div class="quiz-card" id="q3"><h3>Q3: Why is RIGHT JOIN almost never used?</h3>
+<button class="quiz-option" onclick="answer(this,'q3',true)">Any RIGHT JOIN can be rewritten as LEFT JOIN by swapping table order — same result, more readable</button>
+<button class="quiz-option" onclick="answer(this,'q3',false)">RIGHT JOIN has worse performance</button>
+<div class="quiz-explanation" id="q3-exp"><code>FROM customers RIGHT JOIN orders</code> is identical to <code>FROM orders LEFT JOIN customers</code>. LEFT JOIN is more natural (left to right reading), so developers default to it and just swap tables.</div></div>
+
+<div class="quiz-card" id="q4"><h3>Q4: What does a CROSS JOIN of 1000 rows × 1000 rows produce?</h3>
+<button class="quiz-option" onclick="answer(this,'q4',true)">1,000,000 rows — every combination (Cartesian product)</button>
+<button class="quiz-option" onclick="answer(this,'q4',false)">2,000 rows — one from each table</button>
+<div class="quiz-explanation" id="q4-exp">CROSS JOIN returns every possible combination: m × n rows. This is why a forgotten ON condition (which creates an accidental CROSS JOIN) is one of the most common causes of queries that never finish.</div></div>
+
+<div class="quiz-card" id="q5"><h3>Q5: In a SELF JOIN for employee-manager, why use LEFT JOIN instead of INNER JOIN?</h3>
+<button class="quiz-option" onclick="answer(this,'q5',true)">The CEO has no manager (NULL manager_id) — INNER JOIN would exclude them</button>
+<button class="quiz-option" onclick="answer(this,'q5',false)">SELF JOIN requires LEFT JOIN by definition</button>
+<div class="quiz-explanation" id="q5-exp">The top-level employee (CEO) has NULL for manager_id. INNER JOIN requires a match on both sides — no match means the CEO disappears. LEFT JOIN keeps all employees, showing NULL for manager name when none exists.</div></div>
+
+<div class="quiz-score" id="score-box" style="display:none"><div class="big" id="score-text"></div><p style="color:var(--text-dim);margin-top:.3rem">SQL JOINs Quiz</p></div></div>
+
+<!-- Interview Answers -->
+<div class="section" id="s6"><div class="section-header"><div class="section-num">★</div><h2>Interview Answer Bank</h2></div>
+<div class="accordion"><button class="accordion-btn" onclick="toggleAcc(this)"><span>Q: INNER vs LEFT JOIN?</span><span class="arrow">▼</span></button><div class="accordion-body"><div class="callout green">INNER returns only matched rows — non-matching excluded. LEFT returns all left rows + matched right rows, NULL if no match. Use INNER when you need rows with relationships in both tables. Use LEFT when all rows from one side must appear regardless of matches.</div></div></div>
+<div class="accordion"><button class="accordion-btn" onclick="toggleAcc(this)"><span>Q: LEFT JOIN WHERE trap?</span><span class="arrow">▼</span></button><div class="accordion-body"><div class="callout green">WHERE on the right table removes NULL rows — silently converting LEFT JOIN to INNER JOIN. <code>NULL > 100 = NULL = false</code> → row removed. Fix: move the filter into the ON condition, which filters which rows get matched without affecting which left rows appear.</div></div></div>
+<div class="accordion"><button class="accordion-btn" onclick="toggleAcc(this)"><span>Q: ON vs WHERE difference?</span><span class="arrow">▼</span></button><div class="accordion-body"><div class="callout green">ON filters during the join (which rows match). WHERE filters after the join (final result). For INNER JOIN the difference is minimal. For LEFT JOIN it's critical — WHERE removes NULLs, ON preserves all left rows. This is the senior-level distinction most candidates miss.</div></div></div>
+<div class="accordion"><button class="accordion-btn" onclick="toggleAcc(this)"><span>Q: CROSS JOIN use case?</span><span class="arrow">▼</span></button><div class="accordion-body"><div class="callout green">Cartesian product — every combination of rows. Real use: generating product variants (3 sizes × 4 colors = 12 SKUs). Danger: forgotten ON condition creates accidental CROSS JOIN. On large tables → billions of rows, query never finishes.</div></div></div>
+<div class="accordion"><button class="accordion-btn" onclick="toggleAcc(this)"><span>Q: SELF JOIN — when and why?</span><span class="arrow">▼</span></button><div class="accordion-body"><div class="callout green">Table joined to itself with two aliases. Used when a column references another row in the same table — employee-manager hierarchies, category-parent trees. Use LEFT JOIN so top-level items (CEO, root category) with NULL parent still appear.</div></div></div></div>
+
+</div>
+<script>
+function toggleAcc(btn){btn.classList.toggle('open');btn.nextElementSibling.classList.toggle('open')}
+
+// Join visualizer
+function showJoin(type){
+  document.querySelectorAll('.jv-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.jv-content').forEach(c=>c.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('jv-'+type).classList.add('active');
+  // Highlight source rows
+  const all=['c1','c2','c3','o1','o2','o3','o4'];
+  all.forEach(id=>{const el=document.getElementById(id);if(el)el.className=''});
+  const matched=['c1','c2','o1','o2','o3'];
+  matched.forEach(id=>{const el=document.getElementById(id);if(el)el.className='match'});
+  if(type==='inner'){document.getElementById('c3').className='excluded';document.getElementById('o4').className='excluded';}
+  else if(type==='left'){document.getElementById('c3').className='left-only';document.getElementById('o4').className='excluded';}
+  else if(type==='right'){document.getElementById('c3').className='excluded';document.getElementById('o4').className='right-only';}
+  else{document.getElementById('c3').className='left-only';document.getElementById('o4').className='right-only';}
+}
+
+// ON vs WHERE sim
+let owTimer=null;
+function runOW(mode){
+  clearInterval(owTimer);const log=document.getElementById('ow-log');log.innerHTML='';
+  document.querySelectorAll('.ow-tab').forEach(b=>b.classList.remove('active'));event.target.classList.add('active');
+  const lines=[];
+  if(mode==='wrong'){
+    lines.push({c:'hl',t:'LEFT JOIN orders ON customers.id = orders.customer_id'});
+    lines.push({c:'hl',t:'WHERE orders.total > 100'});
+    lines.push({c:'dim',t:''});
+    lines.push({c:'ok',t:'Ahmed │ 500  ← 500 > 100 ✅ kept'});
+    lines.push({c:'ok',t:'Ahmed │ 200  ← 200 > 100 ✅ kept'});
+    lines.push({c:'ok',t:'Sara  │ 300  ← 300 > 100 ✅ kept'});
+    lines.push({c:'warn',t:'Omar  │ NULL ← NULL > 100 = NULL = false...'});
+    lines.push({c:'bad',t:'Omar REMOVED! 😱 LEFT JOIN silently became INNER JOIN'});
+  } else if(mode==='fix1'){
+    lines.push({c:'hl',t:'LEFT JOIN orders ON customers.id = orders.customer_id'});
+    lines.push({c:'hl',t:'WHERE orders.total > 100 OR orders.total IS NULL'});
+    lines.push({c:'dim',t:''});
+    lines.push({c:'ok',t:'Ahmed │ 500  ← 500 > 100 ✅'});
+    lines.push({c:'ok',t:'Ahmed │ 200  ← 200 > 100 ✅'});
+    lines.push({c:'ok',t:'Sara  │ 300  ← 300 > 100 ✅'});
+    lines.push({c:'ok',t:'Omar  │ NULL ← IS NULL ✅ kept!'});
+    lines.push({c:'ok',t:'✅ All customers preserved — OR IS NULL catches unmatched rows'});
+  } else {
+    lines.push({c:'hl',t:'LEFT JOIN orders'});
+    lines.push({c:'hl',t:'  ON customers.id = orders.customer_id'});
+    lines.push({c:'hl',t:'  AND orders.total > 100'});
+    lines.push({c:'dim',t:''});
+    lines.push({c:'dim',t:'Filter applied DURING matching — not after:'});
+    lines.push({c:'ok',t:'Ahmed │ 500  ← matched, 500 > 100 ✅'});
+    lines.push({c:'ok',t:'Ahmed │ 200  ← matched, 200 > 100 ✅'});
+    lines.push({c:'ok',t:'Sara  │ 300  ← matched, 300 > 100 ✅'});
+    lines.push({c:'ok',t:'Omar  │ NULL ← no matching orders, but LEFT keeps him ✅'});
+    lines.push({c:'ok',t:'✅ ON filters which orders MATCH — not which customers APPEAR'});
+  }
+  let i=0;owTimer=setInterval(()=>{if(i>=lines.length){clearInterval(owTimer);return}const l=lines[i];log.innerHTML+=`<span class="${l.c}">${l.t}</span>\n`;log.scrollTop=log.scrollHeight;i++},280);
+}
+
+// Init
+showJoin('inner');
+
+// Quiz
+let answered=0,correct=0,total=5;
+function answer(btn,qId,isCorrect){const card=document.getElementById(qId);if(card.dataset.answered)return;card.dataset.answered='1';answered++;if(isCorrect){btn.classList.add('correct');correct++;}else btn.classList.add('wrong');card.querySelectorAll('.quiz-option').forEach(o=>o.disabled=true);document.getElementById(qId+'-exp').classList.add('show');if(answered===total){document.getElementById('score-box').style.display='block';document.getElementById('score-text').textContent=correct+' / '+total;}}
+const sections=document.querySelectorAll('.section');const navLinks=document.querySelectorAll('.nav a');
+window.addEventListener('scroll',()=>{let c='';sections.forEach(s=>{if(window.scrollY>=s.offsetTop-120)c=s.id});navLinks.forEach(a=>{a.classList.remove('active');if(a.getAttribute('href')==='#'+c)a.classList.add('active')})});
+</script>
+</body>
+</html>

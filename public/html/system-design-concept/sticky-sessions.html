@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sticky Sessions — Interactive Study Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=DM+Sans:ital,wght@0,400;0,500;0,700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#060810;--bg-card:#0d0f18;--bg-code:#090b12;--bg-el:#151828;--border:#191d30;--border-gl:#242840;--text:#c2c8d8;--text-dim:#5c6486;--text-br:#e4eaf4;--c1:#f59e0b;--c2:#3b82f6;--c3:#10b981;--c4:#a855f7;--c5:#06b6d4;--c6:#ef4444;--ok:#4ade80;--bad:#f87171;--r:12px}
+*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.72;overflow-x:hidden}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border-gl);border-radius:3px}
+.hero{position:relative;min-height:44vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:80px 24px 50px;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 500px 350px at 25% 40%,rgba(245,158,11,.1),transparent),radial-gradient(ellipse 400px 300px at 75% 55%,rgba(59,130,246,.07),transparent)}
+.hero-badge{position:relative;display:inline-flex;align-items:center;gap:8px;padding:6px 18px;border:1px solid var(--c1);border-radius:100px;font-size:.8rem;color:var(--c1);letter-spacing:.08em;text-transform:uppercase;margin-bottom:20px}
+.hero h1{position:relative;font-family:'Playfair Display',serif;font-size:clamp(2.4rem,6vw,4rem);font-weight:900;line-height:1.15;color:var(--text-br);max-width:700px}
+.hero h1 span{background:linear-gradient(135deg,var(--c1),var(--c2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{position:relative;max-width:640px;margin-top:16px;color:var(--text-dim);font-size:1.05rem}
+.np{position:relative;display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:28px}
+.np a{display:inline-block;padding:6px 14px;border:1px solid var(--border-gl);border-radius:100px;color:var(--text-dim);text-decoration:none;font-size:.82rem;transition:all .25s}
+.np a:hover{border-color:var(--c1);color:var(--c1);background:rgba(245,158,11,.06)}
+.sec{max-width:1000px;margin:0 auto 70px;padding:0 24px;scroll-margin-top:32px}
+.sh{display:flex;align-items:center;gap:16px;margin-bottom:8px}
+.sn{display:flex;align-items:center;justify-content:center;width:46px;height:46px;border-radius:14px;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:1rem;flex-shrink:0;background:color-mix(in srgb,var(--pat) 16%,transparent);color:var(--pat);border:1px solid color-mix(in srgb,var(--pat) 28%,transparent)}
+.sh h2{font-family:'Playfair Display',serif;font-size:1.55rem;font-weight:700;color:var(--text-br)}
+.ss{color:var(--text-dim);font-style:italic;margin-bottom:24px;padding-left:62px;font-size:.93rem}
+.s1{--pat:var(--c1)}.s2{--pat:var(--c6)}.s3{--pat:var(--c2)}.s4{--pat:var(--c3)}.s5{--pat:var(--c4)}
+.card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r);padding:22px;margin-bottom:18px}
+.card h3{font-size:.95rem;color:var(--text-br);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card h3::before{content:'';display:inline-block;width:3px;height:16px;border-radius:2px;background:var(--pat,var(--c1))}
+.dw{background:var(--bg-code);border:1px solid var(--border);border-radius:var(--r);padding:24px;margin-bottom:18px;overflow-x:auto}
+.dw svg{display:block;margin:0 auto;max-width:100%;height:auto}
+.tw{overflow-x:auto;margin-bottom:18px}table{width:100%;border-collapse:collapse;font-size:.84rem}
+thead th{background:var(--bg-el);color:var(--text-br);padding:11px 14px;text-align:left;font-weight:600;border-bottom:2px solid var(--border-gl);white-space:nowrap}
+tbody td{padding:9px 14px;border-bottom:1px solid var(--border);vertical-align:top}tbody tr:hover{background:rgba(245,158,11,.03)}
+.tip{display:flex;gap:12px;padding:14px 16px;border-radius:var(--r);margin-bottom:18px;font-size:.87rem}
+.tip-y{background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.16)}.tip-y .ic{color:var(--c1)}
+.tip-b{background:rgba(59,130,246,.06);border:1px solid rgba(59,130,246,.16)}.tip-b .ic{color:var(--c2)}
+.tip-g{background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.16)}.tip-g .ic{color:var(--c3)}
+.tip-r{background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.16)}.tip-r .ic{color:var(--c6)}
+.tip .ic{font-size:1.2rem;flex-shrink:0}
+.pc{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px}
+@media(max-width:600px){.pc{grid-template-columns:1fr}}
+.pro,.con{padding:14px 16px;border-radius:var(--r);font-size:.85rem}
+.pro{background:rgba(74,222,128,.06);border:1px solid rgba(74,222,128,.18)}.con{background:rgba(248,113,113,.06);border:1px solid rgba(248,113,113,.18)}
+.pro h4{color:var(--ok);margin-bottom:6px}.con h4{color:var(--bad);margin-bottom:6px}
+.pro li,.con li{margin-bottom:4px;list-style:none;padding-left:16px;position:relative}
+.pro li::before{content:'✓';position:absolute;left:0;color:var(--ok);font-weight:700}
+.con li::before{content:'✗';position:absolute;left:0;color:var(--bad);font-weight:700}
+.qa-b{margin-bottom:10px}
+.qa-q{display:flex;align-items:start;gap:10px;padding:13px 16px;background:var(--bg-el);border:1px solid var(--border);border-radius:var(--r);cursor:pointer;color:var(--text-br);font-size:.88rem;font-weight:500;transition:all .25s;user-select:none}
+.qa-q:hover{border-color:var(--c1)}.qa-q .ar{flex-shrink:0;transition:transform .3s;color:var(--c1);font-size:.8rem}.qa-q.open .ar{transform:rotate(90deg)}
+.qa-a{max-height:0;overflow:hidden;transition:max-height .35s ease,padding .35s;padding:0 16px;color:var(--text);font-size:.86rem;line-height:1.7;background:var(--bg-card);border:1px solid var(--border);border-top:none;border-radius:0 0 var(--r) var(--r)}
+.qa-a.open{max-height:600px;padding:14px 16px}
+.bt{position:fixed;bottom:24px;right:24px;width:44px;height:44px;border-radius:50%;background:var(--c1);color:#fff;border:none;cursor:pointer;font-size:1.2rem;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s,transform .3s;box-shadow:0 4px 16px rgba(245,158,11,.35);z-index:100;font-weight:700}
+.bt.show{opacity:1;pointer-events:auto}.bt:hover{transform:scale(1.1)}
+footer{text-align:center;padding:36px 24px;color:var(--text-dim);font-size:.8rem;border-top:1px solid var(--border);margin-top:40px}
+.sum{max-width:1000px;margin:0 auto 60px;padding:0 24px}.sum h2{font-family:'Playfair Display',serif;font-size:1.55rem;color:var(--text-br);margin-bottom:20px;text-align:center}
+@media(max-width:768px){.ss{padding-left:0}}
+</style>
+</head>
+<body>
+
+<section class="hero">
+  <div class="hero-badge">Load Balancing</div>
+  <h1><span>Sticky</span> Sessions</h1>
+  <p>A load balancing feature that routes a user's requests to the same backend server during a session — using cookies to maintain session affinity.</p>
+  <div class="np">
+    <a href="#what">What &amp; Why</a><a href="#how">How It Works</a><a href="#problem">Without Sticky</a><a href="#stateless">Stateless Alternative</a><a href="#dc">Multi-DC</a>
+  </div>
+</section>
+
+<!-- ═══════ 1. WHAT & WHY ═══════ -->
+<section id="what" class="sec s1">
+  <div class="sh"><div class="sn">1</div><h2>What Are Sticky Sessions?</h2></div>
+  <div class="ss">Also called session affinity — ensuring a user always hits the same server.</div>
+
+  <div class="card"><h3>Definition</h3><p><strong>Sticky sessions</strong> (session affinity) are a load balancing feature that ensures a user's requests are always routed to the <strong>same backend server</strong> during a session. In stateful systems, session data (login state, shopping cart, etc.) is stored <strong>in memory on the server</strong>. If a request goes to a different server, that data is lost.</p></div>
+
+  <div class="tip tip-y"><span class="ic">🧠</span><span><strong>Why it exists:</strong> In stateful systems, user session data lives in the server's memory. Sticky sessions "stick" the user to one server so they consistently access their session data.</span></div>
+</section>
+
+<!-- ═══════ 2. HOW IT WORKS ═══════ -->
+<section id="how" class="sec s3">
+  <div class="sh"><div class="sn">2</div><h2>How Sticky Sessions Work</h2></div>
+  <div class="ss">Cookie-based tracking: the load balancer sets a cookie to remember which server handled the user.</div>
+
+  <div class="dw">
+    <svg viewBox="0 0 780 310" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+      <defs><marker id="as" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#f59e0b"/></marker><marker id="asg" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#5c6486"/></marker></defs>
+      <!-- Title -->
+      <text x="390" y="20" text-anchor="middle" fill="var(--text-br)" font-weight="700" font-size="14" font-family="Playfair Display,serif">With Sticky Sessions (Cookie-Based)</text>
+      <!-- User -->
+      <rect x="30" y="50" width="120" height="50" rx="10" fill="rgba(236,72,153,.08)" stroke="#ec4899" stroke-width="1.2"/>
+      <text x="90" y="72" text-anchor="middle" fill="#ec4899" font-weight="600" font-size="11">User</text>
+      <text x="90" y="90" text-anchor="middle" fill="#8890a8" font-size="8">logs in</text>
+      <!-- Step 1: first request -->
+      <path d="M150,75 L230,75" fill="none" stroke="#f59e0b" stroke-width="1.5" marker-end="url(#as)"/>
+      <circle cx="190" cy="65" r="10" fill="#f59e0b"/><text x="190" y="69" text-anchor="middle" fill="#fff" font-size="8" font-weight="700">1</text>
+      <!-- Load Balancer -->
+      <rect x="230" y="45" width="160" height="60" rx="12" fill="rgba(59,130,246,.1)" stroke="#3b82f6" stroke-width="2"/>
+      <text x="310" y="70" text-anchor="middle" fill="#3b82f6" font-weight="700" font-size="13">Load Balancer</text>
+      <text x="310" y="88" text-anchor="middle" fill="#8890a8" font-size="9">assigns + sets cookie</text>
+      <!-- Servers -->
+      <rect x="460" y="30" width="120" height="45" rx="10" fill="rgba(245,158,11,.12)" stroke="#f59e0b" stroke-width="2"/>
+      <text x="520" y="50" text-anchor="middle" fill="#f59e0b" font-weight="700" font-size="12">Server A ✓</text>
+      <text x="520" y="66" text-anchor="middle" fill="#f59e0b" font-size="8">session stored here</text>
+      <rect x="460" y="90" width="120" height="40" rx="10" fill="rgba(100,116,139,.06)" stroke="#64748b" stroke-width="1" stroke-opacity=".5"/>
+      <text x="520" y="114" text-anchor="middle" fill="#64748b" font-size="10">Server B</text>
+      <rect x="460" y="140" width="120" height="40" rx="10" fill="rgba(100,116,139,.06)" stroke="#64748b" stroke-width="1" stroke-opacity=".5"/>
+      <text x="520" y="164" text-anchor="middle" fill="#64748b" font-size="10">Server C</text>
+      <!-- Arrow LB → Server A -->
+      <path d="M390,65 L460,52" fill="none" stroke="#f59e0b" stroke-width="1.5" marker-end="url(#as)"/>
+      <circle cx="425" cy="52" r="10" fill="#f59e0b"/><text x="425" y="56" text-anchor="middle" fill="#fff" font-size="8" font-weight="700">2</text>
+      <!-- Cookie set -->
+      <rect x="600" y="35" width="160" height="40" rx="8" fill="rgba(245,158,11,.08)" stroke="#f59e0b" stroke-width="1.2"/>
+      <text x="680" y="52" text-anchor="middle" fill="#f59e0b" font-size="9" font-family="JetBrains Mono,monospace">Cookie: AWSELB=A</text>
+      <text x="680" y="68" text-anchor="middle" fill="#f59e0b" font-size="8">sent to browser</text>
+      <path d="M580,52 L600,52" fill="none" stroke="#f59e0b" stroke-width="1"/>
+      <circle cx="590" cy="42" r="10" fill="#f59e0b"/><text x="590" y="46" text-anchor="middle" fill="#fff" font-size="8" font-weight="700">3</text>
+      <!-- Step 4: Next requests -->
+      <rect x="30" y="200" width="120" height="50" rx="10" fill="rgba(236,72,153,.08)" stroke="#ec4899" stroke-width="1.2"/>
+      <text x="90" y="218" text-anchor="middle" fill="#ec4899" font-weight="600" font-size="11">User</text>
+      <text x="90" y="238" text-anchor="middle" fill="#8890a8" font-size="8">next request + cookie</text>
+      <path d="M150,225 L230,225" fill="none" stroke="#f59e0b" stroke-width="1.5" marker-end="url(#as)"/>
+      <circle cx="190" cy="215" r="10" fill="#f59e0b"/><text x="190" y="219" text-anchor="middle" fill="#fff" font-size="8" font-weight="700">4</text>
+      <!-- LB reads cookie -->
+      <rect x="230" y="195" width="160" height="60" rx="12" fill="rgba(59,130,246,.1)" stroke="#3b82f6" stroke-width="1.5"/>
+      <text x="310" y="220" text-anchor="middle" fill="#3b82f6" font-weight="600" font-size="11">Load Balancer</text>
+      <text x="310" y="238" text-anchor="middle" fill="#3b82f6" font-size="9" font-family="JetBrains Mono,monospace">reads AWSELB=A</text>
+      <!-- Routes back to Server A -->
+      <path d="M390,215 L460,52" fill="none" stroke="#f59e0b" stroke-width="2" marker-end="url(#as)"/>
+      <text x="440" y="138" fill="#f59e0b" font-size="9" font-weight="600">→ same Server A!</text>
+      <!-- Summary -->
+      <rect x="120" y="278" width="540" height="26" rx="8" fill="rgba(245,158,11,.05)" stroke="rgba(245,158,11,.15)" stroke-width="1"/>
+      <text x="390" y="295" text-anchor="middle" fill="#f59e0b" font-size="10" font-weight="600">Cookie sticks user to Server A → session data preserved across all requests</text>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════ 3. WITHOUT STICKY SESSIONS ═══════ -->
+<section id="problem" class="sec s2">
+  <div class="sh"><div class="sn">3</div><h2>Without Sticky Sessions</h2></div>
+  <div class="ss">When a request hits a different server, session data is lost — user gets logged out.</div>
+
+  <div class="dw">
+    <svg viewBox="0 0 780 220" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+      <defs><marker id="anr" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#ef4444"/></marker></defs>
+      <text x="390" y="20" text-anchor="middle" fill="#ef4444" font-weight="700" font-size="14" font-family="Playfair Display,serif">Without Sticky Sessions — Session Lost!</text>
+      <!-- User -->
+      <rect x="30" y="60" width="120" height="45" rx="10" fill="rgba(236,72,153,.08)" stroke="#ec4899" stroke-width="1.2"/>
+      <text x="90" y="80" text-anchor="middle" fill="#ec4899" font-weight="600" font-size="11">User</text>
+      <text x="90" y="96" text-anchor="middle" fill="#8890a8" font-size="8">logged in on A</text>
+      <!-- LB -->
+      <rect x="200" y="55" width="130" height="55" rx="10" fill="rgba(59,130,246,.08)" stroke="#3b82f6" stroke-width="1.2"/>
+      <text x="265" y="80" text-anchor="middle" fill="#3b82f6" font-weight="600" font-size="11">Load Balancer</text>
+      <text x="265" y="98" text-anchor="middle" fill="#3b82f6" font-size="8">round-robin (no cookie)</text>
+      <path d="M150,82 L200,82" fill="none" stroke="#5c6486" stroke-width="1.2" marker-end="url(#anr)"/>
+      <!-- Server A (has session) -->
+      <rect x="390" y="35" width="130" height="42" rx="8" fill="rgba(245,158,11,.08)" stroke="#f59e0b" stroke-width="1"/>
+      <text x="455" y="52" text-anchor="middle" fill="#f59e0b" font-size="10">Server A</text>
+      <text x="455" y="68" text-anchor="middle" fill="#f59e0b" font-size="8">has session ✓</text>
+      <!-- Server B (no session!) -->
+      <rect x="390" y="90" width="130" height="42" rx="8" fill="rgba(239,68,68,.1)" stroke="#ef4444" stroke-width="2"/>
+      <text x="455" y="107" text-anchor="middle" fill="#ef4444" font-weight="700" font-size="10">Server B</text>
+      <text x="455" y="123" text-anchor="middle" fill="#ef4444" font-size="8">NO session! ✗</text>
+      <!-- LB routes to B (wrong!) -->
+      <path d="M330,82 L390,107" fill="none" stroke="#ef4444" stroke-width="2" marker-end="url(#anr)"/>
+      <text x="360" y="100" fill="#ef4444" font-size="8" font-weight="600">routed here!</text>
+      <!-- Result -->
+      <rect x="550" y="82" width="200" height="55" rx="10" fill="rgba(239,68,68,.08)" stroke="#ef4444" stroke-width="1.5"/>
+      <text x="650" y="103" text-anchor="middle" fill="#ef4444" font-weight="700" font-size="12">💥 Session Lost!</text>
+      <text x="650" y="122" text-anchor="middle" fill="#ef4444" font-size="9">User logged out / error</text>
+      <text x="650" y="133" text-anchor="middle" fill="#ef4444" font-size="8">shopping cart empty</text>
+      <path d="M520,111 L550,111" fill="none" stroke="#ef4444" stroke-width="1.5" marker-end="url(#anr)"/>
+      <!-- Note -->
+      <rect x="120" y="168" width="540" height="40" rx="10" fill="rgba(239,68,68,.05)" stroke="rgba(239,68,68,.15)" stroke-width="1"/>
+      <text x="390" y="186" text-anchor="middle" fill="#ef4444" font-weight="600" font-size="11">Without sticky sessions in stateful systems:</text>
+      <text x="390" y="202" text-anchor="middle" fill="#8890a8" font-size="10">Session data on Server A is invisible to Server B → user experience breaks</text>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════ 4. STATELESS ALTERNATIVE ═══════ -->
+<section id="stateless" class="sec s4">
+  <div class="sh"><div class="sn">4</div><h2>The Better Way: Stateless Design</h2></div>
+  <div class="ss">Store session data in a shared cache (Redis) — any server can handle any request.</div>
+
+  <div class="dw">
+    <svg viewBox="0 0 780 250" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+      <defs><marker id="ast" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#10b981"/></marker></defs>
+      <text x="390" y="20" text-anchor="middle" fill="#10b981" font-weight="700" font-size="14" font-family="Playfair Display,serif">Stateless Design — No Sticky Sessions Needed</text>
+      <!-- User -->
+      <rect x="30" y="70" width="100" height="45" rx="10" fill="rgba(236,72,153,.08)" stroke="#ec4899" stroke-width="1.2"/>
+      <text x="80" y="90" text-anchor="middle" fill="#ec4899" font-weight="600" font-size="11">User</text>
+      <text x="80" y="106" text-anchor="middle" fill="#8890a8" font-size="8">any request</text>
+      <!-- LB -->
+      <rect x="170" y="65" width="120" height="55" rx="10" fill="rgba(59,130,246,.08)" stroke="#3b82f6" stroke-width="1.2"/>
+      <text x="230" y="88" text-anchor="middle" fill="#3b82f6" font-weight="600" font-size="11">Load Balancer</text>
+      <text x="230" y="108" text-anchor="middle" fill="#3b82f6" font-size="8">round-robin (stateless)</text>
+      <path d="M130,92 L170,92" fill="none" stroke="#5c6486" stroke-width="1" marker-end="url(#ast)"/>
+      <!-- Any server -->
+      <rect x="340" y="40" width="100" height="35" rx="8" fill="rgba(16,185,129,.06)" stroke="#10b981" stroke-width="1"/>
+      <text x="390" y="62" text-anchor="middle" fill="#10b981" font-size="10">Server A</text>
+      <rect x="340" y="82" width="100" height="35" rx="8" fill="rgba(16,185,129,.06)" stroke="#10b981" stroke-width="1"/>
+      <text x="390" y="104" text-anchor="middle" fill="#10b981" font-size="10">Server B</text>
+      <rect x="340" y="124" width="100" height="35" rx="8" fill="rgba(16,185,129,.06)" stroke="#10b981" stroke-width="1"/>
+      <text x="390" y="146" text-anchor="middle" fill="#10b981" font-size="10">Server C</text>
+      <path d="M290,80 L340,57" fill="none" stroke="#10b981" stroke-width="1" marker-end="url(#ast)"/>
+      <path d="M290,92 L340,100" fill="none" stroke="#10b981" stroke-width="1" marker-end="url(#ast)"/>
+      <path d="M290,102 L340,142" fill="none" stroke="#10b981" stroke-width="1" marker-end="url(#ast)"/>
+      <text x="315" y="140" fill="#10b981" font-size="8">any server works!</text>
+      <!-- All servers connect to Redis -->
+      <path d="M440,57 L530,105" fill="none" stroke="#10b981" stroke-width="1.2" stroke-dasharray="4 3"/>
+      <path d="M440,100 L530,110" fill="none" stroke="#10b981" stroke-width="1.2" stroke-dasharray="4 3"/>
+      <path d="M440,142 L530,115" fill="none" stroke="#10b981" stroke-width="1.2" stroke-dasharray="4 3"/>
+      <!-- Redis / Shared Session Store -->
+      <rect x="530" y="72" width="200" height="75" rx="14" fill="rgba(16,185,129,.1)" stroke="#10b981" stroke-width="2"/>
+      <text x="630" y="100" text-anchor="middle" fill="#10b981" font-weight="700" font-size="15">Redis</text>
+      <text x="630" y="118" text-anchor="middle" fill="#8890a8" font-size="10">shared session store</text>
+      <text x="630" y="134" text-anchor="middle" fill="#10b981" font-size="9" font-family="JetBrains Mono,monospace">session:user123 → {...}</text>
+      <!-- Result -->
+      <rect x="120" y="185" width="540" height="50" rx="10" fill="rgba(16,185,129,.05)" stroke="rgba(16,185,129,.15)" stroke-width="1"/>
+      <text x="390" y="206" text-anchor="middle" fill="#10b981" font-weight="600" font-size="11">✅ No sticky sessions needed — any server reads session from Redis</text>
+      <text x="390" y="226" text-anchor="middle" fill="#8890a8" font-size="10">Scalable, fault-tolerant, easy failover. This is the recommended approach.</text>
+    </svg>
+  </div>
+
+  <div class="card"><h3>Stateful vs Stateless Comparison</h3><div class="tw"><table>
+    <thead><tr><th></th><th>Stateful (Sticky Sessions)</th><th>Stateless (Shared Store)</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Session storage</strong></td><td>In-memory on each server</td><td>Redis / shared DB</td></tr>
+      <tr><td><strong>Sticky sessions</strong></td><td style="color:var(--c1)">Required</td><td style="color:var(--c3)">Not needed</td></tr>
+      <tr><td><strong>Scalability</strong></td><td style="color:var(--bad)">Poor — one server overloaded</td><td style="color:var(--ok)">Good — any server handles any request</td></tr>
+      <tr><td><strong>Failover</strong></td><td style="color:var(--bad)">Server crash = session lost</td><td style="color:var(--ok)">Server crash = no impact (session in Redis)</td></tr>
+      <tr><td><strong>Complexity</strong></td><td>Cookie-based LB config</td><td>Redis/DB session store setup</td></tr>
+    </tbody>
+  </table></div></div>
+</section>
+
+<!-- ═══════ 5. MULTI-DC ═══════ -->
+<section id="dc" class="sec s5">
+  <div class="sh"><div class="sn">5</div><h2>Sticky Sessions in Multi-DC Context</h2></div>
+  <div class="ss">In multi-region setups, sticky sessions can tie a user to a specific data center.</div>
+
+  <div class="dw">
+    <svg viewBox="0 0 780 200" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+      <defs><marker id="adc" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#a855f7"/></marker></defs>
+      <!-- User -->
+      <rect x="30" y="60" width="120" height="55" rx="10" fill="rgba(236,72,153,.08)" stroke="#ec4899" stroke-width="1.2"/>
+      <text x="90" y="82" text-anchor="middle" fill="#ec4899" font-weight="600" font-size="11">User (Italy)</text>
+      <text x="90" y="102" text-anchor="middle" fill="#8890a8" font-size="8" font-family="JetBrains Mono,monospace">cookie: DC=FFM, S=A</text>
+      <!-- GeoDNS + LB -->
+      <rect x="195" y="55" width="135" height="65" rx="10" fill="rgba(168,85,247,.08)" stroke="#a855f7" stroke-width="1.5"/>
+      <text x="263" y="78" text-anchor="middle" fill="#a855f7" font-weight="600" font-size="11">GeoDNS + LB</text>
+      <text x="263" y="96" text-anchor="middle" fill="#8890a8" font-size="8">reads sticky cookie</text>
+      <text x="263" y="110" text-anchor="middle" fill="#a855f7" font-size="8">→ Frankfurt, Server A</text>
+      <path d="M150,87 L195,87" fill="none" stroke="#a855f7" stroke-width="1.2" marker-end="url(#adc)"/>
+      <!-- Frankfurt DC -->
+      <rect x="390" y="30" width="200" height="120" rx="12" fill="rgba(168,85,247,.05)" stroke="#a855f7" stroke-width="1.2" stroke-dasharray="6 4"/>
+      <text x="490" y="50" text-anchor="middle" fill="#a855f7" font-weight="700" font-size="12">🇩🇪 Frankfurt DC</text>
+      <rect x="410" y="60" width="80" height="32" rx="6" fill="rgba(245,158,11,.12)" stroke="#f59e0b" stroke-width="1.5"/>
+      <text x="450" y="80" text-anchor="middle" fill="#f59e0b" font-weight="700" font-size="10">Server A ✓</text>
+      <rect x="500" y="60" width="80" height="32" rx="6" fill="rgba(100,116,139,.06)" stroke="#64748b" stroke-width="1" stroke-opacity=".4"/>
+      <text x="540" y="80" text-anchor="middle" fill="#64748b" font-size="10">Server B</text>
+      <rect x="410" y="100" width="80" height="32" rx="6" fill="rgba(100,116,139,.06)" stroke="#64748b" stroke-width="1" stroke-opacity=".4"/>
+      <text x="450" y="120" text-anchor="middle" fill="#64748b" font-size="10">Server C</text>
+      <path d="M330,87 L410,76" fill="none" stroke="#f59e0b" stroke-width="2" marker-end="url(#adc)"/>
+      <!-- NY DC (not used) -->
+      <rect x="640" y="50" width="120" height="55" rx="10" fill="rgba(100,116,139,.04)" stroke="#64748b" stroke-width="1" stroke-opacity=".3"/>
+      <text x="700" y="72" text-anchor="middle" fill="#64748b" font-size="10" opacity=".5">🇺🇸 NY DC</text>
+      <text x="700" y="92" text-anchor="middle" fill="#64748b" font-size="8" opacity=".4">not used</text>
+      <!-- Summary -->
+      <rect x="120" y="168" width="540" height="26" rx="8" fill="rgba(168,85,247,.05)" stroke="rgba(168,85,247,.15)" stroke-width="1"/>
+      <text x="390" y="185" text-anchor="middle" fill="#a855f7" font-size="10">Sticky cookie ties user to Frankfurt DC → Server A for entire session</text>
+    </svg>
+  </div>
+
+  <div class="card"><h3>Mechanisms for Sticky Sessions</h3><div class="tw"><table>
+    <thead><tr><th>Method</th><th>How It Works</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Session cookies</strong></td><td>LB sets a cookie (e.g. AWSELB in AWS CLB) tracking the assigned server</td></tr>
+      <tr><td><strong>IP hashing</strong></td><td>Hash the client IP to consistently route to the same server</td></tr>
+      <tr><td><strong>Custom routing logic</strong></td><td>Application-level routing based on user ID or session token</td></tr>
+    </tbody>
+  </table></div></div>
+</section>
+
+<!-- ═══════ PROS & CONS ═══════ -->
+<section class="sum">
+  <h2>Pros &amp; Cons</h2>
+  <div class="pc">
+    <div class="pro"><h4>✅ Pros</h4><ul><li>Maintains session state — useful for stateful apps</li><li>Avoids session loss — prevents user disruption</li><li>Easy to implement — just enable cookie-based stickiness</li></ul></div>
+    <div class="con"><h4>❌ Cons</h4><ul><li>Breaks stateless design — ties user to a specific server</li><li>Poor scalability — one server may get overloaded</li><li>Harder failover — if server crashes, session is lost</li></ul></div>
+  </div>
+</section>
+
+<!-- ═══════ BEST PRACTICE ═══════ -->
+<section class="sum">
+  <h2>Best Practice</h2>
+  <div class="tip tip-g"><span class="ic">🏆</span><span><strong>If possible, design your system to be stateless.</strong> Use distributed session stores (Redis). Avoid sticky sessions unless absolutely necessary. Stateless = scalable, fault-tolerant, and easy to operate.</span></div>
+</section>
+
+<!-- ═══════ INTERVIEW Q&A ═══════ -->
+<section class="sum">
+  <h2>Interview Questions</h2>
+  <div style="max-width:1000px;margin:0 auto">
+    <div class="qa-b"><div class="qa-q" onclick="toggleQA(this)"><span class="ar">▶</span>What are sticky sessions and when would you use them?</div><div class="qa-a">Sticky sessions (session affinity) route a user's requests to the same backend server using cookies or IP hashing. Use them in <strong>stateful systems</strong> where session data is stored in server memory — but prefer <strong>stateless design with a shared session store</strong> (Redis) when possible.</div></div>
+    <div class="qa-b"><div class="qa-q" onclick="toggleQA(this)"><span class="ar">▶</span>What happens if the sticky server crashes?</div><div class="qa-a">The session data is <strong>lost</strong> — the user may be logged out, lose their shopping cart, or see an error. This is the main weakness of sticky sessions. With a shared session store (Redis), any other server can pick up seamlessly.</div></div>
+    <div class="qa-b"><div class="qa-q" onclick="toggleQA(this)"><span class="ar">▶</span>Why is stateless design preferred over sticky sessions?</div><div class="qa-a">Stateless design stores session data in a shared cache (Redis), so <strong>any server can handle any request</strong>. This gives better scalability (no hot servers), better fault tolerance (server crash = no session loss), and simpler load balancing (pure round-robin works).</div></div>
+  </div>
+</section>
+
+<button class="bt" id="backTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+<footer><p>Sticky Sessions — Load Balancing Interactive Study Guide</p></footer>
+
+<script>
+function toggleQA(el){el.classList.toggle('open');el.nextElementSibling.classList.toggle('open')}
+window.addEventListener('scroll',()=>{document.getElementById('backTop').classList.toggle('show',window.scrollY>400)})
+</script>
+</body>
+</html>

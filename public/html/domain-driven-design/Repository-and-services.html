@@ -1,0 +1,1210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DDD Deep Dive — Repository Pattern & Domain vs Application Services</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:ital,wght@0,400;1,400&display=swap');
+
+  :root {
+    --bg: #0e1117;
+    --surface: #161b22;
+    --surface2: #1c2333;
+    --border: #2d3548;
+    --text: #e6edf3;
+    --text-muted: #8b949e;
+    --accent: #58a6ff;
+    --accent-dim: #1a3a5c;
+    --green: #3fb950;
+    --green-dim: #1a3d2a;
+    --orange: #d29922;
+    --orange-dim: #3d2e0a;
+    --red: #f85149;
+    --red-dim: #3d1214;
+    --purple: #bc8cff;
+    --purple-dim: #2a1a4e;
+    --cyan: #39d2c0;
+    --cyan-dim: #0d3d36;
+    --code-bg: #0d1117;
+    --keyword: #ff7b72;
+    --string: #a5d6ff;
+    --type: #79c0ff;
+    --comment: #6e7681;
+    --method: #d2a8ff;
+    --number: #79c0ff;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'IBM Plex Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    padding: 2rem;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+    background: linear-gradient(135deg, var(--accent), var(--purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .subtitle {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    margin-bottom: 2.5rem;
+    font-family: 'IBM Plex Serif', serif;
+    font-style: italic;
+  }
+
+  /* ── TOPIC TABS ── */
+  .topic-tabs {
+    display: flex;
+    gap: 0;
+    margin-bottom: 2rem;
+    border-bottom: 2px solid var(--border);
+  }
+  .topic-tab {
+    padding: 0.75rem 1.5rem;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+    transition: all 0.2s;
+  }
+  .topic-tab:hover { color: var(--text); }
+  .topic-tab.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+  .topic-panel { display: none; }
+  .topic-panel.active { display: block; }
+
+  /* ── SECTION STYLES ── */
+  .section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.75rem;
+    margin-bottom: 1.5rem;
+  }
+  .section h2 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .section h3 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    margin: 1.25rem 0 0.75rem;
+    color: var(--accent);
+  }
+  .section p, .section li {
+    color: var(--text);
+    font-size: 0.92rem;
+    margin-bottom: 0.5rem;
+  }
+
+  /* ── BADGES ── */
+  .badge {
+    display: inline-block;
+    padding: 0.15rem 0.6rem;
+    border-radius: 20px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .badge-blue { background: var(--accent-dim); color: var(--accent); }
+  .badge-green { background: var(--green-dim); color: var(--green); }
+  .badge-orange { background: var(--orange-dim); color: var(--orange); }
+  .badge-red { background: var(--red-dim); color: var(--red); }
+  .badge-purple { background: var(--purple-dim); color: var(--purple); }
+  .badge-cyan { background: var(--cyan-dim); color: var(--cyan); }
+
+  /* ── CODE BLOCKS ── */
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.25rem;
+    overflow-x: auto;
+    margin: 1rem 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem;
+    line-height: 1.6;
+  }
+  .kw { color: var(--keyword); }
+  .tp { color: var(--type); }
+  .str { color: var(--string); }
+  .cm { color: var(--comment); }
+  .mt { color: var(--method); }
+  .nm { color: var(--number); }
+
+  /* ── INLINE CODE ── */
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--code-bg);
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    border: 1px solid var(--border);
+  }
+
+  /* ── INNER TABS ── */
+  .inner-tabs {
+    display: flex;
+    gap: 0;
+    margin-bottom: 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .inner-tab {
+    padding: 0.5rem 1rem;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: all 0.2s;
+  }
+  .inner-tab:hover { color: var(--text); }
+  .inner-tab.active { color: var(--green); border-bottom-color: var(--green); }
+  .inner-panel { display: none; padding-top: 0; }
+  .inner-panel.active { display: block; }
+
+  /* ── DIAGRAM / FLOW ── */
+  .flow-diagram {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin: 1rem 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .flow-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .flow-box {
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    font-family: 'JetBrains Mono', monospace;
+    text-align: center;
+    min-width: 120px;
+    border: 1px solid;
+  }
+  .flow-box.domain { background: var(--purple-dim); border-color: var(--purple); color: var(--purple); }
+  .flow-box.app { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
+  .flow-box.infra { background: var(--green-dim); border-color: var(--green); color: var(--green); }
+  .flow-box.db { background: var(--orange-dim); border-color: var(--orange); color: var(--orange); }
+  .flow-box.red-box { background: var(--red-dim); border-color: var(--red); color: var(--red); }
+  .flow-arrow {
+    color: var(--text-muted);
+    font-size: 1.2rem;
+    font-weight: 700;
+  }
+  .flow-arrow-down {
+    color: var(--text-muted);
+    font-size: 1.4rem;
+    font-weight: 700;
+  }
+  .flow-label {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    font-style: italic;
+    text-align: center;
+  }
+
+  /* ── CHALLENGE BOX ── */
+  .challenge {
+    background: var(--surface2);
+    border-left: 4px solid var(--orange);
+    border-radius: 0 8px 8px 0;
+    padding: 1.25rem;
+    margin: 1.25rem 0;
+  }
+  .challenge-q {
+    font-weight: 600;
+    color: var(--orange);
+    margin-bottom: 0.5rem;
+    font-size: 0.92rem;
+  }
+  .challenge p { font-size: 0.88rem; }
+
+  .reveal-btn {
+    background: var(--orange-dim);
+    color: var(--orange);
+    border: 1px solid var(--orange);
+    padding: 0.4rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 600;
+    margin-top: 0.75rem;
+    transition: all 0.2s;
+  }
+  .reveal-btn:hover { background: var(--orange); color: var(--bg); }
+  .answer { display: none; margin-top: 0.75rem; }
+  .answer.show { display: block; }
+  .answer p { color: var(--text); font-size: 0.88rem; }
+
+  /* ── KEY INSIGHT ── */
+  .insight {
+    background: linear-gradient(135deg, var(--accent-dim), var(--purple-dim));
+    border: 1px solid var(--accent);
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    margin: 1rem 0;
+    font-size: 0.9rem;
+  }
+  .insight strong { color: var(--accent); }
+
+  /* ── WARNING ── */
+  .warning {
+    background: var(--red-dim);
+    border: 1px solid var(--red);
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    margin: 1rem 0;
+    font-size: 0.88rem;
+  }
+  .warning strong { color: var(--red); }
+
+  /* ── COMPARISON TABLE ── */
+  .comp-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+    font-size: 0.85rem;
+  }
+  .comp-table th, .comp-table td {
+    padding: 0.65rem 0.9rem;
+    border: 1px solid var(--border);
+    text-align: left;
+  }
+  .comp-table th {
+    background: var(--surface2);
+    color: var(--accent);
+    font-weight: 600;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  .comp-table td { color: var(--text); }
+  .comp-table tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
+
+  /* ── LAYER STACK ── */
+  .layer-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin: 1.25rem 0;
+  }
+  .layer {
+    padding: 0.8rem 1.2rem;
+    text-align: center;
+    font-weight: 600;
+    font-size: 0.85rem;
+    border: 1px solid;
+    position: relative;
+  }
+  .layer:first-child { border-radius: 8px 8px 0 0; }
+  .layer:last-child { border-radius: 0 0 8px 8px; }
+  .layer .layer-note {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 400;
+    opacity: 0.8;
+    margin-top: 0.15rem;
+  }
+  .layer.l-api { background: var(--cyan-dim); border-color: var(--cyan); color: var(--cyan); }
+  .layer.l-app { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
+  .layer.l-domain { background: var(--purple-dim); border-color: var(--purple); color: var(--purple); }
+  .layer.l-infra { background: var(--green-dim); border-color: var(--green); color: var(--green); }
+
+  /* ── CHECKLIST ── */
+  .checklist { list-style: none; padding: 0; margin: 0.75rem 0; }
+  .checklist li {
+    padding: 0.4rem 0 0.4rem 1.75rem;
+    position: relative;
+    font-size: 0.88rem;
+  }
+  .checklist li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: var(--green);
+    font-weight: 700;
+  }
+  .checklist li.x::before { content: '✗'; color: var(--red); }
+
+  /* ── SCENARIO CARDS ── */
+  .scenario-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin: 1rem 0;
+  }
+  .scenario-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem;
+  }
+  .scenario-card h4 {
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+  .scenario-card p { font-size: 0.82rem; margin-bottom: 0.25rem; }
+
+  @media (max-width: 700px) {
+    body { padding: 1rem; }
+    .scenario-grid { grid-template-columns: 1fr; }
+    .flow-row { flex-direction: column; }
+    .topic-tab { padding: 0.5rem 0.8rem; font-size: 0.82rem; }
+  }
+</style>
+</head>
+<body>
+
+<h1>DDD Deep Dive</h1>
+<p class="subtitle">Repository Pattern with Aggregates &amp; Domain Services vs Application Services</p>
+
+<!-- ══════════ TOP-LEVEL TABS ══════════ -->
+<div class="topic-tabs">
+  <button class="topic-tab active" onclick="switchTopic(0)">Repository Pattern</button>
+  <button class="topic-tab" onclick="switchTopic(1)">Domain vs App Services</button>
+  <button class="topic-tab" onclick="switchTopic(2)">Putting It Together</button>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- TOPIC 1 — REPOSITORY PATTERN                         -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div class="topic-panel active" id="topic-0">
+
+  <div class="section">
+    <h2>🗄️ The Core Rule</h2>
+    <p>In DDD, a <strong>Repository</strong> is the only gateway between your domain model and your persistence layer. The critical constraint:</p>
+    <div class="insight">
+      <strong>One Repository per Aggregate Root — not per Entity.</strong> If <code>Order</code> is your aggregate root and <code>OrderLine</code> is an entity inside it, there is NO <code>IOrderLineRepository</code>. You always load, save, and reason about the entire <code>Order</code> aggregate as a unit.
+    </div>
+    <p>This is the persistence boundary. The aggregate root is the consistency boundary, and the repository is its persistence boundary.</p>
+  </div>
+
+  <!-- WHY NOT REPO PER ENTITY -->
+  <div class="section">
+    <h2>🚫 Why Not a Repository Per Entity?</h2>
+
+    <div class="challenge">
+      <p class="challenge-q">Challenge: Someone on your team creates an <code>IOrderLineRepository</code> that can update an order line without loading the parent Order. What breaks?</p>
+      <button class="reveal-btn" onclick="toggleAnswer(this)">Reveal Answer</button>
+      <div class="answer">
+        <p><strong>1. Invariant violations:</strong> The <code>Order</code> aggregate root enforces rules like "total must not exceed credit limit" or "max 50 line items." Modifying an <code>OrderLine</code> in isolation bypasses those checks entirely.</p>
+        <p><strong>2. Concurrency corruption:</strong> Two requests could modify different OrderLines simultaneously. Without the aggregate root coordinating, you lose transactional consistency — you can't use a version stamp on the root to detect conflicts.</p>
+        <p><strong>3. Event sourcing mismatch:</strong> Domain events are raised by the aggregate root. If you mutate a child entity directly, no event is emitted, so downstream projections and subscribers see stale data.</p>
+        <p><strong>Bottom line:</strong> The aggregate root IS the transactional boundary. A repo per child entity blows a hole in that boundary.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- INTERFACE DEFINITION -->
+  <div class="section">
+    <h2>📐 Repository Interface — Lives in the Domain Layer</h2>
+    <p>The interface is defined in the <strong>Domain layer</strong>, because the domain dictates WHAT it needs. The concrete implementation lives in <strong>Infrastructure</strong>, because that's WHERE the persistence details go.</p>
+
+    <div class="inner-tabs">
+      <button class="inner-tab active" onclick="switchInner(this, 'repo-iface')">IOrderRepository</button>
+      <button class="inner-tab" onclick="switchInner(this, 'repo-impl')">EfOrderRepository</button>
+      <button class="inner-tab" onclick="switchInner(this, 'repo-reg')">DI Registration</button>
+    </div>
+    <div class="inner-panel active" data-panel="repo-iface">
+<pre><span class="cm">// Domain Layer — Domain/Repositories/IOrderRepository.cs</span>
+<span class="kw">public interface</span> <span class="tp">IOrderRepository</span>
+{
+    <span class="tp">Task</span>&lt;<span class="tp">Order</span>?&gt; <span class="mt">GetByIdAsync</span>(<span class="tp">Guid</span> orderId);
+    <span class="tp">Task</span>&lt;<span class="tp">IReadOnlyList</span>&lt;<span class="tp">Order</span>&gt;&gt; <span class="mt">GetByCustomerAsync</span>(<span class="tp">Guid</span> customerId);
+    <span class="tp">Task</span> <span class="mt">AddAsync</span>(<span class="tp">Order</span> order);
+    <span class="kw">void</span> <span class="mt">Remove</span>(<span class="tp">Order</span> order);
+
+    <span class="cm">// NOTE: No "Update" method. EF tracks changes automatically.</span>
+    <span class="cm">// Save happens via Unit of Work (IUnitOfWork) — not here.</span>
+}
+
+<span class="cm">// Optional: Generic base if you have many aggregates</span>
+<span class="kw">public interface</span> <span class="tp">IRepository</span>&lt;<span class="tp">T</span>&gt; <span class="kw">where</span> <span class="tp">T</span> : <span class="tp">AggregateRoot</span>
+{
+    <span class="tp">Task</span>&lt;<span class="tp">T</span>?&gt; <span class="mt">GetByIdAsync</span>(<span class="tp">Guid</span> id);
+    <span class="tp">Task</span> <span class="mt">AddAsync</span>(<span class="tp">T</span> entity);
+    <span class="kw">void</span> <span class="mt">Remove</span>(<span class="tp">T</span> entity);
+}</pre>
+    </div>
+    <div class="inner-panel" data-panel="repo-impl">
+<pre><span class="cm">// Infrastructure Layer — Persistence/Repositories/EfOrderRepository.cs</span>
+<span class="kw">public class</span> <span class="tp">EfOrderRepository</span> : <span class="tp">IOrderRepository</span>
+{
+    <span class="kw">private readonly</span> <span class="tp">AppDbContext</span> _db;
+
+    <span class="kw">public</span> <span class="mt">EfOrderRepository</span>(<span class="tp">AppDbContext</span> db) => _db = db;
+
+    <span class="kw">public async</span> <span class="tp">Task</span>&lt;<span class="tp">Order</span>?&gt; <span class="mt">GetByIdAsync</span>(<span class="tp">Guid</span> orderId)
+    {
+        <span class="cm">// Always load the FULL aggregate — root + children</span>
+        <span class="kw">return await</span> _db.Orders
+            .<span class="mt">Include</span>(o => o.Lines)        <span class="cm">// child entities</span>
+            .<span class="mt">Include</span>(o => o.ShippingAddress) <span class="cm">// value object (owned type)</span>
+            .<span class="mt">FirstOrDefaultAsync</span>(o => o.Id == orderId);
+    }
+
+    <span class="kw">public async</span> <span class="tp">Task</span>&lt;<span class="tp">IReadOnlyList</span>&lt;<span class="tp">Order</span>&gt;&gt; <span class="mt">GetByCustomerAsync</span>(<span class="tp">Guid</span> customerId)
+    {
+        <span class="kw">return await</span> _db.Orders
+            .<span class="mt">Include</span>(o => o.Lines)
+            .<span class="mt">Where</span>(o => o.CustomerId == customerId)
+            .<span class="mt">ToListAsync</span>();
+    }
+
+    <span class="kw">public async</span> <span class="tp">Task</span> <span class="mt">AddAsync</span>(<span class="tp">Order</span> order)
+    {
+        <span class="kw">await</span> _db.Orders.<span class="mt">AddAsync</span>(order);
+        <span class="cm">// EF tracks all child entities automatically</span>
+    }
+
+    <span class="kw">public void</span> <span class="mt">Remove</span>(<span class="tp">Order</span> order)
+    {
+        _db.Orders.<span class="mt">Remove</span>(order);
+        <span class="cm">// Cascade delete handles OrderLines via config</span>
+    }
+}</pre>
+    </div>
+    <div class="inner-panel" data-panel="repo-reg">
+<pre><span class="cm">// Program.cs or DI Extension</span>
+builder.Services.<span class="mt">AddScoped</span>&lt;<span class="tp">IOrderRepository</span>, <span class="tp">EfOrderRepository</span>&gt;();
+builder.Services.<span class="mt">AddScoped</span>&lt;<span class="tp">IUnitOfWork</span>, <span class="tp">EfUnitOfWork</span>&gt;();
+
+<span class="cm">// ─── The Unit of Work ───</span>
+<span class="kw">public interface</span> <span class="tp">IUnitOfWork</span>
+{
+    <span class="tp">Task</span>&lt;<span class="tp">int</span>&gt; <span class="mt">SaveChangesAsync</span>(<span class="tp">CancellationToken</span> ct = <span class="kw">default</span>);
+}
+
+<span class="kw">public class</span> <span class="tp">EfUnitOfWork</span> : <span class="tp">IUnitOfWork</span>
+{
+    <span class="kw">private readonly</span> <span class="tp">AppDbContext</span> _db;
+    <span class="kw">public</span> <span class="mt">EfUnitOfWork</span>(<span class="tp">AppDbContext</span> db) => _db = db;
+
+    <span class="kw">public</span> <span class="tp">Task</span>&lt;<span class="tp">int</span>&gt; <span class="mt">SaveChangesAsync</span>(<span class="tp">CancellationToken</span> ct)
+    {
+        <span class="cm">// This is where ALL tracked changes commit in one transaction</span>
+        <span class="kw">return</span> _db.<span class="mt">SaveChangesAsync</span>(ct);
+    }
+}</pre>
+    </div>
+  </div>
+
+  <!-- FLOW: LOAD → MUTATE → SAVE -->
+  <div class="section">
+    <h2>🔄 The Lifecycle: Load → Mutate → Save</h2>
+    <p>Every aggregate operation follows the same three-step dance. This is the heartbeat of Repository + Aggregate persistence.</p>
+
+    <div class="flow-diagram">
+      <div class="flow-row">
+        <div class="flow-box app">Controller / Handler</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-box app">Application Service</div>
+      </div>
+      <span class="flow-arrow-down">↓</span>
+      <div class="flow-label">1. Load aggregate via repository</div>
+      <div class="flow-row">
+        <div class="flow-box infra">IOrderRepository</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-box db">EF Core / DB</div>
+      </div>
+      <span class="flow-arrow-down">↓</span>
+      <div class="flow-label">2. Call behavior methods on the aggregate root</div>
+      <div class="flow-row">
+        <div class="flow-box domain">order.AddLine(...)</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-box domain">Invariants checked</div>
+      </div>
+      <span class="flow-arrow-down">↓</span>
+      <div class="flow-label">3. Persist via Unit of Work — single transaction</div>
+      <div class="flow-row">
+        <div class="flow-box infra">IUnitOfWork</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-box db">SaveChangesAsync()</div>
+      </div>
+    </div>
+
+    <div class="inner-tabs">
+      <button class="inner-tab active" onclick="switchInner(this, 'lifecycle-code')">Application Service Code</button>
+      <button class="inner-tab" onclick="switchInner(this, 'lifecycle-bad')">❌ Anti-Pattern</button>
+    </div>
+    <div class="inner-panel active" data-panel="lifecycle-code">
+<pre><span class="kw">public class</span> <span class="tp">AddOrderLineHandler</span>
+    : <span class="tp">IRequestHandler</span>&lt;<span class="tp">AddOrderLineCommand</span>&gt;
+{
+    <span class="kw">private readonly</span> <span class="tp">IOrderRepository</span> _orders;
+    <span class="kw">private readonly</span> <span class="tp">IUnitOfWork</span> _uow;
+
+    <span class="kw">public</span> <span class="mt">AddOrderLineHandler</span>(
+        <span class="tp">IOrderRepository</span> orders, <span class="tp">IUnitOfWork</span> uow)
+    {
+        _orders = orders;
+        _uow = uow;
+    }
+
+    <span class="kw">public async</span> <span class="tp">Task</span> <span class="mt">Handle</span>(<span class="tp">AddOrderLineCommand</span> cmd, <span class="tp">CancellationToken</span> ct)
+    {
+        <span class="cm">// 1. LOAD — full aggregate</span>
+        <span class="kw">var</span> order = <span class="kw">await</span> _orders.<span class="mt">GetByIdAsync</span>(cmd.OrderId)
+            ?? <span class="kw">throw new</span> <span class="tp">NotFoundException</span>(<span class="str">"Order"</span>, cmd.OrderId);
+
+        <span class="cm">// 2. MUTATE — domain logic lives on the aggregate</span>
+        order.<span class="mt">AddLine</span>(cmd.ProductId, cmd.Quantity, cmd.UnitPrice);
+        <span class="cm">// ↑ This enforces: max 50 lines, no duplicates, recalculates total</span>
+
+        <span class="cm">// 3. SAVE — Unit of Work commits everything</span>
+        <span class="kw">await</span> _uow.<span class="mt">SaveChangesAsync</span>(ct);
+    }
+}</pre>
+    </div>
+    <div class="inner-panel" data-panel="lifecycle-bad">
+<pre><span class="cm">// ❌ ANTI-PATTERN: Anemic domain + fat service</span>
+<span class="kw">public async</span> <span class="tp">Task</span> <span class="mt">Handle</span>(<span class="tp">AddOrderLineCommand</span> cmd, <span class="tp">CancellationToken</span> ct)
+{
+    <span class="kw">var</span> order = <span class="kw">await</span> _orders.<span class="mt">GetByIdAsync</span>(cmd.OrderId);
+
+    <span class="cm">// ❌ Business logic in the SERVICE, not the domain</span>
+    <span class="kw">if</span> (order.Lines.Count >= <span class="nm">50</span>)
+        <span class="kw">throw new</span> <span class="tp">DomainException</span>(<span class="str">"Too many lines"</span>);
+
+    <span class="cm">// ❌ Creating child entity directly — bypassing aggregate root</span>
+    <span class="kw">var</span> line = <span class="kw">new</span> <span class="tp">OrderLine</span>(cmd.ProductId, cmd.Quantity, cmd.UnitPrice);
+    order.Lines.<span class="mt">Add</span>(line);
+
+    <span class="cm">// ❌ Manually recalculating — this belongs in Order.AddLine()</span>
+    order.Total = order.Lines.<span class="mt">Sum</span>(l => l.Quantity * l.UnitPrice);
+
+    <span class="kw">await</span> _uow.<span class="mt">SaveChangesAsync</span>(ct);
+}</pre>
+      <div class="warning">
+        <strong>Why this breaks DDD:</strong> The invariant checks and calculations leak into the application layer. If any other handler adds a line, it has to duplicate all this logic — or miss it entirely. The aggregate becomes an anemic data bag.
+      </div>
+    </div>
+  </div>
+
+  <!-- VALUE OBJECTS & OWNED TYPES -->
+  <div class="section">
+    <h2>💎 Persisting Value Objects as Owned Types</h2>
+    <p>Value Objects have no identity — they're defined entirely by their properties. EF Core maps them using <code>OwnsOne</code> / <code>OwnsMany</code>, which stores them in the same table as the parent (or a shadow table).</p>
+
+    <div class="inner-tabs">
+      <button class="inner-tab active" onclick="switchInner(this, 'vo-model')">Value Object</button>
+      <button class="inner-tab" onclick="switchInner(this, 'vo-config')">EF Config</button>
+    </div>
+    <div class="inner-panel active" data-panel="vo-model">
+<pre><span class="cm">// Domain Layer — a Value Object</span>
+<span class="kw">public class</span> <span class="tp">Address</span> : <span class="tp">ValueObject</span>
+{
+    <span class="kw">public</span> <span class="tp">string</span> Street { <span class="kw">get</span>; }
+    <span class="kw">public</span> <span class="tp">string</span> City { <span class="kw">get</span>; }
+    <span class="kw">public</span> <span class="tp">string</span> ZipCode { <span class="kw">get</span>; }
+    <span class="kw">public</span> <span class="tp">string</span> Country { <span class="kw">get</span>; }
+
+    <span class="kw">public</span> <span class="mt">Address</span>(<span class="tp">string</span> street, <span class="tp">string</span> city,
+               <span class="tp">string</span> zipCode, <span class="tp">string</span> country)
+    {
+        <span class="cm">// Validation in constructor — always valid</span>
+        <span class="kw">if</span> (<span class="tp">string</span>.<span class="mt">IsNullOrWhiteSpace</span>(street))
+            <span class="kw">throw new</span> <span class="tp">DomainException</span>(<span class="str">"Street required"</span>);
+        Street = street;
+        City = city;
+        ZipCode = zipCode;
+        Country = country;
+    }
+
+    <span class="kw">protected override</span> <span class="tp">IEnumerable</span>&lt;<span class="tp">object</span>&gt; <span class="mt">GetEqualityComponents</span>()
+    {
+        <span class="kw">yield return</span> Street;
+        <span class="kw">yield return</span> City;
+        <span class="kw">yield return</span> ZipCode;
+        <span class="kw">yield return</span> Country;
+    }
+}</pre>
+    </div>
+    <div class="inner-panel" data-panel="vo-config">
+<pre><span class="cm">// Infrastructure — EF Configuration</span>
+<span class="kw">public class</span> <span class="tp">OrderConfiguration</span>
+    : <span class="tp">IEntityTypeConfiguration</span>&lt;<span class="tp">Order</span>&gt;
+{
+    <span class="kw">public void</span> <span class="mt">Configure</span>(<span class="tp">EntityTypeBuilder</span>&lt;<span class="tp">Order</span>&gt; builder)
+    {
+        builder.<span class="mt">HasKey</span>(o => o.Id);
+
+        <span class="cm">// Value Object → same table, prefixed columns</span>
+        builder.<span class="mt">OwnsOne</span>(o => o.ShippingAddress, sa =>
+        {
+            sa.<span class="mt">Property</span>(a => a.Street)
+              .<span class="mt">HasColumnName</span>(<span class="str">"ShippingStreet"</span>)
+              .<span class="mt">HasMaxLength</span>(<span class="nm">200</span>);
+            sa.<span class="mt">Property</span>(a => a.City)
+              .<span class="mt">HasColumnName</span>(<span class="str">"ShippingCity"</span>);
+            sa.<span class="mt">Property</span>(a => a.ZipCode)
+              .<span class="mt">HasColumnName</span>(<span class="str">"ShippingZip"</span>);
+            sa.<span class="mt">Property</span>(a => a.Country)
+              .<span class="mt">HasColumnName</span>(<span class="str">"ShippingCountry"</span>);
+        });
+
+        <span class="cm">// Child entity collection → separate table</span>
+        builder.<span class="mt">HasMany</span>(o => o.Lines)
+            .<span class="mt">WithOne</span>()
+            .<span class="mt">HasForeignKey</span>(<span class="str">"OrderId"</span>)
+            .<span class="mt">OnDelete</span>(<span class="tp">DeleteBehavior</span>.Cascade);
+
+        <span class="cm">// Concurrency token on the aggregate root</span>
+        builder.<span class="mt">Property</span>&lt;<span class="tp">byte</span>[]&gt;(<span class="str">"RowVersion"</span>)
+            .<span class="mt">IsRowVersion</span>();
+    }
+}</pre>
+    </div>
+  </div>
+
+  <!-- CONCURRENCY -->
+  <div class="section">
+    <h2>🔒 Optimistic Concurrency — The Version Stamp</h2>
+    <p>Because the entire aggregate is the transactional unit, you put the <strong>concurrency token on the aggregate root's table</strong>. If two requests load the same Order, mutate it differently, and try to save — the second one gets a <code>DbUpdateConcurrencyException</code>.</p>
+
+    <div class="flow-diagram">
+      <div class="flow-row">
+        <div class="flow-box app">Request A</div>
+        <div class="flow-box app">Request B</div>
+      </div>
+      <span class="flow-arrow-down">↓ both load Order v1</span>
+      <div class="flow-row">
+        <div class="flow-box domain">AddLine()</div>
+        <div class="flow-box domain">RemoveLine()</div>
+      </div>
+      <span class="flow-arrow-down">↓</span>
+      <div class="flow-row">
+        <div class="flow-box infra">A saves → v2 ✓</div>
+        <div class="flow-box red-box">B saves → CONFLICT ✗</div>
+      </div>
+      <div class="flow-label">B's RowVersion doesn't match → DbUpdateConcurrencyException</div>
+    </div>
+
+    <div class="challenge">
+      <p class="challenge-q">Challenge: If you put the RowVersion on OrderLine instead of Order, what happens when Request A adds a line and Request B updates an existing line?</p>
+      <button class="reveal-btn" onclick="toggleAnswer(this)">Reveal Answer</button>
+      <div class="answer">
+        <p><strong>No conflict detected.</strong> They're touching different rows, so both writes succeed. But the aggregate-level invariant (e.g., "total must not exceed credit limit") might now be violated because neither request saw the other's change. The version stamp MUST be on the aggregate root to guard the entire boundary.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- TOPIC 2 — DOMAIN SERVICE vs APPLICATION SERVICE       -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div class="topic-panel" id="topic-1">
+
+  <div class="section">
+    <h2>🧭 The Core Distinction</h2>
+    <p>This is one of the most commonly confused concepts in DDD. The key question to ask yourself:</p>
+
+    <div class="insight">
+      <strong>"Does this logic represent a business rule / domain concept, or does it orchestrate infrastructure and coordinate workflow?"</strong><br/>
+      Business rule → Domain Service. Orchestration → Application Service.
+    </div>
+
+    <div class="layer-stack">
+      <div class="layer l-api">API / Controllers<span class="layer-note">HTTP concerns, model binding, routing</span></div>
+      <div class="layer l-app">Application Services<span class="layer-note">Use cases, orchestration, transactions, auth</span></div>
+      <div class="layer l-domain">Domain Services + Entities + Value Objects<span class="layer-note">Business rules, invariants, domain logic</span></div>
+      <div class="layer l-infra">Infrastructure<span class="layer-note">EF Core, message bus, email, file storage</span></div>
+    </div>
+  </div>
+
+  <!-- DOMAIN SERVICE -->
+  <div class="section">
+    <h2><span class="badge badge-purple">Domain Layer</span> Domain Service</h2>
+    <h3>When do you need one?</h3>
+    <p>A Domain Service exists when business logic <strong>doesn't naturally belong to a single aggregate</strong>. The logic spans multiple aggregates or requires external domain knowledge (e.g., pricing rules, transfer policies) but is still purely a business concept — no infrastructure, no I/O.</p>
+
+    <ul class="checklist">
+      <li>Contains business rules and domain logic only</li>
+      <li>Operates on multiple aggregates or domain concepts</li>
+      <li>Has no dependency on infrastructure (no DbContext, no HttpClient)</li>
+      <li>Is stateless — takes inputs, returns outputs</li>
+      <li>Lives in the Domain layer alongside entities</li>
+      <li class="x">Does NOT orchestrate workflows or transactions</li>
+      <li class="x">Does NOT call repositories (it receives loaded aggregates)</li>
+    </ul>
+
+    <div class="inner-tabs">
+      <button class="inner-tab active" onclick="switchInner(this, 'ds-transfer')">MoneyTransferService</button>
+      <button class="inner-tab" onclick="switchInner(this, 'ds-pricing')">PricingService</button>
+    </div>
+    <div class="inner-panel active" data-panel="ds-transfer">
+<pre><span class="cm">// Domain Layer — Domain/Services/MoneyTransferService.cs</span>
+<span class="kw">public class</span> <span class="tp">MoneyTransferService</span>
+{
+    <span class="cm">// Pure domain logic — no repos, no I/O, no DbContext</span>
+    <span class="kw">public void</span> <span class="mt">Transfer</span>(
+        <span class="tp">Account</span> from,
+        <span class="tp">Account</span> to,
+        <span class="tp">Money</span> amount)
+    {
+        <span class="cm">// Business rule: can't transfer to yourself</span>
+        <span class="kw">if</span> (from.Id == to.Id)
+            <span class="kw">throw new</span> <span class="tp">DomainException</span>(<span class="str">"Cannot transfer to same account"</span>);
+
+        <span class="cm">// Business rule: different currencies need conversion</span>
+        <span class="kw">if</span> (from.Currency != to.Currency)
+            <span class="kw">throw new</span> <span class="tp">DomainException</span>(<span class="str">"Cross-currency transfer not allowed here"</span>);
+
+        <span class="cm">// Delegate to each aggregate — THEY enforce their own invariants</span>
+        from.<span class="mt">Debit</span>(amount);   <span class="cm">// throws if insufficient funds</span>
+        to.<span class="mt">Credit</span>(amount);
+    }
+}</pre>
+      <div class="insight">
+        <strong>Key observation:</strong> <code>MoneyTransferService</code> doesn't load accounts from the DB. It receives already-loaded aggregates. The "who loads and saves" job belongs to the Application Service above it.
+      </div>
+    </div>
+    <div class="inner-panel" data-panel="ds-pricing">
+<pre><span class="cm">// Domain Layer — Domain/Services/PricingService.cs</span>
+<span class="kw">public class</span> <span class="tp">PricingService</span>
+{
+    <span class="cm">// Business rules about how to calculate a price</span>
+    <span class="kw">public</span> <span class="tp">Money</span> <span class="mt">CalculateOrderTotal</span>(
+        <span class="tp">Order</span> order,
+        <span class="tp">Customer</span> customer,
+        <span class="tp">IReadOnlyList</span>&lt;<span class="tp">DiscountPolicy</span>&gt; policies)
+    {
+        <span class="kw">var</span> subtotal = order.Lines
+            .<span class="mt">Sum</span>(l => l.Quantity * l.UnitPrice);
+
+        <span class="cm">// Apply discount policies — pure domain logic</span>
+        <span class="kw">var</span> discount = policies
+            .<span class="mt">Where</span>(p => p.<span class="mt">IsApplicable</span>(customer, order))
+            .<span class="mt">Select</span>(p => p.<span class="mt">CalculateDiscount</span>(subtotal))
+            .<span class="mt">DefaultIfEmpty</span>(<span class="tp">Money</span>.Zero)
+            .<span class="mt">Max</span>();
+
+        <span class="kw">return</span> subtotal - discount;
+    }
+}</pre>
+    </div>
+  </div>
+
+  <!-- APPLICATION SERVICE -->
+  <div class="section">
+    <h2><span class="badge badge-blue">Application Layer</span> Application Service</h2>
+    <h3>The Orchestrator</h3>
+    <p>An Application Service is a <strong>use-case coordinator</strong>. It doesn't contain business logic — it wires together the pieces: load aggregates, call domain services, dispatch events, commit transactions.</p>
+
+    <ul class="checklist">
+      <li>Orchestrates a complete use case / workflow</li>
+      <li>Calls repositories to load/save aggregates</li>
+      <li>Calls domain services for cross-aggregate logic</li>
+      <li>Manages transactions via Unit of Work</li>
+      <li>Handles cross-cutting: authorization, logging, event dispatch</li>
+      <li>Lives in the Application layer (above Domain)</li>
+      <li class="x">Does NOT contain business rules or invariant checks</li>
+      <li class="x">Does NOT directly manipulate entity state</li>
+    </ul>
+
+    <div class="inner-tabs">
+      <button class="inner-tab active" onclick="switchInner(this, 'as-transfer')">TransferMoneyHandler</button>
+      <button class="inner-tab" onclick="switchInner(this, 'as-place')">PlaceOrderHandler</button>
+    </div>
+    <div class="inner-panel active" data-panel="as-transfer">
+<pre><span class="cm">// Application Layer — orchestrates the transfer use case</span>
+<span class="kw">public class</span> <span class="tp">TransferMoneyHandler</span>
+    : <span class="tp">IRequestHandler</span>&lt;<span class="tp">TransferMoneyCommand</span>&gt;
+{
+    <span class="kw">private readonly</span> <span class="tp">IAccountRepository</span> _accounts;
+    <span class="kw">private readonly</span> <span class="tp">MoneyTransferService</span> _transferService; <span class="cm">// domain svc</span>
+    <span class="kw">private readonly</span> <span class="tp">IUnitOfWork</span> _uow;
+    <span class="kw">private readonly</span> <span class="tp">ILogger</span>&lt;<span class="tp">TransferMoneyHandler</span>&gt; _logger;
+
+    <span class="kw">public async</span> <span class="tp">Task</span> <span class="mt">Handle</span>(
+        <span class="tp">TransferMoneyCommand</span> cmd, <span class="tp">CancellationToken</span> ct)
+    {
+        <span class="cm">// 1. LOAD aggregates (Application concern)</span>
+        <span class="kw">var</span> from = <span class="kw">await</span> _accounts.<span class="mt">GetByIdAsync</span>(cmd.FromAccountId)
+            ?? <span class="kw">throw new</span> <span class="tp">NotFoundException</span>(<span class="str">"Account"</span>);
+        <span class="kw">var</span> to = <span class="kw">await</span> _accounts.<span class="mt">GetByIdAsync</span>(cmd.ToAccountId)
+            ?? <span class="kw">throw new</span> <span class="tp">NotFoundException</span>(<span class="str">"Account"</span>);
+
+        <span class="cm">// 2. EXECUTE domain logic (delegated to Domain Service)</span>
+        _transferService.<span class="mt">Transfer</span>(from, to, cmd.Amount);
+
+        <span class="cm">// 3. SAVE (Application concern — transaction)</span>
+        <span class="kw">await</span> _uow.<span class="mt">SaveChangesAsync</span>(ct);
+
+        <span class="cm">// 4. SIDE EFFECTS (Application concern)</span>
+        _logger.<span class="mt">LogInformation</span>(
+            <span class="str">"Transferred {Amount} from {From} to {To}"</span>,
+            cmd.Amount, cmd.FromAccountId, cmd.ToAccountId);
+    }
+}</pre>
+    </div>
+    <div class="inner-panel" data-panel="as-place">
+<pre><span class="cm">// Application Layer — PlaceOrder use case</span>
+<span class="kw">public class</span> <span class="tp">PlaceOrderHandler</span>
+    : <span class="tp">IRequestHandler</span>&lt;<span class="tp">PlaceOrderCommand</span>, <span class="tp">Guid</span>&gt;
+{
+    <span class="kw">private readonly</span> <span class="tp">IOrderRepository</span> _orders;
+    <span class="kw">private readonly</span> <span class="tp">ICustomerRepository</span> _customers;
+    <span class="kw">private readonly</span> <span class="tp">PricingService</span> _pricing; <span class="cm">// domain svc</span>
+    <span class="kw">private readonly</span> <span class="tp">IUnitOfWork</span> _uow;
+    <span class="kw">private readonly</span> <span class="tp">IMediator</span> _mediator;
+
+    <span class="kw">public async</span> <span class="tp">Task</span>&lt;<span class="tp">Guid</span>&gt; <span class="mt">Handle</span>(
+        <span class="tp">PlaceOrderCommand</span> cmd, <span class="tp">CancellationToken</span> ct)
+    {
+        <span class="cm">// Load</span>
+        <span class="kw">var</span> customer = <span class="kw">await</span> _customers.<span class="mt">GetByIdAsync</span>(cmd.CustomerId);
+
+        <span class="cm">// Create aggregate — factory method on the root</span>
+        <span class="kw">var</span> order = <span class="tp">Order</span>.<span class="mt">Create</span>(customer.Id, cmd.ShippingAddress);
+        <span class="kw">foreach</span> (<span class="kw">var</span> item <span class="kw">in</span> cmd.Items)
+            order.<span class="mt">AddLine</span>(item.ProductId, item.Qty, item.Price);
+
+        <span class="cm">// Domain service for cross-aggregate logic</span>
+        <span class="kw">var</span> total = _pricing.<span class="mt">CalculateOrderTotal</span>(
+            order, customer, <span class="kw">await</span> <span class="mt">GetPolicies</span>());
+        order.<span class="mt">SetTotal</span>(total);
+
+        <span class="cm">// Persist</span>
+        <span class="kw">await</span> _orders.<span class="mt">AddAsync</span>(order);
+        <span class="kw">await</span> _uow.<span class="mt">SaveChangesAsync</span>(ct);
+
+        <span class="cm">// Dispatch domain events after commit</span>
+        <span class="kw">foreach</span> (<span class="kw">var</span> evt <span class="kw">in</span> order.DomainEvents)
+            <span class="kw">await</span> _mediator.<span class="mt">Publish</span>(evt, ct);
+
+        <span class="kw">return</span> order.Id;
+    }
+}</pre>
+    </div>
+  </div>
+
+  <!-- COMPARISON TABLE -->
+  <div class="section">
+    <h2>📊 Side-by-Side Comparison</h2>
+    <table class="comp-table">
+      <thead>
+        <tr>
+          <th>Dimension</th>
+          <th style="color:var(--purple);">Domain Service</th>
+          <th style="color:var(--accent);">Application Service</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Layer</strong></td>
+          <td>Domain</td>
+          <td>Application</td>
+        </tr>
+        <tr>
+          <td><strong>Contains</strong></td>
+          <td>Business rules, domain logic</td>
+          <td>Orchestration, workflow, coordination</td>
+        </tr>
+        <tr>
+          <td><strong>Dependencies</strong></td>
+          <td>Other domain objects only</td>
+          <td>Repos, domain services, infra services</td>
+        </tr>
+        <tr>
+          <td><strong>Calls Repos?</strong></td>
+          <td>❌ Never — receives loaded aggregates</td>
+          <td>✅ Yes — loads and saves</td>
+        </tr>
+        <tr>
+          <td><strong>I/O?</strong></td>
+          <td>❌ None — pure logic</td>
+          <td>✅ Database, events, logging</td>
+        </tr>
+        <tr>
+          <td><strong>Statefulness</strong></td>
+          <td>Stateless</td>
+          <td>Stateless (per-request scope)</td>
+        </tr>
+        <tr>
+          <td><strong>Testability</strong></td>
+          <td>Pure unit tests — no mocks needed</td>
+          <td>Integration tests / mocked repos</td>
+        </tr>
+        <tr>
+          <td><strong>Example</strong></td>
+          <td>MoneyTransferService, PricingService</td>
+          <td>TransferMoneyHandler, PlaceOrderHandler</td>
+        </tr>
+        <tr>
+          <td><strong>Analogy</strong></td>
+          <td>The business rule book</td>
+          <td>The manager who opens the book and executes the plan</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- DECISION FLOWCHART -->
+  <div class="section">
+    <h2>🤔 Decision Flowchart: Where Does This Logic Go?</h2>
+
+    <div class="challenge">
+      <p class="challenge-q">Challenge: For each scenario, decide: Entity method, Domain Service, or Application Service?</p>
+    </div>
+
+    <div class="scenario-grid">
+      <div class="scenario-card">
+        <h4 style="color:var(--orange);">Scenario 1</h4>
+        <p>"Check if an order can be cancelled (must be in Pending status)"</p>
+        <button class="reveal-btn" onclick="toggleAnswer(this)">Reveal</button>
+        <div class="answer">
+          <p><strong>Entity method</strong> — <code>order.Cancel()</code>. Single aggregate, single invariant. The Order knows its own status.</p>
+        </div>
+      </div>
+      <div class="scenario-card">
+        <h4 style="color:var(--orange);">Scenario 2</h4>
+        <p>"Transfer inventory from Warehouse A to Warehouse B with business rules about minimum stock levels"</p>
+        <button class="reveal-btn" onclick="toggleAnswer(this)">Reveal</button>
+        <div class="answer">
+          <p><strong>Domain Service</strong> — Two aggregates (Warehouse A & B) involved. The transfer rule ("don't go below minimum") spans both. A <code>StockTransferService</code> receives both loaded warehouses.</p>
+        </div>
+      </div>
+      <div class="scenario-card">
+        <h4 style="color:var(--orange);">Scenario 3</h4>
+        <p>"Load the order, validate it, charge payment via Stripe, send confirmation email"</p>
+        <button class="reveal-btn" onclick="toggleAnswer(this)">Reveal</button>
+        <div class="answer">
+          <p><strong>Application Service</strong> — This is workflow orchestration. It loads aggregates, calls a domain method for validation, then coordinates infrastructure (Stripe API, email service). The payment gateway and email sender are infrastructure concerns.</p>
+        </div>
+      </div>
+      <div class="scenario-card">
+        <h4 style="color:var(--orange);">Scenario 4</h4>
+        <p>"Determine if a Customer qualifies for Gold tier based on their total spend across all their orders"</p>
+        <button class="reveal-btn" onclick="toggleAnswer(this)">Reveal</button>
+        <div class="answer">
+          <p><strong>Domain Service</strong> — The tier rule is pure business logic, but it needs data from both the Customer aggregate and multiple Order aggregates. A <code>LoyaltyTierService</code> takes the customer + order history and returns the tier. The Application Service loads the data and calls it.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- INFRASTRUCTURE SERVICE -->
+  <div class="section">
+    <h2>⚡ Bonus: Infrastructure Service</h2>
+    <p>Don't confuse Domain Services with <strong>Infrastructure Services</strong>. These are technical capabilities consumed by the application layer:</p>
+
+    <table class="comp-table">
+      <thead>
+        <tr>
+          <th>Infrastructure Service</th>
+          <th>What It Does</th>
+          <th>Layer</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>IEmailSender</code></td>
+          <td>Sends emails via SMTP/SendGrid</td>
+          <td>Infrastructure</td>
+        </tr>
+        <tr>
+          <td><code>IPaymentGateway</code></td>
+          <td>Charges cards via Stripe/PayPal</td>
+          <td>Infrastructure</td>
+        </tr>
+        <tr>
+          <td><code>IFileStorage</code></td>
+          <td>Stores blobs in Azure/S3</td>
+          <td>Infrastructure</td>
+        </tr>
+        <tr>
+          <td><code>IMessageBus</code></td>
+          <td>Publishes to RabbitMQ/Azure SB</td>
+          <td>Infrastructure</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>The <strong>interface</strong> for an infrastructure service CAN live in the Application layer (since app services call them). The <strong>concrete implementation</strong> lives in Infrastructure. This follows the Dependency Inversion Principle — your inner layers define what they need; outer layers provide it.</p>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!-- TOPIC 3 — PUTTING IT TOGETHER                         -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div class="topic-panel" id="topic-2">
+
+  <div class="section">
+    <h2>🏗️ Full Architecture: Where Everything Lives</h2>
+
+    <div class="flow-diagram">
+      <div class="flow-label" style="font-weight:600; color:var(--cyan); font-size:0.9rem;">API Layer</div>
+      <div class="flow-row">
+        <div class="flow-box app" style="background:var(--cyan-dim);border-color:var(--cyan);color:var(--cyan);">OrdersController</div>
+      </div>
+      <span class="flow-arrow-down">↓ calls</span>
+
+      <div class="flow-label" style="font-weight:600; color:var(--accent); font-size:0.9rem;">Application Layer</div>
+      <div class="flow-row">
+        <div class="flow-box app">PlaceOrderHandler</div>
+      </div>
+      <span class="flow-arrow-down">↓ uses</span>
+
+      <div class="flow-label" style="font-weight:600; color:var(--purple); font-size:0.9rem;">Domain Layer</div>
+      <div class="flow-row">
+        <div class="flow-box domain">Order (Aggregate)</div>
+        <div class="flow-box domain">PricingService</div>
+        <div class="flow-box domain">IOrderRepository</div>
+      </div>
+      <span class="flow-arrow-down">↓ implemented by</span>
+
+      <div class="flow-label" style="font-weight:600; color:var(--green); font-size:0.9rem;">Infrastructure Layer</div>
+      <div class="flow-row">
+        <div class="flow-box infra">EfOrderRepository</div>
+        <div class="flow-box infra">EfUnitOfWork</div>
+        <div class="flow-box infra">SendGridEmailSender</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>📁 Folder Structure in a .NET Solution</h2>
+<pre>
+<span class="cm">MyApp/</span>
+├── <span class="tp">MyApp.Domain/</span>                    <span class="cm">← No dependencies on anything</span>
+│   ├── <span class="tp">Aggregates/</span>
+│   │   └── <span class="tp">Order/</span>
+│   │       ├── Order.cs               <span class="cm">← Aggregate root</span>
+│   │       ├── OrderLine.cs           <span class="cm">← Child entity</span>
+│   │       └── OrderStatus.cs         <span class="cm">← Enum / value object</span>
+│   ├── <span class="tp">ValueObjects/</span>
+│   │   ├── Money.cs
+│   │   └── Address.cs
+│   ├── <span class="tp">Services/</span>
+│   │   ├── MoneyTransferService.cs    <span class="cm">← Domain service</span>
+│   │   └── PricingService.cs          <span class="cm">← Domain service</span>
+│   ├── <span class="tp">Repositories/</span>
+│   │   └── IOrderRepository.cs        <span class="cm">← Interface only!</span>
+│   └── <span class="tp">Events/</span>
+│       └── OrderPlacedEvent.cs
+│
+├── <span class="tp">MyApp.Application/</span>               <span class="cm">← References Domain only</span>
+│   ├── <span class="tp">Orders/</span>
+│   │   ├── PlaceOrderCommand.cs
+│   │   ├── PlaceOrderHandler.cs       <span class="cm">← Application service</span>
+│   │   └── AddOrderLineHandler.cs
+│   └── <span class="tp">Interfaces/</span>
+│       ├── IUnitOfWork.cs
+│       └── IEmailSender.cs            <span class="cm">← Infra service interface</span>
+│
+├── <span class="tp">MyApp.Infrastructure/</span>            <span class="cm">← References Domain + Application</span>
+│   ├── <span class="tp">Persistence/</span>
+│   │   ├── AppDbContext.cs
+│   │   ├── EfOrderRepository.cs       <span class="cm">← Concrete repo</span>
+│   │   ├── EfUnitOfWork.cs
+│   │   └── <span class="tp">Configurations/</span>
+│   │       └── OrderConfiguration.cs
+│   └── <span class="tp">ExternalServices/</span>
+│       └── SendGridEmailSender.cs
+│
+└── <span class="tp">MyApp.Api/</span>                       <span class="cm">← References Application + Infrastructure</span>
+    ├── Controllers/
+    │   └── OrdersController.cs
+    └── Program.cs                     <span class="cm">← DI composition root</span>
+</pre>
+  </div>
+
+  <div class="section">
+    <h2>🎯 Interview Quick-Fire Answers</h2>
+
+    <div class="challenge">
+      <p class="challenge-q">"Why does the repository interface live in the Domain layer?"</p>
+      <button class="reveal-btn" onclick="toggleAnswer(this)">Reveal</button>
+      <div class="answer">
+        <p>Because the <strong>domain</strong> defines what it needs ("I need a way to get an Order by ID"), but it doesn't care about HOW that's implemented. This is the Dependency Inversion Principle — the inner layer owns the abstraction, the outer layer provides the implementation. If you put the interface in Infrastructure, your Domain would depend on Infrastructure — that inverts the dependency flow.</p>
+      </div>
+    </div>
+
+    <div class="challenge">
+      <p class="challenge-q">"When would you NOT use the Repository pattern?"</p>
+      <button class="reveal-btn" onclick="toggleAnswer(this)">Reveal</button>
+      <div class="answer">
+        <p><strong>CQRS read side.</strong> Repositories are for the write model — loading aggregates to enforce invariants. For the read side, you often use thin queries (Dapper, raw SQL, read-optimized projections) that bypass the domain model entirely. No need to load a full aggregate graph just to display a list view. Also, in simple CRUD apps with no real business logic, a repository adds ceremony with no benefit — EF's <code>DbContext</code> already IS a Unit of Work + Repository.</p>
+      </div>
+    </div>
+
+    <div class="challenge">
+      <p class="challenge-q">"Can a Domain Service call a Repository?"</p>
+      <button class="reveal-btn" onclick="toggleAnswer(this)">Reveal</button>
+      <div class="answer">
+        <p><strong>Purist DDD says no.</strong> A Domain Service should receive already-loaded aggregates from the Application Service. This keeps the Domain layer free of I/O and persistence concerns, making it trivially testable. However, in pragmatic implementations, some teams inject the repository interface into domain services for convenience. The trade-off is testability and purity vs. a simpler call chain. In an interview, state the purist view first, then acknowledge the pragmatic variation.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function switchTopic(idx) {
+  document.querySelectorAll('.topic-tab').forEach((t, i) => {
+    t.classList.toggle('active', i === idx);
+  });
+  document.querySelectorAll('.topic-panel').forEach((p, i) => {
+    p.classList.toggle('active', i === idx);
+  });
+}
+
+function switchInner(btn, panel) {
+  const tabs = btn.parentElement;
+  tabs.querySelectorAll('.inner-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+
+  let container = tabs.parentElement;
+  container.querySelectorAll('.inner-panel').forEach(p => {
+    p.classList.toggle('active', p.dataset.panel === panel);
+  });
+}
+
+function toggleAnswer(btn) {
+  const answer = btn.nextElementSibling;
+  answer.classList.toggle('show');
+  btn.textContent = answer.classList.contains('show') ? 'Hide Answer' : 'Reveal Answer';
+}
+</script>
+</body>
+</html>

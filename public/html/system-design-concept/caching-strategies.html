@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Caching Strategies — System Design Study Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=DM+Sans:ital,wght@0,400;0,500;0,700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#060810;--bg-card:#0d0f18;--bg-code:#090b12;--bg-el:#151828;--border:#191d30;--border-gl:#242840;--text:#c2c8d8;--text-dim:#5c6486;--text-br:#e4eaf4;--ca:#3b82f6;--rt:#06b6d4;--wt:#10b981;--wa:#f59e0b;--wb:#a855f7;--bad:#ef4444;--ok:#4ade80;--r:12px}
+*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.72;overflow-x:hidden}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border-gl);border-radius:3px}
+.hero{position:relative;min-height:44vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:80px 24px 50px;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 500px 350px at 25% 40%,rgba(59,130,246,.1),transparent),radial-gradient(ellipse 400px 300px at 50% 55%,rgba(6,182,212,.07),transparent),radial-gradient(ellipse 400px 280px at 75% 50%,rgba(168,85,247,.06),transparent)}
+.hero-badge{position:relative;display:inline-flex;align-items:center;gap:8px;padding:6px 18px;border:1px solid var(--ca);border-radius:100px;font-size:.8rem;color:var(--ca);letter-spacing:.08em;text-transform:uppercase;margin-bottom:20px}
+.hero h1{position:relative;font-family:'Playfair Display',serif;font-size:clamp(2.2rem,5.5vw,3.6rem);font-weight:900;line-height:1.15;color:var(--text-br);max-width:700px}
+.hero h1 span{background:linear-gradient(135deg,var(--ca),var(--wt));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{position:relative;max-width:640px;margin-top:16px;color:var(--text-dim);font-size:1rem}
+.np{position:relative;display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:28px}
+.np a{display:inline-block;padding:6px 14px;border:1px solid var(--border-gl);border-radius:100px;color:var(--text-dim);text-decoration:none;font-size:.82rem;transition:all .25s}
+.np a:hover{border-color:var(--ca);color:var(--ca);background:rgba(59,130,246,.06)}
+.sec{max-width:1000px;margin:0 auto 60px;padding:0 24px;scroll-margin-top:32px}
+.sh{display:flex;align-items:center;gap:16px;margin-bottom:8px}
+.sn{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:14px;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:.95rem;flex-shrink:0;background:color-mix(in srgb,var(--pat) 16%,transparent);color:var(--pat);border:1px solid color-mix(in srgb,var(--pat) 28%,transparent)}
+.sh h2{font-family:'Playfair Display',serif;font-size:1.45rem;font-weight:700;color:var(--text-br)}
+.ss{color:var(--text-dim);font-style:italic;margin-bottom:20px;padding-left:60px;font-size:.9rem}
+.s1{--pat:var(--ca)}.s2{--pat:var(--rt)}.s3{--pat:var(--wt)}.s4{--pat:var(--wa)}.s5{--pat:var(--wb)}
+.card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:16px}
+.card h3{font-size:.92rem;color:var(--text-br);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.card h3::before{content:'';display:inline-block;width:3px;height:15px;border-radius:2px;background:var(--pat,var(--ca))}
+.dw{background:var(--bg-code);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:16px;overflow-x:auto}
+.dw svg{display:block;margin:0 auto;max-width:100%;height:auto}
+.tw{overflow-x:auto;margin-bottom:16px}table{width:100%;border-collapse:collapse;font-size:.82rem}
+thead th{background:var(--bg-el);color:var(--text-br);padding:10px 12px;text-align:left;font-weight:600;border-bottom:2px solid var(--border-gl);white-space:nowrap}
+tbody td{padding:8px 12px;border-bottom:1px solid var(--border);vertical-align:top}tbody tr:hover{background:rgba(59,130,246,.03)}
+.tip{display:flex;gap:10px;padding:12px 14px;border-radius:var(--r);margin-bottom:16px;font-size:.85rem}
+.tip-b{background:rgba(59,130,246,.06);border:1px solid rgba(59,130,246,.16)}.tip-b .ic{color:var(--ca)}
+.tip-g{background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.16)}.tip-g .ic{color:var(--wt)}
+.tip-y{background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.16)}.tip-y .ic{color:var(--wa)}
+.tip-p{background:rgba(168,85,247,.06);border:1px solid rgba(168,85,247,.16)}.tip-p .ic{color:var(--wb)}
+.tip .ic{font-size:1.1rem;flex-shrink:0}
+.bt{position:fixed;bottom:24px;right:24px;width:44px;height:44px;border-radius:50%;background:var(--ca);color:#fff;border:none;cursor:pointer;font-size:1.2rem;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s,transform .3s;box-shadow:0 4px 16px rgba(59,130,246,.35);z-index:100;font-weight:700}
+.bt.show{opacity:1;pointer-events:auto}.bt:hover{transform:scale(1.1)}
+footer{text-align:center;padding:36px 24px;color:var(--text-dim);font-size:.8rem;border-top:1px solid var(--border);margin-top:40px}
+.sum{max-width:1000px;margin:0 auto 50px;padding:0 24px}.sum h2{font-family:'Playfair Display',serif;font-size:1.45rem;color:var(--text-br);margin-bottom:18px;text-align:center}
+@media(max-width:768px){.ss{padding-left:0}}
+</style>
+</head>
+<body>
+
+<section class="hero">
+  <div class="hero-badge">System Design</div>
+  <h1><span>Caching</span> Strategies</h1>
+  <p>Five caching strategies — Cache-Aside, Read-Through, Write-Through, Write-Around, and Write-Behind — plus three caching tiers and consistency models.</p>
+  <div class="np">
+    <a href="#types">3 Tiers</a><a href="#aside">Cache-Aside</a><a href="#readthru">Read-Through</a><a href="#writethru">Write-Through</a><a href="#around">Write-Around</a><a href="#behind">Write-Behind</a><a href="#compare">Comparison</a>
+  </div>
+</section>
+
+<!-- ═══════ CACHING TIERS (replaces image1.png) ═══════ -->
+<section id="types" class="sec" style="--pat:var(--ca)">
+  <div class="sh"><div class="sn">🗄</div><h2>Three Tiers of Caching</h2></div>
+
+  <div class="dw">
+    <svg viewBox="0 0 780 200" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+      <!-- Cache -->
+      <rect x="20" y="15" width="230" height="170" rx="12" fill="rgba(59,130,246,.06)" stroke="#3b82f6" stroke-width="1.5"/>
+      <!-- DB icon -->
+      <ellipse cx="135" cy="52" rx="30" ry="12" fill="rgba(59,130,246,.15)" stroke="#3b82f6" stroke-width="1.2"/>
+      <rect x="105" y="52" width="60" height="25" fill="rgba(59,130,246,.15)"/><ellipse cx="135" cy="77" rx="30" ry="12" fill="rgba(59,130,246,.15)" stroke="#3b82f6" stroke-width="1.2"/>
+      <text x="135" y="108" text-anchor="middle" fill="#3b82f6" font-weight="700" font-size="15">Cache</text>
+      <text x="135" y="128" text-anchor="middle" fill="#8890a8" font-size="10">Frequently accessed data</text>
+      <text x="135" y="142" text-anchor="middle" fill="#8890a8" font-size="10">in-memory for speed</text>
+      <text x="135" y="165" text-anchor="middle" fill="#3b82f6" font-size="10" font-family="JetBrains Mono,monospace">Redis, Memcached</text>
+
+      <!-- CDN -->
+      <rect x="275" y="15" width="230" height="170" rx="12" fill="rgba(6,182,212,.06)" stroke="#06b6d4" stroke-width="1.5"/>
+      <!-- Cloud icon -->
+      <path d="M370,45 C355,30 340,35 340,48 C330,45 322,52 330,60 L400,60 C410,52 405,42 395,42 C395,35 380,30 370,45Z" fill="rgba(6,182,212,.15)" stroke="#06b6d4" stroke-width="1.2"/>
+      <rect x="362" y="55" width="16" height="20" rx="2" fill="#06b6d4" opacity=".5"/>
+      <text x="390" y="108" text-anchor="middle" fill="#06b6d4" font-weight="700" font-size="15">CDN</text>
+      <text x="390" y="128" text-anchor="middle" fill="#8890a8" font-size="10">Deliver static content</text>
+      <text x="390" y="142" text-anchor="middle" fill="#8890a8" font-size="10">from global edge servers</text>
+      <text x="390" y="165" text-anchor="middle" fill="#06b6d4" font-size="10" font-family="JetBrains Mono,monospace">Cloudflare, Akamai</text>
+
+      <!-- Dynamic Content Caching -->
+      <rect x="530" y="15" width="230" height="170" rx="12" fill="rgba(168,85,247,.06)" stroke="#a855f7" stroke-width="1.5"/>
+      <!-- Monitor + user icon -->
+      <rect x="620" y="38" width="40" height="30" rx="4" fill="rgba(168,85,247,.15)" stroke="#a855f7" stroke-width="1.2"/>
+      <line x1="640" y1="68" x2="640" y2="75" stroke="#a855f7" stroke-width="1.2"/>
+      <line x1="628" y1="75" x2="652" y2="75" stroke="#a855f7" stroke-width="1.2"/>
+      <circle cx="640" cy="48" r="6" fill="#a855f7" opacity=".5"/>
+      <text x="645" y="108" text-anchor="middle" fill="#a855f7" font-weight="700" font-size="14">Dynamic Content</text>
+      <text x="645" y="128" text-anchor="middle" fill="#8890a8" font-size="10">Cache content that changes</text>
+      <text x="645" y="142" text-anchor="middle" fill="#8890a8" font-size="10">per user or request</text>
+      <text x="645" y="165" text-anchor="middle" fill="#a855f7" font-size="10" font-family="JetBrains Mono,monospace">Fragment / Edge caching</text>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════ 1. CACHE-ASIDE ═══════ -->
+<section id="aside" class="sec s1">
+  <div class="sh"><div class="sn">1</div><h2>Cache-Aside (Lazy Loading)</h2></div>
+  <div class="ss">App checks cache first. On miss → load from DB → populate cache. Writes go directly to DB.</div>
+
+  <div class="dw">
+    <svg viewBox="0 0 660 180" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+      <defs><marker id="ac1" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#3b82f6"/></marker><marker id="ac1g" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#5c6486"/></marker></defs>
+      <!-- App -->
+      <rect x="20" y="55" width="100" height="50" rx="10" fill="rgba(236,72,153,.08)" stroke="#ec4899" stroke-width="1.2"/>
+      <text x="70" y="78" text-anchor="middle" fill="#ec4899" font-weight="600" font-size="11">Application</text>
+      <text x="70" y="96" text-anchor="middle" fill="#5c6486" font-size="8">controls everything</text>
+      <!-- Cache -->
+      <rect x="220" y="20" width="120" height="50" rx="10" fill="rgba(59,130,246,.1)" stroke="#3b82f6" stroke-width="1.5"/>
+      <text x="280" y="42" text-anchor="middle" fill="#3b82f6" font-weight="700" font-size="12">Cache</text>
+      <text x="280" y="60" text-anchor="middle" fill="#5c6486" font-size="8">Redis/Memcached</text>
+      <!-- DB -->
+      <rect x="220" y="100" width="120" height="50" rx="10" fill="rgba(100,116,139,.08)" stroke="#64748b" stroke-width="1.2"/>
+      <text x="280" y="122" text-anchor="middle" fill="#64748b" font-weight="600" font-size="12">Database</text>
+      <text x="280" y="140" text-anchor="middle" fill="#5c6486" font-size="8">source of truth</text>
+      <!-- App → Cache (check) -->
+      <path d="M120,68 L220,45" fill="none" stroke="#3b82f6" stroke-width="1.5" marker-end="url(#ac1)"/>
+      <text x="165" y="48" fill="#3b82f6" font-size="8" font-weight="600">① check</text>
+      <!-- Cache miss → App → DB -->
+      <path d="M120,88 L220,125" fill="none" stroke="#5c6486" stroke-width="1.2" stroke-dasharray="5 3" marker-end="url(#ac1g)"/>
+      <text x="155" y="118" fill="#5c6486" font-size="8">② miss → query DB</text>
+      <!-- App populates cache -->
+      <path d="M120,75 C180,75 180,50 220,50" fill="none" stroke="#3b82f6" stroke-width="1" stroke-dasharray="4 3"/>
+      <text x="410" y="48" fill="#3b82f6" font-size="8">③ populate cache</text>
+      <!-- Write path -->
+      <rect x="440" y="55" width="200" height="90" rx="10" fill="rgba(59,130,246,.04)" stroke="#3b82f6" stroke-width="1" stroke-dasharray="6 4"/>
+      <text x="540" y="76" text-anchor="middle" fill="#3b82f6" font-weight="600" font-size="11">Write Path</text>
+      <text x="540" y="96" text-anchor="middle" fill="#8890a8" font-size="9">App writes directly to DB</text>
+      <text x="540" y="112" text-anchor="middle" fill="#8890a8" font-size="9">Cache NOT updated on write</text>
+      <text x="540" y="130" text-anchor="middle" fill="#3b82f6" font-size="9" font-style="italic">Lazy: cache only on read miss</text>
+    </svg>
+  </div>
+
+  <div class="tip tip-b"><span class="ic">🧠</span><span><strong>Key:</strong> App controls the cache. Lazy loading — cache populated only when needed. Writes bypass cache (go straight to DB). Used with Memcached and Redis.</span></div>
+</section>
+
+<!-- ═══════ 2. READ-THROUGH ═══════ -->
+<section id="readthru" class="sec s2">
+  <div class="sh"><div class="sn">2</div><h2>Read-Through Cache</h2></div>
+  <div class="ss">Cache sits in-line with DB. On miss → cache itself loads from DB, populates, and returns.</div>
+
+  <div class="dw">
+    <svg viewBox="0 0 660 150" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+      <defs><marker id="ac2" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#06b6d4"/></marker></defs>
+      <rect x="20" y="42" width="100" height="50" rx="10" fill="rgba(236,72,153,.08)" stroke="#ec4899" stroke-width="1.2"/>
+      <text x="70" y="72" text-anchor="middle" fill="#ec4899" font-weight="600" font-size="11">Application</text>
+      <path d="M120,67 L200,67" fill="none" stroke="#06b6d4" stroke-width="1.5" marker-end="url(#ac2)"/>
+      <text x="160" y="58" fill="#06b6d4" font-size="8" font-weight="600">① read</text>
+      <!-- Cache (in-line) -->
+      <rect x="200" y="30" width="150" height="75" rx="12" fill="rgba(6,182,212,.1)" stroke="#06b6d4" stroke-width="2"/>
+      <text x="275" y="55" text-anchor="middle" fill="#06b6d4" font-weight="700" font-size="13">Cache</text>
+      <text x="275" y="72" text-anchor="middle" fill="#8890a8" font-size="9">in-line with DB</text>
+      <text x="275" y="88" text-anchor="middle" fill="#06b6d4" font-size="8">miss? → loads from DB</text>
+      <text x="275" y="100" text-anchor="middle" fill="#06b6d4" font-size="8">populates itself</text>
+      <!-- DB -->
+      <path d="M350,67 L430,67" fill="none" stroke="#06b6d4" stroke-width="1.2" stroke-dasharray="5 3" marker-end="url(#ac2)"/>
+      <text x="390" y="58" fill="#5c6486" font-size="8">② miss → fetch</text>
+      <rect x="430" y="42" width="110" height="50" rx="10" fill="rgba(100,116,139,.08)" stroke="#64748b" stroke-width="1.2"/>
+      <text x="485" y="72" text-anchor="middle" fill="#64748b" font-weight="600" font-size="12">Database</text>
+      <!-- Key diff -->
+      <rect x="200" y="118" width="340" height="26" rx="8" fill="rgba(6,182,212,.05)" stroke="rgba(6,182,212,.15)" stroke-width="1"/>
+      <text x="370" y="135" text-anchor="middle" fill="#06b6d4" font-size="9">Cache handles DB fetching — app doesn't know about DB on reads</text>
+    </svg>
+  </div>
+
+  <div class="tip tip-b"><span class="ic">📌</span><span><strong>Difference from Cache-Aside:</strong> In Cache-Aside, the app manages the cache. In Read-Through, the cache itself manages loading from DB. App only talks to the cache.</span></div>
+</section>
+
+<!-- ═══════ 3. WRITE-THROUGH ═══════ -->
+<section id="writethru" class="sec s3">
+  <div class="sh"><div class="sn">3</div><h2>Write-Through Cache</h2></div>
+  <div class="ss">Writes go to cache first → cache synchronously writes to DB. Always consistent.</div>
+
+  <div class="dw">
+    <svg viewBox="0 0 660 150" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+      <defs><marker id="ac3" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#10b981"/></marker></defs>
+      <rect x="20" y="42" width="100" height="50" rx="10" fill="rgba(236,72,153,.08)" stroke="#ec4899" stroke-width="1.2"/>
+      <text x="70" y="65" text-anchor="middle" fill="#ec4899" font-weight="600" font-size="11">Application</text>
+      <text x="70" y="82" text-anchor="middle" fill="#5c6486" font-size="8">write request</text>
+      <path d="M120,67 L200,67" fill="none" stroke="#10b981" stroke-width="1.5" marker-end="url(#ac3)"/>
+      <text x="160" y="58" fill="#10b981" font-size="8" font-weight="600">① write</text>
+      <!-- Cache -->
+      <rect x="200" y="30" width="150" height="75" rx="12" fill="rgba(16,185,129,.1)" stroke="#10b981" stroke-width="2"/>
+      <text x="275" y="55" text-anchor="middle" fill="#10b981" font-weight="700" font-size="13">Cache</text>
+      <text x="275" y="72" text-anchor="middle" fill="#8890a8" font-size="9">stores data</text>
+      <text x="275" y="88" text-anchor="middle" fill="#10b981" font-size="8" font-weight="600">then writes to DB (sync)</text>
+      <!-- DB -->
+      <path d="M350,67 L430,67" fill="none" stroke="#10b981" stroke-width="1.5" marker-end="url(#ac3)"/>
+      <text x="390" y="58" fill="#10b981" font-size="8" font-weight="600">② sync write</text>
+      <rect x="430" y="42" width="110" height="50" rx="10" fill="rgba(100,116,139,.08)" stroke="#64748b" stroke-width="1.2"/>
+      <text x="485" y="72" text-anchor="middle" fill="#64748b" font-weight="600" font-size="12">Database</text>
+      <!-- Sync badge -->
+      <rect x="560" y="50" width="80" height="35" rx="8" fill="rgba(16,185,129,.08)" stroke="#10b981" stroke-width="1"/>
+      <text x="600" y="65" text-anchor="middle" fill="#10b981" font-weight="700" font-size="10">SYNC</text>
+      <text x="600" y="80" text-anchor="middle" fill="#10b981" font-size="8">strong consistency</text>
+      <!-- Note -->
+      <rect x="200" y="118" width="340" height="26" rx="8" fill="rgba(16,185,129,.05)" stroke="rgba(16,185,129,.15)" stroke-width="1"/>
+      <text x="370" y="135" text-anchor="middle" fill="#10b981" font-size="9">Cache always matches DB — no stale data. Higher write latency.</text>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════ 4. WRITE-AROUND ═══════ -->
+<section id="around" class="sec s4">
+  <div class="sh"><div class="sn">4</div><h2>Write-Around (Bypassed)</h2></div>
+  <div class="ss">Writes go directly to DB, bypassing cache. Cache only populated when data is read later.</div>
+
+  <div class="dw">
+    <svg viewBox="0 0 660 160" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+      <defs><marker id="ac4" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#f59e0b"/></marker><marker id="ac4g" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#5c6486"/></marker></defs>
+      <rect x="20" y="50" width="100" height="50" rx="10" fill="rgba(236,72,153,.08)" stroke="#ec4899" stroke-width="1.2"/>
+      <text x="70" y="72" text-anchor="middle" fill="#ec4899" font-weight="600" font-size="11">Application</text>
+      <text x="70" y="90" text-anchor="middle" fill="#5c6486" font-size="8">write request</text>
+      <!-- Cache (bypassed!) -->
+      <rect x="220" y="15" width="120" height="45" rx="10" fill="rgba(100,116,139,.05)" stroke="#64748b" stroke-width="1" stroke-dasharray="4 3"/>
+      <text x="280" y="35" text-anchor="middle" fill="#64748b" font-size="11">Cache</text>
+      <text x="280" y="50" text-anchor="middle" fill="#64748b" font-size="8">BYPASSED on write</text>
+      <!-- Direct to DB -->
+      <path d="M120,80 L380,105" fill="none" stroke="#f59e0b" stroke-width="2" marker-end="url(#ac4)"/>
+      <text x="250" y="100" fill="#f59e0b" font-size="9" font-weight="600">write directly to DB (skip cache)</text>
+      <rect x="380" y="80" width="120" height="50" rx="10" fill="rgba(245,158,11,.08)" stroke="#f59e0b" stroke-width="1.5"/>
+      <text x="440" y="102" text-anchor="middle" fill="#f59e0b" font-weight="600" font-size="12">Database</text>
+      <text x="440" y="120" text-anchor="middle" fill="#5c6486" font-size="8">source of truth</text>
+      <!-- Later: read → populates cache -->
+      <rect x="530" y="20" width="120" height="55" rx="8" fill="rgba(245,158,11,.06)" stroke="#f59e0b" stroke-width="1"/>
+      <text x="590" y="38" text-anchor="middle" fill="#f59e0b" font-size="9" font-weight="600">Later on read:</text>
+      <text x="590" y="54" text-anchor="middle" fill="#8890a8" font-size="8">if data is read →</text>
+      <text x="590" y="68" text-anchor="middle" fill="#f59e0b" font-size="8">then populate cache</text>
+      <!-- Note -->
+      <rect x="170" y="140" width="380" height="20" rx="6" fill="rgba(245,158,11,.05)" stroke="rgba(245,158,11,.15)" stroke-width="1"/>
+      <text x="360" y="154" text-anchor="middle" fill="#f59e0b" font-size="9">Cache only fills on read miss — write-heavy data that's rarely read stays out of cache</text>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════ 5. WRITE-BEHIND ═══════ -->
+<section id="behind" class="sec s5">
+  <div class="sh"><div class="sn">5</div><h2>Write-Behind (Write-Back)</h2></div>
+  <div class="ss">Writes go to cache → app gets ACK immediately → cache asynchronously writes to DB later.</div>
+
+  <div class="dw">
+    <svg viewBox="0 0 660 160" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+      <defs><marker id="ac5" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#a855f7"/></marker></defs>
+      <rect x="20" y="42" width="100" height="50" rx="10" fill="rgba(236,72,153,.08)" stroke="#ec4899" stroke-width="1.2"/>
+      <text x="70" y="65" text-anchor="middle" fill="#ec4899" font-weight="600" font-size="11">Application</text>
+      <text x="70" y="82" text-anchor="middle" fill="#5c6486" font-size="8">write request</text>
+      <path d="M120,67 L200,67" fill="none" stroke="#a855f7" stroke-width="1.5" marker-end="url(#ac5)"/>
+      <text x="160" y="58" fill="#a855f7" font-size="8" font-weight="600">① write</text>
+      <!-- Cache -->
+      <rect x="200" y="30" width="150" height="75" rx="12" fill="rgba(168,85,247,.1)" stroke="#a855f7" stroke-width="2"/>
+      <text x="275" y="55" text-anchor="middle" fill="#a855f7" font-weight="700" font-size="13">Cache</text>
+      <text x="275" y="72" text-anchor="middle" fill="#8890a8" font-size="9">stores + ACK immediately</text>
+      <text x="275" y="88" text-anchor="middle" fill="#a855f7" font-size="8" font-weight="600">② ACK → app returns fast</text>
+      <!-- Async to DB -->
+      <path d="M350,67 L430,67" fill="none" stroke="#a855f7" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#ac5)"/>
+      <text x="390" y="58" fill="#a855f7" font-size="8" font-weight="600">③ async later</text>
+      <rect x="430" y="42" width="110" height="50" rx="10" fill="rgba(100,116,139,.08)" stroke="#64748b" stroke-width="1.2"/>
+      <text x="485" y="72" text-anchor="middle" fill="#64748b" font-weight="600" font-size="12">Database</text>
+      <!-- Async badge -->
+      <rect x="560" y="50" width="80" height="35" rx="8" fill="rgba(168,85,247,.08)" stroke="#a855f7" stroke-width="1"/>
+      <text x="600" y="65" text-anchor="middle" fill="#a855f7" font-weight="700" font-size="10">ASYNC</text>
+      <text x="600" y="80" text-anchor="middle" fill="#a855f7" font-size="8">eventual consistency</text>
+      <!-- Note -->
+      <rect x="150" y="118" width="420" height="32" rx="8" fill="rgba(168,85,247,.05)" stroke="rgba(168,85,247,.15)" stroke-width="1"/>
+      <text x="360" y="132" text-anchor="middle" fill="#a855f7" font-size="9" font-weight="600">vs Write-Through: same flow but DB write is async, not sync</text>
+      <text x="360" y="146" text-anchor="middle" fill="#8890a8" font-size="8">Faster writes, but risk of data loss if cache crashes before DB write</text>
+    </svg>
+  </div>
+
+  <div class="tip tip-p"><span class="ic">⚡</span><span><strong>Key difference:</strong> Write-Through = sync DB write (strong consistency). Write-Behind = async DB write (eventual consistency, faster writes, risk of data loss).</span></div>
+</section>
+
+<!-- ═══════ CONSISTENCY MODELS ═══════ -->
+<section class="sum">
+  <h2>Consistency Models</h2>
+  <div class="card" style="--pat:var(--wt)"><div class="tw"><table>
+    <thead><tr><th></th><th>Strong Consistency</th><th>Eventual Consistency</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Guarantee</strong></td><td>Every read returns the most recent write</td><td>Reads may temporarily return stale data</td></tr>
+      <tr><td><strong>Stale data?</strong></td><td style="color:var(--ok)">Never</td><td style="color:var(--wa)">Temporarily possible</td></tr>
+      <tr><td><strong>Speed</strong></td><td style="color:var(--bad)">Slower — coordination required</td><td style="color:var(--ok)">Faster — no coordination delay</td></tr>
+      <tr><td><strong>Used by</strong></td><td>Write-Through</td><td>Write-Behind, Cache-Aside</td></tr>
+    </tbody>
+  </table></div></div>
+</section>
+
+<!-- ═══════ COMPARISON TABLE ═══════ -->
+<section id="compare" class="sum">
+  <h2>Full Comparison</h2>
+  <div class="card" style="--pat:var(--ca)"><div class="tw"><table>
+    <thead><tr><th>Strategy</th><th>Lazy Loading?</th><th>Bypasses Cache on Write?</th><th>Consistency</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td><strong style="color:var(--ca)">Cache-Aside</strong></td><td style="color:var(--ok)">✅ Yes</td><td style="color:var(--ok)">✅ Yes</td><td>Eventual</td><td>App loads into cache only when needed. Writes → DB directly.</td></tr>
+      <tr><td><strong style="color:var(--rt)">Read-Through</strong></td><td style="color:var(--ok)">✅ Yes</td><td style="color:var(--bad)">❌ No</td><td>Eventual</td><td>Cache loads from DB on miss. Writes go through cache → DB.</td></tr>
+      <tr><td><strong style="color:var(--wt)">Write-Through</strong></td><td style="color:var(--bad)">❌ No</td><td style="color:var(--bad)">❌ No</td><td>Strong</td><td>Writes go to cache → sync write to DB. Always consistent.</td></tr>
+      <tr><td><strong style="color:var(--wb)">Write-Behind</strong></td><td style="color:var(--bad)">❌ No</td><td>❌ No (async)</td><td>Eventual</td><td>Writes go to cache → async write to DB later. Fastest writes.</td></tr>
+      <tr><td><strong style="color:var(--wa)">Write-Around</strong></td><td style="color:var(--ok)">✅ Yes (on read)</td><td style="color:var(--ok)">✅ Yes</td><td>Eventual</td><td>Writes → DB directly. Cache updated only if data is read later.</td></tr>
+    </tbody>
+  </table></div></div>
+</section>
+
+<!-- ═══════ CHOOSING GUIDE ═══════ -->
+<section class="sum">
+  <h2>When to Use What</h2>
+  <div class="card" style="--pat:var(--ca)"><div class="tw"><table>
+    <thead><tr><th>If you need...</th><th>Choose</th></tr></thead>
+    <tbody>
+      <tr><td>Simple caching, app controls everything</td><td><strong style="color:var(--ca)">Cache-Aside</strong> (most common)</td></tr>
+      <tr><td>Transparent caching, app doesn't manage cache</td><td><strong style="color:var(--rt)">Read-Through</strong></td></tr>
+      <tr><td>Cache + DB always consistent, no stale data</td><td><strong style="color:var(--wt)">Write-Through</strong></td></tr>
+      <tr><td>Write-heavy data that's rarely read</td><td><strong style="color:var(--wa)">Write-Around</strong></td></tr>
+      <tr><td>Maximum write speed, eventual consistency OK</td><td><strong style="color:var(--wb)">Write-Behind</strong></td></tr>
+    </tbody>
+  </table></div></div>
+</section>
+
+<button class="bt" id="backTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+<footer><p>Caching Strategies — System Design Study Guide</p></footer>
+
+<script>
+window.addEventListener('scroll',()=>{document.getElementById('backTop').classList.toggle('show',window.scrollY>400)})
+</script>
+</body>
+</html>

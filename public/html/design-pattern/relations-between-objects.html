@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Relations Between Objects — Interactive Study Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=DM+Sans:ital,wght@0,400;0,500;0,700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg-deep:#070810;--bg-card:#0e1019;--bg-code:#0a0b13;--bg-elevated:#161826;--border:#1a1d30;--border-glow:#252940;--text:#c4c9d8;--text-dim:#5e6588;--text-bright:#e5eaf4;--dep:#64748b;--assoc:#3b82f6;--aggr:#f59e0b;--comp:#ef4444;--accent-ok:#4ade80;--syntax-keyword:#c678dd;--syntax-string:#98c379;--syntax-type:#61afef;--syntax-number:#d19a66;--syntax-comment:#5c6370;--syntax-method:#e5c07b;--radius:12px}
+*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg-deep);color:var(--text);line-height:1.72;overflow-x:hidden}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg-deep)}::-webkit-scrollbar-thumb{background:var(--border-glow);border-radius:3px}
+.hero{position:relative;min-height:48vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:80px 24px 56px;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 500px 350px at 25% 45%,rgba(100,116,139,.1),transparent),radial-gradient(ellipse 450px 320px at 50% 50%,rgba(59,130,246,.07),transparent),radial-gradient(ellipse 400px 280px at 75% 55%,rgba(239,68,68,.06),transparent)}
+.hero-badge{position:relative;display:inline-flex;align-items:center;gap:8px;padding:6px 18px;border:1px solid var(--assoc);border-radius:100px;font-size:.8rem;color:var(--assoc);letter-spacing:.08em;text-transform:uppercase;margin-bottom:24px}
+.hero h1{position:relative;font-family:'Playfair Display',serif;font-size:clamp(2.2rem,5.5vw,3.8rem);font-weight:900;line-height:1.15;color:var(--text-bright);max-width:700px}
+.hero h1 span{background:linear-gradient(135deg,var(--assoc),var(--aggr));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{position:relative;max-width:640px;margin-top:20px;color:var(--text-dim);font-size:1.05rem}
+.rel-nav{position:relative;display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-top:32px}
+.rel-nav a{display:flex;align-items:center;gap:8px;padding:10px 20px;border:1px solid var(--border-glow);border-radius:var(--radius);color:var(--text-dim);text-decoration:none;font-size:.88rem;font-weight:600;transition:all .25s}
+.rel-nav a:nth-child(1):hover{border-color:var(--dep);color:var(--dep)}.rel-nav a:nth-child(2):hover{border-color:var(--assoc);color:var(--assoc)}.rel-nav a:nth-child(3):hover{border-color:var(--aggr);color:var(--aggr)}.rel-nav a:nth-child(4):hover{border-color:var(--comp);color:var(--comp)}
+.section{max-width:1000px;margin:0 auto 80px;padding:0 24px;scroll-margin-top:32px}
+.section-header{display:flex;align-items:center;gap:16px;margin-bottom:8px}
+.section-num{display:flex;align-items:center;justify-content:center;width:48px;height:48px;border-radius:14px;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:1.1rem;flex-shrink:0}
+.section-header h2{font-family:'Playfair Display',serif;font-size:1.7rem;font-weight:700;color:var(--text-bright)}
+.section-subtitle{color:var(--text-dim);font-style:italic;margin-bottom:28px;padding-left:64px;font-size:.95rem}
+.r1{--pat:var(--dep)}.r2{--pat:var(--assoc)}.r3{--pat:var(--aggr)}.r4{--pat:var(--comp)}
+.section-num{background:color-mix(in srgb,var(--pat) 16%,transparent);color:var(--pat);border:1px solid color-mix(in srgb,var(--pat) 28%,transparent)}
+.card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:20px}
+.card h3{font-size:1rem;color:var(--text-bright);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.card h3::before{content:'';display:inline-block;width:3px;height:18px;border-radius:2px;background:var(--pat,var(--assoc))}
+.diagram-wrapper{background:var(--bg-code);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:20px;overflow-x:auto}
+.diagram-wrapper svg{display:block;margin:0 auto;max-width:100%;height:auto}
+.code-block{position:relative;background:var(--bg-code);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:16px;overflow:hidden}
+.code-header{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:var(--bg-elevated);border-bottom:1px solid var(--border);font-size:.78rem;color:var(--text-dim);font-family:'JetBrains Mono',monospace}
+.code-header .dots{display:flex;gap:6px}.code-header .dots span{width:10px;height:10px;border-radius:50%}
+.code-header .dots span:nth-child(1){background:#ff5f57}.code-header .dots span:nth-child(2){background:#febc2e}.code-header .dots span:nth-child(3){background:#28c840}
+.copy-btn{background:none;border:1px solid var(--border-glow);color:var(--text-dim);padding:3px 10px;border-radius:6px;cursor:pointer;font-size:.72rem;font-family:'JetBrains Mono',monospace;transition:all .2s}
+.copy-btn:hover{border-color:var(--accent-ok);color:var(--accent-ok)}
+.code-block pre{padding:18px 20px;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:.82rem;line-height:1.65;color:var(--text)}
+.kw{color:var(--syntax-keyword)}.tp{color:var(--syntax-type)}.str{color:var(--syntax-string)}.num{color:var(--syntax-number)}.cm{color:var(--syntax-comment);font-style:italic}.fn{color:var(--syntax-method)}
+.table-wrap{overflow-x:auto;margin-bottom:20px}table{width:100%;border-collapse:collapse;font-size:.85rem}
+thead th{background:var(--bg-elevated);color:var(--text-bright);padding:12px 16px;text-align:left;font-weight:600;border-bottom:2px solid var(--border-glow);white-space:nowrap}
+tbody td{padding:10px 16px;border-bottom:1px solid var(--border);vertical-align:top}tbody tr:hover{background:rgba(59,130,246,.03)}
+.qa-block{margin-bottom:10px}
+.qa-q{display:flex;align-items:start;gap:10px;padding:14px 18px;background:var(--bg-elevated);border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;color:var(--text-bright);font-size:.9rem;font-weight:500;transition:all .25s;user-select:none}
+.qa-q:hover{border-color:var(--assoc)}.qa-q .arrow{flex-shrink:0;width:20px;height:20px;display:flex;align-items:center;justify-content:center;transition:transform .3s;color:var(--assoc);font-size:.8rem}
+.qa-q.open .arrow{transform:rotate(90deg)}
+.qa-a{max-height:0;overflow:hidden;transition:max-height .35s ease,padding .35s;padding:0 18px;color:var(--text);font-size:.88rem;line-height:1.7;background:var(--bg-card);border:1px solid var(--border);border-top:none;border-radius:0 0 var(--radius) var(--radius)}
+.qa-a.open{max-height:600px;padding:16px 18px}
+.note{display:flex;gap:12px;padding:16px 18px;background:rgba(59,130,246,.06);border:1px solid rgba(59,130,246,.16);border-radius:var(--radius);margin-bottom:20px;font-size:.88rem}
+.note .bulb{font-size:1.2rem;flex-shrink:0}
+.when-to-use{display:flex;gap:12px;padding:16px 18px;background:color-mix(in srgb,var(--pat) 6%,transparent);border:1px solid color-mix(in srgb,var(--pat) 18%,transparent);border-radius:var(--radius);margin-bottom:20px;font-size:.88rem}
+.when-to-use .icon{font-size:1.2rem;flex-shrink:0}
+.collapsible-trigger{display:flex;align-items:center;justify-content:space-between;width:100%;padding:16px 20px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;color:var(--text-bright);font-size:.95rem;font-weight:600;margin-bottom:4px;transition:all .25s}
+.collapsible-trigger:hover{border-color:var(--pat,var(--assoc))}.collapsible-trigger .chevron{transition:transform .3s;color:var(--text-dim)}.collapsible-trigger.open .chevron{transform:rotate(180deg)}
+.collapsible-body{max-height:0;overflow:hidden;transition:max-height .4s ease}.collapsible-body.open{max-height:8000px}.collapsible-body>.inner{padding:16px 0}
+.back-top{position:fixed;bottom:24px;right:24px;width:44px;height:44px;border-radius:50%;background:var(--assoc);color:#fff;border:none;cursor:pointer;font-size:1.2rem;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s,transform .3s;box-shadow:0 4px 16px rgba(59,130,246,.35);z-index:100;font-weight:700}
+.back-top.show{opacity:1;pointer-events:auto}.back-top:hover{transform:scale(1.1)}
+footer{text-align:center;padding:40px 24px;color:var(--text-dim);font-size:.8rem;border-top:1px solid var(--border);margin-top:40px}
+.summary-section{max-width:1000px;margin:0 auto 60px;padding:0 24px}
+.summary-section h2{font-family:'Playfair Display',serif;font-size:1.8rem;color:var(--text-bright);margin-bottom:24px;text-align:center}
+@media(max-width:768px){.section-subtitle{padding-left:0}}
+</style>
+</head>
+<body>
+
+<section class="hero">
+  <div class="hero-badge">OOP Fundamentals</div>
+  <h1>Relations Between <span>Objects</span></h1>
+  <p>How objects connect, collaborate, and depend on each other — from the weakest temporary use to the strongest lifecycle ownership.</p>
+  <div class="rel-nav">
+    <a href="#dependency">⚡ Dependency</a>
+    <a href="#association">🔗 Association</a>
+    <a href="#aggregation">🧩 Aggregation</a>
+    <a href="#composition">💀 Composition</a>
+  </div>
+</section>
+
+<!-- ═══ INTRO ═══ -->
+<section class="section">
+  <div class="card"><h3 style="--pat:var(--assoc)">What Are Relations Between Objects?</h3><p>In object-oriented design, objects don't work in isolation — they connect, collaborate, and depend on each other. A "relation" describes the nature of that connection: how tightly two objects are bound, who creates whom, and what happens when one is destroyed.</p></div>
+  <div class="note"><span class="bulb">💡</span><span><strong>Key Interview Insight:</strong> The stronger the relationship, the tighter the coupling — and tight coupling makes code harder to test, change, and reuse. Design patterns exist largely to prefer weaker relations where possible.</span></div>
+
+  <!-- Master strength diagram -->
+  <div class="diagram-wrapper">
+    <svg viewBox="0 0 780 200" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+      <defs>
+        <linearGradient id="strength" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#64748b"/><stop offset="33%" stop-color="#3b82f6"/><stop offset="66%" stop-color="#f59e0b"/><stop offset="100%" stop-color="#ef4444"/></linearGradient>
+      </defs>
+      <!-- Strength bar -->
+      <rect x="40" y="30" width="700" height="8" rx="4" fill="url(#strength)" opacity=".6"/>
+      <text x="40" y="22" fill="#64748b" font-size="10" font-weight="600">WEAKEST</text>
+      <text x="700" y="22" fill="#ef4444" font-size="10" font-weight="600" text-anchor="end">STRONGEST</text>
+      <!-- 4 items -->
+      <rect x="40" y="55" width="155" height="65" rx="10" fill="rgba(100,116,139,.08)" stroke="#64748b" stroke-width="1.2"/>
+      <text x="118" y="78" text-anchor="middle" fill="#64748b" font-weight="700" font-size="13">⚡ Dependency</text>
+      <text x="118" y="96" text-anchor="middle" fill="#8890a8" font-size="9">"A temporarily uses B"</text>
+      <text x="118" y="112" text-anchor="middle" fill="#64748b" font-size="9">method param / local var</text>
+
+      <rect x="215" y="55" width="155" height="65" rx="10" fill="rgba(59,130,246,.08)" stroke="#3b82f6" stroke-width="1.2"/>
+      <text x="293" y="78" text-anchor="middle" fill="#3b82f6" font-weight="700" font-size="13">🔗 Association</text>
+      <text x="293" y="96" text-anchor="middle" fill="#8890a8" font-size="9">"A knows about B"</text>
+      <text x="293" y="112" text-anchor="middle" fill="#3b82f6" font-size="9">field / property reference</text>
+
+      <rect x="390" y="55" width="155" height="65" rx="10" fill="rgba(245,158,11,.08)" stroke="#f59e0b" stroke-width="1.2"/>
+      <text x="468" y="78" text-anchor="middle" fill="#f59e0b" font-weight="700" font-size="13">🧩 Aggregation</text>
+      <text x="468" y="96" text-anchor="middle" fill="#8890a8" font-size="9">"A has B, B survives"</text>
+      <text x="468" y="112" text-anchor="middle" fill="#f59e0b" font-size="9">collection, parts injected</text>
+
+      <rect x="565" y="55" width="175" height="65" rx="10" fill="rgba(239,68,68,.08)" stroke="#ef4444" stroke-width="1.2"/>
+      <text x="653" y="78" text-anchor="middle" fill="#ef4444" font-weight="700" font-size="13">💀 Composition</text>
+      <text x="653" y="96" text-anchor="middle" fill="#8890a8" font-size="9">"A owns B, B dies with A"</text>
+      <text x="653" y="112" text-anchor="middle" fill="#ef4444" font-size="9">created inside, lifecycle tied</text>
+
+      <!-- Coupling arrow -->
+      <text x="390" y="155" text-anchor="middle" fill="#5e6588" font-size="11">Coupling increases →</text>
+      <text x="390" y="175" text-anchor="middle" fill="#5e6588" font-size="10" font-style="italic">Design patterns prefer weaker relations where possible</text>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══ 1. DEPENDENCY ═══ -->
+<section id="dependency" class="section r1">
+  <div class="section-header"><div class="section-num">01</div><h2>⚡ Dependency</h2></div>
+  <div class="section-subtitle">"A temporarily uses B" — the weakest relation</div>
+
+  <div class="card"><h3>What It Means</h3><p>One object briefly uses another, typically as a method parameter or local variable. There is no permanent link — the using object does not hold a reference to the other. This is the loosest possible connection.</p></div>
+
+  <div class="diagram-wrapper">
+    <svg viewBox="0 0 500 100" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+      <defs><marker id="adep" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#64748b"/></marker></defs>
+      <rect x="40" y="25" width="150" height="50" rx="10" fill="rgba(100,116,139,.08)" stroke="#64748b" stroke-width="1.5"/>
+      <text x="115" y="55" text-anchor="middle" fill="#64748b" font-weight="700" font-size="14">ReportPrinter</text>
+      <rect x="310" y="25" width="150" height="50" rx="10" fill="rgba(100,116,139,.08)" stroke="#64748b" stroke-width="1.5"/>
+      <text x="385" y="55" text-anchor="middle" fill="#64748b" font-weight="700" font-size="14">Report</text>
+      <line x1="190" y1="50" x2="310" y2="50" stroke="#64748b" stroke-width="1.5" stroke-dasharray="8 5" marker-end="url(#adep)"/>
+      <text x="250" y="42" text-anchor="middle" fill="#5e6588" font-size="10">uses (temporarily)</text>
+      <text x="250" y="90" text-anchor="middle" fill="#5e6588" font-size="10" font-style="italic">UML: dashed arrow →</text>
+    </svg>
+  </div>
+
+  <div class="code-block"><div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span>C# Example</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><span class="kw">class</span> <span class="tp">ReportPrinter</span>
+{
+    <span class="cm">// Report is passed in — no field, no long-term link</span>
+    <span class="kw">public void</span> <span class="fn">Print</span>(<span class="tp">Report</span> report)
+    {
+        <span class="tp">Console</span>.<span class="fn">WriteLine</span>(report.<span class="fn">GetContent</span>());
+    }
+}
+
+<span class="cm">// Usage</span>
+<span class="kw">var</span> printer = <span class="kw">new</span> <span class="tp">ReportPrinter</span>();
+<span class="kw">var</span> report = <span class="kw">new</span> <span class="tp">Report</span>(<span class="str">"Q3 Results"</span>);
+printer.<span class="fn">Print</span>(report); <span class="cm">// ReportPrinter forgets report after this call</span></pre></div>
+
+  <div class="when-to-use"><span class="icon">📌</span><span><strong>When to use:</strong> Default choice. Use for utility/helper methods that need an object once and discard it.</span></div>
+</section>
+
+<!-- ═══ 2. ASSOCIATION ═══ -->
+<section id="association" class="section r2">
+  <div class="section-header"><div class="section-num">02</div><h2>🔗 Association</h2></div>
+  <div class="section-subtitle">"A knows about B" — a weak but persistent relation</div>
+
+  <div class="card"><h3>What It Means</h3><p>One object holds a reference to another as a field or property, but neither controls the lifecycle of the other. They can both exist independently and the link can change at runtime.</p></div>
+
+  <div class="diagram-wrapper">
+    <svg viewBox="0 0 500 100" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+      <defs><marker id="aassoc" viewBox="0 0 10 6" refX="10" refY="3" markerWidth="10" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,3 L0,6z" fill="#3b82f6"/></marker></defs>
+      <rect x="40" y="25" width="150" height="50" rx="10" fill="rgba(59,130,246,.08)" stroke="#3b82f6" stroke-width="1.5"/>
+      <text x="115" y="55" text-anchor="middle" fill="#3b82f6" font-weight="700" font-size="14">Driver</text>
+      <rect x="310" y="25" width="150" height="50" rx="10" fill="rgba(59,130,246,.08)" stroke="#3b82f6" stroke-width="1.5"/>
+      <text x="385" y="55" text-anchor="middle" fill="#3b82f6" font-weight="700" font-size="14">Car</text>
+      <line x1="190" y1="50" x2="310" y2="50" stroke="#3b82f6" stroke-width="1.5" marker-end="url(#aassoc)"/>
+      <text x="250" y="42" text-anchor="middle" fill="#5e6588" font-size="10">knows about (field ref)</text>
+      <text x="250" y="90" text-anchor="middle" fill="#5e6588" font-size="10" font-style="italic">UML: solid arrow →</text>
+    </svg>
+  </div>
+
+  <div class="code-block"><div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span>C# Example</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><span class="kw">class</span> <span class="tp">Driver</span>
+{
+    <span class="kw">private</span> <span class="tp">Car</span> _car; <span class="cm">// Driver keeps a reference to a Car</span>
+
+    <span class="kw">public</span> <span class="fn">Driver</span>(<span class="tp">Car</span> car)
+    {
+        _car = car; <span class="cm">// Car is injected — not created here</span>
+    }
+
+    <span class="kw">public void</span> <span class="fn">Drive</span>() => _car.<span class="fn">Start</span>();
+
+    <span class="kw">public void</span> <span class="fn">SwitchCar</span>(<span class="tp">Car</span> newCar)
+    {
+        _car = newCar; <span class="cm">// Association can change</span>
+    }
+}
+
+<span class="cm">// Both objects are independent — neither destroys the other</span>
+<span class="kw">var</span> car = <span class="kw">new</span> <span class="tp">Car</span>(<span class="str">"Tesla"</span>);
+<span class="kw">var</span> driver = <span class="kw">new</span> <span class="tp">Driver</span>(car);
+driver.<span class="fn">Drive</span>();</pre></div>
+
+  <div class="when-to-use"><span class="icon">📌</span><span><strong>When to use:</strong> Use when two objects need to collaborate long-term but remain independently managed (e.g. Dependency Injection).</span></div>
+</section>
+
+<!-- ═══ 3. AGGREGATION ═══ -->
+<section id="aggregation" class="section r3">
+  <div class="section-header"><div class="section-num">03</div><h2>🧩 Aggregation</h2></div>
+  <div class="section-subtitle">"A has B, but B can live without A" — medium strength</div>
+
+  <div class="card"><h3>What It Means</h3><p>A 'has-a' relationship where the parent holds a collection of child objects, but the children can survive independently. If the parent is destroyed, the children live on.</p></div>
+
+  <div class="diagram-wrapper">
+    <svg viewBox="0 0 500 100" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+      <rect x="40" y="25" width="150" height="50" rx="10" fill="rgba(245,158,11,.08)" stroke="#f59e0b" stroke-width="1.5"/>
+      <text x="115" y="55" text-anchor="middle" fill="#f59e0b" font-weight="700" font-size="14">Team</text>
+      <rect x="310" y="25" width="150" height="50" rx="10" fill="rgba(245,158,11,.08)" stroke="#f59e0b" stroke-width="1.5"/>
+      <text x="385" y="55" text-anchor="middle" fill="#f59e0b" font-weight="700" font-size="14">Player</text>
+      <!-- Aggregation diamond (hollow) -->
+      <line x1="220" y1="50" x2="310" y2="50" stroke="#f59e0b" stroke-width="1.5"/>
+      <polygon points="190,50 205,40 220,50 205,60" fill="none" stroke="#f59e0b" stroke-width="1.5"/>
+      <text x="250" y="42" text-anchor="middle" fill="#5e6588" font-size="10">has (parts survive)</text>
+      <text x="250" y="90" text-anchor="middle" fill="#5e6588" font-size="10" font-style="italic">UML: hollow diamond ◇→</text>
+    </svg>
+  </div>
+
+  <div class="code-block"><div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span>C# Example</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><span class="kw">class</span> <span class="tp">Team</span>
+{
+    <span class="kw">private</span> <span class="tp">List</span>&lt;<span class="tp">Player</span>&gt; _players;
+
+    <span class="cm">// Players are passed in — they exist before/after the Team</span>
+    <span class="kw">public</span> <span class="fn">Team</span>(<span class="tp">List</span>&lt;<span class="tp">Player</span>&gt; players)
+    {
+        _players = players;
+    }
+}
+
+<span class="cm">// Players created independently</span>
+<span class="kw">var</span> p1 = <span class="kw">new</span> <span class="tp">Player</span>(<span class="str">"Alice"</span>);
+<span class="kw">var</span> p2 = <span class="kw">new</span> <span class="tp">Player</span>(<span class="str">"Bob"</span>);
+
+<span class="kw">var</span> team = <span class="kw">new</span> <span class="tp">Team</span>(<span class="kw">new</span> <span class="tp">List</span>&lt;<span class="tp">Player</span>&gt; { p1, p2 });
+
+<span class="cm">// If team is disbanded, p1 and p2 still exist and can join another team</span>
+team = <span class="kw">null</span>;
+<span class="tp">Console</span>.<span class="fn">WriteLine</span>(p1.Name); <span class="cm">// Still works — "Alice"</span></pre></div>
+
+  <div class="when-to-use"><span class="icon">📌</span><span><strong>When to use:</strong> Use when a 'whole-part' relationship exists, but parts have an independent identity (e.g. a Playlist and its Songs).</span></div>
+</section>
+
+<!-- ═══ 4. COMPOSITION ═══ -->
+<section id="composition" class="section r4">
+  <div class="section-header"><div class="section-num">04</div><h2>💀 Composition</h2></div>
+  <div class="section-subtitle">"A owns B — if A dies, B dies" — the strongest relation</div>
+
+  <div class="card"><h3>What It Means</h3><p>A strong 'has-a' relationship where the parent fully controls the child's lifecycle. The child is created inside the parent and has no meaning or identity outside of it. When the parent is destroyed, so is the child.</p></div>
+
+  <div class="diagram-wrapper">
+    <svg viewBox="0 0 500 100" xmlns="http://www.w3.org/2000/svg" style="font-family:'DM Sans',sans-serif">
+      <rect x="40" y="25" width="150" height="50" rx="10" fill="rgba(239,68,68,.08)" stroke="#ef4444" stroke-width="1.5"/>
+      <text x="115" y="55" text-anchor="middle" fill="#ef4444" font-weight="700" font-size="14">House</text>
+      <rect x="310" y="25" width="150" height="50" rx="10" fill="rgba(239,68,68,.08)" stroke="#ef4444" stroke-width="1.5"/>
+      <text x="385" y="55" text-anchor="middle" fill="#ef4444" font-weight="700" font-size="14">Room</text>
+      <!-- Composition diamond (filled) -->
+      <line x1="220" y1="50" x2="310" y2="50" stroke="#ef4444" stroke-width="1.5"/>
+      <polygon points="190,50 205,40 220,50 205,60" fill="#ef4444" stroke="#ef4444" stroke-width="1.5"/>
+      <text x="250" y="42" text-anchor="middle" fill="#5e6588" font-size="10">owns (parts die together)</text>
+      <text x="250" y="90" text-anchor="middle" fill="#5e6588" font-size="10" font-style="italic">UML: filled diamond ◆→</text>
+    </svg>
+  </div>
+
+  <div class="code-block"><div class="code-header"><div class="dots"><span></span><span></span><span></span></div><span>C# Example</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div><pre><span class="kw">class</span> <span class="tp">House</span>
+{
+    <span class="kw">private readonly</span> <span class="tp">Room</span> _livingRoom; <span class="cm">// Room belongs ONLY to this House</span>
+    <span class="kw">private readonly</span> <span class="tp">Room</span> _bedroom;
+
+    <span class="kw">public</span> <span class="fn">House</span>()
+    {
+        <span class="cm">// House creates its own rooms — they cannot exist elsewhere</span>
+        _livingRoom = <span class="kw">new</span> <span class="tp">Room</span>(<span class="str">"Living Room"</span>);
+        _bedroom = <span class="kw">new</span> <span class="tp">Room</span>(<span class="str">"Bedroom"</span>);
+    }
+}
+
+<span class="cm">// You cannot get a Room reference — it's fully private</span>
+<span class="kw">var</span> house = <span class="kw">new</span> <span class="tp">House</span>();
+<span class="cm">// house = null → both rooms are destroyed with the house</span></pre></div>
+
+  <div class="when-to-use"><span class="icon">📌</span><span><strong>When to use:</strong> Use when the part makes no sense outside the whole (e.g. a Heart inside a Human, Rooms inside a House).</span></div>
+</section>
+
+<!-- ═══ QUICK COMPARISON ═══ -->
+<section class="summary-section">
+  <h2>Quick Comparison</h2>
+  <div class="card" style="--pat:var(--assoc)"><div class="table-wrap"><table>
+    <thead><tr><th>Relation</th><th>Strength</th><th>Lifetime Tied?</th><th>Classic Example</th></tr></thead>
+    <tbody>
+      <tr><td><strong style="color:var(--dep)">⚡ Dependency</strong></td><td>Weakest</td><td>❌ No</td><td>Method uses a parameter</td></tr>
+      <tr><td><strong style="color:var(--assoc)">🔗 Association</strong></td><td>Weak</td><td>❌ No</td><td>Driver keeps a Car field</td></tr>
+      <tr><td><strong style="color:var(--aggr)">🧩 Aggregation</strong></td><td>Medium</td><td>❌ No</td><td>Team holds a list of Players</td></tr>
+      <tr><td><strong style="color:var(--comp)">💀 Composition</strong></td><td>Strongest</td><td>✅ Yes</td><td>House creates its own Rooms</td></tr>
+    </tbody>
+  </table></div></div>
+</section>
+
+<!-- ═══ INTERVIEW Q&A ═══ -->
+<section class="summary-section">
+  <h2>Common Interview Questions</h2>
+  <div style="max-width:1000px;margin:0 auto">
+    <div class="qa-block"><div class="qa-q" onclick="toggleQA(this)"><span class="arrow">▶</span>What is the difference between Aggregation and Composition?</div><div class="qa-a">Both are 'has-a' relationships, but the key difference is <strong>lifecycle ownership</strong>. In Aggregation, the child can outlive the parent (a Player can exist without a Team). In Composition, the child is owned exclusively by the parent and is destroyed with it (a Room has no identity without its House).</div></div>
+    <div class="qa-block"><div class="qa-q" onclick="toggleQA(this)"><span class="arrow">▶</span>Why should we prefer weak relations?</div><div class="qa-a">Weak relations (Dependency, Association) produce loosely coupled code that is easier to test in isolation, swap implementations, and change without ripple effects. Tight coupling (Composition) should only be used when the lifecycle ownership is genuinely inseparable.</div></div>
+    <div class="qa-block"><div class="qa-q" onclick="toggleQA(this)"><span class="arrow">▶</span>How does Dependency Injection relate to these?</div><div class="qa-a">Dependency Injection promotes <strong>Association over Composition</strong> — instead of a class creating its own dependencies (Composition), they are injected from outside. This makes the class easier to test because you can inject mocks or fakes.</div></div>
+    <div class="qa-block"><div class="qa-q" onclick="toggleQA(this)"><span class="arrow">▶</span>What relation do most Design Patterns try to achieve?</div><div class="qa-a">Most patterns aim for <strong>Association or Dependency</strong> — they introduce interfaces and abstractions to replace hard Composition with loose references. For example, the Strategy pattern replaces a hard-coded algorithm (Composition) with an injected interface (Association).</div></div>
+  </div>
+</section>
+
+<!-- ═══ SUMMARY ═══ -->
+<section class="summary-section">
+  <h2>Summary to Remember</h2>
+  <div class="note"><span class="bulb">🧠</span><span><strong>Dependency</strong> = use once and forget. <strong>Association</strong> = know each other, but live separately. <strong>Aggregation</strong> = whole-part, parts survive. <strong>Composition</strong> = whole-part, parts die together. Always ask: <em>"Who creates it? Who destroys it?"</em> — the answer tells you which relation you have.</span></div>
+</section>
+
+<button class="back-top" id="backTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+<footer><p>Relations Between Objects — Interactive Study Guide</p></footer>
+
+<script>
+function toggleQA(el){el.classList.toggle('open');el.nextElementSibling.classList.toggle('open')}
+function copyCode(btn){const pre=btn.closest('.code-block').querySelector('pre');navigator.clipboard.writeText(pre.textContent).then(()=>{btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',1500)})}
+window.addEventListener('scroll',()=>{document.getElementById('backTop').classList.toggle('show',window.scrollY>400)})
+</script>
+</body>
+</html>

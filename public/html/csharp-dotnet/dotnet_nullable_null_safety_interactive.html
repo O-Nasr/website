@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>.NET Nullable Types & Null Safety — Interactive Study Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0d0b0f;--surface:#1a1520;--surface2:#241e2e;--border:#382e48;--text:#e8e2f0;--text-dim:#8a7da0;--accent:#e879f9;--accent2:#c084fc;--green:#4ade80;--red:#f87171;--orange:#fb923c;--yellow:#fbbf24;--blue:#60a5fa;--code-bg:#110e14;--glow:rgba(232,121,249,.12)}
+*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;min-height:100vh}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 20% 5%,rgba(232,121,249,.05)0%,transparent 55%),radial-gradient(ellipse at 80% 95%,rgba(192,132,252,.04)0%,transparent 55%);pointer-events:none;z-index:0}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.container{max-width:900px;margin:0 auto;padding:2rem 1.5rem 4rem;position:relative;z-index:1}
+.hero{text-align:center;padding:3rem 0 2.5rem}
+.hero-badge{display:inline-block;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-weight:700;font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;padding:.35rem 1rem;border-radius:99px;margin-bottom:1.2rem}
+.hero h1{font-size:2.4rem;font-weight:800;background:linear-gradient(135deg,#fff 30%,var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1.15;margin-bottom:.5rem}
+.hero p{color:var(--text-dim);font-size:1.05rem}
+.nav{display:flex;flex-wrap:wrap;gap:.5rem;justify-content:center;margin-bottom:2.5rem;position:sticky;top:0;z-index:10;background:rgba(13,11,15,.88);backdrop-filter:blur(12px);padding:.75rem 0;border-bottom:1px solid var(--border)}
+.nav a{color:var(--text-dim);text-decoration:none;font-size:.76rem;font-weight:600;padding:.4rem .8rem;border-radius:8px;transition:all .2s;border:1px solid transparent;letter-spacing:.02em}
+.nav a:hover,.nav a.active{color:var(--accent);background:rgba(232,121,249,.08);border-color:rgba(232,121,249,.2)}
+.section{margin-bottom:3rem;animation:fadeUp .5s ease both}
+.section-header{display:flex;align-items:center;gap:.75rem;margin-bottom:1.2rem;padding-bottom:.8rem;border-bottom:1px solid var(--border)}
+.section-num{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.85rem;color:#fff;flex-shrink:0}
+.section-header h2{font-size:1.35rem;font-weight:700}
+.callout{background:linear-gradient(135deg,rgba(232,121,249,.07),rgba(192,132,252,.04));border-left:3px solid var(--accent);border-radius:0 10px 10px 0;padding:1rem 1.2rem;margin:1rem 0;font-size:.92rem}
+.callout.green{border-left-color:var(--green);background:linear-gradient(135deg,rgba(74,222,128,.07),rgba(74,222,128,.03))}
+.callout.warn{border-left-color:var(--orange);background:linear-gradient(135deg,rgba(251,146,60,.07),rgba(251,146,60,.03))}
+pre{background:var(--code-bg);border:1px solid var(--border);border-radius:10px;padding:1.2rem;overflow-x:auto;margin:.8rem 0;font-family:'JetBrains Mono',monospace;font-size:.78rem;line-height:1.65;position:relative}
+pre .label{position:absolute;top:.5rem;right:.6rem;font-size:.6rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.1em;font-family:'Outfit',sans-serif;font-weight:600;background:var(--surface);padding:.15rem .5rem;border-radius:4px}
+.kw{color:var(--accent)}.tp{color:var(--blue)}.cm{color:#4a3a5e;font-style:italic}.st{color:var(--green)}.fn{color:var(--yellow)}.nu{color:var(--orange)}.er{color:var(--red)}
+.table-wrap{overflow-x:auto;margin:.8rem 0;border-radius:10px;border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:.83rem}
+th{background:var(--surface2);color:var(--accent);font-weight:600;text-align:left;padding:.7rem 1rem;white-space:nowrap}
+td{padding:.6rem 1rem;border-top:1px solid var(--border)}
+tr:hover td{background:rgba(232,121,249,.03)}
+.accordion{margin:.8rem 0}
+.accordion-btn{width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:600;padding:.9rem 1.2rem;border-radius:10px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;transition:all .2s}
+.accordion-btn:hover{border-color:var(--accent);background:var(--surface2)}
+.accordion-btn .arrow{transition:transform .3s;font-size:.8rem;color:var(--accent)}
+.accordion-btn.open .arrow{transform:rotate(180deg)}
+.accordion-body{max-height:0;overflow:hidden;transition:max-height .4s ease;background:var(--surface);border:1px solid var(--border);border-top:none;border-radius:0 0 10px 10px;padding:0 1.2rem}
+.accordion-body.open{max-height:3000px;padding:1.2rem}
+
+/* Operator cards */
+.op-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:.6rem;margin:1rem 0}
+.op-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1rem;text-align:center;transition:all .3s;cursor:pointer}
+.op-card:hover{border-color:var(--accent);transform:translateY(-3px);box-shadow:0 6px 20px var(--glow)}
+.op-card.active{border-color:var(--accent);background:rgba(232,121,249,.08)}
+.op-card .sym{font-family:'JetBrains Mono',monospace;font-size:1.5rem;font-weight:800;color:var(--accent);margin-bottom:.3rem}
+.op-card .name{font-size:.72rem;font-weight:600;color:var(--text-dim);letter-spacing:.03em}
+.op-detail{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.2rem;margin-top:.5rem;display:none}
+.op-detail.show{display:block}
+
+/* Quiz */
+.quiz-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.5rem;margin-bottom:1rem}
+.quiz-card h3{font-size:.95rem;margin-bottom:1rem;color:var(--accent)}
+.quiz-option{display:block;width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'Outfit',sans-serif;font-size:.83rem;padding:.7rem 1rem;border-radius:8px;cursor:pointer;margin-bottom:.4rem;text-align:left;transition:all .2s}
+.quiz-option:hover{border-color:var(--accent);transform:translateX(4px)}
+.quiz-option.correct{background:rgba(74,222,128,.15);border-color:var(--green);color:var(--green)}
+.quiz-option.wrong{background:rgba(248,113,113,.1);border-color:var(--red);color:var(--red)}
+.quiz-option:disabled{cursor:default;transform:none}
+.quiz-explanation{margin-top:.7rem;padding:.8rem;border-radius:8px;background:rgba(232,121,249,.06);font-size:.83rem;display:none;line-height:1.6}
+.quiz-explanation.show{display:block}
+.quiz-score{text-align:center;padding:1.5rem;background:var(--surface);border:1px solid var(--accent);border-radius:14px;margin-top:1rem}
+.quiz-score .big{font-size:2.2rem;font-weight:800;color:var(--accent)}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:640px){.hero h1{font-size:1.7rem}.container{padding:1rem}}
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="hero">
+  <div class="hero-badge">.NET Interview Study Guide</div>
+  <h1>Nullable Types & Null Safety</h1>
+  <p>The ? ?? ??= ?. ! operator family explained</p>
+</div>
+
+<nav class="nav">
+  <a href="#s1">Value vs Ref</a>
+  <a href="#s2">Nullable?</a>
+  <a href="#s3">Operators</a>
+  <a href="#s4">NRTs</a>
+  <a href="#s5">Guards</a>
+  <a href="#s6">Quiz</a>
+</nav>
+
+<!-- S1 -->
+<div class="section" id="s1">
+  <div class="section-header"><div class="section-num">1</div><h2>Value Types vs Reference Types and Null</h2></div>
+<pre><span class="label">C#</span><span class="tp">int</span>    age  = <span class="kw">null</span>;     <span class="er">// ❌ compile error — value types cannot be null</span>
+<span class="tp">string</span> name = <span class="kw">null</span>;     <span class="cm">// ✅ fine — reference types can be null</span>
+
+<span class="cm">// Stack — value types: int, bool, double, char → always has a value</span>
+<span class="cm">// Heap  — reference types: string, class, array → can point to null</span></pre>
+</div>
+
+<!-- S2 -->
+<div class="section" id="s2">
+  <div class="section-header"><div class="section-num">2</div><h2>Nullable Value Types with <code>?</code></h2></div>
+<pre><span class="label">C#</span><span class="tp">int</span>?      age      = <span class="kw">null</span>; <span class="cm">// ✅ nullable int</span>
+<span class="tp">bool</span>?     isActive = <span class="kw">null</span>; <span class="cm">// ✅ nullable bool</span>
+<span class="tp">double</span>?   salary   = <span class="kw">null</span>; <span class="cm">// ✅ nullable double</span>
+<span class="tp">DateTime</span>? dob      = <span class="kw">null</span>; <span class="cm">// ✅ nullable DateTime</span>
+
+<span class="cm">// int? is shorthand for Nullable&lt;int&gt;</span>
+<span class="tp">int</span>? age = <span class="nu">25</span>;
+Console.<span class="fn">WriteLine</span>(age.HasValue); <span class="cm">// true</span>
+Console.<span class="fn">WriteLine</span>(age.Value);    <span class="cm">// 25</span>
+
+<span class="tp">int</span>? salary = <span class="kw">null</span>;
+Console.<span class="fn">WriteLine</span>(salary.HasValue); <span class="cm">// false</span>
+Console.<span class="fn">WriteLine</span>(salary.Value);    <span class="er">// ❌ InvalidOperationException!</span></pre>
+
+  <div class="callout warn">⚠️ Always check <code>.HasValue</code> before accessing <code>.Value</code> — accessing Value on a null Nullable throws InvalidOperationException.</div>
+</div>
+
+<!-- S3: The 4 Operators -->
+<div class="section" id="s3">
+  <div class="section-header"><div class="section-num">3</div><h2>The 5 Null Safety Operators</h2></div>
+  <p style="margin-bottom:1rem;font-size:.9rem">Click each operator to see examples:</p>
+
+  <div class="op-grid">
+    <div class="op-card" onclick="showOp('op-q')"><div class="sym">?</div><div class="name">Nullable Type</div></div>
+    <div class="op-card" onclick="showOp('op-qq')"><div class="sym">??</div><div class="name">Null Coalescing</div></div>
+    <div class="op-card" onclick="showOp('op-qqe')"><div class="sym">??=</div><div class="name">Coalescing Assign</div></div>
+    <div class="op-card" onclick="showOp('op-qd')"><div class="sym">?.</div><div class="name">Null Conditional</div></div>
+    <div class="op-card" onclick="showOp('op-bang')"><div class="sym">!</div><div class="name">Null Forgiving</div></div>
+  </div>
+
+  <div class="op-detail" id="op-q">
+    <h4 style="color:var(--accent);margin-bottom:.5rem">? — Nullable Type</h4>
+    <p style="font-size:.85rem;margin-bottom:.5rem">Makes value types nullable.</p>
+<pre><span class="tp">int</span>? age = <span class="kw">null</span>; <span class="cm">// shorthand for Nullable&lt;int&gt;</span></pre>
+  </div>
+  <div class="op-detail" id="op-qq">
+    <h4 style="color:var(--accent);margin-bottom:.5rem">?? — Null Coalescing</h4>
+    <p style="font-size:.85rem;margin-bottom:.5rem">Returns left side if not null, otherwise returns right side (fallback).</p>
+<pre><span class="tp">string</span> city = <span class="kw">null</span>;
+<span class="tp">string</span> result = city ?? <span class="st">"Cairo"</span>; <span class="cm">// "Cairo"</span>
+
+<span class="cm">// Chaining — first non-null wins</span>
+<span class="tp">string</span> display = firstName ?? lastName ?? username ?? <span class="st">"Guest"</span>;</pre>
+  </div>
+  <div class="op-detail" id="op-qqe">
+    <h4 style="color:var(--accent);margin-bottom:.5rem">??= — Null Coalescing Assignment (C# 8+)</h4>
+    <p style="font-size:.85rem;margin-bottom:.5rem">Assigns ONLY if left side is null.</p>
+<pre><span class="tp">string</span> name = <span class="kw">null</span>;
+name ??= <span class="st">"Default"</span>; <span class="cm">// name was null → assigned "Default"</span>
+
+<span class="tp">string</span> city = <span class="st">"Cairo"</span>;
+city ??= <span class="st">"Alexandria"</span>; <span class="cm">// city NOT null → unchanged → "Cairo"</span></pre>
+  </div>
+  <div class="op-detail" id="op-qd">
+    <h4 style="color:var(--accent);margin-bottom:.5rem">?. — Null Conditional Operator</h4>
+    <p style="font-size:.85rem;margin-bottom:.5rem">Safe member access — returns null instead of NullReferenceException.</p>
+<pre><span class="tp">string</span> name = <span class="kw">null</span>;
+<span class="tp">int</span>? length = name?.<span class="fn">Length</span>; <span class="cm">// null instead of crash ✅</span>
+
+<span class="cm">// Chaining — multiple levels deep</span>
+<span class="tp">string</span> city = order?.Customer?.Address?.City;
+<span class="cm">// If ANY link is null → returns null safely</span>
+
+<span class="cm">// Best pattern — combine ?. with ??</span>
+<span class="tp">string</span> city = order?.Customer?.Address?.City ?? <span class="st">"Unknown"</span>;</pre>
+  </div>
+  <div class="op-detail" id="op-bang">
+    <h4 style="color:var(--accent);margin-bottom:.5rem">! — Null Forgiving Operator (C# 8+)</h4>
+    <p style="font-size:.85rem;margin-bottom:.5rem">Tells compiler "trust me, this is not null." Suppresses nullable warnings. <strong>Use sparingly.</strong></p>
+<pre><span class="tp">string</span>? name = <span class="fn">GetName</span>(); <span class="cm">// might return null</span>
+<span class="tp">int</span> length = name!.<span class="fn">Length</span>; <span class="cm">// ! suppresses warning — you take responsibility</span></pre>
+  </div>
+
+  <div class="table-wrap" style="margin-top:1rem">
+    <table>
+      <tr><th>Operator</th><th>Name</th><th>What It Does</th><th>Example</th></tr>
+      <tr><td><code>?</code></td><td>Nullable type</td><td>Makes value type nullable</td><td><code>int? age = null</code></td></tr>
+      <tr><td><code>??</code></td><td>Null coalescing</td><td>Returns fallback if null</td><td><code>name ?? "default"</code></td></tr>
+      <tr><td><code>??=</code></td><td>Coalescing assign</td><td>Assigns only if null</td><td><code>name ??= "default"</code></td></tr>
+      <tr><td><code>?.</code></td><td>Null conditional</td><td>Safe access — returns null</td><td><code>order?.Customer?.City</code></td></tr>
+      <tr><td><code>!</code></td><td>Null forgiving</td><td>Suppresses null warning</td><td><code>name!.Length</code></td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- S4: NRTs -->
+<div class="section" id="s4">
+  <div class="section-header"><div class="section-num">4</div><h2>Nullable Reference Types (C# 8+)</h2></div>
+<pre><span class="label">C#</span><span class="cm">// Enable in .csproj</span>
+&lt;<span class="fn">Nullable</span>&gt;enable&lt;/<span class="fn">Nullable</span>&gt;
+
+<span class="cm">// After enabling — compiler tracks nullability</span>
+<span class="tp">string</span>  name = <span class="kw">null</span>;  <span class="er">// ⚠️ WARNING — non-nullable shouldn't be null</span>
+<span class="tp">string</span>? city = <span class="kw">null</span>;  <span class="cm">// ✅ explicitly marked as nullable</span>
+
+<span class="cm">// Compiler warns on unsafe access</span>
+<span class="tp">string</span>? name = <span class="fn">GetName</span>();
+Console.<span class="fn">WriteLine</span>(name.<span class="fn">Length</span>); <span class="er">// ⚠️ WARNING — name might be null</span>
+
+<span class="cm">// Fix options:</span>
+<span class="kw">if</span> (name != <span class="kw">null</span>) Console.<span class="fn">WriteLine</span>(name.<span class="fn">Length</span>);  <span class="cm">// null check</span>
+Console.<span class="fn">WriteLine</span>(name?.<span class="fn">Length</span>);                   <span class="cm">// null conditional</span>
+Console.<span class="fn">WriteLine</span>(name!.<span class="fn">Length</span>);                   <span class="cm">// null forgiving</span></pre>
+</div>
+
+<!-- S5: Guard Clauses -->
+<div class="section" id="s5">
+  <div class="section-header"><div class="section-num">5</div><h2>Guard Clauses — Null Checking at Entry</h2></div>
+<pre><span class="label">C#</span><span class="kw">public void</span> <span class="fn">ProcessOrder</span>(<span class="tp">Order</span> order)
+{
+    <span class="cm">// Classic guard clause</span>
+    <span class="kw">if</span> (order == <span class="kw">null</span>)
+        <span class="kw">throw new</span> <span class="tp">ArgumentNullException</span>(<span class="kw">nameof</span>(order));
+
+    <span class="cm">// Modern C# 10+ way</span>
+    <span class="tp">ArgumentNullException</span>.<span class="fn">ThrowIfNull</span>(order);
+
+    <span class="cm">// Safe to use order here</span>
+    Console.<span class="fn">WriteLine</span>(order.OrderNumber);
+}</pre>
+</div>
+
+<!-- S6: Quiz -->
+<div class="section" id="s6">
+  <div class="section-header"><div class="section-num">6</div><h2>Test Yourself</h2></div>
+
+  <div class="quiz-card" id="q1">
+    <h3>Q1: What does <code>city ?? "Cairo"</code> return if city is null?</h3>
+    <button class="quiz-option" onclick="answer(this,'q1',true)">"Cairo"</button>
+    <button class="quiz-option" onclick="answer(this,'q1',false)">null</button>
+    <button class="quiz-option" onclick="answer(this,'q1',false)">Throws NullReferenceException</button>
+    <div class="quiz-explanation" id="q1-exp">The <code>??</code> operator returns the left side if not null, otherwise the right side. Since city is null, it returns the fallback "Cairo".</div>
+  </div>
+  <div class="quiz-card" id="q2">
+    <h3>Q2: What does <code>order?.Customer?.City</code> do if Customer is null?</h3>
+    <button class="quiz-option" onclick="answer(this,'q2',true)">Returns null safely — no crash</button>
+    <button class="quiz-option" onclick="answer(this,'q2',false)">Throws NullReferenceException</button>
+    <button class="quiz-option" onclick="answer(this,'q2',false)">Returns an empty string</button>
+    <div class="quiz-explanation" id="q2-exp">The <code>?.</code> operator short-circuits: if ANY link in the chain is null, it immediately returns null instead of throwing. That's why it's called the "null conditional" operator.</div>
+  </div>
+  <div class="quiz-card" id="q3">
+    <h3>Q3: What's the difference between <code>?</code> on value types vs reference types?</h3>
+    <button class="quiz-option" onclick="answer(this,'q3',true)">Value types: wraps in Nullable&lt;T&gt; struct. Reference types: enables compiler null tracking</button>
+    <button class="quiz-option" onclick="answer(this,'q3',false)">They do exactly the same thing</button>
+    <button class="quiz-option" onclick="answer(this,'q3',false)">Only works on value types</button>
+    <div class="quiz-explanation" id="q3-exp">For value types, <code>?</code> creates a <code>Nullable&lt;T&gt;</code> struct with HasValue and Value properties. For reference types (C# 8+ NRTs), it tells the compiler to track nullability and warn on unsafe access — it's purely a compiler hint, no runtime struct.</div>
+  </div>
+  <div class="quiz-card" id="q4">
+    <h3>Q4: When does <code>name ??= "Default"</code> assign?</h3>
+    <button class="quiz-option" onclick="answer(this,'q4',true)">Only when name is null</button>
+    <button class="quiz-option" onclick="answer(this,'q4',false)">Always</button>
+    <button class="quiz-option" onclick="answer(this,'q4',false)">Only when name is not null</button>
+    <div class="quiz-explanation" id="q4-exp"><code>??=</code> is the null coalescing assignment. It assigns the right side ONLY if the left side is currently null. If name already has a value, it stays unchanged.</div>
+  </div>
+
+  <div class="quiz-score" id="score-box" style="display:none">
+    <div class="big" id="score-text"></div>
+    <p style="color:var(--text-dim);margin-top:.3rem">Nullable Types Quiz</p>
+  </div>
+</div>
+
+<!-- Interview Answers -->
+<div class="section" id="s7">
+  <div class="section-header"><div class="section-num">★</div><h2>Interview Answer Bank</h2></div>
+  <div class="accordion"><button class="accordion-btn" onclick="toggleAcc(this)"><span>Q: ? for value types vs reference types?</span><span class="arrow">▼</span></button><div class="accordion-body"><div class="callout green">For value types, ? creates a Nullable&lt;T&gt; struct with HasValue and Value properties — allows value types to represent absence. For reference types, ? in C# 8+ with NRTs tells the compiler to track whether that variable might be null and warn on unsafe access.</div></div></div>
+  <div class="accordion"><button class="accordion-btn" onclick="toggleAcc(this)"><span>Q: ?? vs ?. — what's the difference?</span><span class="arrow">▼</span></button><div class="accordion-body"><div class="callout green">?? is null coalescing — returns left operand if not null, otherwise the right as fallback. ?. is null conditional — accesses a member only if the object is not null, returning null instead of throwing NullReferenceException. They combine beautifully: <code>order?.Customer?.City ?? "Unknown"</code>.</div></div></div>
+</div>
+
+</div>
+
+<script>
+function toggleAcc(btn){btn.classList.toggle('open');btn.nextElementSibling.classList.toggle('open')}
+
+// Operator cards
+function showOp(id){
+  document.querySelectorAll('.op-card').forEach(c=>c.classList.remove('active'));
+  document.querySelectorAll('.op-detail').forEach(d=>d.classList.remove('show'));
+  event.target.closest('.op-card').classList.add('active');
+  document.getElementById(id).classList.add('show');
+}
+
+// Quiz
+let answered=0,correct=0,total=4;
+function answer(btn,qId,isCorrect){const card=document.getElementById(qId);if(card.dataset.answered)return;card.dataset.answered='1';answered++;if(isCorrect){btn.classList.add('correct');correct++;}else btn.classList.add('wrong');card.querySelectorAll('.quiz-option').forEach(o=>o.disabled=true);document.getElementById(qId+'-exp').classList.add('show');if(answered===total){document.getElementById('score-box').style.display='block';document.getElementById('score-text').textContent=correct+' / '+total;}}
+
+const sections=document.querySelectorAll('.section');const navLinks=document.querySelectorAll('.nav a');
+window.addEventListener('scroll',()=>{let c='';sections.forEach(s=>{if(window.scrollY>=s.offsetTop-120)c=s.id});navLinks.forEach(a=>{a.classList.remove('active');if(a.getAttribute('href')==='#'+c)a.classList.add('active')})});
+</script>
+</body>
+</html>
