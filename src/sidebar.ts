@@ -8,12 +8,14 @@ const DOC_SVG = `<svg class="tree-doc__icon" viewBox="0 0 16 16" fill="none"><pa
 
 const HTML_SVG = `<svg class="tree-doc__icon" viewBox="0 0 16 16" fill="none"><path d="M2 3l1.5 10L8 15l4.5-2L14 3H2z" stroke="#34d399" stroke-width="1.2" stroke-linejoin="round" fill="rgba(52,211,153,0.08)"/><path d="M5 6h6M5.5 9h5M6.5 12h3" stroke="#34d399" stroke-width="1" stroke-linecap="round"/></svg>`;
 
+const BOOKMARK_SVG = `<svg viewBox="0 0 16 16" fill="none" width="14" height="14"><path d="M3.5 2h9a.5.5 0 01.5.5v11l-5-2.917L3 13.5v-11a.5.5 0 01.5-.5z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>`;
+
 type NavigateCallback = (doc: DocNode) => void;
 
 let activeElement: HTMLElement | null = null;
 let onNavigate: NavigateCallback = () => {};
 
-// Persisted state
+// ── Open folders persistence ──────────────────────────────────────────────────
 const STORAGE_KEY = 'sidebar-open-folders';
 function getOpenFolders(): Set<string> {
   try {
@@ -29,6 +31,34 @@ function saveOpenFolders(ids: Set<string>) {
 
 const openFolders = getOpenFolders();
 
+// ── Bookmark persistence ──────────────────────────────────────────────────────
+const BOOKMARK_KEY = 'bookmark';
+
+export function getBookmark(): string | null {
+  return localStorage.getItem(BOOKMARK_KEY);
+}
+
+export function setBookmark(id: string | null) {
+  if (id === null) {
+    localStorage.removeItem(BOOKMARK_KEY);
+  } else {
+    localStorage.setItem(BOOKMARK_KEY, id);
+  }
+  updateBookmarkUI();
+}
+
+function updateBookmarkUI() {
+  const bookmarkedId = getBookmark();
+  document.querySelectorAll<HTMLElement>('.tree-doc').forEach((wrapper) => {
+    const btn = wrapper.querySelector<HTMLElement>('.tree-doc__bookmark');
+    if (!btn) return;
+    const isBookmarked = wrapper.dataset.id === bookmarkedId;
+    btn.classList.toggle('is-bookmarked', isBookmarked);
+    btn.setAttribute('aria-label', isBookmarked ? 'Remove bookmark' : 'Bookmark this document');
+  });
+}
+
+// ── Tree building ─────────────────────────────────────────────────────────────
 function createFolderNode(node: DocNode, depth: number): HTMLElement {
   const el = document.createElement('div');
   el.className = 'tree-folder';
@@ -70,20 +100,39 @@ function createFolderNode(node: DocNode, depth: number): HTMLElement {
 }
 
 function createDocNode(node: DocNode, depth: number): HTMLElement {
-  const el = document.createElement('button');
-  el.className = 'tree-doc';
-  el.dataset.id = node.id;
-  el.style.setProperty('--depth', String(depth));
+  // Wrapper div carries .tree-doc, data-id, --depth
+  const wrapper = document.createElement('div');
+  wrapper.className = 'tree-doc';
+  wrapper.dataset.id = node.id;
+  wrapper.style.setProperty('--depth', String(depth));
 
+  // Navigation button
+  const btn = document.createElement('button');
+  btn.className = 'tree-doc__btn';
   const icon = node.sourceType === 'html' ? HTML_SVG : DOC_SVG;
-  el.innerHTML = `${icon}<span class="tree-doc__label">${node.label}</span>`;
-
-  el.addEventListener('click', () => {
-    setActive(el);
+  btn.innerHTML = `${icon}<span class="tree-doc__label">${node.label}</span>`;
+  btn.addEventListener('click', () => {
+    setActive(wrapper);
     onNavigate(node);
   });
 
-  return el;
+  // Bookmark toggle button
+  const bookmarkBtn = document.createElement('button');
+  bookmarkBtn.className = 'tree-doc__bookmark';
+  const isBookmarked = getBookmark() === node.id;
+  bookmarkBtn.classList.toggle('is-bookmarked', isBookmarked);
+  bookmarkBtn.setAttribute('aria-label', isBookmarked ? 'Remove bookmark' : 'Bookmark this document');
+  bookmarkBtn.innerHTML = BOOKMARK_SVG;
+  bookmarkBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const current = getBookmark();
+    setBookmark(current === node.id ? null : node.id);
+    window.dispatchEvent(new CustomEvent('bookmark-changed'));
+  });
+
+  wrapper.appendChild(btn);
+  wrapper.appendChild(bookmarkBtn);
+  return wrapper;
 }
 
 function setActive(el: HTMLElement) {

@@ -101,29 +101,17 @@
 .tree-doc {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
-  padding: 0.35rem 0.75rem 0.35rem calc(0.75rem + var(--depth, 0) * 1rem);
-  cursor: pointer;
-  color: var(--text);
-  font-size: 0.82rem;
-  text-decoration: none;
-  transition: background 0.15s, color 0.15s;
-  border: none;
-  background: none;
   width: 100%;
-  text-align: left;
-  font-family: var(--font-sans);
   position: relative;
+  transition: background 0.15s;
 }
 
 .tree-doc:hover {
   background: var(--surface-2);
-  color: var(--text-bright);
 }
 
 .tree-doc.active {
   background: rgba(59, 130, 246, 0.08);
-  color: var(--text-bright);
 }
 
 .tree-doc.active::before {
@@ -135,6 +123,32 @@
   width: 3px;
   background: var(--accent-gradient);
   border-radius: 0 3px 3px 0;
+}
+
+/* Navigation button inside doc item */
+.tree-doc__btn {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.5rem 0.35rem calc(0.75rem + var(--depth, 0) * 1rem);
+  flex: 1;
+  min-width: 0;
+  cursor: pointer;
+  color: var(--text);
+  font-size: 0.82rem;
+  border: none;
+  background: none;
+  text-align: left;
+  font-family: var(--font-sans);
+  transition: color 0.15s;
+}
+
+.tree-doc:hover .tree-doc__btn {
+  color: var(--text-bright);
+}
+
+.tree-doc.active .tree-doc__btn {
+  color: var(--text-bright);
 }
 
 .tree-doc__icon {
@@ -152,6 +166,42 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* Bookmark button */
+.tree-doc__bookmark {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  margin-right: 0.3rem;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  border-radius: 5px;
+  opacity: 0;
+  transition: opacity 0.15s, color 0.15s, background 0.15s;
+}
+
+.tree-doc:hover .tree-doc__bookmark {
+  opacity: 1;
+}
+
+.tree-doc__bookmark.is-bookmarked {
+  opacity: 1;
+  color: #fbbf24;
+}
+
+.tree-doc__bookmark:hover {
+  background: var(--surface-2);
+  color: var(--text-bright);
+}
+
+.tree-doc__bookmark.is-bookmarked:hover {
+  color: #f87171;
 }
 
 /* ── Search: hide non-matching ── */

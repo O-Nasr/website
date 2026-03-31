@@ -1,4 +1,4 @@
-import { initSidebar, setActiveById, filterSidebar } from './sidebar';
+import { initSidebar, setActiveById, filterSidebar, getBookmark } from './sidebar';
 import { initRouter, navigateTo, getCurrentDocId } from './router';
 import { loadManifest, findDocById, getAllDocuments, DocNode } from './documents';
 
@@ -17,6 +17,8 @@ async function init() {
   const welcomeScreen = document.getElementById('welcome-screen')!;
   const docCountBadge = document.getElementById('doc-count')!;
   const homeLink = document.getElementById('home-link')!;
+  const bookmarkCard = document.getElementById('bookmark-card')!;
+  const bookmarkTitle = document.getElementById('bookmark-title')!;
 
   // Update stats dynamically from manifest
   const totalDocs = getAllDocuments(tree).length;
@@ -31,6 +33,7 @@ async function init() {
     docxContainer.style.display = 'none';
     htmlIframe.style.display = 'none';
     welcomeScreen.style.display = 'flex';
+    updateBookmarkCard();
   }
 
   function loadDocument(doc: DocNode) {
@@ -54,6 +57,32 @@ async function init() {
       loadDocument(doc);
     }
   }
+
+  // Bookmark card
+  function updateBookmarkCard() {
+    const bookmarkedId = getBookmark();
+    if (bookmarkedId) {
+      const doc = findDocById(bookmarkedId);
+      if (doc) {
+        bookmarkTitle.textContent = doc.label;
+        bookmarkCard.classList.remove('bookmark-card--hidden');
+        return;
+      }
+    }
+    bookmarkCard.classList.add('bookmark-card--hidden');
+  }
+
+  bookmarkCard.addEventListener('click', () => {
+    const bookmarkedId = getBookmark();
+    if (bookmarkedId) {
+      const doc = findDocById(bookmarkedId);
+      if (doc) handleNavigate(doc);
+    }
+  });
+
+  window.addEventListener('bookmark-changed', () => {
+    updateBookmarkCard();
+  });
 
   // Mobile sidebar
   function closeMobileSidebar() {
